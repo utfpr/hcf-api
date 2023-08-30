@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        Dynamic HTML to PDF
+    </head>
+    <body>
+        <div>
+            <ul>
+                {{#each users}}
+                  <li>Name: {{this.name}}</li>
+                  <li>Age: {{this.age}}</li>
+                  <li>DOB: {{this.dob}}</li>
+                {{/each}}
+              </ul>
+        </div>
+    </body>
+</html>

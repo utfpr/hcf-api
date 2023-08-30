@@ -1,0 +1,55 @@
+{
+    "extends": [
+        "airbnb-base"
+    ],
+    "env": {
+        "jest": true
+    },
+    "rules": {
+        "radix": "off",
+        "no-console": [
+            "error",
+            {
+                "allow": [
+                    "warn"
+                ]
+            }
+        ],
+        "max-len": [
+            "warn",
+            120
+        ],
+        "indent": [
+            "error",
+            4,
+            {
+                "SwitchCase": 1
+            }
+        ],
+        "padded-blocks": [
+            "error",
+            {
+                "classes": "always"
+            }
+        ],
+        "arrow-parens": [
+            "warn",
+            "as-needed"
+        ],
+        "no-unused-vars": [
+            "warn",
+            {
+                "args": "none"
+            }
+        ],
+        "comma-dangle": [
+            "error",
+            "always-multiline",
+            {
+                "functions": "ignore"
+            }
+        ],
+        "class-methods-use-this": "off",
+        "no-useless-constructor": "off"
+    }
+}

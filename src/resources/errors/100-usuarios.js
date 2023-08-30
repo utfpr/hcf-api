@@ -1,0 +1,15 @@
+export default {
+    100: 'As credenciais enviadas são inválidas',
+    101: 'Token de autenticação não autorizado',
+    102: 'O usuário não tem permissão para acessar este recurso',
+    103: 'Operação não permitida, é necessário ser root ou admin para ver essas informações.',
+    104: 'Operação não permitida, usuário já está cadastrado.',
+    105: 'Operação não permitida, esse usuário não é administrador deste município.',
+    106: 'Usuário não encontrado',
+    107: 'Não foi encontrado o usuário do token nesta prefeitura',
+    108: 'Não foi encontrado esse usuario nesta prefeitura.',
+    109: 'Não é permitido este usuário auto-inativar.',
+    110: 'Usuário já cadastrado com estes dados.',
+    111: 'Não foi possível atualizar o usuário.',
+    112: 'Não foi possível cadastrar o usuário',
+};

@@ -1,0 +1,17 @@
+export default {
+    200: 'Herbário não encontrado',
+    201: 'Herbário já existente',
+    202: 'Não foi possível buscar o ultimo numero de coleta.',
+    203: 'Não foi possível buscar os herbários.',
+    204: 'Não foi possível buscar os tipos.',
+    205: 'Não foi possível buscar os países.',
+    206: 'Não foi possível buscar as famílias.',
+    207: 'Não foi possível buscar os solos.',
+    208: 'Não foi possível buscar os relevos.',
+    209: 'Não foi possível buscar as vegetações.',
+    210: 'Não foi possível buscar as fases sucessionais.',
+    211: 'Não foi possível buscar os identificadores.',
+    212: 'Não foi possível buscar os coletores.',
+    213: 'Não foi possível buscar os autores.',
+    214: 'Não foi possível buscar o proximo numero de coletor.',
+};

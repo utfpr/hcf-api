@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Exportação Tombos</title>
+    <style>
+        @page {
+            margin: 0;
+        }
+
+        html,
+        body {
+            height: 1vh;
+            font-size: 12px;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .tabela-tombos {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 4px 8px;
+            text-align: left;
+        }
+
+        .tabela-tombos, th, td {
+            border: 1px solid #666;
+        }
+
+        .tabela-tombos tr:nth-child(even) {
+            background-color: #f2f2f2
+        }
+    </style>
+</head>
+
+<body>
+    <table class="tabela-tombos">
+        <tr>
+        <% for (let coluna of colunas) { %>
+            <th><%- coluna %></th>
+        <% } %>
+        </tr>
+
+        <% for (let tombo of tombos) { %>
+            <tr>
+            <% for (let coluna of colunas) { %>
+                <% if (coluna !== 'codigo_barra') { %>
+                    <td><%- tombo[coluna] %></td>
+                <% } else { %>
+                    <td class="text-center" style="padding: 1;">
+                        <svg class="barcode"
+                            jsbarcode-margin="8"
+                            jsbarcode-format="auto"
+                            jsbarcode-value="<%- tombo[coluna] %>"
+                            jsbarcode-textmargin="0"
+                            jsbarcode-fontsize="10"
+                            jsbarcode-width="1"
+                            jsbarcode-height="20">
+                        </svg>
+                    </td>
+                <% } %>
+            <% } %>
+            </tr>
+        <% } %>
+    </table>
+
+    <script src="/assets/js/jsbarcode.code128.min.js"></script>
+    <script>
+        function onPageLoaded() {
+            // JsBarcode(id, cbarra, { margin: 0, width: 1.4, height: 40, fontSize: 10 });
+            JsBarcode('.barcode').init();
+
+            if (!/standalone/.test(window.location.href)) {
+                window.print();
+            }
+        }
+
+        window.addEventListener('load', onPageLoaded);
+    </script>
+</body>
+
+</html>

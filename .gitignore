@@ -1,0 +1,11 @@
+logs
+dist
+node_modules
+coverage
+storage
+uploads
+
+.env
+*.log
+*.bak
+*.sql

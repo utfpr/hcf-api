@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Ficha Tombo</title>
+    <style>
+        @page {
+            margin: 0;
+        }
+
+        html,
+        body {
+            height: 1vh;
+            font-size: 11px;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            max-width: 80%;
+        }
+
+        .break-line-before {
+            page-break-before: always;
+            page-break-inside: avoid;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .tabela-principal {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .tabela-principal td {
+            /* border: 1px solid #f0f; */
+            padding: 2px 8px;
+        }
+
+        .tabela-principal td:first-child {
+            border-left: 1px solid #333;
+        }
+
+        .tabela-principal td:last-child {
+            border-right: 1px solid #333;
+        }
+
+        .tabela-principal tr:first-child td {
+            border-top: 1px solid #333;
+        }
+
+        .tabela-principal tr:last-child td {
+            border-bottom: 1px solid #333;
+        }
+
+        .tabela-principal .linha-vazia {
+            height: 5px;
+        }
+
+        .tabela-principal .celular-imagem {
+            border-right: 1px solid #333;
+            border-bottom: 1px solid #333;
+        }
+    </style>
+</head>
+
+<body>
+    <% for (let i = 0; i < fotos.length; i++) { %>
+    <% if (i !== 0 && i % 3 === 0) { %>
+    <div class="break-line-before" style="height: 20px"></div>
+    <% } %>
+    <table class="tabela-principal">
+        <tr>
+            <td rowspan="2" width="100" class="celular-imagem text-center">
+                <img width="100" src="/assets/logo-hcf.jpg" alt="Logo UTFPR">
+                <div style="font-size: .6em;"><b>CAMPUS CAMPO MOURÃO</b></div>
+            </td>
+            <td colspan="3" class="text-center">
+                <b>Herbário da Universidade Tecnológica Federal do Paraná - Campus Campo Mourão</b>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" style="border: none;">
+                <b>HCF:</b> <%- tombo.hcf %>
+            </td>
+            <td colspan="2">
+                <b>Data:</b> <%- tombo.data_tombo %>
+            </td>
+        </tr>
+        <% if (familia && familia.nome) { %>
+        <tr>
+            <td colspan="4">
+                <b>Família:</b> <%- tombo.familia.nome %>
+            </td>
+        </tr>
+        <% } %>
+        <% if (especie && especie.nome) { %>
+        <tr>
+            <td colspan="4">
+                <b>Espécie:</b> <%- especie.nome %>
+            </td>
+        </tr>
+        <% } %>
+        <tr>
+            <td colspan="4" class="linha-vazia"></td>
+        </tr>
+        <tr>
+            <td colspan="4">
+                <b>Nome Vulgar:</b> <%- tombo.nomes_populares %>
+            </td>
+        </tr>
+        <% if (identificacao && identificacao.usuario) { %>
+        <tr>
+            <td colspan="3">
+                <b>Identificador:</b> <%- identificacao.usuario.nome %>
+            </td>
+            <td>
+                <b>Data:</b> <%- identificacao.data_identificacao %>
+            </td>
+        </tr>
+        <% } %>
+        <tr>
+            <td colspan="4">
+                <b>Local de coleta:</b>
+                <%- localColeta.descricao %>
+                - <%- localColeta.complemento %>
+                - <%- cidade.nome %>
+                - <%- cidade.estado.nome %>
+                - <%- cidade.estado.pais.nome %>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4" class="linha-vazia"></td>
+        </tr>
+        <tr>
+            <td colspan="4">
+                <b>Observações:</b> <%- tombo.observacao %>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4" class="linha-vazia"></td>
+        </tr>
+        <tr>
+            <td colspan="4" class="linha-vazia"></td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <b><%- tombo.coletores.length == 1 ? 'Coletor' : 'Coletores' %>:</b> <%- tombo.coletores %>
+            </td>
+            <td width="20%" class="text-right">
+                <b>nº:</b> <%- tombo.numero_coleta %>
+            </td>
+            <td width="21%" class="text-right">
+                <b>Data:</b> <%- tombo.data_coleta %>
+            </td>
+        </tr>
+        <% if (!!fotos[i]['id']) { %>
+        <tr>
+            <td colspan="4" class="text-right">
+                <svg id="<%- 'code128_' + fotos[i]['id'] %>"></svg>
+            </td>
+        </tr>
+        <% } %>
+    </table>
+    <% if (!!fotos[i]['id']) { %>
+    <script>
+        window.addEventListener('load', () => {
+            const id = "<%- '#code128_' + fotos[i]['id'] %>";
+            const cbarra = "<%- fotos[i]['codigo_barra'] %>";
+            JsBarcode(id, cbarra, { margin: 0, width: 1.4, height: 40, fontSize: 10 });
+        });
+    </script>
+    <% } %>
+    <% } %>
+    <script src="/assets/js/jsbarcode.code128.min.js"></script>
+    <script>
+        function onPageLoaded() {
+            if (!/standalone/.test(window.location.href)) {
+                window.print();
+            }
+        }
+
+        window.addEventListener('load', onPageLoaded);
+    </script>
+</body>
+
+</html>
