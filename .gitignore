@@ -9,3 +9,5 @@ uploads
 *.log
 *.bak
 *.sql
+
+/mysql

@@ -1,9 +1,9 @@
 const {
-    DB_NAME = 'hcf',
-    DB_USER = 'hcf',
-    DB_PASS = 'masterkey',
-    DB_HOST = 'mysql995.umbler.com',
-    DB_PORT = '41890',
+    DB_NAME,
+    DB_USER,
+    DB_PASS,
+    DB_HOST,
+    DB_PORT,
 } = process.env;
 
 

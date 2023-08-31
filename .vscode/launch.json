@@ -6,11 +6,8 @@
             "request": "launch",
             "name": "Debug Program",
             "program": "${workspaceFolder}/src/index.js",
-            "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/babel-node.cmd",
+            "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/babel-node",
             "sourceMaps": true,
-            "outFiles": [
-                "${workspaceFolder}/dist/*.js"
-            ],
             "env": {
                 "NODE_ENV": "development"
             }
