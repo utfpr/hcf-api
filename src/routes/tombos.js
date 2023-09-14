@@ -78,7 +78,6 @@ export default app => {
             obterTombo,
         ]);
 
-
     app.route('/tipos')
         .post([
             tokensMiddleware([

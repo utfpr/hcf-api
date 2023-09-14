@@ -1,4 +1,3 @@
-import { renderFile } from 'ejs';
 import path from 'path';
 import moment from 'moment-timezone';
 
@@ -19,7 +18,6 @@ const {
     Estado,
     Pais,
 } = models;
-
 
 function formataDataSaida(data) {
     return moment(data)

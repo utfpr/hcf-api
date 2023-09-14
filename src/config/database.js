@@ -1,20 +1,19 @@
 const {
-    DB_NAME,
-    DB_USER,
-    DB_PASS,
-    DB_HOST,
-    DB_PORT,
+    MYSQL_DATABASE,
+    MYSQL_USERNAME,
+    MYSQL_PASSWORD,
+    MYSQL_HOST,
+    MYSQL_PORT,
 } = process.env;
 
-
-export const database = DB_NAME;
-export const username = DB_USER;
-export const password = DB_PASS;
+export const database = MYSQL_DATABASE;
+export const username = MYSQL_USERNAME;
+export const password = MYSQL_PASSWORD;
 
 export const options = {
     dialect: 'mysql',
-    host: DB_HOST,
-    port: parseInt(DB_PORT) || 41890,
+    host: MYSQL_HOST,
+    port: parseInt(MYSQL_PORT) || 3306,
 
     define: {
         freezeTableName: true,

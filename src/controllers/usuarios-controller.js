@@ -25,7 +25,6 @@ export const encontraUsuarioAtivoPorEmail = email => {
 
 export const cadastraUsuario = usuario => Usuario.create(usuario);
 
-
 export const atualizaUsuario = (usuario, usuarioId) => Usuario.update(usuario, {
     where: {
         id: usuarioId,
@@ -102,7 +101,7 @@ export const recuperarSenha = (request, response, next) => {
                     where: {
                         id: usuario.id,
                     },
-                },
+                }
             );
         })
         .then(retorno => {

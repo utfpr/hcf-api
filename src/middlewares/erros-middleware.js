@@ -16,7 +16,6 @@ function handleHttpException(error, request, response) {
         });
 }
 
-
 // eslint-disable-next-line
 export default (error, request, response, next) => {
     console.error(error); // eslint-disable-line

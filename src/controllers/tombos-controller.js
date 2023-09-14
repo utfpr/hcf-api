@@ -8,9 +8,7 @@ import pick from '../helpers/pick';
 import {
     converteParaDecimal, converteDecimalParaGraus, converteDecimalParaGMSGrau, converteDecimalParaGMSMinutos, converteDecimalParaGMSSegundos,
 } from '../helpers/coordenadas';
-import { selecionaObjetoCompletoTomboPorId } from '../services/tombos-service';
 import { converteInteiroParaRomano } from '../helpers/tombo';
-
 
 const {
     Solo, Relevo, Cidade, Estado, Vegetacao, FaseSucessional, Pais, Tipo, LocalColeta, Familia, sequelize,
@@ -821,7 +819,7 @@ export const cadastrarTipo = (request, response, next) => {
             {
                 nome: request.body.nome,
             },
-            transaction,
+            transaction
         ));
     sequelize.transaction(callback)
         .then(tipo => {

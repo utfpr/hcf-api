@@ -18,7 +18,6 @@ import {
 } from '../log';
 import { geraListaAleatorio } from '../teste';
 
-
 /**
  * A função comecaAtualizacaoReflora, primeiramente pega o maior valor de código
  * de barra existente, e partir do código de barra HCF000000001 até o maior valor

@@ -6,7 +6,6 @@ import { storage } from '../config/directory';
 import models from '../models';
 import pick from '../helpers/pick';
 
-
 const {
     sequelize,
     Sequelize: { ForeignKeyConstraintError },
@@ -22,7 +21,6 @@ const catchForeignKeyConstraintError = err => {
 };
 
 export const post = (request, response, next) => {
-    console.log(request.body); // eslint-disable-line
     const { file } = request;
 
     const fn = transaction => Promise.resolve()
@@ -74,6 +72,5 @@ export const post = (request, response, next) => {
         .catch(ForeignKeyConstraintError, catchForeignKeyConstraintError)
         .catch(next);
 };
-
 
 export default {};

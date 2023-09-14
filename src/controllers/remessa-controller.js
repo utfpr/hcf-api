@@ -92,7 +92,6 @@ export const cadastro = (request, response, next) => {
                 data_vencimento: item.data_vencimento || null,
             }));
 
-
             return RetiradaExsiccata.bulkCreate(tombos, { transaction });
         })
         .then(() => {
@@ -238,8 +237,6 @@ export const alteracao = (request, response, next) => {
         })
         .then(() => {
             const { tombos } = request.body;
-            console.log("TOMBOOOOS")
-            console.log(tombos)
             tombos.forEach(item => {
                 if ((tombos.filter(tombo => tombo.hcf === item.hcf).length > 1)) {
                     throw new BadRequestExeption(703);
@@ -354,7 +351,6 @@ export const alteracao = (request, response, next) => {
                 data_vencimento: item.data_vencimento || null,
             }));
 
-
             return RetiradaExsiccata.bulkCreate(tombos, { transaction });
         })
         .then(() => {
@@ -448,7 +444,7 @@ export const exclusao = (request, response, next) => {
                             [Op.in]: tombos,
                         },
                     },
-                },
+                }
             );
         })
         .then(() => {

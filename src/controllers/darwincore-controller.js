@@ -17,7 +17,6 @@ export const nomeParaIniciais = nomeSobrenome => {
     return sobrenomes + nome;
 };
 
-
 function obtemNomeArquivoCsv() {
     const data = moment()
         .format('YYYY-MM-DD');

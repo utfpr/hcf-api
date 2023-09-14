@@ -481,10 +481,12 @@ export const cadastrarEspecie = (request, response, next) => {
             }
             return generoEncontrado;
         })
-        .then(genero => Especie.create({
-            nome, genero_id: generoId, familia_id: genero.familia_id, autor_id: autorId,
-        },
-        transaction));
+        .then(genero => Especie.create(
+            {
+                nome, genero_id: generoId, familia_id: genero.familia_id, autor_id: autorId,
+            },
+            transaction
+        ));
     sequelize.transaction(callback)
         .then(especieCriada => {
             if (!especieCriada) {
@@ -880,14 +882,16 @@ export const cadastrarVariedade = (request, response, next) => {
             }
             return encontrado;
         })
-        .then(especie => Variedade.create({
-            nome,
-            genero_id: especie.genero_id,
-            especie_id: especieId,
-            familia_id: especie.familia_id,
-            autor_id: autorId,
-        },
-        transaction));
+        .then(especie => Variedade.create(
+            {
+                nome,
+                genero_id: especie.genero_id,
+                especie_id: especieId,
+                familia_id: especie.familia_id,
+                autor_id: autorId,
+            },
+            transaction
+        ));
     sequelize.transaction(callback)
         .then(variedadeCriada => {
             if (!variedadeCriada) {
@@ -1173,7 +1177,6 @@ export const listagem = (request, response, next) => {
                 }
 
                 const retorno = { count };
-
 
                 return sequelize.query(listaTaxonomiasSQL(false, limite, offset), { type })
                     .then(resultado => ({

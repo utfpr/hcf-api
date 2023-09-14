@@ -6,7 +6,6 @@ import {
     options,
 } from '../config/database';
 
-
 const instance = knex({
     client: 'mysql2',
     connection: {

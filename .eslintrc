@@ -44,9 +44,12 @@
         ],
         "comma-dangle": [
             "error",
-            "always-multiline",
             {
-                "functions": "ignore"
+                "arrays": "always-multiline",
+                "objects": "always-multiline",
+                "imports": "always-multiline",
+                "exports": "always-multiline",
+                "functions": "never"
             }
         ],
         "class-methods-use-this": "off",

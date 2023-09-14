@@ -4,7 +4,6 @@ import models from '../models';
 import omit from '../helpers/omit';
 import codigos from '../resources/codigos-http';
 
-
 const {
     sequelize,
     Sequelize: { Op, ForeignKeyConstraintError },
@@ -208,7 +207,6 @@ export const editar = (request, response, next) => {
                 where,
             });
         });
-
 
     sequelize.transaction(callback)
         .then(herbario => {

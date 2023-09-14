@@ -4,7 +4,6 @@ import PreconditionFailedException from '../errors/precondition-failed-exception
 import BadRequestException from '../errors/bad-request-exception';
 import renderizaArquivoHtml from '../helpers/renderiza-arquivo-html';
 
-
 function adicionaColunaDataColeta(consulta, coluna) {
     const funcao = knex.raw('concat_ws(?, ??, ??, ??)', [
         '/',
@@ -97,7 +96,6 @@ function adicionaColunasTombosFotos(consulta, coluna, juncoes) {
 
     consulta.columns(coluna);
 }
-
 
 const COLUNAS = {
     hcf: consulta => { consulta.column('hcf'); },

@@ -2,7 +2,6 @@ import validaData from './tombo-data';
 import validaCor from './tombo-cor';
 import validaColecoesAnexas from './tombo-colecoes-anexas';
 
-
 const validaColetores = coletores => {
     if (!Array.isArray(coletores) || coletores.length < 1) {
         return false;
