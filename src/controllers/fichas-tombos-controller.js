@@ -1,5 +1,5 @@
-import path from 'path';
 import moment from 'moment-timezone';
+import path from 'path';
 
 import formataColunasSeparadas from '../helpers/formata-colunas-separadas';
 import renderizaArquivoHtml from '../helpers/renderiza-arquivo-html';
@@ -28,7 +28,7 @@ export default function fichaTomboController(request, response, next) {
     const { tombo_id: tomboId } = request.params;
 
     Promise.resolve()
-        .then(_ => {
+        .then(() => {
             const include = [
                 {
                     required: true,

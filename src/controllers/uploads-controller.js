@@ -1,10 +1,11 @@
 import { renameSync, existsSync, mkdirSync } from 'fs';
 import moment from 'moment-timezone';
 import { join, extname } from 'path';
-import BadRequestExeption from '../errors/bad-request-exception';
+
 import { storage } from '../config/directory';
-import models from '../models';
+import BadRequestExeption from '../errors/bad-request-exception';
 import pick from '../helpers/pick';
+import models from '../models';
 
 const {
     sequelize,

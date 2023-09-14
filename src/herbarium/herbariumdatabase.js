@@ -1,26 +1,27 @@
 /* Evita o warning de excendo o tamanho da linha */
 /* eslint-disable max-len */
-import Sequelize from 'sequelize';
 import Q from 'q';
+import Sequelize from 'sequelize';
 import throttledQueue from 'throttled-queue';
+
 import {
     database,
     username,
     password,
     options,
 } from '../config/database';
-import modeloTombosFotos from '../models/TomboFoto';
-import modeloTombos from '../models/Tombo';
+import { cadastraUsuario } from '../controllers/usuarios-controller';
+import modeloAlteracao from '../models/Alteracao';
+import modeloConfiguracao from '../models/Configuracao';
+import modeloEspecies from '../models/Especie';
 import modeloFamilias from '../models/Familia';
 import modeloGeneros from '../models/Genero';
-import modeloEspecies from '../models/Especie';
-import modeloSubespecies from '../models/Subespecie';
-import modeloVariedades from '../models/Variedade';
-import modeloAlteracao from '../models/Alteracao';
 import modeloReflora from '../models/Reflora';
-import modeloConfiguracao from '../models/Configuracao';
+import modeloSubespecies from '../models/Subespecie';
+import modeloTombos from '../models/Tombo';
+import modeloTombosFotos from '../models/TomboFoto';
 import modeloUsuario from '../models/Usuario';
-import { cadastraUsuario } from '../controllers/usuarios-controller';
+import modeloVariedades from '../models/Variedade';
 
 export const conexao = new Sequelize(database, username, password, options);
 

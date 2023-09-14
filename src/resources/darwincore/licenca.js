@@ -1,4 +1,6 @@
-const linhas = [
+export default {};
+
+export const linhas = [
     'Os dados nao devem ser usados para fins comerciais.',
     'Qualquer uso dos dados de registros em análises ou publicações devem constar nos agradecimentos.',
     'Não podem ser redistribuídos com a devida indicação de procedência dos dados originais',

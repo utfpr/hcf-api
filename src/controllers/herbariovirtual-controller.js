@@ -17,9 +17,8 @@ const fs = require('fs');
  * conter alguns parâmetros nesse cabeçalhos para conseguir informações
  * específicas.
  * @param {*} response, é a resposta que será enviada ao back end.
- * @param {*} next, é utilizado para chamar a próxima função da pilha.
  */
-export const todosLogs = (request, response, next) => {
+export const todosLogs = (request, response) => {
     const { herbarioVirtual } = request.query;
     let diretorioLog = '';
     /** linux */
@@ -56,9 +55,8 @@ export const todosLogs = (request, response, next) => {
  * conter alguns parâmetros nesse cabeçalhos para conseguir informações
  * específicas.
  * @param {*} response, é a resposta que será enviada ao back end.
- * @param {*} next, é utilizado para chamar a próxima função da pilha.
  */
-export const getLog = (request, response, next) => {
+export const getLog = (request, response) => {
     const processaNomeArquivoUm = request.query.nomeLog.replace(/\//g, '-');
     const processaNomeArquivoDois = processaNomeArquivoUm.replace(/:/g, '-');
     const processaNomeArquivoTres = processaNomeArquivoDois.replace(/ /g, '-');

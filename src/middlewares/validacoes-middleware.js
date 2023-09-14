@@ -1,4 +1,5 @@
 import { checkSchema, validationResult } from 'express-validator/check';
+
 import UnprocessableEntityException from '../errors/unprocessable-entity-exception';
 
 export default esquema => [

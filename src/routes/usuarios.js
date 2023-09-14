@@ -1,11 +1,11 @@
+import listagensMiddleware from '../middlewares/listagens-middleware';
 import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middleware';
 import validacoesMiddleware from '../middlewares/validacoes-middleware';
-import usuarioLoginEsquema from '../validators/usuario-login';
-import cadastrarUsuarioEsquema from '../validators/usuario-cadastro';
 import atualizarUsuarioEsquema from '../validators/usuario-atualiza';
+import cadastrarUsuarioEsquema from '../validators/usuario-cadastro';
 import desativarUsuarioEsquema from '../validators/usuario-desativa';
-import listagensMiddleware from '../middlewares/listagens-middleware';
 import listagemUsuarioEsquema from '../validators/usuario-listagem';
+import usuarioLoginEsquema from '../validators/usuario-login';
 
 const controller = require('../controllers/usuarios-controller');
 

@@ -1,15 +1,13 @@
-import express from 'express';
-import cors from 'cors';
 import parser from 'body-parser';
+import cors from 'cors';
+import express from 'express';
 import morgan from 'morgan';
 
-import routes from './routes';
-import errors from './middlewares/erros-middleware';
-
 import { storage, assets } from './config/directory';
-
 import { daemonFazRequisicaoReflora } from './herbarium/reflora/main';
 import { daemonSpeciesLink } from './herbarium/specieslink/main';
+import errors from './middlewares/erros-middleware';
+import routes from './routes';
 
 const app = express();
 app.use(cors());
@@ -29,6 +27,5 @@ app.use(errors);
  */
 daemonFazRequisicaoReflora();
 daemonSpeciesLink();
-
 
 export default app;

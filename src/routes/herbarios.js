@@ -1,10 +1,10 @@
+import listagensMiddleware from '../middlewares/listagens-middleware';
 import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middleware';
 import validacoesMiddleware from '../middlewares/validacoes-middleware';
-import cadastrarHerbarioEsquema from '../validators/herbario-cadastro';
 import atualizarHerbarioEsquema from '../validators/herbario-atualiza';
+import cadastrarHerbarioEsquema from '../validators/herbario-cadastro';
 import desativarHerbarioEsquema from '../validators/herbario-desativa';
 import listagemHerbarioEsquema from '../validators/herbario-listagem';
-import listagensMiddleware from '../middlewares/listagens-middleware';
 
 const controller = require('../controllers/herbarios-controller');
 

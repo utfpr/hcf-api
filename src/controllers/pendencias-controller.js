@@ -1,8 +1,8 @@
+import BadRequestExeption from '../errors/bad-request-exception';
+import { converteParaDecimal } from '../helpers/coordenadas';
 import models from '../models';
 import codigos from '../resources/codigos-http';
-import BadRequestExeption from '../errors/bad-request-exception';
 import subespecie from '../validators/subespecie';
-import { converteParaDecimal } from '../helpers/coordenadas';
 
 const {
     Alteracao,
@@ -1610,8 +1610,6 @@ export const aprovarComJsonNome = (alteracao, hcf, transaction) => {
         .then(() => true);
 };
 
-export const aprovarComCadastroJson = (alteracao, hcf, transaction) => true;
-
 export const aprovarComCadastro = (hcf, transaction) => Tombo.update({
     rascunho: 0,
 }, {
@@ -1649,7 +1647,7 @@ export const visualizarComJsonNome = (alteracao, hcf, transaction) => Tombo.find
     transaction,
 })
     .then(tombos => {
-        // eslint-disable-next-line
+    // eslint-disable-next-line
         var jsonRetorno = [];
         if (tombos.especy) {
             if (alteracao.especie_nome) {
@@ -1773,10 +1771,10 @@ export function visualizar(request, response, next) {
     let retorno = {};
     let status = '';
     let tombo = -1;
-    const tombosBuscarFoto = [];
+    // eslint-disable-next-line
     let fotosOriginaisFormatas = [];
+    // eslint-disable-next-line
     let fotosInseridasFinal = [];
-    const fotosRemovidasFinal = [];
     let objetoAlterado = {};
     const callback = transaction => Promise.resolve()
         .then(() => Alteracao.findOne({
@@ -1824,7 +1822,6 @@ export function visualizar(request, response, next) {
             return TomboFoto.findAll({
                 where: {
                     tombo_hcf: tombo,
-                    // tombo_hcf: { [Op.in]:  tombosBuscarFoto},
                     ativo: 1,
                 },
                 transaction,
@@ -1833,6 +1830,7 @@ export function visualizar(request, response, next) {
         .then(fotos => {
             if (objetoAlterado.alteracao_operador) {
                 const fotosRemovida = objetoAlterado.fotos.removidas;
+                // eslint-disable-next-line
                 const fotosRemo = fotos.filter(item => {
                     if (fotosRemovida.includes(item.id)) {
                         return true;

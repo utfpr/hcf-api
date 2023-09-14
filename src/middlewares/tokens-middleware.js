@@ -1,7 +1,7 @@
 // @ts-nocheck
 
-import { decodificaTokenUsuario } from '../helpers/tokens';
 import ForbiddenException from '../errors/forbidden-exception';
+import { decodificaTokenUsuario } from '../helpers/tokens';
 
 export const TIPOS_USUARIOS = {
     CURADOR: 1,

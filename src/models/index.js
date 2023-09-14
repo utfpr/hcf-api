@@ -1,8 +1,9 @@
 // @ts-ignore
 
-import Sequelize from 'sequelize';
 import { readdirSync } from 'fs';
 import { basename } from 'path';
+import Sequelize from 'sequelize';
+
 import {
     database,
     username,

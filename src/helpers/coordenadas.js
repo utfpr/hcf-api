@@ -59,7 +59,6 @@ export const converteDecimalParaGraus = (decimal, isLat) => {
 
 export const converteDecimalParaGMSGrau = (decimal, isLat) => {
     let max = 180;
-    const sign = decimal < 0 ? -1 : 1;
 
     if (isLat) {
         max = 90;

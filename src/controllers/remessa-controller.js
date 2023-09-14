@@ -1,5 +1,5 @@
-import models from '../models';
 import BadRequestExeption from '../errors/bad-request-exception';
+import models from '../models';
 import codigos from '../resources/codigos-http';
 
 const {
@@ -116,7 +116,7 @@ export const cadastro = (request, response, next) => {
         });
 
     sequelize.transaction(callback)
-        .then(herbario => {
+        .then(() => {
             response.status(codigos.CADASTRO_SEM_RETORNO).send();
         })
         .catch(next);
@@ -375,7 +375,7 @@ export const alteracao = (request, response, next) => {
         });
 
     sequelize.transaction(callback)
-        .then(herbario => {
+        .then(() => {
             response.status(codigos.CADASTRO_SEM_RETORNO).send();
         })
         .catch(next);
@@ -469,7 +469,7 @@ export const exclusao = (request, response, next) => {
         });
 
     sequelize.transaction(callback)
-        .then(herbario => {
+        .then(() => {
             response.status(codigos.CADASTRO_SEM_RETORNO).send();
         })
         .catch(next);
@@ -524,7 +524,7 @@ export const devolverTombo = (request, response, next) => {
             transaction,
         }));
     sequelize.transaction(callback)
-        .then(tombo => {
+        .then(() => {
             response.status(codigos.EDITAR_SEM_RETORNO).send();
         })
         .catch(next);
