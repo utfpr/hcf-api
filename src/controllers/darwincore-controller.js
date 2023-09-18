@@ -1,190 +1,188 @@
-// @ts-nocheck
 import moment from 'moment-timezone';
 
 import models from '../models';
 
 const {
-    Solo, Relevo, Cidade, Estado, Pais, Vegetacao, FaseSucessional, Tipo, LocalColeta, Familia,
-    Genero, Subfamilia, Autor, Coletor, Variedade, Subespecie, Usuario,
-    ColecaoAnexa, Especie, Herbario, Tombo, TomboFoto,
+    Cidade,
+    Estado,
+    Pais,
+    FaseSucessional,
+    Tipo,
+    LocalColeta,
+    Familia,
+    Genero,
+    Subfamilia,
+    Autor,
+    Coletor,
+    Variedade,
+    Subespecie,
+    Usuario,
+    ColecaoAnexa,
+    Especie,
+    Herbario,
+    Tombo,
+    TomboFoto,
+    TomboColetor,
 } = models;
 
-export const nomeParaIniciais = nomeSobrenome => {
-    let nomeCompleto = nomeSobrenome;
-    nomeCompleto = nomeCompleto.replace(/\s(de|da|dos|das)\s/g, ' '); // Remove os de,da, dos,das.
-    const iniciais = nomeCompleto.match(/\b(\w)/gi); // Iniciais de cada parte do nome.
-    const nome = nomeCompleto.split(' ')[0].toLowerCase(); // Primeiro nome.
-    const sobrenomes = iniciais.splice(1, iniciais.length - 1).join('')
-        .toLowerCase(); // Iniciais
-    return sobrenomes + nome;
-};
-
 function obtemNomeArquivoCsv() {
-    const data = moment()
-        .format('YYYY-MM-DD');
+    const data = moment().format('YYYY-MM-DD');
 
     return `hcf_${data}.csv`;
 }
 
 export const obterModeloDarwinCore = (request, response, next) => {
     Promise.resolve()
-        .then(() => Tombo.findAll({
-            where: {
-                ativo: true,
-                rascunho: 0,
-            },
-            attributes: [
-                'data_coleta_mes',
-                'data_coleta_ano',
-                'situacao',
-                'nome_cientifico',
-                'hcf',
-                'data_tombo',
-                'data_coleta_dia',
-                'observacao',
-                'nomes_populares',
-                'numero_coleta',
-                'updated_at',
-                'latitude',
-                'longitude',
-                'altitude',
-                'taxon',
-                'entidade_id',
-                'local_coleta_id',
-                'variedade_id',
-                'tipo_id',
-                'especie_id',
-                'genero_id',
-                'familia_id',
-                'sub_familia_id',
-                'sub_especie_id',
-                'colecao_anexa_id',
-            ],
-            include: [
-                {
-                    model: Herbario,
+        .then(() =>
+            Tombo.findAll({
+                where: {
+                    ativo: true,
                 },
-                {
-                    model: TomboFoto,
-                },
-                {
-                    model: Usuario,
-                },
-                {
-                    model: LocalColeta,
-                    include: [
-                        {
-                            model: Cidade,
-                            attributes: {
-                                exclude: ['updated_at', 'created_at'],
-                            },
-                            include: [
-                                {
-                                    model: Estado,
-                                    include: [
-                                        {
-                                            model: Pais,
-                                        },
-                                    ],
+                attributes: [
+                    'data_coleta_mes',
+                    'data_coleta_ano',
+                    'situacao',
+                    'nome_cientifico',
+                    'hcf',
+                    'data_tombo',
+                    'data_coleta_dia',
+                    'observacao',
+                    'nomes_populares',
+                    'numero_coleta',
+                    'updated_at',
+                    'latitude',
+                    'longitude',
+                    'altitude',
+                    'taxon',
+                    'entidade_id',
+                    'local_coleta_id',
+                    'variedade_id',
+                    'tipo_id',
+                    'especie_id',
+                    'genero_id',
+                    'familia_id',
+                    'sub_familia_id',
+                    'sub_especie_id',
+                    'colecao_anexa_id',
+                ],
+                include: [
+                    {
+                        model: Herbario,
+                    },
+                    {
+                        model: TomboFoto,
+                    },
+                    {
+                        model: Usuario,
+                    },
+                    {
+                        model: LocalColeta,
+                        include: [
+                            {
+                                model: Cidade,
+                                attributes: {
+                                    exclude: ['updated_at', 'created_at'],
                                 },
-                            ],
-                        },
-                        {
-                            model: FaseSucessional,
-                            attributes: {
-                                exclude: ['updated_at', 'created_at'],
+                                include: [
+                                    {
+                                        model: Estado,
+                                        include: [
+                                            {
+                                                model: Pais,
+                                            },
+                                        ],
+                                    },
+                                ],
                             },
-                        },
-                        {
-                            model: Solo,
-                            attributes: {
-                                exclude: ['updated_at', 'created_at'],
+                            {
+                                model: FaseSucessional,
+                                attributes: {
+                                    exclude: ['updated_at', 'created_at'],
+                                },
                             },
-                        },
-                        {
-                            model: Relevo,
+                        ],
+                    },
+                    {
+                        model: Variedade,
+                        include: {
+                            model: Autor,
                             attributes: {
-                                exclude: ['updated_at', 'created_at'],
+                                exclude: ['updated_at', 'created_at', 'ativo'],
                             },
-                        },
-                        {
-                            model: Vegetacao,
-                            attributes: {
-                                exclude: ['updated_at', 'created_at'],
-                            },
-                        },
-                    ],
-                },
-                {
-                    model: Variedade,
-                    include: {
-                        model: Autor,
-                        attributes: {
-                            exclude: ['updated_at', 'created_at', 'ativo'],
                         },
                     },
-                },
-                {
-                    model: Tipo,
-                    attributes: ['id', 'nome'],
-                },
-                {
-                    model: Especie,
-                    include: {
-                        model: Autor,
-                        attributes: {
-                            exclude: ['updated_at', 'created_at', 'ativo'],
+                    {
+                        model: Tipo,
+                        attributes: ['id', 'nome'],
+                    },
+                    {
+                        model: Especie,
+                        include: {
+                            model: Autor,
+                            attributes: {
+                                exclude: ['updated_at', 'created_at', 'ativo'],
+                            },
                         },
                     },
-                },
-                {
-                    model: ColecaoAnexa,
-                },
-                {
-                    model: Coletor,
-                    attributes: ['id', 'nome'],
-                },
-                {
-                    model: Genero,
-                },
-                {
-                    model: Familia,
-                },
-                {
-                    model: Subfamilia,
-                },
-                {
-                    model: Subespecie,
-                    include: {
-                        model: Autor,
-                        attributes: {
-                            exclude: ['updated_at', 'created_at', 'ativo'],
+                    {
+                        model: ColecaoAnexa,
+                    },
+                    {
+                        model: Coletor,
+                    },
+                    {
+                        model: Genero,
+                    },
+                    {
+                        model: Familia,
+                    },
+                    {
+                        model: Subfamilia,
+                    },
+                    {
+                        model: Subespecie,
+                        include: {
+                            model: Autor,
+                            attributes: {
+                                exclude: ['updated_at', 'created_at', 'ativo'],
+                            },
                         },
                     },
-                },
-            ],
-
-        }))
+                    // {
+                    //     model: Alteracao,
+                    //     as: 'alteracoes1',
+                    //     include: {
+                    //         model: Usuario,
+                    //     },
+                    // },
+                    {
+                        model: TomboColetor,
+                    },
+                ],
+            })
+        )
         .then(retorno => {
-            const license = 'Os dados nao devem ser usados para fins comerciais.'
-                + 'Qualquer uso dos dados de registros em análises ou publicações devem constar nos agradecimentos.'
-                + 'não podem ser redistribuídos com a devida indicação de procedência dos dados originais.'
-                + 'e o responsável pela coleção deverá ser notificado. os dados. mesmo parciais.'
-                + 'sem explícita autorização escrita do responsável pela coleção.'
-                + 'Uma cópia de qualquer publicação em que os dados sejam citados deve ser enviada ao Herbário HCF.'
-                + 'Pesquisadores e suas instituições são responsáveis pelo uso adequado dos dados.'
-                + 'Este herbário procura minimizar a entrada de erros dos dados. entretanto não garantimos que a base'
-                + 'de dados esteja livre de erros. tanto na identificação quanto na transcrição dos dados'
-                + 'de coleta das amostras.';
+            const license =
+                'Os dados nao devem ser usados para fins comerciais.' +
+                'Qualquer uso dos dados de registros em análises ou publicações devem constar nos agradecimentos.' +
+                'não podem ser redistribuídos com a devida indicação de procedência dos dados originais.' +
+                'e o responsável pela coleção deverá ser notificado. os dados. mesmo parciais.' +
+                'sem explícita autorização escrita do responsável pela coleção.' +
+                'Uma cópia de qualquer publicação em que os dados sejam citados deve ser enviada ao Herbário HCF.' +
+                'Pesquisadores e suas instituições são responsáveis pelo uso adequado dos dados.' +
+                'Este herbário procura minimizar a entrada de erros dos dados. entretanto não garantimos que a base' +
+                'de dados esteja livre de erros. tanto na identificação quanto na transcrição dos dados' +
+                'de coleta das amostras.';
 
-            const cabecalho = 'basisOfRecord\ttype\tlanguage\tmodified\tinstitutionID\tinstitutionCode\t'
-                + 'collectionCode\tlicense\trightsHolder\tdynamicProperties\toccurrenceID\tcatalogNumber\t'
-                + 'recordedBy\trecordNumber\tdisposition\toccurrenceRemarks\teventDate\tyear\tmonth\tday\t'
-                + 'habitat\tcontinent\tcountry\tcountryCode\tstateProvince\tcounty\tminimumElevationInMeters\t'
-                + 'maximumElevationInMeters\tverbatimLatitude\tverbatimLongitude\tdecimalLatitude\t'
-                + 'decimalLongitude\tgeodeticDatum\tgeoreferenceProtocol\tkingdom\tfamily\tgenus\t'
-                + 'specificEpithet\tinfraspecificEpithet\tscientificName\tscientificNameAuthorship\ttaxonRank\t'
-                + 'vernacularName\ttaxonRemarks\ttypeStatus\tidentifiedBy\tdateIdentified\tidentificationQualifier\n';
+            const cabecalho =
+                'basisOfRecord\ttype\tlanguage\tmodified\tinstitutionID\tinstitutionCode\t' +
+                'collectionCode\tlicense\trightsHolder\tdynamicProperties\toccurrenceID\tcatalogNumber\t' +
+                'recordedBy\trecordNumber\tdisposition\toccurrenceRemarks\teventDate\tyear\tmonth\tday\t' +
+                'habitat\tcontinent\tcountry\tcountryCode\tstateProvince\tcounty\tminimumElevationInMeters\t' +
+                'maximumElevationInMeters\tverbatimLatitude\tverbatimLongitude\tdecimalLatitude\t' +
+                'decimalLongitude\tgeodeticDatum\tgeoreferenceProtocol\tkingdom\tfamily\tgenus\t' +
+                'specificEpithet\tinfraspecificEpithet\tscientificName\tscientificNameAuthorship\ttaxonRank\t' +
+                'vernacularName\ttaxonRemarks\ttypeStatus\tidentifiedBy\tdateIdentified\tidentificationQualifier\n';
 
             response.set({
                 'Content-Type': 'text/csv',
@@ -194,18 +192,26 @@ export const obterModeloDarwinCore = (request, response, next) => {
             response.write(cabecalho);
 
             retorno.forEach(tombo => {
-                // eslint-disable-next-line
                 let autores = '';
                 let coletores = '';
                 let dataColeta = '';
                 let dataIdentificacao = '';
                 let identificationQualifier = '';
                 let nomeIdentificador = '';
-                const paisNome = tombo.locais_coletum && tombo.locais_coletum.cidade ? tombo.locais_coletum.cidade.estado.paise.nome : '';
-                const paisCodigo = tombo.locais_coletum && tombo.locais_coletum.cidade ? tombo.locais_coletum.cidade.estado.paise.sigla : '';
-                const paranaNome = tombo.locais_coletum && tombo.locais_coletum.cidade ? tombo.locais_coletum.cidade.estado.nome : '';
-                const cidadeNome = tombo.locais_coletum && tombo.locais_coletum.cidade ? tombo.locais_coletum.cidade.nome : '';
-                const vegetacao = tombo.locais_coletum && tombo.locais_coletum.vegetaco ? tombo.locais_coletum.vegetaco.nome : '';
+                const paisNome =
+                    tombo.locais_coletum && tombo.locais_coletum.cidade
+                        ? tombo.locais_coletum.cidade.estado.paise.nome
+                        : '';
+                const paisCodigo =
+                    tombo.locais_coletum && tombo.locais_coletum.cidade
+                        ? tombo.locais_coletum.cidade.estado.paise.sigla
+                        : '';
+                const paranaNome =
+                    tombo.locais_coletum && tombo.locais_coletum.cidade ? tombo.locais_coletum.cidade.estado.nome : '';
+                const cidadeNome =
+                    tombo.locais_coletum && tombo.locais_coletum.cidade ? tombo.locais_coletum.cidade.nome : '';
+                const vegetacao =
+                    tombo.locais_coletum && tombo.locais_coletum.vegetaco ? tombo.locais_coletum.vegetaco.nome : '';
                 const familiaNome = tombo.familia ? tombo.familia.nome : '';
                 const generoNome = tombo.genero ? tombo.genero.nome : '';
                 const especieNome = tombo.especy ? tombo.especy.nome : '';
@@ -227,7 +233,7 @@ export const obterModeloDarwinCore = (request, response, next) => {
                     autores += `| ${tombo.variedade.autore.nome}`;
                 }
                 if (tombo.coletores && tombo.coletores.length > 0) {
-                    coletores += tombo.coletores.map(coletor => nomeParaIniciais(coletor.nome));
+                    coletores = tombo.coletores.map(coletor => coletor.nome).join(' | ');
                 }
                 if (tombo.data_coleta_ano) {
                     dataColeta = tombo.data_coleta_ano;
@@ -263,18 +269,13 @@ export const obterModeloDarwinCore = (request, response, next) => {
                         identificationQualifier = 'aff.';
                     }
                 }
-                if (tombo.usuarios.length > 0) {
-                    tombo.usuarios.map(usuario => {
-                        if (usuario.alteracoes.ativo && usuario.alteracoes.identificacao) {
-                            nomeIdentificador = nomeParaIniciais(usuario.nome);
-                        }
-                        return '';
-                    });
+                if (tombo.usuarios?.length > 0) {
+                    nomeIdentificador = tombo.usuarios.map(usuario => usuario.nome).join(' | ');
                 }
+
                 if (tombo.tombos_fotos && tombo.tombos_fotos.length > 0) {
                     tombo.tombos_fotos.forEach(foto => {
-                        const dataAtualizacao = moment(tombo.updated_at)
-                            .format('YYYY-MM-DD');
+                        const dataAtualizacao = moment(tombo.updated_at).format('YYYY-MM-DD');
 
                         let linha = [
                             `PreservedSpecimen\tColecao\tpt\t${dataAtualizacao}\t02.032.297/0005-26\t`,
@@ -294,8 +295,7 @@ export const obterModeloDarwinCore = (request, response, next) => {
                         response.write(`${linha}\n`);
                     });
                 } else {
-                    const dataAtualizacao = moment(tombo.updated_at)
-                        .format('YYYY-MM-DD');
+                    const dataAtualizacao = moment(tombo.updated_at).format('YYYY-MM-DD');
 
                     let linha = [
                         `PreservedSpecimen\tColecao\tpt\t${dataAtualizacao}\t02.032.297/0005-26\t`,

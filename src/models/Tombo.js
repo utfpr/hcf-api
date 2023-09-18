@@ -52,6 +52,15 @@ function associate(modelos) {
         foreignKey: 'tombo_hcf',
     });
 
+    Tombo.hasMany(TomboColetor, {
+        foreignKey: 'tombo_hcf',
+    });
+
+    Tombo.hasMany(Alteracao, {
+        as: 'alteracoes1',
+        foreignKey: 'tombo_hcf',
+    });
+
     Tombo.belongsTo(Herbario, {
         foreignKey: 'entidade_id',
     });
@@ -105,15 +114,11 @@ function associate(modelos) {
 
 export const defaultScope = {
     attributes: {
-        exclude: [
-            'updated_at',
-            'created_at',
-        ],
+        exclude: ['updated_at', 'created_at'],
     },
 };
 
 export default (Sequelize, DataTypes) => {
-
     const attributes = {
         hcf: {
             type: DataTypes.INTEGER,

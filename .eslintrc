@@ -26,6 +26,10 @@
         }
     },
     "rules": {
+        "operator-linebreak": "off",
+        "function-paren-newline": "off",
+        "implicit-arrow-linebreak": "off",
+        "object-curly-newline": "off",
         "radix": "off",
         "no-console": [
             "error",
@@ -37,7 +41,7 @@
         ],
         "max-len": [
             "warn",
-            120
+            150
         ],
         "indent": [
             "error",

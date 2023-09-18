@@ -1,0 +1,16 @@
+{
+    "tabWidth": 4,
+    "printWidth": 120,
+    "singleQuote": true,
+    "importOrder":[
+        "^[^.]",
+        "^\\./",
+        "^\\../",
+        "^\\./\\../",
+        "^[a-zA-Z]",
+        "^@/",
+        "^@\\w"
+    ],
+    "importOrderSeparation": true,
+    "arrowParens": "avoid"
+}
