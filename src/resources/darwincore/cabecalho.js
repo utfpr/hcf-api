@@ -49,7 +49,6 @@ const colunas = [
     'identificationQualifier',
 ];
 
-
 export default colunas;
 
 export function colunasComoLinhaUnica() {

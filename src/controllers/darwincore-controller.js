@@ -1,5 +1,6 @@
 // @ts-nocheck
 import moment from 'moment-timezone';
+
 import models from '../models';
 
 const {
@@ -13,10 +14,10 @@ export const nomeParaIniciais = nomeSobrenome => {
     nomeCompleto = nomeCompleto.replace(/\s(de|da|dos|das)\s/g, ' '); // Remove os de,da, dos,das.
     const iniciais = nomeCompleto.match(/\b(\w)/gi); // Iniciais de cada parte do nome.
     const nome = nomeCompleto.split(' ')[0].toLowerCase(); // Primeiro nome.
-    const sobrenomes = iniciais.splice(1, iniciais.length - 1).join('').toLowerCase(); // Iniciais
+    const sobrenomes = iniciais.splice(1, iniciais.length - 1).join('')
+        .toLowerCase(); // Iniciais
     return sobrenomes + nome;
 };
-
 
 function obtemNomeArquivoCsv() {
     const data = moment()

@@ -6,7 +6,6 @@ import { createServer } from 'http';
 import app from './app';
 import { env, port } from './config/server';
 
-
 // function fork() {
 //     // Fork workers
 //     cpus().forEach(() => {
@@ -49,7 +48,6 @@ function listen() {
 // } else {
 //     listen();
 // }
-
 
 console.info(`Using "${env}" environment`); // eslint-disable-line
 console.info(`Master ${process.pid} is running`); // eslint-disable-line

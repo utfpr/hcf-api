@@ -1,9 +1,8 @@
 import BadRequestExeption from '../errors/bad-request-exception';
 import NotFoundExeption from '../errors/not-found-exception';
-import models from '../models';
 import omit from '../helpers/omit';
+import models from '../models';
 import codigos from '../resources/codigos-http';
-
 
 const {
     sequelize,
@@ -208,7 +207,6 @@ export const editar = (request, response, next) => {
                 where,
             });
         });
-
 
     sequelize.transaction(callback)
         .then(herbario => {

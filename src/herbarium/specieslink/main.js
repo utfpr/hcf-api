@@ -1,7 +1,6 @@
 /* eslint-disable max-len */
 import fs from 'fs';
-import { processaArquivo } from './arquivo';
-import { getHoraAtual, escreveLOG, processaNomeLog } from '../log';
+
 import {
     selectTemExecucaoServico,
     insereExecucaoSpeciesLink,
@@ -9,8 +8,10 @@ import {
     atualizaNomeArquivoSpeciesLink,
     atualizaHoraFimSpeciesLink,
 } from '../herbariumdatabase';
-import { realizaComparacao } from './specieslink';
+import { getHoraAtual, escreveLOG, processaNomeLog } from '../log';
 import { geraListaAleatorio } from '../teste';
+import { processaArquivo } from './arquivo';
+import { realizaComparacao } from './specieslink';
 
 /**
  * A função agendaComparacaoSpeciesLink(), faz um select verificando se tem o serviço do SpeciesLink

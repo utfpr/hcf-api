@@ -1,11 +1,6 @@
 /* eslint-disable max-len */
 import Q from 'q';
-import {
-    selectTombo,
-    insereAlteracaoSugerida,
-    selectExisteServicoUsuario,
-    insereIdentificadorUsuario,
-} from '../herbariumdatabase';
+
 import {
     ehIgualFamilia,
     ehIgualGenero,
@@ -13,6 +8,12 @@ import {
     ehIgualSubespecie,
     existeAlteracaoSugerida,
 } from '../comparainformacao';
+import {
+    selectTombo,
+    insereAlteracaoSugerida,
+    selectExisteServicoUsuario,
+    insereIdentificadorUsuario,
+} from '../herbariumdatabase';
 
 /**
  * A função getDiaIdentificacao verifica se o dia que foi passado não

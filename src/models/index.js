@@ -1,8 +1,9 @@
 // @ts-ignore
 
-import Sequelize from 'sequelize';
 import { readdirSync } from 'fs';
 import { basename } from 'path';
+import Sequelize from 'sequelize';
+
 import {
     database,
     username,
@@ -13,20 +14,16 @@ import {
 const __basename = basename(__filename); // eslint-disable-line
 const sequelize = new Sequelize(database, username, password, options);
 
-
 const isModelFile = file => file !== __basename && /\.[jt]s$/.test(file);
-
 
 const reduceModels = (models, file) => ({
     ...models,
     [file.replace(/\.js$/, '')]: sequelize.import(`./${file}`),
 });
 
-
 const models = readdirSync(__dirname)
     .filter(isModelFile)
     .reduce(reduceModels, {});
-
 
 const prepare = modelsMapped => {
     Object.keys(modelsMapped)

@@ -1,6 +1,7 @@
 /* eslint-disable max-len */
-import Q from 'q';
 import moment from 'moment';
+import Q from 'q';
+
 import {
     criaTabelaReflora,
     insereTabelaReflora,
@@ -11,13 +12,12 @@ import {
     atualizaFimTabelaConfiguracao,
     atualizaTabelaConfiguracaoReflora,
 } from '../herbariumdatabase';
-import { fazComparacaoTombo } from './tombos';
-import { fazRequisicaoReflora } from './reflora';
 import {
     escreveLOG, leLOG, processaNomeLog, getHoraFim, getHoraAtual,
 } from '../log';
 import { geraListaAleatorio } from '../teste';
-
+import { fazRequisicaoReflora } from './reflora';
+import { fazComparacaoTombo } from './tombos';
 
 /**
  * A função comecaAtualizacaoReflora, primeiramente pega o maior valor de código
@@ -133,7 +133,8 @@ function verificaRequisicoesAgendado(existeExecucaoReflora) {
     if (moment().format('DD/MM/YYYY') === existeExecucaoReflora[0].data_proxima_atualizacao) {
         if (moment().format('HH') === '00') {
             preparaExecucaoReflora(existeExecucaoReflora[0]).then(() => {
-                atualizaTabelaConfiguracaoReflora(existeExecucaoReflora[0].id, getHoraAtual(), null, existeExecucaoReflora[0].periodicidade, moment().day(agendamento).format('DD/MM/YYYY'));
+                atualizaTabelaConfiguracaoReflora(existeExecucaoReflora[0].id, getHoraAtual(), null, existeExecucaoReflora[0].periodicidade, moment().day(agendamento)
+                    .format('DD/MM/YYYY'));
             });
         } else {
             // eslint-disable-next-line no-console

@@ -3,24 +3,16 @@ version: '3.4'
 services:
   mysql:
     image: mysql:5.7
-    container_name: herbario_mysql_new_version
+    container_name: herbario_mysql
     environment:
-      MYSQL_DATABASE: $DB_NAME
-      MYSQL_ROOT_PASSWORD: $DB_PASS
+      MYSQL_DATABASE: $MYSQL_DATABASE
+      MYSQL_ROOT_PASSWORD: $MYSQL_PASSWORD
     volumes:
       - ./mysql/data:/var/lib/mysql
       - ./mysql/initdb:/docker-entrypoint-initdb.d
     ports:
-      - 3306:3306
+      - ${MYSQL_PORT}:3306
     command:
       - --default-time-zone=+00:00
       - --character-set-server=utf8mb4
       - --sql-mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
-
-  nginx:
-    image: nginx:1.17-alpine
-    container_name: herbario_nginx
-    volumes:
-      - ./uploads:/usr/share/nginx/html
-    ports:
-      - 8080:80

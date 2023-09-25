@@ -2,15 +2,13 @@
 // @ts-nocheck
 import BadRequestExeption from '../errors/bad-request-exception';
 import NotFoundException from '../errors/not-found-exception';
-import models from '../models';
-import codigos from '../resources/codigos-http';
-import pick from '../helpers/pick';
 import {
     converteParaDecimal, converteDecimalParaGraus, converteDecimalParaGMSGrau, converteDecimalParaGMSMinutos, converteDecimalParaGMSSegundos,
 } from '../helpers/coordenadas';
-import { selecionaObjetoCompletoTomboPorId } from '../services/tombos-service';
+import pick from '../helpers/pick';
 import { converteInteiroParaRomano } from '../helpers/tombo';
-
+import models from '../models';
+import codigos from '../resources/codigos-http';
 
 const {
     Solo, Relevo, Cidade, Estado, Vegetacao, FaseSucessional, Pais, Tipo, LocalColeta, Familia, sequelize,
@@ -25,12 +23,12 @@ export const cadastro = (request, response, next) => {
         colecoes_anexas: colecoesAnexas, observacoes,
     } = request.body.json;
     let tomboCriado = null;
-    let nomeFamilia = "";
-    let nomeGenero = "";
-    let nomeSubfamilia = "";
-    let nomeEspecie = "";
-    let nomeSubespecie = "";
-    let nomeVariedade = "";
+    let nomeFamilia = '';
+    let nomeGenero = '';
+    let nomeSubfamilia = '';
+    let nomeEspecie = '';
+    let nomeSubespecie = '';
+    let nomeVariedade = '';
 
     const callback = transaction => Promise.resolve()
         .then(() => {
@@ -372,22 +370,22 @@ export const cadastro = (request, response, next) => {
                         status = 'APROVADO';
                     }
                     dados.status = status;
-                    if (nomeFamilia !== "") {
+                    if (nomeFamilia !== '') {
                         jsonTaxonomia.familia_nome = nomeFamilia;
                     }
-                    if (nomeSubfamilia !== "") {
+                    if (nomeSubfamilia !== '') {
                         jsonTaxonomia.subfamilia_nome = nomeSubfamilia;
                     }
-                    if (nomeGenero !== "") {
+                    if (nomeGenero !== '') {
                         jsonTaxonomia.genero_nome = nomeGenero;
                     }
-                    if (nomeEspecie !== "") {
+                    if (nomeEspecie !== '') {
                         jsonTaxonomia.especie_nome = nomeEspecie;
                     }
-                    if (nomeSubespecie !== "") {
+                    if (nomeSubespecie !== '') {
                         jsonTaxonomia.subespecie_nome = nomeSubespecie;
                     }
-                    if (nomeVariedade !== "") {
+                    if (nomeVariedade !== '') {
                         jsonTaxonomia.variedade_nome = nomeVariedade;
                     }
                     dados.tombo_json = JSON.stringify(jsonTaxonomia);
@@ -409,7 +407,7 @@ export const cadastro = (request, response, next) => {
             return undefined;
         })
         // /////////////// CADASTRA O COLETOR ///////////////
-        .then(ident => {
+        .then(() => {
             let jsonColetores = []; // eslint-disable-line
             for (let i = 0; i < coletores.length; i++) { // eslint-disable-line
                 jsonColetores.push({
@@ -433,69 +431,6 @@ export const cadastro = (request, response, next) => {
         })
         .catch(next);
 };
-
-function converteLocalColetaEnviado(corpo) {
-    const { localidade, paisagem } = corpo;
-
-    return {
-        descricao: paisagem.descricao,
-        complemento: localidade.complemento,
-        cidade_id: localidade.cidade_id,
-        solo_id: paisagem.solo_id,
-        relevo_id: paisagem.relevo_id,
-        vegetacao_id: paisagem.vegetacao_id,
-        fase_sucessional: paisagem.fase_sucessional,
-    };
-}
-
-function converteLocalColetaSelecionado(tombo) {
-    const { local_coleta: localColeta } = tombo;
-
-    return {
-        descricao: localColeta.descricao,
-        complemento: localColeta.complemento,
-        cidade_id: localColeta.cidade.id,
-        solo_id: localColeta.solo_id,
-        relevo_id: localColeta.relevo_id,
-        vegetacao_id: localColeta.vegetacao_id,
-        fase_sucessional: localColeta.fase_sucessional,
-    };
-}
-
-function criaLocalColetaSeNecessario(tombo, localColetaAtual, localColetaEnviado, transacaoSequelize) {
-    const atributos = [
-        'descricao',
-        'complemento',
-        'cidade_id',
-        'solo_id',
-        'relevo_id',
-        'vegetacao_id',
-        'fase_sucessional',
-    ];
-
-    function comparaAtributos(atributo) {
-        return localColetaAtual[atributo] === localColetaEnviado[atributo];
-    }
-
-    const diferentes = atributos.map(comparaAtributos)
-        .filter(a => a === false);
-
-    if (diferentes.length < 1) {
-        return {
-            ...tombo,
-            local_coleta_id: localColetaAtual.id,
-        };
-    }
-
-    return LocalColeta.create(localColetaEnviado, { transaction: transacaoSequelize })
-        .then(localColetaCriado => {
-            const { id } = localColetaCriado;
-            return {
-                ...tombo,
-                local_coleta_id: id,
-            };
-        });
-}
 
 function alteracaoIdentificador(request, transaction) {
     const {
@@ -801,7 +736,8 @@ export const getDadosCadTombo = (request, response, next) => {
             response.status(codigos.BUSCAR_VARIOS_ITENS)
                 .json(retorno);
 
-        }).catch(next);
+        })
+        .catch(next);
 };
 
 export const cadastrarTipo = (request, response, next) => {
@@ -821,10 +757,10 @@ export const cadastrarTipo = (request, response, next) => {
             {
                 nome: request.body.nome,
             },
-            transaction,
+            transaction
         ));
     sequelize.transaction(callback)
-        .then(tipo => {
+        .then(() => {
             response.status(codigos.CADASTRO_SEM_RETORNO).send();
         })
         .catch(next);
@@ -1178,7 +1114,7 @@ export const obterTombo = (request, response, next) => {
             }
 
             resposta.data_coleta = dataCol;
-            resposta.data_identificacao = dataIdent === 'undefined' ? "" : dataIdent;
+            resposta.data_identificacao = dataIdent === 'undefined' ? '' : dataIdent;
 
             if (tombo.coletores != null) {
                 // coletores = tombo.coletores.map(coletor => `${coletores}${coletor.nome},`).toString();

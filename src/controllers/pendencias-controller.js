@@ -1,8 +1,8 @@
+import BadRequestExeption from '../errors/bad-request-exception';
+import { converteParaDecimal } from '../helpers/coordenadas';
 import models from '../models';
 import codigos from '../resources/codigos-http';
-import BadRequestExeption from '../errors/bad-request-exception';
 import subespecie from '../validators/subespecie';
-import { converteParaDecimal } from '../helpers/coordenadas';
 
 const {
     Alteracao,
@@ -593,106 +593,98 @@ export const formatarTomboNovo = tombo => {
 };
 
 export const visualizarComCadastro = (alteracao, transaction) => {
-    let parametros = {};
-
-    return new Promise((resolve, reject) => {
-
-        parametros = {
-            ...parametros,
-            numero_tombo: alteracao.tombo_hcf,
-            numero_tombo_alteracao: JSON.parse(alteracao.tombo_json).hcf,
-        };
-        return Tombo.findAll({
-            where: {
-                hcf: {
-                    [Op.in]: [alteracao.tombo_hcf, parametros.numero_tombo_alteracao],
-                },
-                ativo: true,
+    let parametros = {
+        numero_tombo: alteracao.tombo_hcf,
+        numero_tombo_alteracao: JSON.parse(alteracao.tombo_json).hcf,
+    };
+    return Tombo.findAll({
+        where: {
+            hcf: {
+                [Op.in]: [alteracao.tombo_hcf, parametros.numero_tombo_alteracao],
             },
-            include: [
-                {
-                    model: Herbario,
-                },
-                {
-                    model: Variedade,
-                },
-                {
-                    model: Tipo,
-                },
-                {
-                    model: Especie,
-                },
-                {
-                    model: Familia,
-                },
-                {
-                    model: Subfamilia,
-                },
-                {
-                    model: Genero,
-                },
-                {
-                    model: Subespecie,
-                },
-                {
-                    model: ColecaoAnexa,
-                },
-                {
-                    model: LocalColeta,
-                    include: [
-                        {
-                            model: Solo,
-                        },
-                        {
-                            model: Relevo,
-                        },
-                        {
-                            model: Vegetacao,
-                        },
-                        {
-                            model: Cidade,
-                        },
-                        {
-                            model: FaseSucessional,
-                        },
-                    ],
-                },
-            ],
-            transaction,
-        })
-            .then(tombos => {
-                parametros = {
-                    ...parametros,
-                    retorno: [],
-                };
-                if (tombos.length === 2) {
-                    if (tombos[0].hcf === parametros.numero_tombo) {
-                        parametros = {
-                            ...parametros,
-                            tombo: tombos[0],
-                            tombo_alterado: tombos[1],
-                        };
-                    } else {
-                        parametros = {
-                            ...parametros,
-                            tombo: tombos[1],
-                            tombo_alterado: tombos[0],
-                        };
-                    }
-                    parametros = comparaDoisTombos(parametros.tombo, parametros.tombo_alterado);
+            ativo: true,
+        },
+        include: [
+            {
+                model: Herbario,
+            },
+            {
+                model: Variedade,
+            },
+            {
+                model: Tipo,
+            },
+            {
+                model: Especie,
+            },
+            {
+                model: Familia,
+            },
+            {
+                model: Subfamilia,
+            },
+            {
+                model: Genero,
+            },
+            {
+                model: Subespecie,
+            },
+            {
+                model: ColecaoAnexa,
+            },
+            {
+                model: LocalColeta,
+                include: [
+                    {
+                        model: Solo,
+                    },
+                    {
+                        model: Relevo,
+                    },
+                    {
+                        model: Vegetacao,
+                    },
+                    {
+                        model: Cidade,
+                    },
+                    {
+                        model: FaseSucessional,
+                    },
+                ],
+            },
+        ],
+        transaction,
+    })
+        .then(tombos => {
+            parametros = {
+                ...parametros,
+                retorno: [],
+            };
+            if (tombos.length === 2) {
+                if (tombos[0].hcf === parametros.numero_tombo) {
+                    parametros = {
+                        ...parametros,
+                        tombo: tombos[0],
+                        tombo_alterado: tombos[1],
+                    };
                 } else {
-                    parametros = formatarTomboNovo(tombos[0]);
+                    parametros = {
+                        ...parametros,
+                        tombo: tombos[1],
+                        tombo_alterado: tombos[0],
+                    };
                 }
-                resolve(parametros);
-            })
-            .catch(reject);
-    });
+                parametros = comparaDoisTombos(parametros.tombo, parametros.tombo_alterado);
+            } else {
+                parametros = formatarTomboNovo(tombos[0]);
+            }
+            return parametros;
+        });
 };
 
 const insereNoParametro = (key, campo, antigo, novo) => ({
     key, campo, antigo, novo,
 });
-
 
 const comparaDoisTombosOperador = (tombo, tomboAlterado) => {
     const parametros = [];
@@ -1005,93 +997,87 @@ const comparaDoisTombosOperador = (tombo, tomboAlterado) => {
 };
 
 export const visualizarAlteracaoOperador = (json, alteracao, transaction) => {
-    let parametros = {};
+    let parametros = {
+        numero_tombo: alteracao.tombo_hcf,
+    };
 
-    return new Promise((resolve, reject) => {
-
-        parametros = {
-            ...parametros,
-            numero_tombo: alteracao.tombo_hcf,
-        };
-        return Tombo.findAll({
-            where: {
-                hcf: alteracao.tombo_hcf,
-                ativo: true,
+    return Tombo.findAll({
+        where: {
+            hcf: alteracao.tombo_hcf,
+            ativo: true,
+        },
+        include: [
+            {
+                model: Coletor,
             },
-            include: [
-                {
-                    model: Coletor,
-                },
-                {
-                    model: Herbario,
-                },
-                {
-                    model: Variedade,
-                },
-                {
-                    model: Tipo,
-                },
-                {
-                    model: Especie,
-                },
-                {
-                    model: Familia,
-                },
-                {
-                    model: Subfamilia,
-                },
-                {
-                    model: Genero,
-                },
-                {
-                    model: Subespecie,
-                },
-                {
-                    model: ColecaoAnexa,
-                },
-                {
-                    model: LocalColeta,
-                    include: [
-                        {
-                            model: Solo,
-                        },
-                        {
-                            model: Relevo,
-                        },
-                        {
-                            model: Vegetacao,
-                        },
-                        {
-                            model: Cidade,
-                        },
-                        {
-                            model: FaseSucessional,
-                        },
-                    ],
-                },
-            ],
-            transaction,
-        })
-            .then(tombo => {
-                parametros = {
-                    ...parametros,
-                    tombo_original: tombo,
-                };
-                const visualizacaoFormatada = comparaDoisTombosOperador(tombo, json);
-                parametros = {
-                    ...parametros,
-                    retorno: visualizacaoFormatada,
-                };
-                resolve(visualizacaoFormatada);
-            })
-            .catch(reject);
-    });
+            {
+                model: Herbario,
+            },
+            {
+                model: Variedade,
+            },
+            {
+                model: Tipo,
+            },
+            {
+                model: Especie,
+            },
+            {
+                model: Familia,
+            },
+            {
+                model: Subfamilia,
+            },
+            {
+                model: Genero,
+            },
+            {
+                model: Subespecie,
+            },
+            {
+                model: ColecaoAnexa,
+            },
+            {
+                model: LocalColeta,
+                include: [
+                    {
+                        model: Solo,
+                    },
+                    {
+                        model: Relevo,
+                    },
+                    {
+                        model: Vegetacao,
+                    },
+                    {
+                        model: Cidade,
+                    },
+                    {
+                        model: FaseSucessional,
+                    },
+                ],
+            },
+        ],
+        transaction,
+    })
+        .then(tombo => {
+            parametros = {
+                ...parametros,
+                tombo_original: tombo,
+            };
+            const visualizacaoFormatada = comparaDoisTombosOperador(tombo, json);
+            parametros = {
+                ...parametros,
+                retorno: visualizacaoFormatada,
+            };
+            return visualizacaoFormatada;
+        });
 };
 
 export const visualizarComJsonId = (alteracao, hcf, transaction) => {
     const parametros = {};
 
-    return new Promise((resolve, reject) => Familia.findOne({
+    return Familia.findOne({
         where: {
             id: alteracao.familia_id,
         },
@@ -1316,15 +1302,14 @@ export const visualizarComJsonId = (alteracao, hcf, transaction) => {
                     novo: parametros.subfamilia.nome,
                 });
             }
-            resolve(jsonRetorno);
-        })
-        .catch(reject));
+            return jsonRetorno;
+        });
 };
 
 export const aprovarComJsonId = (alteracao, hcf, transaction) => {
     const parametros = {};
 
-    return new Promise((resolve, reject) => Familia.findOne({
+    return Familia.findOne({
         where: {
             id: alteracao.familia_id,
         },
@@ -1437,16 +1422,13 @@ export const aprovarComJsonId = (alteracao, hcf, transaction) => {
                 transaction,
             });
         })
-        .then(() => {
-            resolve(true);
-        })
-        .catch(reject));
+        .then(() => true);
 };
 
 export const aprovarComJsonNome = (alteracao, hcf, transaction) => {
     const parametros = {};
 
-    return new Promise((resolve, reject) => Familia.findOne({
+    return Familia.findOne({
         where: {
             nome: { [Op.like]: `%${alteracao.familia_nome}%` },
         },
@@ -1625,16 +1607,10 @@ export const aprovarComJsonNome = (alteracao, hcf, transaction) => {
                 transaction,
             });
         })
-        .then(() => {
-            resolve(true);
-        })
-        .catch(reject));
+        .then(() => true);
 };
 
-export const aprovarComCadastroJson = (alteracao, hcf, transaction) => true;
-
-
-export const aprovarComCadastro = (hcf, transaction) => new Promise((resolve, reject) => Tombo.update({
+export const aprovarComCadastro = (hcf, transaction) => Tombo.update({
     rascunho: 0,
 }, {
     where: {
@@ -1642,12 +1618,9 @@ export const aprovarComCadastro = (hcf, transaction) => new Promise((resolve, re
     },
     transaction,
 })
-    .then(() => {
-        resolve(true);
-    })
-    .catch(reject));
+    .then(() => true);
 
-export const visualizarComJsonNome = (alteracao, hcf, transaction) => new Promise((resolve, reject) => Tombo.findOne({
+export const visualizarComJsonNome = (alteracao, hcf, transaction) => Tombo.findOne({
     where: {
         hcf,
     },
@@ -1674,7 +1647,7 @@ export const visualizarComJsonNome = (alteracao, hcf, transaction) => new Promis
     transaction,
 })
     .then(tombos => {
-        // eslint-disable-next-line
+    // eslint-disable-next-line
         var jsonRetorno = [];
         if (tombos.especy) {
             if (alteracao.especie_nome) {
@@ -1790,20 +1763,18 @@ export const visualizarComJsonNome = (alteracao, hcf, transaction) => new Promis
                 novo: alteracao.subfamilia_nome,
             });
         }
-        resolve(jsonRetorno);
-    })
-    .catch(reject));
-
+        return jsonRetorno;
+    });
 
 export function visualizar(request, response, next) {
     const id = request.params.pendencia_id;
     let retorno = {};
     let status = '';
     let tombo = -1;
-    const tombosBuscarFoto = [];
+    // eslint-disable-next-line
     let fotosOriginaisFormatas = [];
+    // eslint-disable-next-line
     let fotosInseridasFinal = [];
-    let fotosRemovidasFinal = [];
     let objetoAlterado = {};
     const callback = transaction => Promise.resolve()
         .then(() => Alteracao.findOne({
@@ -1834,7 +1805,7 @@ export function visualizar(request, response, next) {
 
             return retorno;
         })
-        .then(retorno => {
+        .then(() => {
             if (objetoAlterado.alteracao_operador) {
                 const fotosInseridas = objetoAlterado.fotos.inseridas;
                 const fotosRemovidas = objetoAlterado.fotos.removidas;
@@ -1851,7 +1822,6 @@ export function visualizar(request, response, next) {
             return TomboFoto.findAll({
                 where: {
                     tombo_hcf: tombo,
-                    // tombo_hcf: { [Op.in]:  tombosBuscarFoto},
                     ativo: 1,
                 },
                 transaction,
@@ -1860,6 +1830,7 @@ export function visualizar(request, response, next) {
         .then(fotos => {
             if (objetoAlterado.alteracao_operador) {
                 const fotosRemovida = objetoAlterado.fotos.removidas;
+                // eslint-disable-next-line
                 const fotosRemo = fotos.filter(item => {
                     if (fotosRemovida.includes(item.id)) {
                         return true;
@@ -1893,7 +1864,7 @@ export function visualizar(request, response, next) {
                     original: item.caminho_foto,
                     thumbnail: item.caminho_foto,
                 }));
-            }            
+            }
         });
     sequelize.transaction(callback)
         .then(() => {

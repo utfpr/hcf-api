@@ -1,11 +1,11 @@
 import { renameSync, existsSync, mkdirSync } from 'fs';
 import moment from 'moment-timezone';
 import { join, extname } from 'path';
-import BadRequestExeption from '../errors/bad-request-exception';
-import { storage } from '../config/directory';
-import models from '../models';
-import pick from '../helpers/pick';
 
+import { storage } from '../config/directory';
+import BadRequestExeption from '../errors/bad-request-exception';
+import pick from '../helpers/pick';
+import models from '../models';
 
 const {
     sequelize,
@@ -22,7 +22,6 @@ const catchForeignKeyConstraintError = err => {
 };
 
 export const post = (request, response, next) => {
-    console.log(request.body); // eslint-disable-line
     const { file } = request;
 
     const fn = transaction => Promise.resolve()
@@ -74,6 +73,5 @@ export const post = (request, response, next) => {
         .catch(ForeignKeyConstraintError, catchForeignKeyConstraintError)
         .catch(next);
 };
-
 
 export default {};

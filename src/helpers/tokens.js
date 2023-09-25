@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
-import { env } from '../config/server';
+
 import { secret, expires } from '../config/security';
+import { env } from '../config/server';
 
 export const geraTokenUsuario = json => {
     const token = jwt.sign(json, secret, {

@@ -1,6 +1,6 @@
+import express from 'express';
 import { readdirSync } from 'fs';
 import { basename } from 'path';
-import express from 'express';
 
 const __basename = basename(__filename); // eslint-disable-line
 const app = express();

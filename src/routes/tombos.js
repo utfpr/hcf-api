@@ -1,19 +1,18 @@
-import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middleware';
-import listagensMiddleware from '../middlewares/listagens-middleware';
-import criaJsonMiddleware from '../middlewares/json-middleware';
-import validacoesMiddleware from '../middlewares/validacoes-middleware';
-import cadastrarTomboEsquema from '../validators/tombo-cadastro';
-import cadastrarTipoEsquema from '../validators/tipo-cadastro';
-import coletorCadastro from '../validators/coletor-cadastro';
-import listagemTombo from '../validators/tombo-listagem';
-
+import fichaTomboController from '../controllers/fichas-tombos-controller';
 import {
     getDadosCadTombo, getNumeroTombo, cadastro, listagem,
     desativar, obterTombo, cadastrarTipo, buscarTipos, cadastrarColetores, buscarColetores,
     buscarProximoNumeroColetor, alteracao,
 } from '../controllers/tombos-controller';
 import exportarTombosController from '../controllers/tombos-exportacoes-controller';
-import fichaTomboController from '../controllers/fichas-tombos-controller';
+import criaJsonMiddleware from '../middlewares/json-middleware';
+import listagensMiddleware from '../middlewares/listagens-middleware';
+import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middleware';
+import validacoesMiddleware from '../middlewares/validacoes-middleware';
+import coletorCadastro from '../validators/coletor-cadastro';
+import cadastrarTipoEsquema from '../validators/tipo-cadastro';
+import cadastrarTomboEsquema from '../validators/tombo-cadastro';
+import listagemTombo from '../validators/tombo-listagem';
 
 export default app => {
 
@@ -77,7 +76,6 @@ export default app => {
             listagensMiddleware,
             obterTombo,
         ]);
-
 
     app.route('/tipos')
         .post([

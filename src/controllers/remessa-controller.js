@@ -1,5 +1,5 @@
-import models from '../models';
 import BadRequestExeption from '../errors/bad-request-exception';
+import models from '../models';
 import codigos from '../resources/codigos-http';
 
 const {
@@ -92,7 +92,6 @@ export const cadastro = (request, response, next) => {
                 data_vencimento: item.data_vencimento || null,
             }));
 
-
             return RetiradaExsiccata.bulkCreate(tombos, { transaction });
         })
         .then(() => {
@@ -117,7 +116,7 @@ export const cadastro = (request, response, next) => {
         });
 
     sequelize.transaction(callback)
-        .then(herbario => {
+        .then(() => {
             response.status(codigos.CADASTRO_SEM_RETORNO).send();
         })
         .catch(next);
@@ -238,8 +237,6 @@ export const alteracao = (request, response, next) => {
         })
         .then(() => {
             const { tombos } = request.body;
-            console.log("TOMBOOOOS")
-            console.log(tombos)
             tombos.forEach(item => {
                 if ((tombos.filter(tombo => tombo.hcf === item.hcf).length > 1)) {
                     throw new BadRequestExeption(703);
@@ -354,7 +351,6 @@ export const alteracao = (request, response, next) => {
                 data_vencimento: item.data_vencimento || null,
             }));
 
-
             return RetiradaExsiccata.bulkCreate(tombos, { transaction });
         })
         .then(() => {
@@ -379,7 +375,7 @@ export const alteracao = (request, response, next) => {
         });
 
     sequelize.transaction(callback)
-        .then(herbario => {
+        .then(() => {
             response.status(codigos.CADASTRO_SEM_RETORNO).send();
         })
         .catch(next);
@@ -448,7 +444,7 @@ export const exclusao = (request, response, next) => {
                             [Op.in]: tombos,
                         },
                     },
-                },
+                }
             );
         })
         .then(() => {
@@ -473,7 +469,7 @@ export const exclusao = (request, response, next) => {
         });
 
     sequelize.transaction(callback)
-        .then(herbario => {
+        .then(() => {
             response.status(codigos.CADASTRO_SEM_RETORNO).send();
         })
         .catch(next);
@@ -528,7 +524,7 @@ export const devolverTombo = (request, response, next) => {
             transaction,
         }));
     sequelize.transaction(callback)
-        .then(tombo => {
+        .then(() => {
             response.status(codigos.EDITAR_SEM_RETORNO).send();
         })
         .catch(next);

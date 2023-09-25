@@ -1,13 +1,8 @@
-logs
-dist
-node_modules
-coverage
-storage
-uploads
+dist/
+uploads/
+mysql/data/
+node_modules/
 
-.env
-*.log
-*.bak
-*.sql
-
-/mysql
+*.env*
+!.env.example
+.eslintcache

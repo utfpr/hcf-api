@@ -1,4 +1,4 @@
-function associate(modelos) {
+function associate(/* modelos */) {
 }
 
 export const defaultScope = {

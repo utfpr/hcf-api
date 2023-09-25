@@ -10,7 +10,6 @@ const {
     Coletor,
 } = models;
 
-
 export default {};
 
 export function selecionaObjetoCompletoTomboPorId(condicoes, transacao) {
