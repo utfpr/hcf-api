@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 
 import { secret, expires } from '../config/security';
-import { env } from '../config/server';
+import serverConfig from '../config/server';
 
 export const geraTokenUsuario = json => {
     const token = jwt.sign(json, secret, {
@@ -12,7 +12,7 @@ export const geraTokenUsuario = json => {
 };
 
 export const decodificaTokenUsuario = token => jwt.verify(token, secret, {
-    ignoreExpiration: env === 'development',
+    ignoreExpiration: serverConfig.environment === 'development',
 });
 
 export const constroiPayloadUsuario = usuario => {

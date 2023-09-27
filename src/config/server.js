@@ -3,5 +3,7 @@ const {
     PORT,
 } = process.env;
 
-export const env = NODE_ENV || 'development';
-export const port = PORT || 3003;
+const environment = NODE_ENV || 'development';
+const port = PORT || 3003;
+
+export default { environment, port };
