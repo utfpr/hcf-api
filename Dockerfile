@@ -9,6 +9,7 @@ RUN yarn install --production=false \
 
 
 # production image
+
 FROM node:18.16-alpine
 
 EXPOSE 3000
