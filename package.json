@@ -16,9 +16,9 @@
 		"clean": "rimraf dist",
 		"build:app": "babel src -d dist --copy-files",
 		"start": "nodemon --exec babel-node ./src/index.js",
-		"build": "run-s clean build",
+		"build": "run-s clean build:app",
 		"test": "jest",
-        "prepare": "npx husky install"
+        "prepare": "husky install"
 	},
 	"devDependencies": {
 		"@babel/cli": "7.22.10",

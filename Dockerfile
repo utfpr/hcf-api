@@ -1,21 +1,29 @@
-FROM node:10.15-alpine AS build
+FROM node:18.16-alpine AS build
 
-WORKDIR /var/app
+WORKDIR /tmp/app
 
 COPY . .
-RUN yarn install --production=false && yarn dist
+
+RUN yarn install --production=false \
+  && yarn build
 
 
-FROM node:10.15-alpine
+# production image
+FROM node:18.16-alpine
+
+EXPOSE 3000
+
+ENTRYPOINT node ./dist/index.js
 
 WORKDIR /home/node/app
 
 COPY package.json yarn.lock ./
-RUN yarn install
 
-COPY --from=build /var/app/dist ./dist
+RUN yarn install --production
+
+COPY --from=build /tmp/app/dist ./dist
 COPY ./public ./public
 
-EXPOSE 3003
+RUN chown -R node:node .
 
-ENTRYPOINT yarn start
+USER node
