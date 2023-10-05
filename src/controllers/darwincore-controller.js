@@ -1,5 +1,8 @@
 import moment from 'moment-timezone';
 
+import { colunasComoLinhaUnica } from '~/resources/darwincore/cabecalho';
+import { license } from '~/resources/darwincore/licenca';
+
 import models from '../models';
 
 const {
@@ -30,6 +33,23 @@ function obtemNomeArquivoCsv() {
 
     return `hcf_${data}.csv`;
 }
+
+export const padronizarNomeDarwincore = nomeSobrenome => {
+    const nomePadraoDarwincore = nomeSobrenome
+        .split(' ')
+        .filter(nome => !nome.match(/(de|da|dos|das)/g))
+        .reduce((acc, nome, index, self) => {
+            if (index === 0 || index === self.length - 1) {
+                acc.push(nome);
+            } else {
+                acc.push(`${nome[0]}.`);
+            }
+            return acc;
+        }, [])
+        .join(' ');
+
+    return nomePadraoDarwincore;
+};
 
 const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
     const entidadeTombo = await Tombo.findAll({
@@ -148,30 +168,11 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
                     },
                 },
             },
-            // {
-            //     model: Alteracao,
-            //     as: 'alteracoes1',
-            //     include: {
-            //         model: Usuario,
-            //     },
-            // },
             {
                 model: TomboColetor,
             },
         ],
     });
-    // .then(retorno => {
-    const license =
-        'Os dados nao devem ser usados para fins comerciais.' +
-        'Qualquer uso dos dados de registros em análises ou publicações devem constar nos agradecimentos.' +
-        'não podem ser redistribuídos com a devida indicação de procedência dos dados originais.' +
-        'e o responsável pela coleção deverá ser notificado. os dados. mesmo parciais.' +
-        'sem explícita autorização escrita do responsável pela coleção.' +
-        'Uma cópia de qualquer publicação em que os dados sejam citados deve ser enviada ao Herbário HCF.' +
-        'Pesquisadores e suas instituições são responsáveis pelo uso adequado dos dados.' +
-        'Este herbário procura minimizar a entrada de erros dos dados. entretanto não garantimos que a base' +
-        'de dados esteja livre de erros. tanto na identificação quanto na transcrição dos dados' +
-        'de coleta das amostras.';
 
     entidadeTombo.forEach(tombo => {
         let autores = '';
@@ -210,7 +211,7 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
             autores += `| ${tombo.variedade.autore.nome}`;
         }
         if (tombo.coletores && tombo.coletores.length > 0) {
-            coletores = tombo.coletores.map(coletor => coletor.nome).join(' | ');
+            coletores = tombo.coletores.map(coletor => padronizarNomeDarwincore(coletor.nome)).join(' | ');
         }
         if (tombo.data_coleta_ano) {
             dataColeta = tombo.data_coleta_ano;
@@ -247,9 +248,10 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
             }
         }
         if (tombo.usuarios?.length > 0) {
-            nomeIdentificador = tombo.usuarios.map(usuario => usuario.nome).join(' | ');
+            nomeIdentificador = tombo.usuarios.map(usuario => padronizarNomeDarwincore(usuario.nome)).join(' | ');
         }
 
+        const linhasProcessadas = [];
         if (tombo.tombos_fotos && tombo.tombos_fotos.length > 0) {
             tombo.tombos_fotos.forEach(foto => {
                 const dataAtualizacao = moment(tombo.updated_at).format('YYYY-MM-DD');
@@ -270,7 +272,7 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
                 ].join('');
                 linha = linha.replace(/(null|undefined)/g, '');
 
-                response.write(`${linha}\n`);
+                linhasProcessadas.push(`${linha.replace(/[\r\n]/g, '')}\n`);
             });
         } else {
             const dataAtualizacao = moment(tombo.updated_at).format('YYYY-MM-DD');
@@ -292,8 +294,9 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
 
             linha = linha.replace(/null|undefined/g, '');
 
-            response.write(`${linha}\n`);
+            linhasProcessadas.push(`${linha.replace(/[\r\n]/g, '')}\n`);
         }
+        response.write(`${linhasProcessadas}`);
     });
 };
 
@@ -309,15 +312,7 @@ export const obterModeloDarwinCore = async (request, response, next) => {
         { distinct: true }
     );
 
-    const cabecalho =
-        'basisOfRecord\ttype\tlanguage\tmodified\tinstitutionID\tinstitutionCode\t' +
-        'collectionCode\tlicense\trightsHolder\tdynamicProperties\toccurrenceID\tcatalogNumber\t' +
-        'recordedBy\trecordNumber\tdisposition\toccurrenceRemarks\teventDate\tyear\tmonth\tday\t' +
-        'habitat\tcontinent\tcountry\tcountryCode\tstateProvince\tcounty\tminimumElevationInMeters\t' +
-        'maximumElevationInMeters\tverbatimLatitude\tverbatimLongitude\tdecimalLatitude\t' +
-        'decimalLongitude\tgeodeticDatum\tgeoreferenceProtocol\tkingdom\tfamily\tgenus\t' +
-        'specificEpithet\tinfraspecificEpithet\tscientificName\tscientificNameAuthorship\ttaxonRank\t' +
-        'vernacularName\ttaxonRemarks\ttypeStatus\tidentifiedBy\tdateIdentified\tidentificationQualifier\n';
+    const cabecalho = colunasComoLinhaUnica();
 
     response.set({
         'Content-Type': 'text/csv',
@@ -333,7 +328,6 @@ export const obterModeloDarwinCore = async (request, response, next) => {
             const offset = loteIndex * limit;
             const limite = Math.min(limit, quantidadeTombos - offset);
 
-            // console.log(`Processando lote ${loteIndex + 1} de ${quantidadeLotes}`);
             await obterModeloDarwinCoreLotes(limite, offset, request, response, next);
 
             if (loteIndex < quantidadeLotes - 1) {
