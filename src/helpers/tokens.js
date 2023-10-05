@@ -16,12 +16,7 @@ export const decodificaTokenUsuario = token => jwt.verify(token, secret, {
 });
 
 export const constroiPayloadUsuario = usuario => {
-    const {
-        id,
-        nome,
-        email,
-        tipo_usuario_id: tipoUsuarioId,
-    } = usuario;
+    const { id, nome, email, tipo_usuario_id: tipoUsuarioId } = usuario;
 
     return {
         id,
