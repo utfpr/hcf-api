@@ -37,15 +37,13 @@ function obtemNomeArquivoCsv() {
 export const padronizarNomeDarwincore = nomeSobrenome => {
     const nomePadraoDarwincore = nomeSobrenome
         .split(' ')
-        .filter(nome => !nome.match(/(de|da|dos|das)/g))
-        .reduce((acc, nome, index, self) => {
+        .filter(nome => !nome.toLowerCase().match(/(de|da|dos|das)/g))
+        .map((nome, index, self) => {
             if (index === 0 || index === self.length - 1) {
-                acc.push(nome);
-            } else {
-                acc.push(`${nome[0]}.`);
+                return nome;
             }
-            return acc;
-        }, [])
+            return `${nome[0]}.`;
+        })
         .join(' ');
 
     return nomePadraoDarwincore;
@@ -301,7 +299,8 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
 };
 
 export const obterModeloDarwinCore = async (request, response, next) => {
-    const limit = request.query.limit || 1000;
+
+    const limit = request.query.limit > 1000 ? 1000 : request.query.limit || 1000;
 
     const quantidadeTombos = await Tombo.count(
         {
