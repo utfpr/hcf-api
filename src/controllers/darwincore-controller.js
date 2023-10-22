@@ -1,4 +1,4 @@
-import moment from 'moment-timezone';
+import { format } from 'date-fns';
 
 import { colunasComoLinhaUnica } from '~/resources/darwincore/cabecalho';
 import { license } from '~/resources/darwincore/licenca';
@@ -29,7 +29,7 @@ const {
 } = models;
 
 function obtemNomeArquivoCsv() {
-    const data = moment().format('YYYY-MM-DD');
+    const data = format(new Date(), 'yyyy-MM-dd');
 
     return `hcf_${data}.csv`;
 }
@@ -252,7 +252,7 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
         const linhasProcessadas = [];
         if (tombo.tombos_fotos && tombo.tombos_fotos.length > 0) {
             tombo.tombos_fotos.forEach(foto => {
-                const dataAtualizacao = moment(tombo.updated_at).format('YYYY-MM-DD');
+                const dataAtualizacao = format(tombo.updated_at, 'yyyy-MM-dd');
 
                 let linha = [
                     `PreservedSpecimen\tColecao\tpt\t${dataAtualizacao}\t02.032.297/0005-26\t`,
@@ -273,7 +273,7 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
                 linhasProcessadas.push(`${linha.replace(/[\r\n]/g, '')}\n`);
             });
         } else {
-            const dataAtualizacao = moment(tombo.updated_at).format('YYYY-MM-DD');
+            const dataAtualizacao = format(tombo.updated_at, 'yyyy-MM-dd');
 
             let linha = [
                 `PreservedSpecimen\tColecao\tpt\t${dataAtualizacao}\t02.032.297/0005-26\t`,
