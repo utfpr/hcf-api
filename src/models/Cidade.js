@@ -23,14 +23,6 @@ export default (Sequelize, DataTypes) => {
             type: DataTypes.STRING(200),
             allowNull: false,
         },
-        // latitude: {
-        //     type: DataTypes.DOUBLE,
-        //     allowNull: true,
-        // },
-        // longitude: {
-        //     type: DataTypes.DOUBLE,
-        //     allowNull: true,
-        // },
         estado_id: {
             type: DataTypes.INTEGER,
             allowNull: true,
