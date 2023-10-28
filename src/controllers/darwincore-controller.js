@@ -63,6 +63,9 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
             'nome_cientifico',
             'hcf',
             'data_tombo',
+            'data_identificacao_dia',
+            'data_identificacao_mes',
+            'data_identificacao_ano',
             'data_coleta_dia',
             'observacao',
             'nomes_populares',
@@ -265,7 +268,7 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
                     `${cidadeNome}\t${tombo.altitude}\t${tombo.altitude}\t\t\t${tombo.latitude}\t`,
                     `${tombo.longitude}\t${'WGS84'}\t${'GPS'}\t${'Plantae'}\t${familiaNome}\t${generoNome}\t`,
                     `${especieNome}\t${menorNomeCientifico}\t${tombo.nome_cientifico}\t${autores}\t${tombo.taxon}`,
-                    `\t${tombo.nomes_populares}\t\t${nomeTipo}\t${nomeIdentificador}\t${dataIdentificacao}`,
+                    `\t${tombo.nomes_populares}\t\t${nomeTipo}\t${nomeIdentificador}\t${format(new Date(dataIdentificacao), 'yyyy-MM-dd')}`,
                     `\t${identificationQualifier}`,
                 ].join('');
                 linha = linha.replace(/(null|undefined)/g, '');
@@ -286,7 +289,7 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
                 `${cidadeNome}\t${tombo.altitude}\t${tombo.altitude}\t\t\t${tombo.latitude}\t`,
                 `${tombo.longitude}\t${'WGS84'}\t${'GPS'}\t${'Plantae'}\t${familiaNome}\t${generoNome}\t`,
                 `${especieNome}\t${menorNomeCientifico}\t${tombo.nome_cientifico}\t${autores}\t${tombo.taxon}`,
-                `\t${tombo.nomes_populares}\t\t${nomeTipo}\t${nomeIdentificador}\t${dataIdentificacao}`,
+                `\t${tombo.nomes_populares}\t\t${nomeTipo}\t${nomeIdentificador}\t${format(new Date(dataIdentificacao), 'yyyy-MM-dd')}`,
                 `\t${identificationQualifier}`,
             ].join('');
 

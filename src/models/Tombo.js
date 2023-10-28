@@ -129,6 +129,18 @@ export default (Sequelize, DataTypes) => {
             type: DataTypes.DATE,
             allowNull: true,
         },
+        data_identificacao_dia: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
+        data_identificacao_mes: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
+        data_identificacao_ano: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
         data_coleta_dia: {
             type: DataTypes.INTEGER,
             allowNull: true,
