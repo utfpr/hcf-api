@@ -57,7 +57,7 @@ function associate(modelos) {
     });
 
     Tombo.hasMany(Alteracao, {
-        as: 'alteracoes1',
+        as: 'alteracoes_tombos',
         foreignKey: 'tombo_hcf',
     });
 
