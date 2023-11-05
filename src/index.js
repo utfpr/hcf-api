@@ -80,7 +80,6 @@ if (cluster.isPrimary) {
             console.error(error);
             process.exit(1);
         });
-
 } else {
     Promise.resolve()
         .then(startServer)
