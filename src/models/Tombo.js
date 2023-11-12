@@ -17,6 +17,7 @@ function associate(modelos) {
         TomboColetor,
         Relevo,
         Remessa,
+        Vegetacao,
         RetiradaExsiccata,
         Solo,
         TomboFoto,

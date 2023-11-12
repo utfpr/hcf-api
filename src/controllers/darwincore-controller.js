@@ -1,5 +1,6 @@
 import { format } from 'date-fns';
 
+import { padronizarNomeDarwincore } from '~/helpers/padroniza-nome-darwincore';
 import { colunasComoLinhaUnica } from '~/resources/darwincore/cabecalho';
 import { license } from '~/resources/darwincore/licenca';
 
@@ -33,21 +34,6 @@ function obtemNomeArquivoCsv() {
 
     return `hcf_${data}.csv`;
 }
-
-export const padronizarNomeDarwincore = nomeSobrenome => {
-    const nomePadraoDarwincore = nomeSobrenome
-        .split(' ')
-        .filter(nome => !nome.toLowerCase().match(/(de|da|dos|das)/g))
-        .map((nome, index, self) => {
-            if (index === 0 || index === self.length - 1) {
-                return nome;
-            }
-            return `${nome[0]}.`;
-        })
-        .join(' ');
-
-    return nomePadraoDarwincore;
-};
 
 const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
     const entidadeTombo = await Tombo.findAll({

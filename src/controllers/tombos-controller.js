@@ -1,5 +1,7 @@
 /* eslint-disable quotes */
 // @ts-nocheck
+import { padronizarNomeDarwincore } from '~/helpers/padroniza-nome-darwincore';
+
 import BadRequestExeption from '../errors/bad-request-exception';
 import NotFoundException from '../errors/not-found-exception';
 import {
@@ -12,7 +14,7 @@ import codigos from '../resources/codigos-http';
 
 const {
     Solo, Relevo, Cidade, Estado, Vegetacao, FaseSucessional, Pais, Tipo, LocalColeta, Familia, sequelize,
-    Genero, Subfamilia, Autor, Coletor, Variedade, Subespecie, Usuario, TomboFoto,
+    Genero, Subfamilia, Autor, Coletor, Variedade, Subespecie, TomboFoto, Identificador,
     ColecaoAnexa, Especie, Herbario, Tombo, Alteracao, TomboColetor, Sequelize: { Op },
 } = models;
 
@@ -875,6 +877,9 @@ export const obterTombo = (request, response, next) => {
                 'altitude',
                 'ativo',
                 'rascunho',
+                'data_identificacao_dia',
+                'data_identificacao_mes',
+                'data_identificacao_ano',
             ],
             include: [
                 {
@@ -882,8 +887,7 @@ export const obterTombo = (request, response, next) => {
                 },
                 {
                     as: 'identificadores',
-                    model: Usuario,
-                    order: [['id', 'DESC']],
+                    model: Identificador,
                 },
                 {
                     model: Solo,
@@ -1061,23 +1065,24 @@ export const obterTombo = (request, response, next) => {
             let dataCol = '';
             let dataIdent = '';
 
-            const [tomboUsuario] = tombo.identificadores;
+            const [tomboIdentificador] = tombo.identificadores;
 
-            if (tomboUsuario && tomboUsuario.alteracoes.identificacao !== false) {
-                if (tomboUsuario.alteracoes.data_identificacao_dia !== null) {
-                    dataIdent = `${tomboUsuario.alteracoes.data_identificacao_dia}/`;
-                    resposta.data_identificacao_dia = tomboUsuario.alteracoes.data_identificacao_dia;
-                }
-                if (tomboUsuario.alteracoes.data_identificacao_mes !== null) {
-                    dataIdent += `${converteInteiroParaRomano(tomboUsuario.alteracoes.data_identificacao_mes)}/`;
-                    resposta.data_identificacao_mes = tomboUsuario.alteracoes.data_identificacao_mes;
-                }
-                if (tomboUsuario.alteracoes.data_identificacao_ano !== null) {
-                    dataIdent += `${tomboUsuario.alteracoes.data_identificacao_ano}`;
-                    resposta.data_identificacao_ano = tomboUsuario.alteracoes.data_identificacao_ano;
-                }
-                resposta.identificador_nome = tomboUsuario.nome;
-                resposta.identificadorInicial = `${tomboUsuario.id}`;
+            if (tombo.data_identificacao_dia !== null) {
+                dataIdent = `${tombo.data_identificacao_dia}/`;
+                resposta.data_identificacao_dia = tombo.data_identificacao_dia;
+            }
+            if (tombo.data_identificacao_mes !== null) {
+                dataIdent += `${converteInteiroParaRomano(tombo.data_identificacao_mes)}/`;
+                resposta.data_identificacao_mes = tombo.data_identificacao_mes;
+            }
+            if (tombo.data_identificacao_ano !== null) {
+                dataIdent += `${tombo.data_identificacao_ano}`;
+                resposta.data_identificacao_ano = tombo.data_identificacao_ano;
+            }
+
+            if (tomboIdentificador) {
+                resposta.identificador_nome = padronizarNomeDarwincore(tomboIdentificador?.nome);
+                resposta.identificadorInicial = `${tomboIdentificador.id}`;
             } else {
                 resposta.identificadorInicial = '';
             }
