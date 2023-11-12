@@ -14,12 +14,12 @@ const {
     LocalColeta,
     Familia,
     Genero,
+    Identificador,
     Subfamilia,
     Autor,
     Coletor,
     Variedade,
     Subespecie,
-    Usuario,
     ColecaoAnexa,
     Especie,
     Herbario,
@@ -88,13 +88,17 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
         ],
         include: [
             {
+                model: Identificador,
+                as: 'identificadores',
+                attributes: {
+                    exclude: ['updated_at', 'created_at'],
+                },
+            },
+            {
                 model: Herbario,
             },
             {
                 model: TomboFoto,
-            },
-            {
-                model: Usuario,
             },
             {
                 model: LocalColeta,
@@ -248,8 +252,9 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
                 identificationQualifier = 'aff.';
             }
         }
-        if (tombo.usuarios?.length > 0) {
-            nomeIdentificador = tombo.usuarios.map(usuario => padronizarNomeDarwincore(usuario.nome)).join(' | ');
+
+        if (tombo.identificadores?.length > 0) {
+            nomeIdentificador = tombo.identificadores.map(identificador => padronizarNomeDarwincore(identificador.nome)).join(' | ');
         }
 
         const linhasProcessadas = [];

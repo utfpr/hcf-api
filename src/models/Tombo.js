@@ -18,6 +18,8 @@ function associate(modelos) {
         Remessa,
         RetiradaExsiccata,
         TomboFoto,
+        TomboIdentificador,
+        Identificador,
     } = modelos;
 
     Tombo.hasMany(TomboFoto, {
@@ -25,21 +27,15 @@ function associate(modelos) {
     });
 
     Tombo.belongsToMany(Usuario, {
-        as: 'identificadores',
-        through: {
-            model: Alteracao,
-            scope: {
-                ativo: true,
-                status: 'APROVADO',
-                identificacao: true,
-            },
-        },
+        through: Alteracao,
         foreignKey: 'tombo_hcf',
     });
 
-    Tombo.belongsToMany(Usuario, {
-        through: Alteracao,
+    Tombo.belongsToMany(Identificador, {
+        as: 'identificadores',
+        through: TomboIdentificador,
         foreignKey: 'tombo_hcf',
+        otherKey: 'identificador_id',
     });
 
     Tombo.belongsToMany(Remessa, {
