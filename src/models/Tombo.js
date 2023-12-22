@@ -15,8 +15,11 @@ function associate(modelos) {
         Usuario,
         Alteracao,
         TomboColetor,
+        Relevo,
         Remessa,
+        Vegetacao,
         RetiradaExsiccata,
+        Solo,
         TomboFoto,
         TomboIdentificador,
         Identificador,
@@ -36,6 +39,18 @@ function associate(modelos) {
         through: TomboIdentificador,
         foreignKey: 'tombo_hcf',
         otherKey: 'identificador_id',
+    });
+
+    Tombo.belongsTo(Solo, {
+        foreignKey: 'solo_id',
+    });
+
+    Tombo.belongsTo(Relevo, {
+        foreignKey: 'relevo_id',
+    });
+
+    Tombo.belongsTo(Vegetacao, {
+        foreignKey: 'vegetacao_id',
     });
 
     Tombo.belongsToMany(Remessa, {
@@ -230,6 +245,10 @@ export default (Sequelize, DataTypes) => {
             allowNull: true,
         },
         colecao_anexa_id: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
+        solo_id: {
             type: DataTypes.INTEGER,
             allowNull: true,
         },

@@ -1,24 +1,9 @@
 function associate(modelos) {
     const {
         LocalColeta,
-        Solo,
-        Relevo,
-        Vegetacao,
         Cidade,
         FaseSucessional,
     } = modelos;
-
-    LocalColeta.belongsTo(Solo, {
-        foreignKey: 'solo_id',
-    });
-
-    LocalColeta.belongsTo(Relevo, {
-        foreignKey: 'relevo_id',
-    });
-
-    LocalColeta.belongsTo(Vegetacao, {
-        foreignKey: 'vegetacao_id',
-    });
 
     LocalColeta.belongsTo(Cidade, {
         foreignKey: 'cidade_id',
@@ -52,6 +37,14 @@ export default (Sequelize, DataTypes) => {
         },
         complemento: {
             type: DataTypes.TEXT,
+            allowNull: true,
+        },
+        cidade_id: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
+        fase_sucessional_id: {
+            type: DataTypes.INTEGER,
             allowNull: true,
         },
     };
