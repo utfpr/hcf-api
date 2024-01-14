@@ -1,3 +1,4 @@
+import { UserRegistrationDTO } from '../dtos/UserRegistrationDTO';
 import BadRequestExeption from '../errors/bad-request-exception';
 import { comparaSenha, gerarSenha } from '../helpers/senhas';
 import { constroiPayloadUsuario, geraTokenUsuario } from '../helpers/tokens';
@@ -172,7 +173,8 @@ export const cadastro = (request, response, next) => {
             if (!retorno) {
                 throw new BadRequestExeption(112);
             }
-            response.status(codigos.CADASTRO_RETORNO).json(retorno);
+
+            response.status(codigos.CADASTRO_RETORNO).json(new UserRegistrationDTO(retorno));
         })
         .catch(next);
 };
