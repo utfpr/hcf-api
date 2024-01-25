@@ -8,16 +8,16 @@ export const defaultScope = {
 
 export default (Sequelize, DataTypes) => {
     const attributes = {
-        id: {
-            type: DataTypes.INTEGER,
-            autoIncrement: true,
-            primaryKey: true,
-        },
+
         tombo_hcf: {
             type: DataTypes.INTEGER,
             allowNull: false,
         },
         identificador_id: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+        },
+        ordem: {
             type: DataTypes.INTEGER,
             allowNull: false,
         },
