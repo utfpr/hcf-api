@@ -187,11 +187,11 @@ export const editar = (request, response, next) => {
             };
 
             if (herbario.endereco_id === null) {
-                const endereço = await Endereco.create(endereco, { transaction });
+                const localizacao = await Endereco.create(endereco, { transaction });
 
                 const dados = {
                     ...request.body.herbario,
-                    endereco_id: endereço.id,
+                    endereco_id: localizacao.id,
                 };
 
                 return herbario.update(dados, { transaction });
