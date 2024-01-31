@@ -26,6 +26,7 @@ export default (Sequelize, DataTypes) => {
     const options = {
         defaultScope,
         freezeTableName: true,
+        timestamps: false,
     };
 
     const Model = Sequelize.define('tombos_identificadores', attributes, options);
