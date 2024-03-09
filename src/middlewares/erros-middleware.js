@@ -25,6 +25,18 @@ export default (error, request, response, next) => {
         return;
     }
 
+    if (error.message === 'jwt expired') {
+        response.status(401)
+            .json({
+                error: {
+                    code: 401,
+                    message: 'Token expirado',
+                },
+            });
+
+        return;
+    }
+
     response.status(500)
         .json({
             error: {
