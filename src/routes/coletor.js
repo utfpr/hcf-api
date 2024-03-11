@@ -1,9 +1,15 @@
 import * as coletoresController from '../controllers/coletor-controller';
+import cadastrarColetorEsquema from '../validators/coletor-cadastro';
+import atualizarColetorEsquema from '../validators/coletor-atualiza';
+import desativarColetorEsquema from '../validators/coletor-desativa';
+import listarColetoresEsquema from '../validators/coletor-listagem';
+import validacoesMiddleware from '../middlewares/validacoes-middleware';
 import tokensMiddleware from '../middlewares/tokens-middleware';
 
 export default app => {
     app.route('/coletores').post([
         tokensMiddleware(['CURADOR']),
+        validacoesMiddleware(cadastrarColetorEsquema),
         coletoresController.cadastraColetor,
     ]);
 
@@ -14,17 +20,20 @@ export default app => {
 
     app.route('/coletores').get([
         tokensMiddleware(['CURADOR']),
+        validacoesMiddleware(listarColetoresEsquema),
         coletoresController.listaColetores,
     ]);
 
 
     app.route('/coletores/:id').put([
         tokensMiddleware(['CURADOR']),
+        validacoesMiddleware(atualizarColetorEsquema),
         coletoresController.atualizaColetor,
     ]);
 
     app.route('/coletores/:id').delete([
         tokensMiddleware(['CURADOR']),
+        validacoesMiddleware(desativarColetorEsquema),
         coletoresController.desativaColetor,
     ]);
 };
