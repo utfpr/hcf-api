@@ -14,20 +14,22 @@ export const cadastraColetor = async (req, res, next) => {
 };
 
 export const listaColetorPorId = async (req, res, next) => {
-  try {
-      const { id } = req.params;
-      const coletor = await Coletor.findByPk(id, {
-          where: { ativo: true }, 
-      });
+    try {
+        const { id } = req.params;
+        const coletor = await Coletor.findByPk(id, {
+            where: { ativo: true },
+        });
 
-      if (!coletor) {
-          return res.status(404).json({ mensagem: "Coletor não encontrado." });
-      }
+        if (!coletor) {
+            return res.status(404).json({ mensagem: 'Coletor não encontrado.' });
+        }
 
-      res.status(200).json(coletor);
-  } catch (error) {
-      next(error);
-  }
+        res.status(200).json(coletor);
+    } catch (error) {
+        next(error);
+    }
+
+    return null;
 };
 
 export const listaColetores = async (req, res, next) => {
@@ -46,7 +48,7 @@ export const atualizaColetor = async (req, res, next) => {
     try {
         const { id } = req.params;
         const [updated] = await Coletor.update(req.body, {
-            where: { id }
+            where: { id },
         });
         if (updated) {
             const updatedColetor = await Coletor.findByPk(id);
@@ -63,10 +65,9 @@ export const desativaColetor = async (req, res, next) => {
     try {
         const { id } = req.params;
         const [updated] = await Coletor.update({ ativo: false }, {
-            where: { id }
+            where: { id },
         });
         if (updated) {
-            console.log(updated)
             res.status(codigos.DESATIVAR).send();
         } else {
             throw new BadRequestException(404, 'Coletor não encontrado');

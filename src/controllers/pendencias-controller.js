@@ -1803,7 +1803,7 @@ export function visualizar(request, response, next) {
     const tombosBuscarFoto = [];
     let fotosOriginaisFormatas = [];
     let fotosInseridasFinal = [];
-    let fotosRemovidasFinal = [];
+    const fotosRemovidasFinal = [];
     let objetoAlterado = {};
     const callback = transaction => Promise.resolve()
         .then(() => Alteracao.findOne({
@@ -1893,7 +1893,7 @@ export function visualizar(request, response, next) {
                     original: item.caminho_foto,
                     thumbnail: item.caminho_foto,
                 }));
-            }            
+            }
         });
     sequelize.transaction(callback)
         .then(() => {

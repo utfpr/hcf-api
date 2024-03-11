@@ -238,8 +238,8 @@ export const alteracao = (request, response, next) => {
         })
         .then(() => {
             const { tombos } = request.body;
-            console.log("TOMBOOOOS")
-            console.log(tombos)
+            console.log('TOMBOOOOS');
+            console.log(tombos);
             tombos.forEach(item => {
                 if ((tombos.filter(tombo => tombo.hcf === item.hcf).length > 1)) {
                     throw new BadRequestExeption(703);
