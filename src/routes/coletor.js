@@ -3,17 +3,17 @@ import tokensMiddleware from '../middlewares/tokens-middleware';
 
 export default app => {
     app.route('/coletores').post([
-        tokensMiddleware(['CURADOR', 'OPERADOR']),
+        tokensMiddleware(['CURADOR']),
         coletoresController.cadastraColetor,
     ]);
 
     app.route('/coletores/:id').get([
-        tokensMiddleware(['CURADOR', 'OPERADOR']),
+        tokensMiddleware(['CURADOR']),
         coletoresController.listaColetorPorId,
     ]);
 
     app.route('/coletores').get([
-        tokensMiddleware(['CURADOR', 'OPERADOR']),
+        tokensMiddleware(['CURADOR']),
         coletoresController.listaColetores,
     ]);
 
