@@ -58,13 +58,6 @@ export const listaIdentificadoresPorTombo = async (req, res, next) => {
 
         const identificadorIds = tombosIdentificadores.map(ti => ti.identificador_id);
 
-        // const identificadores = await Identificador.findAll({
-        //     where: { id: identificadorIds },
-        //     attributes: ['nome'],
-        // });
-
-        // const nomesIdentificadores = identificadores.map(identificador => identificador.nome);
-
         res.status(200).json(identificadorIds);
     } catch (error) {
         next(error);
