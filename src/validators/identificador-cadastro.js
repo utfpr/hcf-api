@@ -1,10 +1,10 @@
 export default {
     nome: {
-        in: 'body', // Verifica o campo no corpo da requisição
+        in: 'body',
         isString: true,
         isEmpty: false,
         isLength: {
-            options: { min: 3 }, // Define o comprimento mínimo do nome
+            options: { min: 3 },
         },
     },
 };
