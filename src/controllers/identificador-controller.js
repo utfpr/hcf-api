@@ -3,7 +3,6 @@ import models from '../models';
 import codigos from '../resources/codigos-http';
 
 const { Identificador } = models;
-const { TomboIdentificador } = models;
 
 export const cadastraIdentificador = async (req, res, next) => {
     try {
@@ -72,29 +71,6 @@ export const listaIdentificadores = async (req, res, next) => {
     } catch (error) {
         next(error);
     }
-};
-
-export const listaIdentificadoresPorTombo = async (req, res, next) => {
-    try {
-        const { tomboHcf } = req.params;
-
-        const tombosIdentificadores = await TomboIdentificador.findAll({
-            where: { tombo_hcf: tomboHcf },
-            attributes: ['identificador_id'],
-            order: [['ordem', 'ASC']],
-        });
-
-        if (!tombosIdentificadores || tombosIdentificadores.length === 0) {
-            return res.status(404).json({ mensagem: 'Nenhum identificador encontrado para este tombo.' });
-        }
-
-        const identificadorIds = tombosIdentificadores.map(ti => ti.identificador_id);
-
-        res.status(200).json(identificadorIds);
-    } catch (error) {
-        next(error);
-    }
-    return null;
 };
 
 export const atualizaIdentificador = async (req, res, next) => {

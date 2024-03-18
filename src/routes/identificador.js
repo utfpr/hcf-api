@@ -35,9 +35,4 @@ export default app => {
         validacoesMiddleware(atualizarIdentificadorEsquema),
         identificadoresController.atualizaIdentificador,
     ]);
-
-    app.route('/tombos/:tomboHcf/identificadores').get([
-        tokensMiddleware(['CURADOR']),
-        identificadoresController.listaIdentificadoresPorTombo,
-    ]);
 };
