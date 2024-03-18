@@ -1,4 +1,5 @@
 import * as coletoresController from '../controllers/coletor-controller';
+import listagensMiddleware from '../middlewares/listagens-middleware';
 import tokensMiddleware from '../middlewares/tokens-middleware';
 import validacoesMiddleware from '../middlewares/validacoes-middleware';
 import atualizarColetorEsquema from '../validators/coletor-atualiza';
@@ -15,12 +16,13 @@ export default app => {
 
     app.route('/coletores/:id').get([
         tokensMiddleware(['CURADOR']),
-        coletoresController.listaColetorPorId,
+        coletoresController.encontraColetor,
     ]);
 
     app.route('/coletores').get([
         tokensMiddleware(['CURADOR']),
         validacoesMiddleware(listarColetoresEsquema),
+        listagensMiddleware,
         coletoresController.listaColetores,
     ]);
 

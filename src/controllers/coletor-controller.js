@@ -13,7 +13,7 @@ export const cadastraColetor = async (req, res, next) => {
     }
 };
 
-export const listaColetorPorId = async (req, res, next) => {
+export const encontraColetor = async (req, res, next) => {
     try {
         const { id } = req.params;
         const coletor = await Coletor.findOne({
@@ -34,11 +34,26 @@ export const listaColetorPorId = async (req, res, next) => {
 
 export const listaColetores = async (req, res, next) => {
     try {
-        const coletores = await Coletor.findAll({
+        const { limite, pagina } = req.paginacao;
+        const offset = (pagina - 1) * limite;
+
+        const result = await Coletor.findAll({
             where: { ativo: true },
-            order: [['nome', 'ASC']],
+            order: [['id', 'ASC']],
+            limit: limite,
+            offset,
         });
-        res.status(200).json(coletores);
+
+        const response = {
+            metadados: {
+                total: result.length,
+                pagina,
+                limite,
+            },
+            coletores: result,
+        };
+
+        res.status(200).json(response);
     } catch (error) {
         next(error);
     }
@@ -48,7 +63,7 @@ export const atualizaColetor = async (req, res, next) => {
     try {
         const { id } = req.params;
         const [updated] = await Coletor.update(req.body, {
-            where: { id },
+            where: { id, ativo: true },
         });
         if (updated) {
             const updatedColetor = await Coletor.findByPk(id);

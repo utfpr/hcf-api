@@ -4,7 +4,8 @@ export default {
         isString: true,
         isEmpty: false,
         isLength: {
-            options: { min: 3 },
+            options: { min: 3,
+                max: 255 },
         },
     },
 };

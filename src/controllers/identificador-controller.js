@@ -14,7 +14,7 @@ export const cadastraIdentificador = async (req, res, next) => {
     }
 };
 
-export const listaIdentificadorPorId = async (req, res, next) => {
+export const encontraIdentificadorPorId = async (req, res, next) => {
     try {
         const { id } = req.params;
         const identificador = await Identificador.findByPk(id);
@@ -31,12 +31,44 @@ export const listaIdentificadorPorId = async (req, res, next) => {
     return null;
 };
 
+export const encontraIdentificadorPorNome = async (req, res, next) => {
+    try {
+        const { nome } = req.params;
+        const identificador = await Identificador.findOne({
+            where: { nome },
+        });
+
+        if (!identificador) {
+            return res.status(404).json({ mensagem: `Identificador com nome ${nome} não encontrado.` });
+        }
+
+        res.status(200).json(identificador);
+    } catch (error) {
+        next(error);
+    }
+
+    return null;
+};
+
 export const listaIdentificadores = async (req, res, next) => {
     try {
-        const identificadores = await Identificador.findAll({
-            order: [['nome', 'ASC']],
+        const { limite, pagina } = req.paginacao;
+        const offset = (pagina - 1) * limite;
+        const result = await Identificador.findAll({
+            order: [['id', 'ASC']],
+            limit: limite,
+            offset,
         });
-        res.status(200).json(identificadores);
+        const response = {
+            metadados: {
+                total: result.count,
+                pagina,
+                limite,
+            },
+            identificadores: result,
+        };
+
+        res.status(200).json(response);
     } catch (error) {
         next(error);
     }
