@@ -25,7 +25,7 @@ export default (error, request, response, next) => {
         return;
     }
 
-    if (error.message === 'jwt expired') {
+    if (error.name === 'TokenExpiredError') {
         response.status(401)
             .json({
                 error: {
