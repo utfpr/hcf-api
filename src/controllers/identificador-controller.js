@@ -2,7 +2,7 @@ import BadRequestException from '../errors/bad-request-exception';
 import models from '../models';
 import codigos from '../resources/codigos-http';
 
-const { Identificador } = models;
+const { Identificador, Sequelize: { Op } } = models;
 
 export const cadastraIdentificador = async (req, res, next) => {
     try {
@@ -13,40 +13,39 @@ export const cadastraIdentificador = async (req, res, next) => {
     }
 };
 
-export const encontraIdentificadorPorId = async (req, res, next) => {
-    try {
-        const { id } = req.params;
-        const identificador = await Identificador.findByPk(id);
+export const encontradaIdentificador = async (req, res, next) => {
+    const { id, nome } = req.query;
+    const { limite, pagina } = req.paginacao;
+    const offset = (pagina - 1) * limite;
 
-        if (!identificador) {
-            return res.status(404).json({ mensagem: 'Identificador não encontrado.' });
-        }
-
-        res.status(200).json(identificador);
-    } catch (error) {
-        next(error);
+    const where = {};
+    if (id) {
+        where.id = id;
+    } else if (nome) {
+        where.nome = { [Op.like]: `%${nome}%` };
     }
 
-    return null;
-};
-
-export const encontraIdentificadorPorNome = async (req, res, next) => {
     try {
-        const { nome } = req.params;
-        const identificador = await Identificador.findOne({
-            where: { nome },
+        const result = await Identificador.findAndCountAll({
+            where,
+            attributes: ['id', 'nome'],
+            limit: limite,
+            offset,
         });
 
-        if (!identificador) {
-            return res.status(404).json({ mensagem: `Identificador com nome ${nome} não encontrado.` });
-        }
+        const total = await Identificador.count();
 
-        res.status(200).json(identificador);
+        res.status(200).json({
+            metadados: {
+                total,
+                pagina,
+                limite,
+            },
+            identificadores: result,
+        });
     } catch (error) {
         next(error);
     }
-
-    return null;
 };
 
 export const listaIdentificadores = async (req, res, next) => {
@@ -58,9 +57,12 @@ export const listaIdentificadores = async (req, res, next) => {
             limit: limite,
             offset,
         });
+
+        const total = await Identificador.count();
+
         const response = {
             metadados: {
-                total: result.count,
+                total,
                 pagina,
                 limite,
             },

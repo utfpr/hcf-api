@@ -44,9 +44,11 @@ export const listaColetores = async (req, res, next) => {
             offset,
         });
 
+        const total = await Coletor.count();
+
         const response = {
             metadados: {
-                total: result.length,
+                total,
                 pagina,
                 limite,
             },
@@ -80,7 +82,7 @@ export const desativaColetor = async (req, res, next) => {
     try {
         const { id } = req.params;
         const [updated] = await Coletor.update({ ativo: false }, {
-            where: { id },
+            where: { id, ativo: true },
         });
 
         if (updated) {
