@@ -37,18 +37,16 @@ export const listaColetores = async (req, res, next) => {
         const { limite, pagina } = req.paginacao;
         const offset = (pagina - 1) * limite;
 
-        const result = await Coletor.findAll({
+        const result = await Coletor.findAndCountAll({
             where: { ativo: true },
             order: [['id', 'ASC']],
             limit: limite,
             offset,
         });
 
-        const total = await Coletor.count();
-
         const response = {
             metadados: {
-                total,
+                total: result.count,
                 pagina,
                 limite,
             },

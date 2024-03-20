@@ -33,11 +33,9 @@ export const encontradaIdentificador = async (req, res, next) => {
             offset,
         });
 
-        const total = await Identificador.count();
-
         res.status(200).json({
             metadados: {
-                total,
+                total: result.count,
                 pagina,
                 limite,
             },
@@ -52,17 +50,16 @@ export const listaIdentificadores = async (req, res, next) => {
     try {
         const { limite, pagina } = req.paginacao;
         const offset = (pagina - 1) * limite;
+
         const result = await Identificador.findAll({
             order: [['id', 'ASC']],
             limit: limite,
             offset,
         });
 
-        const total = await Identificador.count();
-
         const response = {
             metadados: {
-                total,
+                total: result.count,
                 pagina,
                 limite,
             },
