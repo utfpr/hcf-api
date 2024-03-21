@@ -50,7 +50,7 @@ export const listaColetores = async (req, res, next) => {
                 pagina,
                 limite,
             },
-            coletores: result,
+            coletores: result.rows,
         };
 
         res.status(200).json(response);

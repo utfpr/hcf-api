@@ -14,45 +14,41 @@ export const cadastraIdentificador = async (req, res, next) => {
 };
 
 export const encontradaIdentificador = async (req, res, next) => {
-    const { id, nome } = req.query;
-    const { limite, pagina } = req.paginacao;
-    const offset = (pagina - 1) * limite;
-
-    const where = {};
-    if (id) {
-        where.id = id;
-    } else if (nome) {
-        where.nome = { [Op.like]: `%${nome}%` };
-    }
+    const { id } = req.params;
 
     try {
-        const result = await Identificador.findAndCountAll({
-            where,
-            attributes: ['id', 'nome'],
-            limit: limite,
-            offset,
+        const identificador = await Identificador.findOne({
+            where: { id },
         });
 
-        res.status(200).json({
-            metadados: {
-                total: result.count,
-                pagina,
-                limite,
-            },
-            identificadores: result,
-        });
+        if (!identificador) {
+            return res.status(404).json({ mensagem: 'Identificador não encontrado.' });
+        }
+
+        res.status(200).json(identificador);
     } catch (error) {
         next(error);
     }
+
+    return null;
 };
 
 export const listaIdentificadores = async (req, res, next) => {
     try {
+        const { id, nome } = req.query;
         const { limite, pagina } = req.paginacao;
         const offset = (pagina - 1) * limite;
 
-        const result = await Identificador.findAll({
-            order: [['id', 'ASC']],
+        const where = {};
+        if (id) {
+            where.id = id;
+        } else if (nome) {
+            where.nome = { [Op.like]: `%${nome}%` };
+        }
+
+        const result = await Identificador.findAndCountAll({
+            where,
+            attributes: ['id', 'nome'],
             limit: limite,
             offset,
         });
@@ -63,7 +59,7 @@ export const listaIdentificadores = async (req, res, next) => {
                 pagina,
                 limite,
             },
-            identificadores: result,
+            identificadores: result.rows,
         };
 
         res.status(200).json(response);

@@ -13,7 +13,7 @@ export default app => {
         identificadoresController.cadastraIdentificador,
     ]);
 
-    app.route('/identificadores').get([
+    app.route('/identificadores/:id').get([
         tokensMiddleware(['CURADOR']),
         listagensMiddleware,
         identificadoresController.encontradaIdentificador,
