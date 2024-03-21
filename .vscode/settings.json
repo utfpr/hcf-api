@@ -7,8 +7,8 @@
   "editor.detectIndentation": false,
   "editor.semanticHighlighting.enabled": false,
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
-  },
+    "source.fixAll.eslint": "explicit"
+},
   "editor.rulers": [
     120
   ],
