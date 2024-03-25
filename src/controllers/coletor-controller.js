@@ -2,15 +2,26 @@ import BadRequestException from '../errors/bad-request-exception';
 import models from '../models';
 import codigos from '../resources/codigos-http';
 
-const { Coletor } = models;
+const { Coletor, Sequelize: { Op } } = models;
 
 export const cadastraColetor = async (req, res, next) => {
     try {
+        if (req.body.numero) {
+            const validaNumero = await Coletor.findOne({
+                where: { numero: req.body.numero },
+            });
+
+            if (validaNumero) return res.status(400).json({ mensagem: 'Número do coletor já está em uso.' });
+        }
+
         const coletor = await Coletor.create(req.body);
+      
         res.status(codigos.CADASTRO_RETORNO).json(coletor);
     } catch (error) {
         next(error);
     }
+
+    return null;
 };
 
 export const encontraColetor = async (req, res, next) => {
@@ -34,11 +45,19 @@ export const encontraColetor = async (req, res, next) => {
 
 export const listaColetores = async (req, res, next) => {
     try {
+        const { id, nome } = req.query;
         const { limite, pagina } = req.paginacao;
         const offset = (pagina - 1) * limite;
 
+        const where = { ativo: true };
+        if (id) {
+            where.id = id;
+        } else if (nome) {
+            where.nome = { [Op.like]: `%${nome}%` };
+        }
+
         const result = await Coletor.findAndCountAll({
-            where: { ativo: true },
+            where,
             order: [['id', 'ASC']],
             limit: limite,
             offset,

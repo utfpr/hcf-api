@@ -18,6 +18,6 @@ export default {
     numero: {
         in: 'body',
         isInt: true,
-        isEmpty: false,
+        optional: true,
     },
 };

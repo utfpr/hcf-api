@@ -14,9 +14,8 @@ export const cadastraIdentificador = async (req, res, next) => {
 };
 
 export const encontradaIdentificador = async (req, res, next) => {
-    const { id } = req.params;
-
     try {
+        const { id } = req.params;
         const identificador = await Identificador.findOne({
             where: { id },
         });
@@ -48,7 +47,7 @@ export const listaIdentificadores = async (req, res, next) => {
 
         const result = await Identificador.findAndCountAll({
             where,
-            attributes: ['id', 'nome'],
+            order: [['id', 'ASC']],
             limit: limite,
             offset,
         });
