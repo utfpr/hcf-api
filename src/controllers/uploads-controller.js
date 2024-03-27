@@ -1,5 +1,4 @@
 import { renameSync, existsSync, mkdirSync } from 'fs';
-import moment from 'moment-timezone';
 import { join, extname } from 'path';
 
 import { storage } from '../config/directory';
@@ -34,22 +33,15 @@ export const post = (request, response, next) => {
             return TomboFoto.create(body, { transaction });
         })
         .then(foto => {
-            const subdiretorio = moment()
-                .format('YYYY-MM-DD');
-
-            const basediretorio = join(storage, subdiretorio);
-            if (!existsSync(basediretorio)) {
-                // @ts-ignore
-                mkdirSync(basediretorio, { recursive: true });
+            if (!existsSync(storage)) {
+                mkdirSync(storage, { recursive: true });
             }
 
-            // @ts-ignore
             const nomeArquivo = `HCF${String(foto.id).padStart(9, '0')}`;
-            // @ts-ignore
             const numeroBarra = `${foto.id}.${''.padEnd(6, '0')}`;
 
             const extensao = extname(file.originalname);
-            const caminho = join(subdiretorio, `${nomeArquivo}${extensao}`);
+            const caminho = `${nomeArquivo}${extensao}`;
 
             const atualizacao = {
                 ...foto,
