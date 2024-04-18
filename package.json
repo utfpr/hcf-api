@@ -11,7 +11,7 @@
 	},
 	"scripts": {
 		"lint:typescript": "tsc --noEmit",
-		"lint:eslint": "eslint --cache --fix --ext '.js,.ts,.tsx' .",
+		"lint:eslint": "eslint --quiet --cache --fix --ext '.js,.ts,.tsx' .",
 		"lint": "run-p lint:typescript lint:eslint",
 		"clean": "rimraf dist",
 		"build:app": "babel src -d dist --copy-files",

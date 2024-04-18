@@ -27,7 +27,20 @@ const {
     Tombo,
     TomboFoto,
     TomboColetor,
+    Solo,
+    Relevo,
+    Vegetacao,
 } = models;
+
+export const nomeParaIniciais = nomeSobrenome => {
+    let nomeCompleto = nomeSobrenome;
+    nomeCompleto = nomeCompleto.replace(/\s(de|da|dos|das)\s/g, ' '); // Remove os de,da, dos,das.
+    const iniciais = nomeCompleto.match(/\b(\w)/gi); // Iniciais de cada parte do nome.
+    const nome = nomeCompleto.split(' ')[0].toLowerCase(); // Primeiro nome.
+    const sobrenomes = iniciais.splice(1, iniciais.length - 1).join('')
+        .toLowerCase(); // Iniciais
+    return sobrenomes + nome;
+};
 
 function obtemNomeArquivoCsv() {
     const data = format(new Date(), 'yyyy-MM-dd');
@@ -41,6 +54,7 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
         offset,
         where: {
             ativo: true,
+            rascunho: 0,
         },
         attributes: [
             'data_coleta_mes',
@@ -120,6 +134,24 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
                     attributes: {
                         exclude: ['updated_at', 'created_at', 'ativo'],
                     },
+                },
+            },
+            {
+                model: Solo,
+                attributes: {
+                    exclude: ['updated_at', 'created_at'],
+                },
+            },
+            {
+                model: Relevo,
+                attributes: {
+                    exclude: ['updated_at', 'created_at'],
+                },
+            },
+            {
+                model: Vegetacao,
+                attributes: {
+                    exclude: ['updated_at', 'created_at'],
                 },
             },
             {
@@ -288,6 +320,7 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
 
             linhasProcessadas.push(`${linha.replace(/[\r\n]/g, '')}\n`);
         }
+
         response.write(`${linhasProcessadas}`);
     });
 };
