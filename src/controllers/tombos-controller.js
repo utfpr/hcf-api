@@ -469,10 +469,200 @@ function alteracaoIdentificador(request, transaction) {
         });
 }
 
+function alteracaoCuradorouOperador(request, response, next) {
+    const { body } = request;
+
+    const nomePopular = body.json.principal.nome_popular;
+    const entidadeId = body.json.principal.entidade_id;
+    const numeroColeta = body.json.principal.numero_coleta;
+    const dataColeta = body.json.principal.data_coleta;
+    const tipoId = body.json.principal.tipo_id;
+    const { cor } = body.json.principal;
+
+    const familiaId = body.json.taxonomia.familia_id;
+    const subfamiliaId = body.json.taxonomia.sub_familia_id;
+    const generoId = body.json.taxonomia.genero_id;
+    const especieId = body.json.taxonomia.especie_id;
+    const subespecieId = body.json.taxonomia.sub_especie_id;
+    const variedadeId = body.json.taxonomia.variedade_id;
+
+    const { latitude } = body.json.localidade;
+    const { longitude } = body.json.localidade;
+    const { altitude } = body.json.localidade;
+    const cidadeId = body.json.localidade.cidade_id;
+    const { complemento } = body.json.localidade;
+
+    const soloId = body.json.paisagem.solo_id;
+    const { descricao } = body.json.paisagem;
+    const relevoId = body.json.paisagem.relevo_id;
+    const vegetacaoId = body.json.paisagem.vegetacao_id;
+    const faseSucessionalId = body.json.paisagem.fase_sucessional_id;
+
+    const identificadorId = body.json.identificacao.identificador_id;
+    const dataIdentificacao = body.json.identificacao.data_identificacao;
+
+    const { coletores } = body.json;
+    const colecoesAnexasTipo = body.json.colecoes_anexas.tipo;
+    const colecoesAnexasObservacoes = body.json.colecoes_anexas.observacoes;
+
+    const { observacoes } = body.json;
+
+    const { tombo_id: tomboId } = request.params;
+    const update = {};
+
+    if (nomePopular) {
+        update.nomes_populares = nomePopular;
+    }
+
+    if (entidadeId) {
+        update.entidade_id = entidadeId;
+    }
+
+    if (numeroColeta) {
+        update.numero_coleta = numeroColeta;
+    }
+
+    if (dataColeta) {
+        update.data_coleta = dataColeta;
+    }
+
+    if (tipoId) {
+        update.tipo_id = tipoId;
+    }
+
+    if (cor) {
+        update.cor = cor;
+    }
+
+    if (familiaId) {
+        update.familia_id = familiaId;
+    }
+    if (subfamiliaId) {
+        update.sub_familia_id = subfamiliaId;
+    }
+    if (generoId) {
+        update.genero_id = generoId;
+    }
+    if (especieId) {
+        update.especie_id = especieId;
+    }
+    if (subespecieId) {
+        update.sub_especie_id = subespecieId;
+    }
+    if (variedadeId) {
+        update.variedade_id = variedadeId;
+    }
+
+    if (latitude) {
+        update.latitude = converteParaDecimal(latitude);
+    }
+
+    if (longitude) {
+        update.longitude = converteParaDecimal(longitude);
+    }
+
+    if (altitude) {
+        update.altitude = altitude;
+    }
+
+    if (cidadeId) {
+        update.cidade_id = cidadeId;
+    }
+
+    if (complemento) {
+        update.complemento = complemento;
+    }
+
+    if (soloId) {
+        update.solo_id = soloId;
+    }
+
+    if (descricao) {
+        update.descricao = descricao;
+    }
+
+    if (relevoId) {
+        update.relevo_id = relevoId;
+    }
+
+    if (vegetacaoId) {
+        update.vegetacao_id = vegetacaoId;
+    }
+
+    if (faseSucessionalId) {
+        update.fase_sucessional_id = faseSucessionalId;
+    }
+
+    if (identificadorId) {
+        update.identificadores = identificadorId;
+    }
+
+    if (dataIdentificacao) {
+        update.data_identificacao = dataIdentificacao;
+    }
+
+    if (coletores) {
+        update.coletores = coletores;
+    }
+
+    if (colecoesAnexasTipo) {
+        update.colecoes_anexas_tipo = colecoesAnexasTipo;
+    }
+
+    if (colecoesAnexasObservacoes) {
+        update.colecoes_anexas_observacoes = colecoesAnexasObservacoes;
+    }
+
+    if (observacoes) {
+        update.observacao = observacoes;
+    }
+
+    return Promise.resolve()
+        .then(() => {
+
+            if (request.usuario.tipo_usuario_id === 2) { // OPERADOR
+                Alteracao.create({
+                    tombo_hcf: tomboId,
+                    usuario_id: request.usuario.id,
+                    status: 'ESPERANDO', // operador fica em espera e curador APROVADO {ESPERANDO - para nao esquecer}
+                    tombo_json: JSON.stringify(update),
+                    ativo: true,
+                    identificacao: 1,
+                }).then(tombos => {
+                    response.status(codigos.BUSCAR_UM_ITEM)
+                        .json(tombos);
+                })
+                    .catch(next);
+            } else if (request.usuario.tipo_usuario_id === 1) { // CURADOR
+                Alteracao.create({
+                    tombo_hcf: tomboId,
+                    usuario_id: request.usuario.id,
+                    status: 'APROVADO', // operador fica em espera e curador APROVADO {ESPERANDO - para nao esquecer}
+                    tombo_json: JSON.stringify(update),
+                    ativo: true,
+                    identificacao: 1,
+                }).then(tombos => {
+                    response.status(codigos.BUSCAR_UM_ITEM)
+                        .json(tombos);
+                })
+                    .catch(next);
+            }
+        });
+    // .then(alteracaoIdent => {
+    //     if (request.usuario.tipo_usuario_id === 3) {
+    //         if (!alteracaoIdent) {
+    //             throw new BadRequestExeption(421);
+    //         }
+    //     }
+    // });
+}
+
 export function alteracao(request, response, next) {
     const callback = transaction => {
         if (request.usuario.tipo_usuario_id === 3) {
             return alteracaoIdentificador(request, transaction);
+        } if (request.usuario.tipo_usuario_id === 1 || request.usuario.tipo_usuario_id === 2) {
+            return alteracaoCuradorouOperador(request, response, next);
         }
         return Promise.reject(new BadRequestExeption(421));
     };
@@ -522,6 +712,7 @@ export const listagem = (request, response, next) => {
     } = request.query;
     let where = {
         ativo: true,
+        rascunho: 0,
     };
 
     if (nomeCientifico) {
@@ -859,6 +1050,7 @@ export const obterTombo = (request, response, next) => {
             where: {
                 hcf: id,
                 ativo: true,
+                rascunho: 0,
             },
             attributes: [
                 'cor',
@@ -1277,6 +1469,144 @@ export const getNumeroTombo = (request, response, next) => {
         .then(tombos => {
             response.status(codigos.BUSCAR_UM_ITEM)
                 .json(tombos);
+        })
+        .catch(next);
+};
+
+export const getNumeroColetor = (request, response, next) => {
+    const { idColetor } = request.params;
+    Promise.resolve()
+        .then(() => TomboColetor.findAll({
+            where: {
+                coletor_id: idColetor,
+            },
+            attributes: [
+                'tombo_hcf',
+            ],
+        }))
+        .then(tombo_hcf => Tombo.findAll({
+            where: {
+                hcf: tombo_hcf.map(e => e.tombo_hcf),
+            },
+            attributes: [
+                'hcf',
+                'numero_coleta',
+            ],
+        }))
+        .then(tombos => {
+            response.status(codigos.BUSCAR_UM_ITEM)
+                .json(tombos);
+        })
+        .catch(next);
+};
+
+export const getUltimoNumeroTombo = (request, response, next) => {
+    Promise.resolve()
+        .then(() => Tombo.findAll({
+            attributes: [
+                'hcf',
+            ],
+        }))
+        .then(tombos => {
+            const maximo = Math.max(...tombos.map(e => e.hcf));
+            const tombo = {};
+            tombo.hcf = maximo;
+            Tombo.findOne({
+                where: {
+                    hcf: maximo,
+                },
+                attributes: [
+                    'hcf',
+                    'data_tombo',
+                ],
+            }).then(tomboDate => {
+                response.status(codigos.BUSCAR_UM_ITEM)
+                    .json(tomboDate);
+            });
+        })
+        .catch(next);
+};
+
+export const getUltimoNumeroCodigoBarras = (request, response, next) => {
+    const { emVivo } = request.params;
+    Promise.resolve()
+        .then(() => TomboFoto.findAll({
+            where: {
+                em_vivo: emVivo,
+            },
+            attributes: [
+                'id',
+                'codigo_barra',
+                'num_barra',
+                'caminho_foto',
+            ],
+        }))
+        .then(codBarras => {
+            const maximoCodBarras = Math.max(...codBarras.map(e => e.id));
+            response.status(codigos.BUSCAR_UM_ITEM)
+                .json(maximoCodBarras);
+        })
+        .catch(next);
+};
+
+export const getCodigoBarraTombo = (request, response, next) => {
+    const { idTombo } = request.params;
+    Promise.resolve()
+        .then(() => TomboFoto.findAll({
+            where: {
+                tombo_hcf: idTombo,
+            },
+            attributes: [
+                'id',
+                'codigo_barra',
+                'num_barra',
+                'caminho_foto',
+            ],
+        }))
+        .then(tombos => {
+            response.status(codigos.BUSCAR_UM_ITEM)
+                .json(tombos);
+        })
+        .catch(next);
+};
+
+export const atualizaCodigoBarra = (codBarra, novoCod) => TomboFoto.update({
+    num_barra: novoCod.numBarra,
+    codigo_barra: novoCod.codBarra,
+}, {
+    where: {
+        codigo_barra: codBarra,
+    },
+});
+
+export const editarCodigoBarra = (request, response, next) => {
+    const { body } = request;
+    Promise.resolve()
+        .then(() => atualizaCodigoBarra(body.codBarra, body.novoCod))
+        .then(retorno => {
+            if (!retorno) {
+                throw new BadRequestExeption(111);
+            }
+            response.status(codigos.EDITAR_SEM_RETORNO).send();
+        })
+        .catch(next);
+};
+
+export const deletaCodigoBarra = codBarra => TomboFoto.destroy({
+    where: {
+        codigo_barra: codBarra,
+    },
+});
+
+export const deletarCodigoBarra = (request, response, next) => {
+    const { idTombo } = request.params;
+    Promise.resolve()
+        .then(() => deletaCodigoBarra(idTombo))
+        .then(retorno => {
+            if (!retorno) {
+                throw new BadRequestExeption(111);
+            }
+            response.status(codigos.EDITAR_SEM_RETORNO).send();
         })
         .catch(next);
 };

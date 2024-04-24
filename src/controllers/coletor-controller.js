@@ -15,7 +15,7 @@ export const cadastraColetor = async (req, res, next) => {
         }
 
         const coletor = await Coletor.create(req.body);
-      
+
         res.status(codigos.CADASTRO_RETORNO).json(coletor);
     } catch (error) {
         next(error);

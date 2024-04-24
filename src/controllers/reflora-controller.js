@@ -24,6 +24,7 @@ import {
  * conter alguns parâmetros nesse cabeçalhos para conseguir informações
  * específicas.
  * @param {*} response, é a resposta que será enviada ao back end.
+ * @param {*} next, é utilizado para chamar a próxima função da pilha.
  */
 export const preparaRequisicao = (request, response) => {
     const { periodicidade } = request.query;
@@ -71,8 +72,9 @@ export const preparaRequisicao = (request, response) => {
  * conter alguns parâmetros nesse cabeçalhos para conseguir informações
  * específicas.
  * @param {*} response, é a resposta que será enviada ao back end.
+ * @param {*} next, é utilizado para chamar a próxima função da pilha.
  */
-export const estaExecutando = (request, response) => {
+export const estaExecutando = (_, response) => {
     selectEstaExecutandoServico(1).then(listaExecucaoReflora => {
         response.header('Access-Control-Allow-Origin', '*');
         response.header('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type');
