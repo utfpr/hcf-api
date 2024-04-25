@@ -38,7 +38,7 @@ function comecaAtualizacaoReflora(nomeArquivo) {
     const tabelaReflora = criaTabelaReflora();
     selectCodBarra().then(listaCodBarra => {
         // insereTabelaReflora(tabelaReflora, listaCodBarra.slice(0, 1)).then(() => {
-        insereTabelaReflora(tabelaReflora, geraListaAleatorio(listaCodBarra, 0)).then(() => {
+        insereTabelaReflora(tabelaReflora, geraListaAleatorio(listaCodBarra, 10)).then(() => {
             fazRequisicaoReflora(nomeArquivo).then(resultadoRequisicaoReflora => {
                 if (resultadoRequisicaoReflora) {
                     fazComparacaoTombo().then(resultadoComparacao => {
