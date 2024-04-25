@@ -4,6 +4,7 @@ import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middlewa
 const controller = require('../controllers/pendencias-controller');
 
 export default app => {
+
     app.route('/pendencias/TomboId/:tombo_id')
         .get([
             controller.verificaAlteracao,
@@ -34,6 +35,8 @@ export default app => {
         .post([
             tokensMiddleware([
                 TIPOS_USUARIOS.CURADOR,
+                TIPOS_USUARIOS.OPERADOR,
+                TIPOS_USUARIOS.IDENTIFICADOR,
             ]),
             controller.aceitarPendencia,
         ])
@@ -43,4 +46,5 @@ export default app => {
             ]),
             controller.avaliaPendencia,
         ]);
+
 };

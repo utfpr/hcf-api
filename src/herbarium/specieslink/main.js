@@ -86,7 +86,7 @@ export function daemonSpeciesLink() {
                 }
             }
         });
-    }, 60000);
+    }, 7200000);
 }
 
 export default {};
