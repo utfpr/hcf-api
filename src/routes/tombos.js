@@ -2,9 +2,8 @@ import fichaTomboController from '../controllers/fichas-tombos-controller';
 import {
     getDadosCadTombo, getNumeroTombo, cadastro, listagem,
     desativar, obterTombo, cadastrarTipo, buscarTipos, cadastrarColetores, buscarColetores,
-    buscarProximoNumeroColetor, alteracao, getNumeroColetor, getCodigoBarraTombo,
-    deletarCodigoBarra, editarCodigoBarra, getUltimoNumeroCodigoBarras,
-    getUltimoNumeroTombo,
+    buscarProximoNumeroColetor, alteracao, getNumeroColetor, getUltimoNumeroTombo, getCodigoBarraTombo,
+    editarCodigoBarra, deletarCodigoBarra, getUltimoNumeroCodigoBarras,
 } from '../controllers/tombos-controller';
 import exportarTombosController from '../controllers/tombos-exportacoes-controller';
 import criaJsonMiddleware from '../middlewares/json-middleware';

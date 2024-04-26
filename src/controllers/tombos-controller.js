@@ -24,6 +24,7 @@ export const cadastro = (request, response, next) => {
         paisagem, identificacao, coletores,
         colecoes_anexas: colecoesAnexas, observacoes,
     } = request.body.json;
+    console.warn(request.body.json);
     let tomboCriado = null;
     let nomeFamilia = '';
     let nomeGenero = '';
@@ -292,6 +293,16 @@ export const cadastro = (request, response, next) => {
             }
             if (localidade.altitude) {
                 jsonTombo.altitude = localidade.altitude;
+            }
+            if (identificacao) {
+                jsonTombo.data_identificacao_dia = identificacao.data_identificacao.dia;
+                jsonTombo.data_identificacao_mes = identificacao.data_identificacao.mes;
+                jsonTombo.data_identificacao_ano = identificacao.data_identificacao.ano;
+            }
+            if (paisagem) {
+                jsonTombo.solo_id = paisagem.solo_id;
+                jsonTombo.relevo_id = paisagem.relevo_id;
+                jsonTombo.vegetacao_id = paisagem.vegetacao_id;
             }
             jsonTombo = {
                 ...jsonTombo,
