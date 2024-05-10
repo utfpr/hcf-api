@@ -27,6 +27,7 @@ const {
     Genero,
     Subespecie,
     ColecaoAnexa,
+    TomboIdentificador,
 } = models;
 
 export const listagem = (request, response, next) => {
@@ -702,7 +703,15 @@ const comparaDoisTombosOperador = (tombo, tomboAlterado) => {
                 parametros.push(insereNoParametro('1', 'Coleções anexas tipo', tombo.colecoes_anexa.tipo, tomboAlterado.colecoes_anexas.tipo));
             }
             if (tombo.colecoes_anexa.observacoes !== tomboAlterado.colecoes_anexas.observacoes) {
-                parametros.push(insereNoParametro('2', 'Coleções anexas observacoes', tombo.colecoes_anexa.observacoes, tomboAlterado.colecoes_anexas.observacoes));
+            // eslint-disable-next-line
+              parametros.push(
+                    insereNoParametro(
+                        '2',
+                        'Coleções anexas observacoes',
+                        tombo.colecoes_anexa.observacoes,
+                        tomboAlterado.colecoes_anexas.observacoes
+                    )
+                );
             }
         } else {
             if (tomboAlterado.colecoes_anexas.tipo) {
@@ -1087,8 +1096,40 @@ export const visualizarAlteracaoOperador = (json, alteracao, transaction) => {
     });
 };
 
-export const aprovarComJson = (changes, hcf, response, next) => {
+async function atualizarIdentificadoresDeTombo(tomboHcf, novosIdentificadores) {
+    return sequelize.transaction(async transaction => {
+        await TomboIdentificador.destroy({
+            where: {
+                tombo_hcf: tomboHcf,
+            },
+            transaction,
+        });
+
+        const novosIdentificadoresPromise = novosIdentificadores.map((identificadorId, index) =>
+            TomboIdentificador.create(
+                {
+                    tombo_hcf: tomboHcf,
+                    identificador_id: identificadorId,
+                    ordem: index + 1,
+                },
+                {
+                    transaction,
+                }
+            )
+        );
+
+        await Promise.all(novosIdentificadoresPromise);
+    });
+}
+
+export const aprovarComJson = async (changes, hcf, response, next) => {
     const alteracao = changes;
+
+    if (alteracao.identificadores) {
+        // identificadoresObjeto.usuario_id = alteracao.identificadores;
+        await atualizarIdentificadoresDeTombo(hcf, alteracao.identificadores);
+    }
+
     return Promise.resolve()
         .then(() => {
             if (alteracao.familia_id) {
@@ -1142,7 +1183,8 @@ export const aprovarComJson = (changes, hcf, response, next) => {
                 }
             }
 
-            if (alteracao.cidade_id || alteracao.complemento || alteracao.solo_id || alteracao.descricao || alteracao.relevo_id || alteracao.vegetacao_id || alteracao.fase_sucessional_id) {
+            if (alteracao.cidade_id || alteracao.complemento || alteracao.solo_id || alteracao.descricao || alteracao.relevo_id
+            || alteracao.vegetacao_id || alteracao.fase_sucessional_id) {
                 const tomboColetaAlteracao = {};
 
                 if (alteracao.cidade_id) {
@@ -1229,9 +1271,6 @@ export const aprovarComJson = (changes, hcf, response, next) => {
 
             if (alteracao.identificadores || alteracao.data_identificacao) {
                 const identificadoresObjeto = {};
-                if (alteracao.identificadores) {
-                    identificadoresObjeto.usuario_id = alteracao.identificadores;
-                }
 
                 if (alteracao.data_identificacao) {
                     if (alteracao.data_identificacao.dia) {
