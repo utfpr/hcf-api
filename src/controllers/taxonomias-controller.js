@@ -564,7 +564,7 @@ export const buscarEspecies = (request, response, next) => {
     Promise.resolve()
         .then(() =>
             Especie.findAndCountAll({
-                attributes: ['id', 'nome', 'genero_id', 'autor_id'],
+                attributes: ['id', 'nome'],
                 order: [['created_at', 'DESC']],
                 limit: limite,
                 offset,
@@ -760,7 +760,7 @@ export const cadastrarSubespecie = (request, response, next) => {
 
 export const buscarSubespecies = (request, response, next) => {
     const { limite, pagina, offset } = request.paginacao;
-    const { subespecie, especie_id: especieId } = request.query;
+    const { subespecie, especie_id: especieId, familia_nome: familiaNome, genero_nome: generoNome, especie_nome: especieNome } = request.query;
     let where;
     where = {
         ativo: 1,
@@ -777,14 +777,54 @@ export const buscarSubespecies = (request, response, next) => {
             especie_id: especieId,
         };
     }
+
+    const familiaWhere = {};
+    if (familiaNome) {
+        familiaWhere.nome = { [Op.like]: `%${familiaNome}%` };
+    }
+
+    const generoWhere = {};
+    if (generoNome) {
+        generoWhere.nome = { [Op.like]: `%${generoNome}%` };
+    }
+
+    const especieWhere = {};
+    if (especieNome) {
+        especieWhere.nome = { [Op.like]: `%${especieNome}%` };
+    }
     Promise.resolve()
-        .then(() => Subespecie.findAndCountAll({
-            attributes: ['id', 'nome', 'especie_id', 'autor_id'],
-            order: [['created_at', 'DESC']],
-            limit: limite,
-            offset,
-            where,
-        }))
+        .then(() =>
+            Subespecie.findAndCountAll({
+                attributes: ['id', 'nome'],
+                order: [['created_at', 'DESC']],
+                limit: limite,
+                offset,
+                where,
+                include: [
+                    {
+                        model: Familia,
+                        attributes: ['id', 'nome'],
+                        where: familiaWhere,
+                    },
+                    {
+                        model: Genero,
+                        attributes: ['id', 'nome'],
+                        where: generoWhere,
+                    },
+                    {
+                        model: Especie,
+                        attributes: ['id', 'nome'],
+                        where: especieWhere,
+                        as: 'especie',
+                    },
+                    {
+                        model: Autor,
+                        attributes: ['id', 'nome'],
+                        as: 'autor',
+                    },
+                ],
+            })
+        )
         .then(subespecies => {
             response.status(codigos.LISTAGEM).json({
                 metadados: {
