@@ -172,7 +172,7 @@ export const cadastrarSubfamilia = (request, response, next) => {
 
 export const buscarSubfamilia = (request, response, next) => {
     const { limite, pagina, offset } = request.paginacao;
-    const { subfamilia, familia_id: familiaId } = request.query;
+    const { subfamilia, familia_id: familiaId, familia_nome: familiaNome } = request.query;
     let where;
     where = {
         ativo: 1,
@@ -189,14 +189,34 @@ export const buscarSubfamilia = (request, response, next) => {
             familia_id: familiaId,
         };
     }
+
+    const familiaWhere = {};
+    if (familiaNome) {
+        familiaWhere.nome = { [Op.like]: `%${familiaNome}%` };
+    }
+
     Promise.resolve()
-        .then(() => Subfamilia.findAndCountAll({
-            attributes: ['id', 'nome', 'familia_id'],
-            order: [['created_at', 'DESC']],
-            limit: limite,
-            offset,
-            where,
-        }))
+        .then(() =>
+            Subfamilia.findAndCountAll({
+                attributes: ['id', 'nome'],
+                order: [['created_at', 'DESC']],
+                limit: limite,
+                offset,
+                where,
+                include: [
+                    {
+                        model: Familia,
+                        attributes: ['id', 'nome'],
+                        where: familiaWhere,
+                    },
+                    {
+                        model: Autor,
+                        attributes: ['id', 'nome'],
+                        as: 'autor',
+                    },
+                ],
+            })
+        )
         .then(subfamilias => {
             response.status(codigos.LISTAGEM).json({
                 metadados: {
