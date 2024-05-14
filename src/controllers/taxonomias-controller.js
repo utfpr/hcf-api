@@ -533,7 +533,7 @@ export const cadastrarEspecie = (request, response, next) => {
 
 export const buscarEspecies = (request, response, next) => {
     const { limite, pagina, offset } = request.paginacao;
-    const { especie, genero_id: generoId } = request.query;
+    const { especie, genero_id: generoId, familia_nome: familiaNome, genero_nome: generoNome } = request.query;
     let where;
     where = {
         ativo: 1,
@@ -550,14 +550,44 @@ export const buscarEspecies = (request, response, next) => {
             genero_id: generoId,
         };
     }
+
+    const familiaWhere = {};
+    if (familiaNome) {
+        familiaWhere.nome = { [Op.like]: `%${familiaNome}%` };
+    }
+
+    const generoWhere = {};
+    if (generoNome) {
+        generoWhere.nome = { [Op.like]: `%${generoNome}%` };
+    }
+
     Promise.resolve()
-        .then(() => Especie.findAndCountAll({
-            attributes: ['id', 'nome', 'genero_id', 'autor_id'],
-            order: [['created_at', 'DESC']],
-            limit: limite,
-            offset,
-            where,
-        }))
+        .then(() =>
+            Especie.findAndCountAll({
+                attributes: ['id', 'nome', 'genero_id', 'autor_id'],
+                order: [['created_at', 'DESC']],
+                limit: limite,
+                offset,
+                where,
+                include: [
+                    {
+                        model: Familia,
+                        attributes: ['id', 'nome'],
+                        where: familiaWhere,
+                    },
+                    {
+                        model: Genero,
+                        attributes: ['id', 'nome'],
+                        where: generoWhere,
+                    },
+                    {
+                        model: Autor,
+                        attributes: ['id', 'nome'],
+                        as: 'autor',
+                    },
+                ],
+            })
+        )
         .then(especies => {
             response.status(codigos.LISTAGEM).json({
                 metadados: {
