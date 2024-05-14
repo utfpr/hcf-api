@@ -343,7 +343,7 @@ export const cadastrarGenero = (request, response, next) => {
 
 export const buscarGeneros = (request, response, next) => {
     const { limite, pagina, offset } = request.paginacao;
-    const { genero, familia_id: familiaId } = request.query;
+    const { genero, familia_id: familiaId, familia_nome: familiaNome } = request.query;
     let where;
     where = {
         ativo: 1,
@@ -360,14 +360,28 @@ export const buscarGeneros = (request, response, next) => {
             familia_id: familiaId,
         };
     }
+
+    const familiaWhere = {};
+    if (familiaNome) {
+        familiaWhere.nome = { [Op.like]: `%${familiaNome}%` };
+    }
     Promise.resolve()
-        .then(() => Genero.findAndCountAll({
-            attributes: ['id', 'nome', 'familia_id'],
-            order: [['created_at', 'DESC']],
-            limit: limite,
-            offset,
-            where,
-        }))
+        .then(() =>
+            Genero.findAndCountAll({
+                attributes: ['id', 'nome'],
+                order: [['created_at', 'DESC']],
+                limit: limite,
+                offset,
+                where,
+                include: [
+                    {
+                        model: Familia,
+                        attributes: ['id', 'nome'],
+                        where: familiaWhere,
+                    },
+                ],
+            })
+        )
         .then(generos => {
             response.status(codigos.LISTAGEM).json({
                 metadados: {
