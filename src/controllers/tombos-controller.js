@@ -15,7 +15,7 @@ import codigos from '../resources/codigos-http';
 const {
     Solo, Relevo, Cidade, Estado, Vegetacao, FaseSucessional, Pais, Tipo, LocalColeta, Familia, sequelize,
     Genero, Subfamilia, Autor, Coletor, Variedade, Subespecie, TomboFoto, Identificador,
-    ColecaoAnexa, Especie, Herbario, Tombo, Alteracao, TomboColetor, Sequelize: { Op },
+    ColecaoAnexa, Especie, Herbario, Tombo, Alteracao, TomboColetor, TomboIdentificador, Sequelize: { Op },
 } = models;
 
 export const cadastro = (request, response, next) => {
@@ -346,12 +346,29 @@ export const cadastro = (request, response, next) => {
                 throw new BadRequestExeption(409);
             }
             if (tomboCriado !== null) {
-                if (identificacao && identificacao.identificador_id) {
+                if (identificacao && identificacao.identificadores && identificacao.identificadores.length > 0) {
+                    const promises = [];
+                    identificacao.identificadores.forEach(
+                        (identificador_id, index) => {
+                            const isPrincipal = index === 0;
+                            const dadosIdentificadores = {
+                                identificador_id,
+                                tombo_hcf: tomboCriado.hcf,
+                                ordem: index + 1,
+                                principal: isPrincipal,
+                            };
+                            promises.push(
+                                TomboIdentificador.create(dadosIdentificadores, {
+                                    transaction,
+                                })
+                            );
+                        }
+                    );
                     let status = 'ESPERANDO';
                     const jsonTaxonomia = {};
                     const dados = {
                         tombo_hcf: tomboCriado.hcf,
-                        usuario_id: identificacao.identificador_id,
+                        usuario_id: identificacao.identificadores[0],
                         status,
                         ativo: true,
                         identificacao: 1,
@@ -472,40 +489,40 @@ function alteracaoIdentificador(request, transaction) {
 function alteracaoCuradorouOperador(request, response, next) {
     const { body } = request;
 
-    const nomePopular = body.json.principal.nome_popular;
-    const entidadeId = body.json.principal.entidade_id;
-    const numeroColeta = body.json.principal.numero_coleta;
-    const dataColeta = body.json.principal.data_coleta;
-    const tipoId = body.json.principal.tipo_id;
-    const { cor } = body.json.principal;
+    const nomePopular = body.principal.nome_popular;
+    const entidadeId = body.principal.entidade_id;
+    const numeroColeta = body.principal.numero_coleta;
+    const dataColeta = body.principal.data_coleta;
+    const tipoId = body.principal.tipo_id;
+    const { cor } = body.principal;
 
-    const familiaId = body.json.taxonomia.familia_id;
-    const subfamiliaId = body.json.taxonomia.sub_familia_id;
-    const generoId = body.json.taxonomia.genero_id;
-    const especieId = body.json.taxonomia.especie_id;
-    const subespecieId = body.json.taxonomia.sub_especie_id;
-    const variedadeId = body.json.taxonomia.variedade_id;
+    const familiaId = body.taxonomia.familia_id;
+    const subfamiliaId = body.taxonomia.sub_familia_id;
+    const generoId = body.taxonomia.genero_id;
+    const especieId = body.taxonomia.especie_id;
+    const subespecieId = body.taxonomia.sub_especie_id;
+    const variedadeId = body.taxonomia.variedade_id;
 
-    const { latitude } = body.json.localidade;
-    const { longitude } = body.json.localidade;
-    const { altitude } = body.json.localidade;
-    const cidadeId = body.json.localidade.cidade_id;
-    const { complemento } = body.json.localidade;
+    const { latitude } = body.localidade;
+    const { longitude } = body.localidade;
+    const { altitude } = body.localidade;
+    const cidadeId = body.localidade.cidade_id;
+    const { complemento } = body.localidade;
 
-    const soloId = body.json.paisagem.solo_id;
-    const { descricao } = body.json.paisagem;
-    const relevoId = body.json.paisagem.relevo_id;
-    const vegetacaoId = body.json.paisagem.vegetacao_id;
-    const faseSucessionalId = body.json.paisagem.fase_sucessional_id;
+    const soloId = body.paisagem.solo_id;
+    const { descricao } = body.paisagem;
+    const relevoId = body.paisagem.relevo_id;
+    const vegetacaoId = body.paisagem.vegetacao_id;
+    const faseSucessionalId = body.paisagem.fase_sucessional_id;
 
-    const identificadorId = body.json.identificacao.identificador_id;
-    const dataIdentificacao = body.json.identificacao.data_identificacao;
+    const { identificadores } = body.identificacao;
+    const dataIdentificacao = body.identificacao.data_identificacao;
 
-    const { coletores } = body.json;
-    const colecoesAnexasTipo = body.json.colecoes_anexas.tipo;
-    const colecoesAnexasObservacoes = body.json.colecoes_anexas.observacoes;
+    const { coletores } = body;
+    const colecoesAnexasTipo = body.colecoes_anexas.tipo;
+    const colecoesAnexasObservacoes = body.colecoes_anexas.observacoes;
 
-    const { observacoes } = body.json;
+    const { observacoes } = body;
 
     const { tombo_id: tomboId } = request.params;
     const update = {};
@@ -593,8 +610,8 @@ function alteracaoCuradorouOperador(request, response, next) {
         update.fase_sucessional_id = faseSucessionalId;
     }
 
-    if (identificadorId) {
-        update.identificadores = identificadorId;
+    if (identificadores && identificadores.length > 0) {
+        update.identificadores = identificadores;
     }
 
     if (dataIdentificacao) {
