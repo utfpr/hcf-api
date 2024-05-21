@@ -24,7 +24,6 @@ export const cadastro = (request, response, next) => {
         paisagem, identificacao, coletores,
         colecoes_anexas: colecoesAnexas, observacoes,
     } = request.body.json;
-    console.warn(request.body.json);
     let tomboCriado = null;
     let nomeFamilia = '';
     let nomeGenero = '';

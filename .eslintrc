@@ -63,8 +63,7 @@
         "no-unused-vars": [
             "warn",
             {
-                "args": "all",
-                "argsIgnorePattern": "^_"
+                "args": "none"
             }
         ],
         "comma-dangle": [
