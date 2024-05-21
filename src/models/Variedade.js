@@ -9,6 +9,7 @@ function associate(modelos) {
 
     Variedade.belongsTo(Autor, {
         foreignKey: 'autor_id',
+        as: 'autor',
     });
     Variedade.belongsTo(Genero, {
         foreignKey: 'genero_id',
@@ -18,6 +19,7 @@ function associate(modelos) {
     });
     Variedade.belongsTo(Especie, {
         foreignKey: 'especie_id',
+        as: 'especie',
     });
 }
 

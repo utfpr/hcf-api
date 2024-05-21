@@ -7,6 +7,7 @@ function associate(modelos) {
 
     Subfamilia.belongsTo(Autor, {
         foreignKey: 'autor_id',
+        as: 'autor',
     });
     Subfamilia.belongsTo(Familia, {
         foreignKey: 'familia_id',

@@ -172,7 +172,7 @@ export const cadastrarSubfamilia = (request, response, next) => {
 
 export const buscarSubfamilia = (request, response, next) => {
     const { limite, pagina, offset } = request.paginacao;
-    const { subfamilia, familia_id: familiaId } = request.query;
+    const { subfamilia, familia_id: familiaId, familia_nome: familiaNome } = request.query;
     let where;
     where = {
         ativo: 1,
@@ -189,14 +189,34 @@ export const buscarSubfamilia = (request, response, next) => {
             familia_id: familiaId,
         };
     }
+
+    const familiaWhere = {};
+    if (familiaNome) {
+        familiaWhere.nome = { [Op.like]: `%${familiaNome}%` };
+    }
+
     Promise.resolve()
-        .then(() => Subfamilia.findAndCountAll({
-            attributes: ['id', 'nome', 'familia_id'],
-            order: [['created_at', 'DESC']],
-            limit: limite,
-            offset,
-            where,
-        }))
+        .then(() =>
+            Subfamilia.findAndCountAll({
+                attributes: ['id', 'nome'],
+                order: [['created_at', 'DESC']],
+                limit: limite,
+                offset,
+                where,
+                include: [
+                    {
+                        model: Familia,
+                        attributes: ['id', 'nome'],
+                        where: familiaWhere,
+                    },
+                    {
+                        model: Autor,
+                        attributes: ['id', 'nome'],
+                        as: 'autor',
+                    },
+                ],
+            })
+        )
         .then(subfamilias => {
             response.status(codigos.LISTAGEM).json({
                 metadados: {
@@ -323,7 +343,7 @@ export const cadastrarGenero = (request, response, next) => {
 
 export const buscarGeneros = (request, response, next) => {
     const { limite, pagina, offset } = request.paginacao;
-    const { genero, familia_id: familiaId } = request.query;
+    const { genero, familia_id: familiaId, familia_nome: familiaNome } = request.query;
     let where;
     where = {
         ativo: 1,
@@ -340,14 +360,28 @@ export const buscarGeneros = (request, response, next) => {
             familia_id: familiaId,
         };
     }
+
+    const familiaWhere = {};
+    if (familiaNome) {
+        familiaWhere.nome = { [Op.like]: `%${familiaNome}%` };
+    }
     Promise.resolve()
-        .then(() => Genero.findAndCountAll({
-            attributes: ['id', 'nome', 'familia_id'],
-            order: [['created_at', 'DESC']],
-            limit: limite,
-            offset,
-            where,
-        }))
+        .then(() =>
+            Genero.findAndCountAll({
+                attributes: ['id', 'nome'],
+                order: [['created_at', 'DESC']],
+                limit: limite,
+                offset,
+                where,
+                include: [
+                    {
+                        model: Familia,
+                        attributes: ['id', 'nome'],
+                        where: familiaWhere,
+                    },
+                ],
+            })
+        )
         .then(generos => {
             response.status(codigos.LISTAGEM).json({
                 metadados: {
@@ -499,7 +533,7 @@ export const cadastrarEspecie = (request, response, next) => {
 
 export const buscarEspecies = (request, response, next) => {
     const { limite, pagina, offset } = request.paginacao;
-    const { especie, genero_id: generoId } = request.query;
+    const { especie, genero_id: generoId, familia_nome: familiaNome, genero_nome: generoNome } = request.query;
     let where;
     where = {
         ativo: 1,
@@ -516,14 +550,44 @@ export const buscarEspecies = (request, response, next) => {
             genero_id: generoId,
         };
     }
+
+    const familiaWhere = {};
+    if (familiaNome) {
+        familiaWhere.nome = { [Op.like]: `%${familiaNome}%` };
+    }
+
+    const generoWhere = {};
+    if (generoNome) {
+        generoWhere.nome = { [Op.like]: `%${generoNome}%` };
+    }
+
     Promise.resolve()
-        .then(() => Especie.findAndCountAll({
-            attributes: ['id', 'nome', 'genero_id', 'autor_id'],
-            order: [['created_at', 'DESC']],
-            limit: limite,
-            offset,
-            where,
-        }))
+        .then(() =>
+            Especie.findAndCountAll({
+                attributes: ['id', 'nome'],
+                order: [['created_at', 'DESC']],
+                limit: limite,
+                offset,
+                where,
+                include: [
+                    {
+                        model: Familia,
+                        attributes: ['id', 'nome'],
+                        where: familiaWhere,
+                    },
+                    {
+                        model: Genero,
+                        attributes: ['id', 'nome'],
+                        where: generoWhere,
+                    },
+                    {
+                        model: Autor,
+                        attributes: ['id', 'nome'],
+                        as: 'autor',
+                    },
+                ],
+            })
+        )
         .then(especies => {
             response.status(codigos.LISTAGEM).json({
                 metadados: {
@@ -696,7 +760,7 @@ export const cadastrarSubespecie = (request, response, next) => {
 
 export const buscarSubespecies = (request, response, next) => {
     const { limite, pagina, offset } = request.paginacao;
-    const { subespecie, especie_id: especieId } = request.query;
+    const { subespecie, especie_id: especieId, familia_nome: familiaNome, genero_nome: generoNome, especie_nome: especieNome } = request.query;
     let where;
     where = {
         ativo: 1,
@@ -713,14 +777,54 @@ export const buscarSubespecies = (request, response, next) => {
             especie_id: especieId,
         };
     }
+
+    const familiaWhere = {};
+    if (familiaNome) {
+        familiaWhere.nome = { [Op.like]: `%${familiaNome}%` };
+    }
+
+    const generoWhere = {};
+    if (generoNome) {
+        generoWhere.nome = { [Op.like]: `%${generoNome}%` };
+    }
+
+    const especieWhere = {};
+    if (especieNome) {
+        especieWhere.nome = { [Op.like]: `%${especieNome}%` };
+    }
     Promise.resolve()
-        .then(() => Subespecie.findAndCountAll({
-            attributes: ['id', 'nome', 'especie_id', 'autor_id'],
-            order: [['created_at', 'DESC']],
-            limit: limite,
-            offset,
-            where,
-        }))
+        .then(() =>
+            Subespecie.findAndCountAll({
+                attributes: ['id', 'nome'],
+                order: [['created_at', 'DESC']],
+                limit: limite,
+                offset,
+                where,
+                include: [
+                    {
+                        model: Familia,
+                        attributes: ['id', 'nome'],
+                        where: familiaWhere,
+                    },
+                    {
+                        model: Genero,
+                        attributes: ['id', 'nome'],
+                        where: generoWhere,
+                    },
+                    {
+                        model: Especie,
+                        attributes: ['id', 'nome'],
+                        where: especieWhere,
+                        as: 'especie',
+                    },
+                    {
+                        model: Autor,
+                        attributes: ['id', 'nome'],
+                        as: 'autor',
+                    },
+                ],
+            })
+        )
         .then(subespecies => {
             response.status(codigos.LISTAGEM).json({
                 metadados: {
@@ -904,7 +1008,13 @@ export const cadastrarVariedade = (request, response, next) => {
 
 export const buscarVariedades = (request, response, next) => {
     const { limite, pagina, offset } = request.paginacao;
-    const { variedade, especie_id: especieId } = request.query;
+    const {
+        variedade,
+        especie_id: especieId,
+        familia_nome: familiaNome,
+        genero_nome: generoNome,
+        especie_nome: especieNome,
+    } = request.query;
     let where;
     where = {
         ativo: 1,
@@ -921,14 +1031,55 @@ export const buscarVariedades = (request, response, next) => {
             especie_id: especieId,
         };
     }
+
+    const familiaWhere = {};
+    if (familiaNome) {
+        familiaWhere.nome = { [Op.like]: `%${familiaNome}%` };
+    }
+
+    const generoWhere = {};
+    if (generoNome) {
+        generoWhere.nome = { [Op.like]: `%${generoNome}%` };
+    }
+
+    const especieWhere = {};
+    if (especieNome) {
+        especieWhere.nome = { [Op.like]: `%${especieNome}%` };
+    }
+
     Promise.resolve()
-        .then(() => Variedade.findAndCountAll({
-            attributes: ['id', 'nome', 'especie_id', 'autor_id'],
-            order: [['created_at', 'DESC']],
-            limit: limite,
-            offset,
-            where,
-        }))
+        .then(() =>
+            Variedade.findAndCountAll({
+                attributes: ['id', 'nome'],
+                order: [['created_at', 'DESC']],
+                limit: limite,
+                offset,
+                where,
+                include: [
+                    {
+                        model: Familia,
+                        attributes: ['id', 'nome'],
+                        where: familiaWhere,
+                    },
+                    {
+                        model: Genero,
+                        attributes: ['id', 'nome'],
+                        where: generoWhere,
+                    },
+                    {
+                        model: Especie,
+                        attributes: ['id', 'nome'],
+                        where: especieWhere,
+                        as: 'especie',
+                    },
+                    {
+                        model: Autor,
+                        attributes: ['id', 'nome'],
+                        as: 'autor',
+                    },
+                ],
+            })
+        )
         .then(variedades => {
             response.status(codigos.LISTAGEM).json({
                 metadados: {
