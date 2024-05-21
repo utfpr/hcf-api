@@ -140,4 +140,7 @@ export default app => {
 
     app.route('/fichas/tombos/:tombo_id/:imprimir_cod')
         .get(fichaTomboController);
+
+    // app.route('/fichas/tombos/:tombo_id')
+    //     .get(fichaTomboController);
 };
