@@ -14,7 +14,7 @@ function associate(modelos) {
         ColecaoAnexa,
         Usuario,
         Alteracao,
-        TomboColetor,
+        // TomboColetor,
         Relevo,
         Remessa,
         Vegetacao,
@@ -58,14 +58,18 @@ function associate(modelos) {
         foreignKey: 'tombo_hcf',
     });
 
-    Tombo.belongsToMany(Coletor, {
-        through: TomboColetor,
-        foreignKey: 'tombo_hcf',
+    Tombo.belongsTo(Coletor, {
+        foreignKey: 'coletor_id',
     });
 
-    Tombo.hasMany(TomboColetor, {
-        foreignKey: 'tombo_hcf',
-    });
+    // Tombo.belongsToMany(Coletor, {
+    //     through: TomboColetor,
+    //     foreignKey: 'tombo_hcf',
+    // });
+
+    // Tombo.hasMany(TomboColetor, {
+    //     foreignKey: 'tombo_hcf',
+    // });
 
     Tombo.hasMany(Alteracao, {
         as: 'alteracoes_tombos',
@@ -250,6 +254,10 @@ export default (Sequelize, DataTypes) => {
         },
         solo_id: {
             type: DataTypes.INTEGER,
+            allowNull: true,
+        },
+        coletores_complementares: {
+            type: DataTypes.STRING,
             allowNull: true,
         },
     };
