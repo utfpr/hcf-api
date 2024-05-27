@@ -2,7 +2,6 @@ export default (Sequelize, DataTypes) => {
     const attributes = {
         id: {
             type: DataTypes.INTEGER,
-            autoIncrement: true,
             primaryKey: true,
         },
         complementares: {
@@ -34,8 +33,9 @@ export default (Sequelize, DataTypes) => {
     ColetorComplementar.associate = models => {
         const { Tombo } = models;
 
-        ColetorComplementar.hasMany(Tombo, {
-            foreignKey: 'coletor_complementar_id',
+        ColetorComplementar.belongsTo(Tombo, {
+            foreignKey: 'id', // Associa o id do ColetorComplementar ao hcf do Tombo
+            targetKey: 'hcf',
         });
     };
 

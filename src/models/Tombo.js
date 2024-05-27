@@ -71,10 +71,8 @@ function associate(modelos) {
     // Tombo.hasMany(TomboColetor, {
     //     foreignKey: 'tombo_hcf',
     // });
-    Tombo.belongsToMany(ColetorComplementar, {
-        through: 'TomboColetorComplementar',
-        foreignKey: 'tombo_hcf',
-        otherKey: 'coletor_complementar_id',
+    Tombo.hasOne(ColetorComplementar, {
+        foreignKey: 'hcf',
     });
 
     Tombo.hasMany(Alteracao, {
