@@ -8,6 +8,7 @@ function associate(modelos) {
         Especie,
         Genero,
         Coletor,
+        ColetorComplementar,
         Familia,
         Subfamilia,
         Subespecie,
@@ -70,6 +71,11 @@ function associate(modelos) {
     // Tombo.hasMany(TomboColetor, {
     //     foreignKey: 'tombo_hcf',
     // });
+    Tombo.belongsToMany(ColetorComplementar, {
+        through: 'TomboColetorComplementar',
+        foreignKey: 'tombo_hcf',
+        otherKey: 'coletor_complementar_id',
+    });
 
     Tombo.hasMany(Alteracao, {
         as: 'alteracoes_tombos',
@@ -254,10 +260,6 @@ export default (Sequelize, DataTypes) => {
         },
         solo_id: {
             type: DataTypes.INTEGER,
-            allowNull: true,
-        },
-        coletores_complementares: {
-            type: DataTypes.STRING,
             allowNull: true,
         },
     };
