@@ -34,7 +34,7 @@ export default (Sequelize, DataTypes) => {
         const { Tombo } = models;
 
         ColetorComplementar.belongsTo(Tombo, {
-            foreignKey: 'id', // Associa o id do ColetorComplementar ao hcf do Tombo
+            foreignKey: 'id',
             targetKey: 'hcf',
         });
     };
