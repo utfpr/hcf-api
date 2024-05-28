@@ -1073,128 +1073,137 @@ export const obterTombo = (request, response, next) => {
     // eslint-disable-next-line
     // console.error(id);
     Promise.resolve()
-        .then(() => Tombo.findOne({
-            where: {
-                hcf: id,
-                ativo: true,
-                rascunho: 0,
-            },
-            attributes: [
-                'cor',
-                'data_coleta_mes',
-                'data_coleta_ano',
-                'situacao',
-                'nome_cientifico',
-                'hcf',
-                'data_tombo',
-                'data_coleta_dia',
-                'observacao',
-                'nomes_populares',
-                'numero_coleta',
-                'latitude',
-                'longitude',
-                'altitude',
-                'ativo',
-                'rascunho',
-                'data_identificacao_dia',
-                'data_identificacao_mes',
-                'data_identificacao_ano',
-            ],
-            include: [
-                {
-                    model: Herbario,
+        .then(() =>
+            Tombo.findOne({
+                where: {
+                    hcf: id,
+                    ativo: true,
+                    rascunho: 0,
                 },
-                {
-                    as: 'identificadores',
-                    model: Identificador,
-                },
-                {
-                    model: Solo,
-                    attributes: {
-                        exclude: ['updated_at', 'created_at'],
+                attributes: [
+                    'cor',
+                    'data_coleta_mes',
+                    'data_coleta_ano',
+                    'situacao',
+                    'nome_cientifico',
+                    'hcf',
+                    'data_tombo',
+                    'data_coleta_dia',
+                    'observacao',
+                    'nomes_populares',
+                    'numero_coleta',
+                    'latitude',
+                    'longitude',
+                    'altitude',
+                    'ativo',
+                    'rascunho',
+                    'data_identificacao_dia',
+                    'data_identificacao_mes',
+                    'data_identificacao_ano',
+                ],
+                include: [
+                    {
+                        model: Herbario,
                     },
-                },
-                {
-                    model: Relevo,
-                    attributes: {
-                        exclude: ['updated_at', 'created_at'],
+                    {
+                        as: 'identificadores',
+                        model: Identificador,
                     },
-                },
-                {
-                    model: Vegetacao,
-                    attributes: {
-                        exclude: ['updated_at', 'created_at'],
-                    },
-                },
-                {
-                    model: LocalColeta,
-                    include: [
-                        {
-                            model: Cidade,
-                            include: [{
-                                model: Estado,
-                                include: [{
-                                    model: Pais,
-                                }],
-                            }],
+                    {
+                        model: Solo,
+                        attributes: {
+                            exclude: ['updated_at', 'created_at'],
                         },
-                        {
-                            model: FaseSucessional,
-                            attributes: {
-                                exclude: ['updated_at', 'created_at'],
+                    },
+                    {
+                        model: Relevo,
+                        attributes: {
+                            exclude: ['updated_at', 'created_at'],
+                        },
+                    },
+                    {
+                        model: Vegetacao,
+                        attributes: {
+                            exclude: ['updated_at', 'created_at'],
+                        },
+                    },
+                    {
+                        model: LocalColeta,
+                        include: [
+                            {
+                                model: Cidade,
+                                include: [
+                                    {
+                                        model: Estado,
+                                        include: [
+                                            {
+                                                model: Pais,
+                                            },
+                                        ],
+                                    },
+                                ],
                             },
-                        },
-                    ],
-                },
-                {
-                    model: Variedade,
-                    include: {
-                        model: Autor,
-                        attributes: {
-                            exclude: ['updated_at', 'created_at', 'ativo'],
+                            {
+                                model: FaseSucessional,
+                                attributes: {
+                                    exclude: ['updated_at', 'created_at'],
+                                },
+                            },
+                        ],
+                    },
+                    {
+                        model: Variedade,
+                        include: {
+                            model: Autor,
+                            attributes: {
+                                exclude: ['updated_at', 'created_at', 'ativo'],
+                            },
+                            as: 'autor',
                         },
                     },
-                },
-                {
-                    model: Tipo,
-                    attributes: ['id', 'nome'],
-                },
-                {
-                    model: Especie,
-                    include: {
-                        model: Autor,
-                        attributes: {
-                            exclude: ['updated_at', 'created_at', 'ativo'],
+                    {
+                        model: Tipo,
+                        attributes: ['id', 'nome'],
+                    },
+                    {
+                        model: Especie,
+                        include: {
+                            model: Autor,
+                            attributes: {
+                                exclude: ['updated_at', 'created_at', 'ativo'],
+                            },
+                            as: 'autor',
                         },
                     },
-                },
-                {
-                    model: ColecaoAnexa,
-                },
-                {
-                    model: Coletor,
-                    attributes: ['id', 'nome'],
-                },
-                {
-                    model: Genero,
-                },
-                {
-                    model: Familia,
-                },
-                {
-                    model: Subfamilia,
-                },
-                {
-                    model: Subespecie,
-                    include: {
-                        model: Autor,
-                        attributes: {
-                            exclude: ['updated_at', 'created_at', 'ativo'],
+                    {
+                        model: ColecaoAnexa,
+                    },
+                    {
+                        model: Coletor,
+                        attributes: ['id', 'nome'],
+                    },
+                    {
+                        model: Genero,
+                    },
+                    {
+                        model: Familia,
+                    },
+                    {
+                        model: Subfamilia,
+                    },
+                    {
+                        model: Subespecie,
+                        include: {
+                            model: Autor,
+                            attributes: {
+                                exclude: ['updated_at', 'created_at', 'ativo'],
+                            },
+                            as: 'autor',
                         },
                     },
-                },
-            ],
-        }))
+                ],
+            })
+        )
         .then(tombo => {
             if (!tombo) {
                 throw new BadRequestExeption(416);
@@ -1218,7 +1227,8 @@ export const obterTombo = (request, response, next) => {
                 soloInicial: tombo.solo !== null ? tombo.solo.nome : '',
                 relevoInicial: tombo.relevo !== null ? tombo.relevo.nome : '',
                 vegetacaoInicial: tombo.vegetaco !== null ? tombo.vegetaco.nome : '',
-                faseInicial: tombo.locais_coletum !== null && tombo.locais_coletum.fase_sucessional !== null ? tombo.locais_coletum.fase_sucessional.numero : '',
+                faseInicial:
+            tombo.locais_coletum !== null && tombo.locais_coletum.fase_sucessional !== null ? tombo.locais_coletum.fase_sucessional.numero : '',
                 coletoresInicial: tombo.coletores.map(coletor => ({
                     key: `${coletor.id}`,
                     label: coletor.nome,
@@ -1255,7 +1265,8 @@ export const obterTombo = (request, response, next) => {
                     solo: tombo.solo !== null ? tombo.solo.nome : '',
                     relevo: tombo.relevo !== null ? tombo.relevo.nome : '',
                     vegetacao: tombo.vegetaco !== null ? tombo.vegetaco.nome : '',
-                    fase_sucessional: tombo.locais_coletum !== null && tombo.locais_coletum.fase_sucessional !== null ? tombo.locais_coletum.fase_sucessional : '',
+                    fase_sucessional:
+              tombo.locais_coletum !== null && tombo.locais_coletum.fase_sucessional !== null ? tombo.locais_coletum.fase_sucessional : '',
                 },
                 taxonomia: {
                     nome_cientifico: tombo.nome_cientifico !== null ? tombo.nome_cientifico : '',
@@ -1265,15 +1276,15 @@ export const obterTombo = (request, response, next) => {
                     genero: tombo.genero !== null ? tombo.genero.nome : '',
                     especie: {
                         nome: tombo.especy !== null ? tombo.especy.nome : '',
-                        autor: tombo.especy !== null && tombo.especy.autore !== null ? tombo.especy.autore.nome : '',
+                        autor: tombo.especy !== null && tombo.especy.autor !== null ? tombo.especy.autor.nome : '',
                     },
                     sub_especie: {
                         nome: tombo.sub_especy !== null ? tombo.sub_especy.nome : '',
-                        autor: tombo.sub_especy !== null && tombo.sub_especy.autore !== null ? tombo.sub_especy.autore.nome : '',
+                        autor: tombo.sub_especy !== null && tombo.sub_especy.autor !== null ? tombo.sub_especy.autor.nome : '',
                     },
                     variedade: {
                         nome: tombo.variedade !== null ? tombo.variedade.nome : '',
-                        autor: tombo.variedade !== null && tombo.variedade.autore !== null ? tombo.variedade.autore.nome : '',
+                        autor: tombo.variedade !== null && tombo.variedade.autor !== null ? tombo.variedade.autor.nome : '',
                     },
                 },
                 colecao_anexa: {
@@ -1328,20 +1339,24 @@ export const obterTombo = (request, response, next) => {
             resposta.retorno = tombo;
             return resposta;
         })
-        .then(() => Estado.findAll({
-            where: {
-                pais_id: dadosTombo.locais_coletum.cidade?.estado.paise.id,
-            },
-        }))
-        // eslint-disable-next-line no-return-assign
-        .then(estados => resposta.estados = estados)
-        .then(() => Cidade.findAll({
-            where: {
-                estado_id: dadosTombo.locais_coletum.cidade?.estado.id,
-            },
-        }))
-        // eslint-disable-next-line no-return-assign
-        .then(cidades => resposta.cidades = cidades)
+        .then(() =>
+            Estado.findAll({
+                where: {
+                    pais_id: dadosTombo.locais_coletum.cidade?.estado.paise.id,
+                },
+            })
+        )
+    // eslint-disable-next-line no-return-assign
+        .then(estados => (resposta.estados = estados))
+        .then(() =>
+            Cidade.findAll({
+                where: {
+                    estado_id: dadosTombo.locais_coletum.cidade?.estado.id,
+                },
+            })
+        )
+    // eslint-disable-next-line no-return-assign
+        .then(cidades => (resposta.cidades = cidades))
         .then(() => {
             if (dadosTombo.familia) {
                 return Subfamilia.findAll({
@@ -1427,26 +1442,30 @@ export const obterTombo = (request, response, next) => {
                 resposta.variedades = [];
             }
         })
-        .then(() => Alteracao.findOne({
-            where: {
-                tombo_hcf: dadosTombo.hcf,
-                status: 'APROVADO',
-                identificacao: true,
-            },
-            order: [['created_at', 'DESC']],
-        }))
+        .then(() =>
+            Alteracao.findOne({
+                where: {
+                    tombo_hcf: dadosTombo.hcf,
+                    status: 'APROVADO',
+                    identificacao: true,
+                },
+                order: [['created_at', 'DESC']],
+            })
+        )
         .then(alter => {
             if (alter) {
                 resposta.identificacao = alter;
             }
         })
-        .then(() => TomboFoto.findAll({
-            where: {
-                tombo_hcf: id,
-                ativo: 1,
-            },
-            attributes: ['id', 'caminho_foto', 'em_vivo'],
-        }))
+        .then(() =>
+            TomboFoto.findAll({
+                where: {
+                    tombo_hcf: id,
+                    ativo: 1,
+                },
+                attributes: ['id', 'caminho_foto', 'em_vivo'],
+            })
+        )
         .then(fotos => {
             const formatoFotos = [];
             const fotosExsicata = [];
@@ -1470,14 +1489,15 @@ export const obterTombo = (request, response, next) => {
             }
             resposta.fotos_exsicata = fotosExsicata;
             resposta.fotos_vivo = fotosEmVivo;
-            fotos.map(foto => formatoFotos.push({
-                id: foto.id,
-                original: foto.caminho_foto,
-                thumbnail: foto.caminho_foto,
-            }));
+            fotos.map(foto =>
+                formatoFotos.push({
+                    id: foto.id,
+                    original: foto.caminho_foto,
+                    thumbnail: foto.caminho_foto,
+                })
+            );
             resposta.fotos = formatoFotos;
-            response.status(codigos.BUSCAR_UM_ITEM)
-                .json(resposta);
+            response.status(codigos.BUSCAR_UM_ITEM).json(resposta);
         })
         .catch(next);
 };
