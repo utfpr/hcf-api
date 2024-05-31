@@ -15,7 +15,7 @@ import codigos from '../resources/codigos-http';
 const {
     Solo, Relevo, Cidade, Estado, Vegetacao, FaseSucessional, Pais, Tipo, LocalColeta, Familia, sequelize,
     Genero, Subfamilia, Autor, Coletor, Variedade, Subespecie, TomboFoto, Identificador,
-    ColecaoAnexa, Especie, Herbario, Tombo, Alteracao, TomboColetor, TomboIdentificador, Sequelize: { Op },
+    ColecaoAnexa, Especie, Herbario, Tombo, Alteracao, TomboColetor, TomboIdentificador, ColetorComplementar, Sequelize: { Op },
 } = models;
 
 export const cadastro = (request, response, next) => {
@@ -1183,6 +1183,11 @@ export const obterTombo = (request, response, next) => {
                         attributes: ['id', 'nome'],
                     },
                     {
+                        model: ColetorComplementar,
+                        as: 'coletor_complementar',
+                        attributes: ['complementares'],
+                    },
+                    {
                         model: Genero,
                     },
                     {
@@ -1211,6 +1216,8 @@ export const obterTombo = (request, response, next) => {
 
             dadosTombo = tombo;
 
+            // console.log(tombo);
+
             resposta = {
                 herbarioInicial: tombo.herbario !== null ? tombo.herbario.id : '',
                 localidadeInicial: tombo.cor !== null ? tombo.cor : '',
@@ -1228,11 +1235,23 @@ export const obterTombo = (request, response, next) => {
                 relevoInicial: tombo.relevo !== null ? tombo.relevo.nome : '',
                 vegetacaoInicial: tombo.vegetaco !== null ? tombo.vegetaco.nome : '',
                 faseInicial:
-            tombo.locais_coletum !== null && tombo.locais_coletum.fase_sucessional !== null ? tombo.locais_coletum.fase_sucessional.numero : '',
-                coletoresInicial: tombo.coletores.map(coletor => ({
-                    key: `${coletor.id}`,
-                    label: coletor.nome,
-                })),
+                tombo.locais_coletum !== null && tombo.locais_coletum.fase_sucessional !== null ? tombo.locais_coletum.fase_sucessional.numero : '',
+                //   coletoresInicial: tombo.coletores.map((coletor) => ({
+                //     key: `${coletor.id}`,
+                //     label: coletor.nome,
+                //   })),
+                coletor: tombo.coletore
+                    ? {
+                        id: tombo.coletore.id,
+                        nome: tombo.coletore.nome,
+                    }
+                    : null,
+                // coletorComplementar: tombo.coletorComplementar
+                //     ? {
+                //         hcf: tombo.coletorComplementar.hcf,
+                //         complementares: tombo.coletorComplementar.complementares,
+                //     }
+                //     : '',
                 colecaoInicial: tombo.colecoes_anexa !== null ? tombo.colecoes_anexa.tipo : '',
                 complementoInicial: tombo.localizacao !== null && tombo.localizacao !== undefined ? tombo.localizacao.complemento : '',
                 hcf: tombo.hcf,
@@ -1266,7 +1285,7 @@ export const obterTombo = (request, response, next) => {
                     relevo: tombo.relevo !== null ? tombo.relevo.nome : '',
                     vegetacao: tombo.vegetaco !== null ? tombo.vegetaco.nome : '',
                     fase_sucessional:
-              tombo.locais_coletum !== null && tombo.locais_coletum.fase_sucessional !== null ? tombo.locais_coletum.fase_sucessional : '',
+                  tombo.locais_coletum !== null && tombo.locais_coletum.fase_sucessional !== null ? tombo.locais_coletum.fase_sucessional : '',
                 },
                 taxonomia: {
                     nome_cientifico: tombo.nome_cientifico !== null ? tombo.nome_cientifico : '',

@@ -1,8 +1,13 @@
+// ColetorComplementar.js
 export default (Sequelize, DataTypes) => {
     const attributes = {
-        id: {
+        hcf: {
             type: DataTypes.INTEGER,
             primaryKey: true,
+            references: {
+                model: 'tombos',
+                key: 'hcf',
+            },
         },
         complementares: {
             type: DataTypes.STRING,
@@ -28,14 +33,15 @@ export default (Sequelize, DataTypes) => {
         underscored: true,
     };
 
-    const ColetorComplementar = Sequelize.define('ColetorComplementar', attributes, options);
+    const ColetorComplementar = Sequelize.define('coletores_complementares', attributes, options);
 
     ColetorComplementar.associate = models => {
         const { Tombo } = models;
 
         ColetorComplementar.belongsTo(Tombo, {
-            foreignKey: 'id',
+            foreignKey: 'hcf',
             targetKey: 'hcf',
+            as: 'tombo',
         });
     };
 

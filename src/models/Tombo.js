@@ -73,6 +73,7 @@ function associate(modelos) {
     // });
     Tombo.hasOne(ColetorComplementar, {
         foreignKey: 'hcf',
+        as: 'coletor_complementar',
     });
 
     Tombo.hasMany(Alteracao, {
