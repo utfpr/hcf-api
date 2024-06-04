@@ -25,7 +25,7 @@ export const cadastro = (request, response, next) => {
         localidade,
         paisagem,
         identificacao,
-        coletores,
+        coletor,
         // eslint-disable-next-line @typescript-eslint/naming-convention
         coletor_complementar,
         colecoes_anexas: colecoesAnexas,
@@ -284,8 +284,9 @@ export const cadastro = (request, response, next) => {
                     numero_coleta: principal.numero_coleta,
                     local_coleta_id: principal.local_coleta_id,
                     cor: principal.cor,
-                    coletor_id: coletores[0],
+                    coletor_id: coletor,
                 };
+
                 if (observacoes) {
                     jsonTombo.observacao = observacoes;
                 }
@@ -318,11 +319,11 @@ export const cadastro = (request, response, next) => {
                 if (taxonomia) {
                     jsonTombo = {
                         ...jsonTombo,
+                        // eslint-disable-next-line max-len
                         ...pick(taxonomia, ['nome_cientifico', 'variedade_id', 'especie_id', 'genero_id', 'familia_id', 'sub_familia_id', 'sub_especie_id']),
                     };
                 }
                 if (colecoesAnexas && colecoesAnexas.id) {
-                    // is
                     jsonTombo.colecao_anexa_id = colecoesAnexas.id;
                 }
                 if (request.usuario.tipo_usuario_id === 2 || request.usuario.tipo_usuario_id === 3) {
@@ -340,16 +341,40 @@ export const cadastro = (request, response, next) => {
                 if (request.usuario.tipo_usuario_id === 1) {
                     status = 'APROVADO';
                 }
+
+                const dadosComplementares = coletor_complementar.complementares
+                    ? {
+                        hcf: tombo.hcf,
+                        complementares: coletor_complementar.complementares,
+                    }
+                    : {};
+
                 const dados = {
                     tombo_hcf: tombo.hcf,
                     usuario_id: request.usuario.id,
                     status,
-                    tombo_json: JSON.stringify(tombo),
+                    tombo_json: JSON.stringify({ ...tombo.toJSON(), complementares: dadosComplementares }),
                     ativo: true,
                     identificacao: 0,
                 };
                 tomboCriado = tombo;
-                return Alteracao.create(dados, { transaction });
+
+                return Alteracao.create(dados, { transaction }).then(alteracaoTomboCriado => {
+                    if (!alteracaoTomboCriado) {
+                        throw new BadRequestExeption(409);
+                    }
+
+                    if (coletor_complementar && coletor_complementar.complementares) {
+                        const jsonColetorComplementar = {
+                            hcf: principal.hcf,
+                            complementares: coletor_complementar.complementares,
+                        };
+
+                        return ColetorComplementar.create(jsonColetorComplementar, { transaction });
+                    }
+
+                    return alteracaoTomboCriado;
+                });
             })
         // /////////////// CADASTRA O INDETIFICADOR ///////////////
             .then(alteracaoTomboCriado => {
@@ -421,18 +446,6 @@ export const cadastro = (request, response, next) => {
                         }
                         return Alteracao.create(dados, { transaction });
                     }
-                }
-                return undefined;
-            })
-        // /////////////// CADASTRA O COLETOR COMPLEMENTAR///////////////
-            .then(() => {
-                if (coletor_complementar && coletor_complementar.complementares) {
-                    const jsonColetorComplementar = {
-                        hcf: principal.hcf,
-                        complementares: coletor_complementar.complementares, // Utiliza a string completa fornecida
-                    };
-
-                    return ColetorComplementar.create(jsonColetorComplementar, { transaction });
                 }
                 return undefined;
             });
@@ -524,6 +537,7 @@ function alteracaoCuradorouOperador(request, response, next) {
     const dataIdentificacao = body?.identificacao?.data_identificacao;
 
     const { coletores } = body || null;
+    const { complementares } = body?.coletor_complementar?.complementares || null;
     const colecoesAnexasTipo = body?.colecoes_anexas?.tipo;
     const colecoesAnexasObservacoes = body?.colecoes_anexas?.observacoes;
 
@@ -625,6 +639,10 @@ function alteracaoCuradorouOperador(request, response, next) {
 
     if (coletores) {
         update.coletores = coletores;
+    }
+
+    if (complementares) {
+        update.complementares = complementares;
     }
 
     if (colecoesAnexasTipo) {
