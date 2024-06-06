@@ -15,14 +15,21 @@ import codigos from '../resources/codigos-http';
 const {
     Solo, Relevo, Cidade, Estado, Vegetacao, FaseSucessional, Pais, Tipo, LocalColeta, Familia, sequelize,
     Genero, Subfamilia, Autor, Coletor, Variedade, Subespecie, TomboFoto, Identificador,
-    ColecaoAnexa, Especie, Herbario, Tombo, Alteracao, TomboColetor, TomboIdentificador, Sequelize: { Op },
+    ColecaoAnexa, Especie, Herbario, Tombo, Alteracao, TomboColetor, TomboIdentificador, ColetorComplementar, Sequelize: { Op },
 } = models;
 
 export const cadastro = (request, response, next) => {
     const {
-        principal, taxonomia, localidade,
-        paisagem, identificacao, coletores,
-        colecoes_anexas: colecoesAnexas, observacoes,
+        principal,
+        taxonomia,
+        localidade,
+        paisagem,
+        identificacao,
+        coletor,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        coletor_complementar,
+        colecoes_anexas: colecoesAnexas,
+        observacoes,
     } = request.body.json;
     let tomboCriado = null;
     let nomeFamilia = '';
@@ -32,334 +39,352 @@ export const cadastro = (request, response, next) => {
     let nomeSubespecie = '';
     let nomeVariedade = '';
 
-    const callback = transaction => Promise.resolve()
-        .then(() => {
+    const callback = transaction =>
+        Promise.resolve()
+            .then(() => {
+                if (!paisagem || !paisagem.solo_id) {
+                    return undefined;
+                }
 
-            if (!paisagem || !paisagem.solo_id) {
+                const where = {
+                    id: paisagem.solo_id,
+                };
+
+                return Solo.findOne({ where, transaction });
+            })
+            .then(solo => {
+                if (paisagem && paisagem.solo_id) {
+                    if (!solo) {
+                        throw new BadRequestExeption(528);
+                    }
+                }
+                if (paisagem && paisagem.relevo_id) {
+                    return Relevo.findOne({
+                        where: {
+                            id: paisagem.relevo_id,
+                        },
+                        transaction,
+                    });
+                }
                 return undefined;
-            }
-
-            const where = {
-                id: paisagem.solo_id,
-            };
-
-            return Solo.findOne({ where, transaction });
-        })
-        .then(solo => {
-            if (paisagem && paisagem.solo_id) {
-                if (!solo) {
-                    throw new BadRequestExeption(528);
+            })
+            .then(relevo => {
+                if (paisagem && paisagem.relevo_id) {
+                    if (!relevo) {
+                        throw new BadRequestExeption(529);
+                    }
                 }
-            }
-            if (paisagem && paisagem.relevo_id) {
-                return Relevo.findOne({
-                    where: {
-                        id: paisagem.relevo_id,
-                    },
-                    transaction,
-                });
-            }
-            return undefined;
-        })
-        .then(relevo => {
-            if (paisagem && paisagem.relevo_id) {
-                if (!relevo) {
-                    throw new BadRequestExeption(529);
+                if (paisagem && paisagem.vegetacao_id) {
+                    return Vegetacao.findOne({
+                        where: {
+                            id: paisagem.vegetacao_id,
+                        },
+                        transaction,
+                    });
                 }
-            }
-            if (paisagem && paisagem.vegetacao_id) {
-                return Vegetacao.findOne({
-                    where: {
-                        id: paisagem.vegetacao_id,
-                    },
-                    transaction,
-                });
-            }
-            return undefined;
-        })
-        .then(vegetacao => {
-            if (paisagem && paisagem.vegetacao_id) {
-                if (!vegetacao) {
-                    throw new BadRequestExeption(530);
+                return undefined;
+            })
+            .then(vegetacao => {
+                if (paisagem && paisagem.vegetacao_id) {
+                    if (!vegetacao) {
+                        throw new BadRequestExeption(530);
+                    }
                 }
-            }
-            if (paisagem && paisagem.fase_sucessional_id) {
-                return FaseSucessional.findOne({
-                    where: {
-                        numero: paisagem.fase_sucessional_id,
-                    },
-                    transaction,
-                });
-            }
-            return undefined;
-        })
-        .then(fase => {
-            if (paisagem && paisagem.fase_sucessional_id) {
-                if (!fase) {
-                    throw new BadRequestExeption(531);
+                if (paisagem && paisagem.fase_sucessional_id) {
+                    return FaseSucessional.findOne({
+                        where: {
+                            numero: paisagem.fase_sucessional_id,
+                        },
+                        transaction,
+                    });
                 }
-            }
-            return undefined;
-        })
-        .then(() => {
-            let json = {};
-            // /////////CRIA LOCAL DE COLETA////////////
-            if (paisagem) {
-                json = pick(paisagem, ['descricao', 'solo_id', 'relevo_id', 'vegetacao_id', 'fase_sucessional_id']);
-            }
-            if (localidade.complemento) {
-                json.complemento = localidade.complemento;
-            }
-            json.cidade_id = localidade.cidade_id;
-            return LocalColeta.create(json, { transaction });
-        })
-        .then(localColeta => {
-            if (!localColeta) {
-                throw new BadRequestExeption(400);
-            }
-            principal.local_coleta_id = localColeta.id;
-        })
+                return undefined;
+            })
+            .then(fase => {
+                if (paisagem && paisagem.fase_sucessional_id) {
+                    if (!fase) {
+                        throw new BadRequestExeption(531);
+                    }
+                }
+                return undefined;
+            })
+            .then(() => {
+                let json = {};
+                // /////////CRIA LOCAL DE COLETA////////////
+                if (paisagem) {
+                    json = pick(paisagem, ['descricao', 'solo_id', 'relevo_id', 'vegetacao_id', 'fase_sucessional_id']);
+                }
+                if (localidade.complemento) {
+                    json.complemento = localidade.complemento;
+                }
+                json.cidade_id = localidade.cidade_id;
+                return LocalColeta.create(json, { transaction });
+            })
+            .then(localColeta => {
+                if (!localColeta) {
+                    throw new BadRequestExeption(400);
+                }
+                principal.local_coleta_id = localColeta.id;
+            })
         // //////////////CRIA COLECOES ANEXAS///////////
-        .then(() => {
-            if (colecoesAnexas) {
-                const object = pick(colecoesAnexas, ['tipo', 'observacoes']);
-                return ColecaoAnexa.create(object, { transaction });
-            }
-            return undefined;
-        })
-        .then(colecao => {
-            if (colecoesAnexas) {
-                if (!colecao) {
-                    throw new BadRequestExeption(401);
+            .then(() => {
+                if (colecoesAnexas) {
+                    const object = pick(colecoesAnexas, ['tipo', 'observacoes']);
+                    return ColecaoAnexa.create(object, { transaction });
                 }
-                colecoesAnexas.id = colecao.id;
-            }
-            return undefined;
-        })
+                return undefined;
+            })
+            .then(colecao => {
+                if (colecoesAnexas) {
+                    if (!colecao) {
+                        throw new BadRequestExeption(401);
+                    }
+                    colecoesAnexas.id = colecao.id;
+                }
+                return undefined;
+            })
         // ///////// VALIDA A TAXONOMIA E A INSERE NO NOME CIENTIFICO //////////
-        .then(() => {
-            if (taxonomia && taxonomia.familia_id) {
-                return Familia.findOne({
-                    where: {
-                        id: taxonomia.familia_id,
-                    },
-                    transaction,
-                });
-            }
-            return undefined;
-        })
-        .then(familia => {
-            if (taxonomia && taxonomia.familia_id) {
-                if (!familia) {
-                    throw new BadRequestExeption(402);
+            .then(() => {
+                if (taxonomia && taxonomia.familia_id) {
+                    return Familia.findOne({
+                        where: {
+                            id: taxonomia.familia_id,
+                        },
+                        transaction,
+                    });
                 }
-                taxonomia.nome_cientifico = familia.nome;
-                nomeFamilia = familia.nome;
-            }
-            return undefined;
-        })
-        .then(() => {
-            if (taxonomia && taxonomia.sub_familia_id) {
-                return Subfamilia.findOne({
-                    where: {
-                        id: taxonomia.sub_familia_id,
-                        familia_id: taxonomia.familia_id,
-                    },
-                    transaction,
-                });
-            }
-            return undefined;
-        })
-        .then(subfamilia => {
-            if (taxonomia && taxonomia.sub_familia_id) {
-                if (!subfamilia) {
-                    throw new BadRequestExeption(403);
+                return undefined;
+            })
+            .then(familia => {
+                if (taxonomia && taxonomia.familia_id) {
+                    if (!familia) {
+                        throw new BadRequestExeption(402);
+                    }
+                    taxonomia.nome_cientifico = familia.nome;
+                    nomeFamilia = familia.nome;
                 }
-                taxonomia.nome_cientifico += ` ${subfamilia.nome}`;
-                nomeSubfamilia = subfamilia.nome;
-            }
-            return undefined;
-        })
-        .then(() => {
-            if (taxonomia && taxonomia.genero_id) {
-                return Genero.findOne({
-                    where: {
-                        id: taxonomia.genero_id,
-                        familia_id: taxonomia.familia_id,
-                    },
-                    transaction,
-                });
-            }
-            return undefined;
-        })
-        .then(genero => {
-            if (taxonomia && taxonomia.genero_id) {
-                if (!genero) {
-                    throw new BadRequestExeption(404);
+                return undefined;
+            })
+            .then(() => {
+                if (taxonomia && taxonomia.sub_familia_id) {
+                    return Subfamilia.findOne({
+                        where: {
+                            id: taxonomia.sub_familia_id,
+                            familia_id: taxonomia.familia_id,
+                        },
+                        transaction,
+                    });
                 }
-                taxonomia.nome_cientifico += ` ${genero.nome}`;
-                nomeGenero = genero.nome;
-            }
-            return undefined;
-        })
-        .then(() => {
-            if (taxonomia && taxonomia.especie_id) {
-                return Especie.findOne({
-                    where: {
-                        id: taxonomia.especie_id,
-                        genero_id: taxonomia.genero_id,
-                    },
-                    transaction,
-                });
-            }
-            return undefined;
-        })
-        .then(especie => {
-            if (taxonomia && taxonomia.especie_id) {
-                if (!especie) {
-                    throw new BadRequestExeption(405);
+                return undefined;
+            })
+            .then(subfamilia => {
+                if (taxonomia && taxonomia.sub_familia_id) {
+                    if (!subfamilia) {
+                        throw new BadRequestExeption(403);
+                    }
+                    taxonomia.nome_cientifico += ` ${subfamilia.nome}`;
+                    nomeSubfamilia = subfamilia.nome;
                 }
-                taxonomia.nome_cientifico += ` ${especie.nome}`;
-                nomeEspecie = especie.nome;
-            }
-            return undefined;
-        })
-        .then(() => {
-            if (taxonomia && taxonomia.sub_especie_id) {
-                return Subespecie.findOne({
-                    where: {
-                        id: taxonomia.sub_especie_id,
-                        especie_id: taxonomia.especie_id,
-                    },
-                    transaction,
-                });
-            }
-            return undefined;
-        })
-        .then(subespecie => {
-            if (taxonomia && taxonomia.sub_especie_id) {
-                if (!subespecie) {
-                    throw new BadRequestExeption(406);
+                return undefined;
+            })
+            .then(() => {
+                if (taxonomia && taxonomia.genero_id) {
+                    return Genero.findOne({
+                        where: {
+                            id: taxonomia.genero_id,
+                            familia_id: taxonomia.familia_id,
+                        },
+                        transaction,
+                    });
                 }
-                taxonomia.nome_cientifico += ` ${subespecie.nome}`;
-                nomeSubespecie = subespecie.nome;
-            }
-            return undefined;
-        })
-        .then(() => {
-            if (taxonomia && taxonomia.variedade_id) {
-                return Variedade.findOne({
-                    where: {
-                        id: taxonomia.variedade_id,
-                        especie_id: taxonomia.especie_id,
-                    },
-                    transaction,
-                });
-            }
-            return undefined;
-        })
-        .then(variedade => {
-            if (taxonomia && taxonomia.variedade_id) {
-                if (!variedade) {
-                    throw new BadRequestExeption(407);
+                return undefined;
+            })
+            .then(genero => {
+                if (taxonomia && taxonomia.genero_id) {
+                    if (!genero) {
+                        throw new BadRequestExeption(404);
+                    }
+                    taxonomia.nome_cientifico += ` ${genero.nome}`;
+                    nomeGenero = genero.nome;
                 }
-                taxonomia.nome_cientifico += ` ${variedade.nome}`;
-                nomeVariedade = variedade.nome;
-            }
-            return undefined;
-        })
+                return undefined;
+            })
+            .then(() => {
+                if (taxonomia && taxonomia.especie_id) {
+                    return Especie.findOne({
+                        where: {
+                            id: taxonomia.especie_id,
+                            genero_id: taxonomia.genero_id,
+                        },
+                        transaction,
+                    });
+                }
+                return undefined;
+            })
+            .then(especie => {
+                if (taxonomia && taxonomia.especie_id) {
+                    if (!especie) {
+                        throw new BadRequestExeption(405);
+                    }
+                    taxonomia.nome_cientifico += ` ${especie.nome}`;
+                    nomeEspecie = especie.nome;
+                }
+                return undefined;
+            })
+            .then(() => {
+                if (taxonomia && taxonomia.sub_especie_id) {
+                    return Subespecie.findOne({
+                        where: {
+                            id: taxonomia.sub_especie_id,
+                            especie_id: taxonomia.especie_id,
+                        },
+                        transaction,
+                    });
+                }
+                return undefined;
+            })
+            .then(subespecie => {
+                if (taxonomia && taxonomia.sub_especie_id) {
+                    if (!subespecie) {
+                        throw new BadRequestExeption(406);
+                    }
+                    taxonomia.nome_cientifico += ` ${subespecie.nome}`;
+                    nomeSubespecie = subespecie.nome;
+                }
+                return undefined;
+            })
+            .then(() => {
+                if (taxonomia && taxonomia.variedade_id) {
+                    return Variedade.findOne({
+                        where: {
+                            id: taxonomia.variedade_id,
+                            especie_id: taxonomia.especie_id,
+                        },
+                        transaction,
+                    });
+                }
+                return undefined;
+            })
+            .then(variedade => {
+                if (taxonomia && taxonomia.variedade_id) {
+                    if (!variedade) {
+                        throw new BadRequestExeption(407);
+                    }
+                    taxonomia.nome_cientifico += ` ${variedade.nome}`;
+                    nomeVariedade = variedade.nome;
+                }
+                return undefined;
+            })
         // /////////// CADASTRA TOMBO /////////////
-        .then(() => {
-            let jsonTombo = {
-                data_coleta_dia: principal.data_coleta.dia,
-                data_coleta_mes: principal.data_coleta.mes,
-                data_coleta_ano: principal.data_coleta.ano,
-                numero_coleta: principal.numero_coleta,
-                local_coleta_id: principal.local_coleta_id,
-                cor: principal.cor,
-            };
-            if (observacoes) {
-                jsonTombo.observacao = observacoes;
-            }
-            if (principal.nome_popular) {
-                jsonTombo.nomes_populares = principal.nome_popular;
-            }
-            if (localidade.latitude) {
-                jsonTombo.latitude = converteParaDecimal(localidade.latitude);
-            }
-            if (localidade.longitude) {
-                jsonTombo.longitude = converteParaDecimal(localidade.longitude);
-            }
-            if (localidade.altitude) {
-                jsonTombo.altitude = localidade.altitude;
-            }
-            if (identificacao) {
-                jsonTombo.data_identificacao_dia = identificacao.data_identificacao.dia;
-                jsonTombo.data_identificacao_mes = identificacao.data_identificacao.mes;
-                jsonTombo.data_identificacao_ano = identificacao.data_identificacao.ano;
-            }
-            if (paisagem) {
-                jsonTombo.solo_id = paisagem.solo_id;
-                jsonTombo.relevo_id = paisagem.relevo_id;
-                jsonTombo.vegetacao_id = paisagem.vegetacao_id;
-            }
-            jsonTombo = {
-                ...jsonTombo,
-                ...pick(principal, ['entidade_id', 'tipo_id', 'taxon_id']),
-            };
-            if (taxonomia) {
+            .then(() => {
+                let jsonTombo = {
+                    data_coleta_dia: principal.data_coleta.dia,
+                    data_coleta_mes: principal.data_coleta.mes,
+                    data_coleta_ano: principal.data_coleta.ano,
+                    numero_coleta: principal.numero_coleta,
+                    local_coleta_id: principal.local_coleta_id,
+                    cor: principal.cor,
+                    coletor_id: coletor,
+                };
+
+                if (observacoes) {
+                    jsonTombo.observacao = observacoes;
+                }
+                if (principal.nome_popular) {
+                    jsonTombo.nomes_populares = principal.nome_popular;
+                }
+                if (localidade.latitude) {
+                    jsonTombo.latitude = converteParaDecimal(localidade.latitude);
+                }
+                if (localidade.longitude) {
+                    jsonTombo.longitude = converteParaDecimal(localidade.longitude);
+                }
+                if (localidade.altitude) {
+                    jsonTombo.altitude = localidade.altitude;
+                }
+                if (identificacao) {
+                    jsonTombo.data_identificacao_dia = identificacao.data_identificacao.dia;
+                    jsonTombo.data_identificacao_mes = identificacao.data_identificacao.mes;
+                    jsonTombo.data_identificacao_ano = identificacao.data_identificacao.ano;
+                }
+                if (paisagem) {
+                    jsonTombo.solo_id = paisagem.solo_id;
+                    jsonTombo.relevo_id = paisagem.relevo_id;
+                    jsonTombo.vegetacao_id = paisagem.vegetacao_id;
+                }
                 jsonTombo = {
                     ...jsonTombo,
-                    ...pick(taxonomia, [
-                        'nome_cientifico',
-                        'variedade_id',
-                        'especie_id',
-                        'genero_id',
-                        'familia_id',
-                        'sub_familia_id',
-                        'sub_especie_id',
-                    ]),
+                    ...pick(principal, ['entidade_id', 'tipo_id', 'taxon_id']),
                 };
-            }
-            if (colecoesAnexas && colecoesAnexas.id) { // is
-                jsonTombo.colecao_anexa_id = colecoesAnexas.id;
-            }
-            if (request.usuario.tipo_usuario_id === 2 || request.usuario.tipo_usuario_id === 3) {
-                jsonTombo.rascunho = true;
-            }
-            return Tombo.create(jsonTombo, { transaction });
-        })
+                if (taxonomia) {
+                    jsonTombo = {
+                        ...jsonTombo,
+                        // eslint-disable-next-line max-len
+                        ...pick(taxonomia, ['nome_cientifico', 'variedade_id', 'especie_id', 'genero_id', 'familia_id', 'sub_familia_id', 'sub_especie_id']),
+                    };
+                }
+                if (colecoesAnexas && colecoesAnexas.id) {
+                    jsonTombo.colecao_anexa_id = colecoesAnexas.id;
+                }
+                if (request.usuario.tipo_usuario_id === 2 || request.usuario.tipo_usuario_id === 3) {
+                    jsonTombo.rascunho = true;
+                }
+                return Tombo.create(jsonTombo, { transaction });
+            })
         // //////////// CADASTRA A ALTERACAO ///////////
-        .then(tombo => {
-            if (!tombo) {
-                throw new BadRequestExeption(408);
-            }
-            let status = 'ESPERANDO';
-            principal.hcf = tombo.hcf;
-            if (request.usuario.tipo_usuario_id === 1) {
-                status = 'APROVADO';
-            }
-            const dados = {
-                tombo_hcf: tombo.hcf,
-                usuario_id: request.usuario.id,
-                status,
-                tombo_json: JSON.stringify(tombo),
-                ativo: true,
-                identificacao: 0,
-            };
-            tomboCriado = tombo;
-            return Alteracao.create(dados, { transaction });
-        })
+            .then(tombo => {
+                if (!tombo) {
+                    throw new BadRequestExeption(408);
+                }
+                let status = 'ESPERANDO';
+                principal.hcf = tombo.hcf;
+                if (request.usuario.tipo_usuario_id === 1) {
+                    status = 'APROVADO';
+                }
+
+                const dadosComplementares = coletor_complementar.complementares
+                    ? {
+                        hcf: tombo.hcf,
+                        complementares: coletor_complementar.complementares,
+                    }
+                    : {};
+
+                const dados = {
+                    tombo_hcf: tombo.hcf,
+                    usuario_id: request.usuario.id,
+                    status,
+                    tombo_json: JSON.stringify({ ...tombo.toJSON(), complementares: dadosComplementares }),
+                    ativo: true,
+                    identificacao: 0,
+                };
+                tomboCriado = tombo;
+
+                return Alteracao.create(dados, { transaction }).then(alteracaoTomboCriado => {
+                    if (!alteracaoTomboCriado) {
+                        throw new BadRequestExeption(409);
+                    }
+
+                    if (coletor_complementar && coletor_complementar.complementares) {
+                        const jsonColetorComplementar = {
+                            hcf: principal.hcf,
+                            complementares: coletor_complementar.complementares,
+                        };
+
+                        return ColetorComplementar.create(jsonColetorComplementar, { transaction });
+                    }
+
+                    return alteracaoTomboCriado;
+                });
+            })
         // /////////////// CADASTRA O INDETIFICADOR ///////////////
-        .then(alteracaoTomboCriado => {
-            if (!alteracaoTomboCriado) {
-                throw new BadRequestExeption(409);
-            }
-            if (tomboCriado !== null) {
-                if (identificacao && identificacao.identificadores && identificacao.identificadores.length > 0) {
-                    const promises = [];
-                    identificacao.identificadores.forEach(
-                        (identificador_id, index) => {
+            .then(alteracaoTomboCriado => {
+                if (!alteracaoTomboCriado) {
+                    throw new BadRequestExeption(409);
+                }
+                if (tomboCriado !== null) {
+                    if (identificacao && identificacao.identificadores && identificacao.identificadores.length > 0) {
+                        const promises = [];
+                        identificacao.identificadores.forEach((identificador_id, index) => {
                             const isPrincipal = index === 0;
                             const dadosIdentificadores = {
                                 identificador_id,
@@ -372,75 +397,58 @@ export const cadastro = (request, response, next) => {
                                     transaction,
                                 })
                             );
-                        }
-                    );
-                    let status = 'ESPERANDO';
-                    const jsonTaxonomia = {};
-                    const dados = {
-                        tombo_hcf: tomboCriado.hcf,
-                        usuario_id: identificacao.identificadores[0],
-                        status,
-                        ativo: true,
-                        identificacao: 1,
-                    };
+                        });
+                        let status = 'ESPERANDO';
+                        const jsonTaxonomia = {};
+                        const dados = {
+                            tombo_hcf: tomboCriado.hcf,
+                            usuario_id: identificacao.identificadores[0],
+                            status,
+                            ativo: true,
+                            identificacao: 1,
+                        };
 
-                    principal.hcf = tomboCriado.hcf;
-                    if (request.usuario.tipo_usuario_id === 1) {
-                        status = 'APROVADO';
-                    }
-                    dados.status = status;
-                    if (nomeFamilia !== '') {
-                        jsonTaxonomia.familia_nome = nomeFamilia;
-                    }
-                    if (nomeSubfamilia !== '') {
-                        jsonTaxonomia.subfamilia_nome = nomeSubfamilia;
-                    }
-                    if (nomeGenero !== '') {
-                        jsonTaxonomia.genero_nome = nomeGenero;
-                    }
-                    if (nomeEspecie !== '') {
-                        jsonTaxonomia.especie_nome = nomeEspecie;
-                    }
-                    if (nomeSubespecie !== '') {
-                        jsonTaxonomia.subespecie_nome = nomeSubespecie;
-                    }
-                    if (nomeVariedade !== '') {
-                        jsonTaxonomia.variedade_nome = nomeVariedade;
-                    }
-                    dados.tombo_json = JSON.stringify(jsonTaxonomia);
+                        principal.hcf = tomboCriado.hcf;
+                        if (request.usuario.tipo_usuario_id === 1) {
+                            status = 'APROVADO';
+                        }
+                        dados.status = status;
+                        if (nomeFamilia !== '') {
+                            jsonTaxonomia.familia_nome = nomeFamilia;
+                        }
+                        if (nomeSubfamilia !== '') {
+                            jsonTaxonomia.subfamilia_nome = nomeSubfamilia;
+                        }
+                        if (nomeGenero !== '') {
+                            jsonTaxonomia.genero_nome = nomeGenero;
+                        }
+                        if (nomeEspecie !== '') {
+                            jsonTaxonomia.especie_nome = nomeEspecie;
+                        }
+                        if (nomeSubespecie !== '') {
+                            jsonTaxonomia.subespecie_nome = nomeSubespecie;
+                        }
+                        if (nomeVariedade !== '') {
+                            jsonTaxonomia.variedade_nome = nomeVariedade;
+                        }
+                        dados.tombo_json = JSON.stringify(jsonTaxonomia);
 
-                    if (identificacao && identificacao.data_identificacao) {
-                        if (identificacao.data_identificacao.dia) {
-                            dados.data_identificacao_dia = identificacao.data_identificacao.dia;
+                        if (identificacao && identificacao.data_identificacao) {
+                            if (identificacao.data_identificacao.dia) {
+                                dados.data_identificacao_dia = identificacao.data_identificacao.dia;
+                            }
+                            if (identificacao.data_identificacao.mes) {
+                                dados.data_identificacao_mes = identificacao.data_identificacao.mes;
+                            }
+                            if (identificacao.data_identificacao.ano) {
+                                dados.data_identificacao_ano = identificacao.data_identificacao.ano;
+                            }
                         }
-                        if (identificacao.data_identificacao.mes) {
-                            dados.data_identificacao_mes = identificacao.data_identificacao.mes;
-                        }
-                        if (identificacao.data_identificacao.ano) {
-                            dados.data_identificacao_ano = identificacao.data_identificacao.ano;
-                        }
+                        return Alteracao.create(dados, { transaction });
                     }
-                    return Alteracao.create(dados, { transaction });
                 }
-            }
-            return undefined;
-        })
-        // /////////////// CADASTRA O COLETOR ///////////////
-        .then(() => {
-            let jsonColetores = []; // eslint-disable-line
-            for (let i = 0; i < coletores.length; i++) { // eslint-disable-line
-                jsonColetores.push({
-                    tombo_hcf: principal.hcf,
-                    coletor_id: coletores[i],
-                });
-            }
-            return TomboColetor.bulkCreate(jsonColetores, { transaction });
-        })
-        .then(coletoresCad => {
-            if (!coletoresCad) {
-                throw new BadRequestExeption(410);
-            }
-        });
+                return undefined;
+            });
 
     sequelize.transaction(callback)
         .then(() => {
@@ -499,40 +507,41 @@ function alteracaoIdentificador(request, transaction) {
 function alteracaoCuradorouOperador(request, response, next) {
     const { body } = request;
 
-    const nomePopular = body.principal.nome_popular;
-    const entidadeId = body.principal.entidade_id;
+    const nomePopular = body?.principal?.nome_popular;
+    const entidadeId = body?.principal?.entidade_id;
     const numeroColeta = body.principal.numero_coleta;
     const dataColeta = body.principal.data_coleta;
-    const tipoId = body.principal.tipo_id;
-    const { cor } = body.principal;
+    const tipoId = body?.principal?.tipo_id;
+    const { cor } = body.principal || null;
 
-    const familiaId = body.taxonomia.familia_id;
-    const subfamiliaId = body.taxonomia.sub_familia_id;
-    const generoId = body.taxonomia.genero_id;
-    const especieId = body.taxonomia.especie_id;
-    const subespecieId = body.taxonomia.sub_especie_id;
-    const variedadeId = body.taxonomia.variedade_id;
+    const familiaId = body?.taxonomia?.familia_id;
+    const subfamiliaId = body?.taxonomia?.sub_familia_id;
+    const generoId = body?.taxonomia?.genero_id;
+    const especieId = body?.taxonomia?.especie_id;
+    const subespecieId = body?.taxonomia?.sub_especie_id;
+    const variedadeId = body?.taxonomia?.variedade_id;
 
-    const { latitude } = body.localidade;
-    const { longitude } = body.localidade;
-    const { altitude } = body.localidade;
+    const { latitude } = body.localidade || null;
+    const { longitude } = body.localidade || null;
+    const { altitude } = body.localidade || null;
     const cidadeId = body.localidade.cidade_id;
-    const { complemento } = body.localidade;
+    const { complemento } = body.localidade || null;
 
-    const soloId = body.paisagem.solo_id;
-    const { descricao } = body.paisagem;
-    const relevoId = body.paisagem.relevo_id;
-    const vegetacaoId = body.paisagem.vegetacao_id;
-    const faseSucessionalId = body.paisagem.fase_sucessional_id;
+    const soloId = body?.paisagem?.solo_id;
+    const { descricao } = body.paisagem || null;
+    const relevoId = body?.paisagem?.relevo_id;
+    const vegetacaoId = body?.paisagem?.vegetacao_id;
+    const faseSucessionalId = body?.paisagem.fase_sucessional_id;
 
-    const { identificadores } = body.identificacao;
-    const dataIdentificacao = body.identificacao.data_identificacao;
+    const { identificadores } = body.identificacao || null;
+    const dataIdentificacao = body?.identificacao?.data_identificacao;
 
-    const { coletores } = body;
-    const colecoesAnexasTipo = body.colecoes_anexas.tipo;
-    const colecoesAnexasObservacoes = body.colecoes_anexas.observacoes;
+    const { coletores } = body || null;
+    const { complementares } = body?.coletor_complementar?.complementares || null;
+    const colecoesAnexasTipo = body?.colecoes_anexas?.tipo;
+    const colecoesAnexasObservacoes = body?.colecoes_anexas?.observacoes;
 
-    const { observacoes } = body;
+    const { observacoes } = body || null;
 
     const { tombo_id: tomboId } = request.params;
     const update = {};
@@ -630,6 +639,10 @@ function alteracaoCuradorouOperador(request, response, next) {
 
     if (coletores) {
         update.coletores = coletores;
+    }
+
+    if (complementares) {
+        update.complementares = complementares;
     }
 
     if (colecoesAnexasTipo) {
@@ -1183,6 +1196,11 @@ export const obterTombo = (request, response, next) => {
                         attributes: ['id', 'nome'],
                     },
                     {
+                        model: ColetorComplementar,
+                        as: 'coletor_complementar',
+                        attributes: ['complementares'],
+                    },
+                    {
                         model: Genero,
                     },
                     {
@@ -1211,6 +1229,8 @@ export const obterTombo = (request, response, next) => {
 
             dadosTombo = tombo;
 
+            // console.log(tombo);
+
             resposta = {
                 herbarioInicial: tombo.herbario !== null ? tombo.herbario.id : '',
                 localidadeInicial: tombo.cor !== null ? tombo.cor : '',
@@ -1228,11 +1248,23 @@ export const obterTombo = (request, response, next) => {
                 relevoInicial: tombo.relevo !== null ? tombo.relevo.nome : '',
                 vegetacaoInicial: tombo.vegetaco !== null ? tombo.vegetaco.nome : '',
                 faseInicial:
-            tombo.locais_coletum !== null && tombo.locais_coletum.fase_sucessional !== null ? tombo.locais_coletum.fase_sucessional.numero : '',
-                coletoresInicial: tombo.coletores.map(coletor => ({
-                    key: `${coletor.id}`,
-                    label: coletor.nome,
-                })),
+                tombo.locais_coletum !== null && tombo.locais_coletum.fase_sucessional !== null ? tombo.locais_coletum.fase_sucessional.numero : '',
+                //   coletoresInicial: tombo.coletores.map((coletor) => ({
+                //     key: `${coletor.id}`,
+                //     label: coletor.nome,
+                //   })),
+                coletor: tombo.coletore
+                    ? {
+                        id: tombo.coletore.id,
+                        nome: tombo.coletore.nome,
+                    }
+                    : null,
+                // coletorComplementar: tombo.coletorComplementar
+                //     ? {
+                //         hcf: tombo.coletorComplementar.hcf,
+                //         complementares: tombo.coletorComplementar.complementares,
+                //     }
+                //     : '',
                 colecaoInicial: tombo.colecoes_anexa !== null ? tombo.colecoes_anexa.tipo : '',
                 complementoInicial: tombo.localizacao !== null && tombo.localizacao !== undefined ? tombo.localizacao.complemento : '',
                 hcf: tombo.hcf,
@@ -1266,7 +1298,7 @@ export const obterTombo = (request, response, next) => {
                     relevo: tombo.relevo !== null ? tombo.relevo.nome : '',
                     vegetacao: tombo.vegetaco !== null ? tombo.vegetaco.nome : '',
                     fase_sucessional:
-              tombo.locais_coletum !== null && tombo.locais_coletum.fase_sucessional !== null ? tombo.locais_coletum.fase_sucessional : '',
+                  tombo.locais_coletum !== null && tombo.locais_coletum.fase_sucessional !== null ? tombo.locais_coletum.fase_sucessional : '',
                 },
                 taxonomia: {
                     nome_cientifico: tombo.nome_cientifico !== null ? tombo.nome_cientifico : '',

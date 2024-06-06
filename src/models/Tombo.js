@@ -8,13 +8,14 @@ function associate(modelos) {
         Especie,
         Genero,
         Coletor,
+        ColetorComplementar,
         Familia,
         Subfamilia,
         Subespecie,
         ColecaoAnexa,
         Usuario,
         Alteracao,
-        TomboColetor,
+        // TomboColetor,
         Relevo,
         Remessa,
         Vegetacao,
@@ -58,13 +59,21 @@ function associate(modelos) {
         foreignKey: 'tombo_hcf',
     });
 
-    Tombo.belongsToMany(Coletor, {
-        through: TomboColetor,
-        foreignKey: 'tombo_hcf',
+    Tombo.belongsTo(Coletor, {
+        foreignKey: 'coletor_id',
     });
 
-    Tombo.hasMany(TomboColetor, {
-        foreignKey: 'tombo_hcf',
+    // Tombo.belongsToMany(Coletor, {
+    //     through: TomboColetor,
+    //     foreignKey: 'tombo_hcf',
+    // });
+
+    // Tombo.hasMany(TomboColetor, {
+    //     foreignKey: 'tombo_hcf',
+    // });
+    Tombo.hasOne(ColetorComplementar, {
+        foreignKey: 'hcf',
+        as: 'coletor_complementar',
     });
 
     Tombo.hasMany(Alteracao, {
