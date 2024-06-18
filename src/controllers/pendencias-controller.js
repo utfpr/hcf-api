@@ -1315,118 +1315,129 @@ export const aprovarComJsonId = (alteracao, hcf, transaction) => {
         },
         transaction,
     })
-        .then(tombo => {
-            parametros.tombo = tombo;
-        })
-        .then(() => {
-            if (alteracao.especie_nome) {
-                return Especie.findOne({
-                    where: {
-                        nome: alteracao.especie_nome,
-                    },
-                    attributes: ['id', 'nome'],
-                    transaction,
-                })
-                    .then(especie => {
-                        parametros.especie = especie;
-                    });
-            }
-            return undefined;
-        })
-        .then(() => {
-            if (alteracao.genero_nome) {
-                return Genero.findOne({
-                    where: {
-                        nome: alteracao.genero_nome,
-                    },
-                    attributes: ['id', 'nome'],
-                    transaction,
-                })
-                    .then(genero => {
-                        parametros.genero = genero;
-                    });
-            }
-            return undefined;
-        })
-        .then(() => {
-            if (alteracao.subfamilia_nome) {
-                return Subfamilia.findOne({
-                    where: {
-                        nome: alteracao.subfamilia_nome,
-                    },
-                    attributes: ['id', 'nome'],
-                    transaction,
-                })
-                    .then(subfamilia => {
-                        parametros.subfamilia = subfamilia;
-                    });
-            }
-            return undefined;
-        })
-        .then(() => {
-            if (alteracao.subespecie_nome) {
-                return Subespecie.findOne({
-                    where: {
-                        nome: alteracao.subespecie_nome,
-                    },
-                    attributes: ['id', 'nome'],
-                    transaction,
-                })
-                    .then(subEspecie => {
-                        parametros.subespecie = subEspecie;
-                    });
-            }
-            return undefined;
-        })
-        .then(() => {
-            if (alteracao.variedade_nome) {
-                return Variedade.findOne({
-                    where: {
-                        nome: alteracao.variedade_nome,
-                    },
-                    attributes: ['id', 'nome'],
-                    transaction,
-                })
-                    .then(variedade => {
-                        parametros.variedade = variedade;
-                    });
-            }
-            return undefined;
-        })
-        .then(() => parametros.tombo.update({
-            especie_id: parametros.especie ? parametros.especie.id : parametros.tombo.especie_id,
-            genero_id: parametros.genero ? parametros.genero.id : parametros.tombo.genero_id,
-            subfamilia_id: parametros.subfamilia ? parametros.subfamilia.id : parametros.tombo.subfamilia_id,
-            subespecie_id: parametros.subespecie ? parametros.subespecie.id : parametros.tombo.subespecie_id,
-            variedade_id: parametros.variedade ? parametros.variedade.id : parametros.tombo.variedade_id,
-        }, {
-            transaction,
-        }))
-        .then(() =>
-            Promise.all([
-                Genero.findOne({
-                    where: {
-                        id: parametros.tombo.genero_id,
-                    },
-                    attributes: ['nome'],
-                    transaction,
-                }),
-                Especie.findOne({
-                    where: {
-                        id: parametros.tombo.especie_id,
-                    },
-                    attributes: ['nome'],
-                    transaction,
-                }),
-            ])
-        )
-        .then(([genero, especie]) =>
-            parametros.tombo.update({
-                nome_cientifico: `${genero.nome} ${especie.nome}`,
-            }, {
+    .then(tombo => {
+        parametros.tombo = tombo;
+    })
+    .then(() => {
+        if (alteracao.genero_nome) {
+            return Genero.findOrCreate({
+                where: {
+                    nome: alteracao.genero_nome,
+                },
+                defaults: {
+                    nome: alteracao.genero_nome,
+                    familia_id: parametros.tombo.dataValues.familia_id,
+                    ativo: true,
+                },
+                attributes: ['id', 'nome'],
                 transaction,
             })
-        );
+            .then(([genero]) => {
+                parametros.genero = genero;
+            });
+        }
+        return undefined;
+    })
+    .then(() => {
+        if (alteracao.especie_nome) {
+            return Especie.findOrCreate({
+                where: {
+                    nome: alteracao.especie_nome,
+                },
+                defaults: {
+                    nome: alteracao.especie_nome,
+                    genero_id: parametros.tombo.dataValues.genero_id,
+                    familia_id: parametros.tombo.dataValues.familia_id,
+                    ativo: true,
+                },
+                attributes: ['id', 'nome'],
+                transaction,
+            })
+            .then(([especie]) => {
+                parametros.especie = especie;
+            });
+        }
+        return undefined;
+    })
+    .then(() => {
+        if (alteracao.subfamilia_nome) {
+            return Subfamilia.findOne({
+                where: {
+                    nome: alteracao.subfamilia_nome,
+                },
+                attributes: ['id', 'nome'],
+                transaction,
+            })
+                .then(subfamilia => {
+                    parametros.subfamilia = subfamilia;
+                });
+        }
+        return undefined;
+    })
+    .then(() => {
+        if (alteracao.subespecie_nome) {
+            return Subespecie.findOne({
+                where: {
+                    nome: alteracao.subespecie_nome,
+                },
+                attributes: ['id', 'nome'],
+                transaction,
+            })
+                .then(subEspecie => {
+                    parametros.subespecie = subEspecie;
+                });
+        }
+        return undefined;
+    })
+    .then(() => {
+        if (alteracao.variedade_nome) {
+            return Variedade.findOne({
+                where: {
+                    nome: alteracao.variedade_nome,
+                },
+                attributes: ['id', 'nome'],
+                transaction,
+            })
+                .then(variedade => {
+                    parametros.variedade = variedade;
+                });
+        }
+        return undefined;
+    })
+    .then(() => parametros.tombo.update({
+        especie_id: parametros.especie ? parametros.especie.id : parametros.tombo.especie_id,
+        genero_id: parametros.genero ? parametros.genero.id : parametros.tombo.genero_id,
+        subfamilia_id: parametros.subfamilia ? parametros.subfamilia.id : parametros.tombo.subfamilia_id,
+        subespecie_id: parametros.subespecie ? parametros.subespecie.id : parametros.tombo.subespecie_id,
+        variedade_id: parametros.variedade ? parametros.variedade.id : parametros.tombo.variedade_id,
+    }, {
+        transaction,
+    }))
+    .then(() =>
+        Promise.all([
+            Genero.findOne({
+                where: {
+                    id: parametros.tombo.genero_id,
+                },
+                attributes: ['nome'],
+                transaction,
+            }),
+            Especie.findOne({
+                where: {
+                    id: parametros.tombo.especie_id,
+                },
+                attributes: ['nome'],
+                transaction,
+            }),
+        ])
+    )
+    .then(([genero, especie]) =>
+        parametros.tombo.update({
+            nome_cientifico: `${genero.nome} ${especie.nome}`,
+        }, {
+            transaction,
+        })
+    );
 };
 
 export const aprovarComJsonNome = (alteracao, hcf, transaction) => {
