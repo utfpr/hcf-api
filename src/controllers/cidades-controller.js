@@ -34,17 +34,24 @@ export const listaTodosOsTombosComLocalizacao = async (req, res, next) => {
                 model: LocalColeta,
                 include: {
                     model: Cidade,
-                    attributes: ['nome'],
+                    attributes: ['nome', 'latitude', 'longitude'],
                 },
             },
         });
 
-        const result = tombos.map(tombo => ({
-            hcf: tombo.hcf,
-            latitude: tombo.latitude,
-            longitude: tombo.longitude,
-            cidade: tombo.locais_coletum && tombo.locais_coletum.cidade ? tombo.locais_coletum.cidade.nome : null,
-        }));
+        const result = tombos.map(tombo => {
+            const localColeta = tombo.locais_coletum;
+            const cidade = localColeta ? localColeta.cidade : null;
+
+            return {
+                hcf: tombo.hcf,
+                latitude: tombo.latitude,
+                longitude: tombo.longitude,
+                cidade: cidade ? cidade.nome : null,
+                latitudeCidade: cidade ? cidade.latitude : null,
+                longitudeCidade: cidade ? cidade.longitude : null,
+            };
+        });
 
         res.status(200).json(result);
     } catch (error) {
