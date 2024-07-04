@@ -1,4 +1,5 @@
 import listagensMiddleware from '../middlewares/listagens-middleware';
+import criaOrdenacaoMiddleware from '../middlewares/ordenacao-middleware';
 import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middleware';
 import validacoesMiddleware from '../middlewares/validacoes-middleware';
 import autorAtualizaEsquema from '../validators/autor-atualiza';
@@ -29,6 +30,13 @@ import variedadeListagemEsquema from '../validators/variedade-listagem';
 
 const controller = require('../controllers/taxonomias-controller');
 
+const familiasOrdenacaoMiddleware = criaOrdenacaoMiddleware(['familia'], 'nome', 'asc');
+const subfamiliasOrdenacaoMiddleware = criaOrdenacaoMiddleware(['subfamilia', 'familia', 'autor'], 'nome', 'asc');
+const generosOrdenacaoMiddleware = criaOrdenacaoMiddleware(['genero', 'familia'], 'nome', 'asc');
+const especiesOrdenacaoMiddleware = criaOrdenacaoMiddleware(['especie', 'familia', 'genero', 'familia'], 'nome', 'asc');
+const subEspeciesOrdenacaoMiddleware = criaOrdenacaoMiddleware(['subespecie', 'familia', 'genero', 'especie', 'autor'], 'nome', 'asc');
+const variedadesOrdenacaoMiddleware = criaOrdenacaoMiddleware(['variedade', 'familia', 'genero', 'especie', 'autor'], 'nome', 'asc');
+
 export default app => {
 
     app.route('/taxonomias')
@@ -37,16 +45,16 @@ export default app => {
             controller.listagem,
         ]);
 
-    app.route('/familias')
+    app
+        .route('/familias')
         .post([
-            tokensMiddleware([
-                TIPOS_USUARIOS.CURADOR, TIPOS_USUARIOS.OPERADOR, TIPOS_USUARIOS.IDENTIFICADOR,
-            ]),
+            tokensMiddleware([TIPOS_USUARIOS.CURADOR, TIPOS_USUARIOS.OPERADOR, TIPOS_USUARIOS.IDENTIFICADOR]),
             validacoesMiddleware(nomeEsquema),
             controller.cadastrarFamilia,
         ])
         .get([
             listagensMiddleware,
+            familiasOrdenacaoMiddleware,
             validacoesMiddleware(listagemFamiliaEsquema),
             controller.buscarFamilias,
         ]);
@@ -77,6 +85,7 @@ export default app => {
         ])
         .get([
             listagensMiddleware,
+            generosOrdenacaoMiddleware,
             validacoesMiddleware(generoListagemEsquema),
             controller.buscarGeneros,
         ]);
@@ -107,6 +116,7 @@ export default app => {
         ])
         .get([
             listagensMiddleware,
+            subfamiliasOrdenacaoMiddleware,
             validacoesMiddleware(subfamiliaListagemEsquema),
             controller.buscarSubfamilia,
         ]);
@@ -137,6 +147,7 @@ export default app => {
         ])
         .get([
             listagensMiddleware,
+            especiesOrdenacaoMiddleware,
             validacoesMiddleware(especieListagemEsquema),
             controller.buscarEspecies,
         ]);
@@ -167,6 +178,7 @@ export default app => {
         ])
         .get([
             listagensMiddleware,
+            subEspeciesOrdenacaoMiddleware,
             validacoesMiddleware(subespecieListagemEsquema),
             controller.buscarSubespecies,
         ]);
@@ -196,6 +208,7 @@ export default app => {
         ])
         .get([
             listagensMiddleware,
+            variedadesOrdenacaoMiddleware,
             validacoesMiddleware(variedadeListagemEsquema),
             controller.buscarVariedades,
         ]);
