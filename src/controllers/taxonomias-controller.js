@@ -106,26 +106,50 @@ export const editarFamilia = (request, response, next) => {
 export const excluirFamilia = (request, response, next) => {
     const id = request.params.familia_id;
 
-    const callback = transaction => Promise.resolve()
-        .then(() => Familia.findOne({
-            where: {
-                id,
-                ativo: 1,
-            },
-            transaction,
-        }))
-        .then(familiaEncontrada => {
-            if (!familiaEncontrada) {
-                throw new BadRequestExeption(516);
-            }
-        })
-        .then(() => Familia.update({ ativo: 0 }, {
-            where: {
-                id,
-            },
-            transaction,
-        }));
-    sequelize.transaction(callback)
+    const callback = transaction =>
+        Promise.resolve()
+            .then(() =>
+                Familia.findOne({
+                    where: {
+                        id,
+                        ativo: 1,
+                    },
+                    transaction,
+                })
+            )
+            .then(familiaEncontrada => {
+                if (!familiaEncontrada) {
+                    throw new BadRequestExeption(516);
+                }
+            })
+            .then(() =>
+                Promise.all([
+                    Genero.count({ where: { familia_id: id }, transaction }),
+                    Especie.count({ where: { familia_id: id }, transaction }),
+                    Subespecie.count({ where: { familia_id: id }, transaction }),
+                    Variedade.count({ where: { familia_id: id }, transaction }),
+                    Subfamilia.count({ where: { familia_id: id }, transaction }),
+                ])
+            )
+            .then(([generosCount, especiesCount, subEspeciesCount, variedadesCount, subFamiliasCount]) => {
+                if (generosCount > 0 || especiesCount > 0 || subEspeciesCount > 0 || variedadesCount > 0 || subFamiliasCount > 0) {
+                    throw new BadRequestExeption('A família não pode ser excluída porque possui dependentes.');
+                }
+            })
+            .then(() =>
+                Familia.update(
+                    { ativo: 0 },
+                    {
+                        where: {
+                            id,
+                        },
+                        transaction,
+                    }
+                )
+            );
+
+    sequelize
+        .transaction(callback)
         .then(() => {
             response.status(codigos.DESATIVAR).send();
         })
@@ -398,26 +422,49 @@ export const buscarGeneros = (request, response, next) => {
 export const excluirGeneros = (request, response, next) => {
     const id = request.params.genero_id;
 
-    const callback = transaction => Promise.resolve()
-        .then(() => Genero.findOne({
-            where: {
-                id,
-                ativo: 1,
-            },
-            transaction,
-        }))
-        .then(encontrado => {
-            if (!encontrado) {
-                throw new BadRequestExeption(519);
-            }
-        })
-        .then(() => Genero.update({ ativo: 0 }, {
-            where: {
-                id,
-            },
-            transaction,
-        }));
-    sequelize.transaction(callback)
+    const callback = transaction =>
+        Promise.resolve()
+            .then(() =>
+                Genero.findOne({
+                    where: {
+                        id,
+                        ativo: 1,
+                    },
+                    transaction,
+                })
+            )
+            .then(generoEncontrado => {
+                if (!generoEncontrado) {
+                    throw new BadRequestExeption(519);
+                }
+            })
+            .then(() =>
+                Promise.all([
+                    Especie.count({ where: { genero_id: id }, transaction }),
+                    Subespecie.count({ where: { genero_id: id }, transaction }),
+                    Variedade.count({ where: { genero_id: id }, transaction }),
+
+                ])
+            )
+            .then(([especiesCount, subEspeciesCount, variedadesCount]) => {
+                if (especiesCount > 0 || subEspeciesCount > 0 || variedadesCount > 0) {
+                    throw new BadRequestExeption('O gênero não pode ser excluído porque possui dependentes.');
+                }
+            })
+            .then(() =>
+                Genero.update(
+                    { ativo: 0 },
+                    {
+                        where: {
+                            id,
+                        },
+                        transaction,
+                    }
+                )
+            );
+
+    sequelize
+        .transaction(callback)
         .then(() => {
             response.status(codigos.DESATIVAR).send();
         })
@@ -604,26 +651,47 @@ export const buscarEspecies = (request, response, next) => {
 export const excluirEspecies = (request, response, next) => {
     const id = request.params.especie_id;
 
-    const callback = transaction => Promise.resolve()
-        .then(() => Especie.findOne({
-            where: {
-                id,
-                ativo: 1,
-            },
-            transaction,
-        }))
-        .then(encontrado => {
-            if (!encontrado) {
-                throw new BadRequestExeption(521);
-            }
-        })
-        .then(() => Especie.update({ ativo: 0 }, {
-            where: {
-                id,
-            },
-            transaction,
-        }));
-    sequelize.transaction(callback)
+    const callback = transaction =>
+        Promise.resolve()
+            .then(() =>
+                Especie.findOne({
+                    where: {
+                        id,
+                        ativo: 1,
+                    },
+                    transaction,
+                })
+            )
+            .then(encontrado => {
+                if (!encontrado) {
+                    throw new BadRequestExeption(521);
+                }
+            })
+            .then(() =>
+                Promise.all([
+                    Subespecie.count({ where: { especie_id: id }, transaction }),
+                    Variedade.count({ where: { especie_id: id }, transaction }),
+                ])
+            )
+            .then(([subEspeciesCount, variedadesCount]) => {
+                if (subEspeciesCount > 0 || variedadesCount > 0) {
+                    throw new BadRequestExeption('A espécie não pode ser excluída porque possui dependentes.');
+                }
+            })
+            .then(() =>
+                Especie.update(
+                    { ativo: 0 },
+                    {
+                        where: {
+                            id,
+                        },
+                        transaction,
+                    }
+                )
+            );
+
+    sequelize
+        .transaction(callback)
         .then(() => {
             response.status(codigos.DESATIVAR).send();
         })
@@ -1257,26 +1325,49 @@ export const buscarAutores = (request, response, next) => {
 export const excluirAutores = (request, response, next) => {
     const id = request.params.autor_id;
 
-    const callback = transaction => Promise.resolve()
-        .then(() => Autor.findOne({
-            where: {
-                id,
-                ativo: 1,
-            },
-            transaction,
-        }))
-        .then(encontrado => {
-            if (!encontrado) {
-                throw new BadRequestExeption(517);
-            }
-        })
-        .then(() => Autor.update({ ativo: 0 }, {
-            where: {
-                id,
-            },
-            transaction,
-        }));
-    sequelize.transaction(callback)
+    const callback = transaction =>
+        Promise.resolve()
+            .then(() =>
+                Autor.findOne({
+                    where: {
+                        id,
+                        ativo: 1,
+                    },
+                    transaction,
+                })
+            )
+            .then(encontrado => {
+                if (!encontrado) {
+                    throw new BadRequestExeption(517);
+                }
+            })
+            .then(() =>
+                Promise.all([
+                    Subfamilia.count({ where: { autor_id: id }, transaction }),
+                    Subespecie.count({ where: { autor_id: id }, transaction }),
+                    Especie.count({ where: { autor_id: id }, transaction }),
+                    Variedade.count({ where: { autor_id: id }, transaction }),
+                ])
+            )
+            .then(([subFamiliasCount, subEspeciesCount, especiesCount, variedadesCount]) => {
+                if (subFamiliasCount > 0 || subEspeciesCount > 0 || especiesCount > 0 || variedadesCount > 0) {
+                    throw new BadRequestExeption('O autor não pode ser excluído porque possui dependentes.');
+                }
+            })
+            .then(() =>
+                Autor.update(
+                    { ativo: 0 },
+                    {
+                        where: {
+                            id,
+                        },
+                        transaction,
+                    }
+                )
+            );
+
+    sequelize
+        .transaction(callback)
         .then(() => {
             response.status(codigos.DESATIVAR).send();
         })
