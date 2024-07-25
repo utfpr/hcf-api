@@ -4,7 +4,7 @@ import codigos from '../resources/codigos-http';
 import listaTaxonomiasSQL from '../resources/sqls/lista-taxonomias';
 
 const {
-    sequelize, Sequelize: { Op }, Sequelize, Familia, Genero, Subfamilia, Especie, Variedade, Subespecie, Autor,
+    sequelize, Sequelize: { Op }, Sequelize, Familia, Genero, Subfamilia, Especie, Variedade, Subespecie, Autor, Tombo,
 } = models;
 // ////////////////////FAMILIA///////////////////////////
 export const cadastrarFamilia = (request, response, next) => {
@@ -129,10 +129,11 @@ export const excluirFamilia = (request, response, next) => {
                     Subespecie.count({ where: { familia_id: id }, transaction }),
                     Variedade.count({ where: { familia_id: id }, transaction }),
                     Subfamilia.count({ where: { familia_id: id }, transaction }),
+                    Tombo.count({ where: { familia_id: id }, transaction }),
                 ])
             )
-            .then(([generosCount, especiesCount, subEspeciesCount, variedadesCount, subFamiliasCount]) => {
-                if (generosCount > 0 || especiesCount > 0 || subEspeciesCount > 0 || variedadesCount > 0 || subFamiliasCount > 0) {
+            .then(([generosCount, especiesCount, subEspeciesCount, variedadesCount, subFamiliasCount, tombosCount]) => {
+                if (generosCount > 0 || especiesCount > 0 || subEspeciesCount > 0 || variedadesCount > 0 || subFamiliasCount > 0 || tombosCount > 0) {
                     throw new BadRequestExeption('A família não pode ser excluída porque possui dependentes.');
                 }
             })
@@ -257,26 +258,44 @@ export const buscarSubfamilia = (request, response, next) => {
 export const excluirSubfamilia = (request, response, next) => {
     const id = request.params.subfamilia_id;
 
-    const callback = transaction => Promise.resolve()
-        .then(() => Subfamilia.findOne({
-            where: {
-                id,
-                ativo: 1,
-            },
-            transaction,
-        }))
-        .then(encontrado => {
-            if (!encontrado) {
-                throw new BadRequestExeption(520);
-            }
-        })
-        .then(() => Subfamilia.update({ ativo: 0 }, {
-            where: {
-                id,
-            },
-            transaction,
-        }));
-    sequelize.transaction(callback)
+    const callback = transaction =>
+        Promise.resolve()
+            .then(() =>
+                Subfamilia.findOne({
+                    where: {
+                        id,
+                        ativo: 1,
+                    },
+                    transaction,
+                })
+            )
+            .then(encontrado => {
+                if (!encontrado) {
+                    throw new BadRequestExeption(520);
+                }
+            })
+            .then(() =>
+                Promise.all([Tombo.count({ where: { sub_familia_id: id }, transaction })])
+            )
+            .then(([tombosCount]) => {
+                if (tombosCount > 0) {
+                    throw new BadRequestExeption('A subfamília não pode ser excluída porque possui dependentes.');
+                }
+            })
+            .then(() =>
+                Subfamilia.update(
+                    { ativo: 0 },
+                    {
+                        where: {
+                            id,
+                        },
+                        transaction,
+                    }
+                )
+            );
+
+    sequelize
+        .transaction(callback)
         .then(() => {
             response.status(codigos.DESATIVAR).send();
         })
@@ -443,11 +462,11 @@ export const excluirGeneros = (request, response, next) => {
                     Especie.count({ where: { genero_id: id }, transaction }),
                     Subespecie.count({ where: { genero_id: id }, transaction }),
                     Variedade.count({ where: { genero_id: id }, transaction }),
-
+                    Tombo.count({ where: { genero_id: id }, transaction }),
                 ])
             )
-            .then(([especiesCount, subEspeciesCount, variedadesCount]) => {
-                if (especiesCount > 0 || subEspeciesCount > 0 || variedadesCount > 0) {
+            .then(([especiesCount, subEspeciesCount, variedadesCount, tombosCount]) => {
+                if (especiesCount > 0 || subEspeciesCount > 0 || variedadesCount > 0 || tombosCount > 0) {
                     throw new BadRequestExeption('O gênero não pode ser excluído porque possui dependentes.');
                 }
             })
@@ -671,10 +690,11 @@ export const excluirEspecies = (request, response, next) => {
                 Promise.all([
                     Subespecie.count({ where: { especie_id: id }, transaction }),
                     Variedade.count({ where: { especie_id: id }, transaction }),
+                    Tombo.count({ where: { especie_id: id }, transaction }),
                 ])
             )
-            .then(([subEspeciesCount, variedadesCount]) => {
-                if (subEspeciesCount > 0 || variedadesCount > 0) {
+            .then(([subEspeciesCount, variedadesCount, tombosCount]) => {
+                if (subEspeciesCount > 0 || variedadesCount > 0 || tombosCount > 0) {
                     throw new BadRequestExeption('A espécie não pode ser excluída porque possui dependentes.');
                 }
             })
@@ -909,26 +929,44 @@ export const buscarSubespecies = (request, response, next) => {
 export const excluirSubespecies = (request, response, next) => {
     const id = request.params.subespecie_id;
 
-    const callback = transaction => Promise.resolve()
-        .then(() => Subespecie.findOne({
-            where: {
-                id,
-                ativo: 1,
-            },
-            transaction,
-        }))
-        .then(encontrado => {
-            if (!encontrado) {
-                throw new BadRequestExeption(525);
-            }
-        })
-        .then(() => Subespecie.update({ ativo: 0 }, {
-            where: {
-                id,
-            },
-            transaction,
-        }));
-    sequelize.transaction(callback)
+    const callback = transaction =>
+        Promise.resolve()
+            .then(() =>
+                Subespecie.findOne({
+                    where: {
+                        id,
+                        ativo: 1,
+                    },
+                    transaction,
+                })
+            )
+            .then(encontrado => {
+                if (!encontrado) {
+                    throw new BadRequestExeption(525);
+                }
+            })
+            .then(() =>
+                Promise.all([Tombo.count({ where: { sub_especie_id: id }, transaction })])
+            )
+            .then(([tombosCount]) => {
+                if (tombosCount > 0) {
+                    throw new BadRequestExeption('A subespécie não pode ser excluída porque possui dependentes.');
+                }
+            })
+            .then(() =>
+                Subespecie.update(
+                    { ativo: 0 },
+                    {
+                        where: {
+                            id,
+                        },
+                        transaction,
+                    }
+                )
+            );
+
+    sequelize
+        .transaction(callback)
         .then(() => {
             response.status(codigos.DESATIVAR).send();
         })
