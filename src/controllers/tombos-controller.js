@@ -15,7 +15,7 @@ import codigos from '../resources/codigos-http';
 const {
     Solo, Relevo, Cidade, Estado, Vegetacao, FaseSucessional, Pais, Tipo, LocalColeta, Familia, sequelize,
     Genero, Subfamilia, Autor, Coletor, Variedade, Subespecie, TomboFoto, Identificador,
-    ColecaoAnexa, Especie, Herbario, Tombo, Alteracao, TomboColetor, TomboIdentificador, ColetorComplementar, Sequelize: { Op },
+    ColecaoAnexa, Especie, Herbario, Tombo, Alteracao, TomboIdentificador, ColetorComplementar, Sequelize: { Op },
 } = models;
 
 export const cadastro = (request, response, next) => {
@@ -1554,27 +1554,18 @@ export const getNumeroTombo = (request, response, next) => {
 
 export const getNumeroColetor = (request, response, next) => {
     const { idColetor } = request.params;
+
     Promise.resolve()
-        .then(() => TomboColetor.findAll({
-            where: {
-                coletor_id: idColetor,
-            },
-            attributes: [
-                'tombo_hcf',
-            ],
-        }))
-        .then(tombo_hcf => Tombo.findAll({
-            where: {
-                hcf: tombo_hcf.map(e => e.tombo_hcf),
-            },
-            attributes: [
-                'hcf',
-                'numero_coleta',
-            ],
-        }))
+        .then(() =>
+            Tombo.findAll({
+                where: {
+                    coletor_id: idColetor,
+                },
+                attributes: ['hcf', 'numero_coleta'],
+            })
+        )
         .then(tombos => {
-            response.status(codigos.BUSCAR_UM_ITEM)
-                .json(tombos);
+            response.status(codigos.BUSCAR_UM_ITEM).json(tombos);
         })
         .catch(next);
 };
