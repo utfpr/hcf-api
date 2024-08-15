@@ -1395,6 +1395,13 @@ export const obterTombo = (request, response, next) => {
                     where: {
                         familia_id: dadosTombo.familia.id,
                     },
+                    include: [
+                        {
+                            model: Autor,
+                            attributes: ['id', 'nome'],
+                            as: 'autor',
+                        },
+                    ],
                 });
             }
             return undefined;
@@ -1453,6 +1460,13 @@ export const obterTombo = (request, response, next) => {
                     where: {
                         especie_id: dadosTombo.especy.id,
                     },
+                    include: [
+                        {
+                            model: Autor,
+                            attributes: ['id', 'nome'],
+                            as: 'autor',
+                        },
+                    ],
                 });
             }
             return undefined;
@@ -1470,6 +1484,13 @@ export const obterTombo = (request, response, next) => {
                     where: {
                         especie_id: dadosTombo.especy.id,
                     },
+                    include: [
+                        {
+                            model: Autor,
+                            attributes: ['id', 'nome'],
+                            as: 'autor',
+                        },
+                    ],
                 });
             }
             return undefined;
