@@ -1429,6 +1429,13 @@ export const obterTombo = (request, response, next) => {
                     where: {
                         genero_id: dadosTombo.genero.id,
                     },
+                    include: [
+                        {
+                            model: Autor,
+                            attributes: ['id', 'nome'],
+                            as: 'autor',
+                        },
+                    ],
                 });
             }
             return undefined;
