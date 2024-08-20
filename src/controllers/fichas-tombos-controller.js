@@ -29,6 +29,7 @@ const {
     Cidade,
     Estado,
     Pais,
+    ColetorComplementar,
 } = models;
 
 function formataDataSaida(data) {
@@ -54,18 +55,21 @@ export default function fichaTomboController(request, response, next) {
                     model: Especie,
                     include: {
                         model: Autor,
+                        as: 'autor',
                     },
                 },
                 {
                     model: Subespecie,
                     include: {
                         model: Autor,
+                        as: 'autor',
                     },
                 },
                 {
                     model: Variedade,
                     include: {
                         model: Autor,
+                        as: 'autor',
                     },
                 },
                 {
@@ -84,23 +88,28 @@ export default function fichaTomboController(request, response, next) {
                     as: 'local_coleta',
                     required: true,
                     model: LocalColeta,
-                    include: [{
-                        required: true,
-                        model: Cidade,
-                        include: {
+                    include: [
+                        {
                             required: true,
-                            model: Estado,
+                            model: Cidade,
                             include: {
-                                as: 'pais',
                                 required: true,
-                                model: Pais,
+                                model: Estado,
+                                include: {
+                                    as: 'pais',
+                                    required: true,
+                                    model: Pais,
+                                },
                             },
                         },
-                    },
-                    {
-                        model: FaseSucessional,
-                    },
+                        {
+                            model: FaseSucessional,
+                        },
                     ],
+                },
+                {
+                    model: ColetorComplementar,
+                    as: 'coletor_complementar',
                 },
             ];
 
@@ -177,9 +186,7 @@ export default function fichaTomboController(request, response, next) {
         .then(resultado => {
             const { tombo, identificacao, fotos } = resultado;
 
-            const coletores = tombo.coletores
-                .map(coletor => coletor.nome)
-                .join(', ');
+            const coletores = `${tombo.coletore.nome}${tombo.coletor_complementar ? tombo.coletor_complementar.complementares : ''}`;
 
             const localColeta = tombo.local_coleta;
             const { cidade } = localColeta;
@@ -189,6 +196,7 @@ export default function fichaTomboController(request, response, next) {
             const romanos = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
             const dataTombo = new Date(tombo.data_tombo);
             const romanoDataTombo = (`${dataTombo.getDate()}/${romanos[dataTombo.getMonth()]}/${dataTombo.getFullYear()}`);
+            // eslint-disable-next-line max-len
             const romanoDataIdentificacao = (`${identificacao.data_identificacao_dia}/${romanos[identificacao.data_identificacao_mes - 1]}/${identificacao.data_identificacao_ano}`);
             const romanoDataColeta = (`${tombo.data_coleta_dia}/${romanos[tombo.data_coleta_mes - 1]}/${tombo.data_coleta_ano}`);
 

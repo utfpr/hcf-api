@@ -1,27 +1,17 @@
 function associate(modelos) {
-    const {
-        TomboColetor,
-        Tombo,
-        Coletor,
-    } = modelos;
-    Coletor.belongsToMany(Tombo, {
-        through: TomboColetor,
+    const { Tombo, Coletor } = modelos;
+    Coletor.hasMany(Tombo, {
         foreignKey: 'coletor_id',
     });
 }
 
 export const defaultScope = {
     attributes: {
-        exclude: [
-            'ativo',
-            'created_at',
-            'updated_at',
-        ],
+        exclude: ['ativo', 'created_at', 'updated_at'],
     },
 };
 
 export default (Sequelize, DataTypes) => {
-
     const attributes = {
         id: {
             type: DataTypes.INTEGER,
