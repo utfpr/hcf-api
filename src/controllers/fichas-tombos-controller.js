@@ -2,6 +2,7 @@ import moment from 'moment-timezone';
 import path from 'path';
 
 import { converteDecimalParaGMSSinal } from '~/helpers/coordenadas';
+// import identificador from '~/routes/identificador';
 
 import formataColunasSeparadas from '../helpers/formata-colunas-separadas';
 import renderizaArquivoHtml from '../helpers/renderiza-arquivo-html';
@@ -22,6 +23,7 @@ const {
     Vegetacao,
     FaseSucessional,
     Autor,
+    Identificador,
 
     Usuario,
     Alteracao,
@@ -46,6 +48,10 @@ export default function fichaTomboController(request, response, next) {
                 {
                     required: true,
                     model: Coletor,
+                },
+                {
+                    model: Identificador,
+                    as: 'identificadores',
                 },
                 {
                     model: Familia,
@@ -95,6 +101,7 @@ export default function fichaTomboController(request, response, next) {
                             include: {
                                 required: true,
                                 model: Estado,
+                                attributes: ['id', 'nome', 'sigla', 'codigo_telefone', 'pais_id'],
                                 include: {
                                     as: 'pais',
                                     required: true,
@@ -203,29 +210,29 @@ export default function fichaTomboController(request, response, next) {
             const parametros = {
                 // Se não tem fotos, cria um array de 1 posição com um objeto vazio
                 // para poder iterar pelo array e criar pelo menos 1 ficha
-                fotos: (fotos.length < 1 ? [{}] : fotos),
+                fotos: fotos.length < 1 ? [{}] : fotos,
                 tombo: {
                     ...tombo,
                     coletores,
                     latitude: converteDecimalParaGMSSinal(tombo.latitude, true),
                     longitude: converteDecimalParaGMSSinal(tombo.longitude, true),
                     data_tombo: formataDataSaida(tombo.data_tombo),
-                    data_coleta: formataColunasSeparadas(
-                        tombo.data_coleta_dia,
-                        tombo.data_coleta_mes,
-                        tombo.data_coleta_ano
-                    ),
+                    data_coleta: formataColunasSeparadas(tombo.data_coleta_dia, tombo.data_coleta_mes, tombo.data_coleta_ano),
                 },
 
                 genero: tombo.genero,
-                solo: Solo,
+                solo: tombo.solo,
                 especie: tombo.especie,
                 variedade: tombo.variedade,
                 subespecie: tombo.sub_especy,
 
+                relevo: tombo.relevo?.nome || '',
+                vegetacao: tombo.vegetaco?.nome || '',
+
                 familia: tombo.familia,
                 imprimir: request.params.imprimir_cod,
 
+                identificador: tombo.identificadores[0].nome,
                 identificacao: {
                     ...identificacao,
                     data_identificacao: formataColunasSeparadas(
@@ -238,6 +245,7 @@ export default function fichaTomboController(request, response, next) {
                 localColeta,
                 cidade,
                 estado,
+                estado_sigla: estado.sigla,
                 pais,
                 romano_data_tombo: romanoDataTombo,
                 romano_data_identificacao: romanoDataIdentificacao,
