@@ -31,7 +31,7 @@ export const listagem = (request, response, next) => {
 export const ListaTodosOsTombosComLocalizacao = async (req, res, next) => {
     try {
         const { cidade, search } = req.query;
-        const { limit, pagina: pageInt, offset } = req.paginacao;
+        const { limite: limit, pagina: pageInt, offset } = req.paginacao;
 
         const queryOptions = {
             attributes: ['hcf', 'latitude', 'longitude'],
@@ -47,9 +47,12 @@ export const ListaTodosOsTombosComLocalizacao = async (req, res, next) => {
                 },
             },
             order: [['hcf', 'ASC']],
-            limit,
-            offset,
         };
+
+        if (req.query.pagina && req.query.limite) {
+            queryOptions.limit = limit;
+            queryOptions.offset = offset;
+        }
 
         if (cidade) {
             queryOptions.include.include.where.nome = cidade;
@@ -79,15 +82,20 @@ export const ListaTodosOsTombosComLocalizacao = async (req, res, next) => {
             };
         });
 
-        return res.status(200).json({
+        const response = {
             points: result,
             totalPoints: tombos.count,
-            totalPages: Math.ceil(tombos.count / limit),
-            currentPage: pageInt,
-        });
+        };
+
+        if (req.query.pagina && req.query.limite) {
+            response.totalPages = Math.ceil(tombos.count / limit);
+            response.currentPage = pageInt;
+        }
+
+        return res.status(200).json(response);
     } catch (error) {
         next(error);
     }
 
-    return res.status(400).json({ message: 'Invalid query parameters' });
+    return res.status(500).json({ message: 'Internal server error' });
 };
