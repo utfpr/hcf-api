@@ -8,69 +8,61 @@
     <title>Ficha Tombo</title>
     <style>
         @page {
-            margin: 0;
+          margin: 0;
         }
 
         html,
         body {
-            height: 1vh;
-            font-size: 11px;
-            font-family: Arial, Helvetica, sans-serif;
+          font-size: 11px;
+          font-family: Arial, Helvetica, sans-serif;
         }
 
         body {
-            max-width: 80%;
+          max-width: 80%;
         }
 
         .break-line-before {
-            page-break-before: always;
-            page-break-inside: avoid;
+          page-break-before: always;
+          page-break-inside: avoid;
         }
 
         .text-center {
-            text-align: center;
+          text-align: center;
         }
 
         .text-right {
-            text-align: right;
+          text-align: right;
         }
 
         .tabela-principal {
-            border-collapse: collapse;
-            width: 100%;
-            margin-bottom: 20px;
+          border-collapse: collapse;
+          border: 1px solid #333;
+          width: 14cm;
+          min-height: 9cm;
+          margin-bottom: 20px;
         }
 
         .tabela-principal td {
-            /* border: 1px solid #f0f; */
-            padding: 2px 8px;
+          padding: 2px 8px;
         }
 
-        .tabela-principal td:first-child {
-            border-left: 1px solid #333;
-        }
-
-        .tabela-principal td:last-child {
-            border-right: 1px solid #333;
-        }
-
-        .tabela-principal tr:first-child td {
-            border-top: 1px solid #333;
-        }
-
-        .tabela-principal tr:last-child td {
-            border-bottom: 1px solid #333;
+        .tabela-principal tr:first-child > td:first-child {
+          border-right: 1px solid #333;
         }
 
         .tabela-principal .linha-vazia {
-            height: 5px;
+          height: 5px;
         }
 
         .tabela-principal .celular-imagem {
-            border-right: 1px solid #333;
-            border-bottom: 1px solid #333;
+          border-right: 1px solid #333;
+          border-bottom: 1px solid #333;
         }
-    </style>
+
+        .border-bottom {
+          border-bottom: 1px solid #333;
+        }
+      </style>
 </head>
 
 <body>
@@ -84,14 +76,14 @@
     <table class="tabela-principal">
         <tr>
             <td rowspan="2" width="100" class="celular-imagem text-center">
-                <img width="100" src="/assets/logo-hcf.jpg" alt="Logo UTFPR">
+                <img width="100" src="/assets/logotipo_HCF.png" alt="Logo UTFPR">
                 <div style="font-size: .6em;"><b>CAMPUS CAMPO MOURÃO</b></div>
             </td>
             <td colspan="3" class="text-center">
                 <b>Herbário da Universidade Tecnológica Federal do Paraná - Campus Campo Mourão</b>
             </td>
         </tr>
-        <tr>
+        <tr class="border-bottom">
             <td colspan="2" style="border: none;">
                 <b>HCF:</b> <%- tombo.hcf %>
             </td>
