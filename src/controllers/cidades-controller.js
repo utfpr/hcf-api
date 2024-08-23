@@ -30,47 +30,12 @@ export const listagem = (request, response, next) => {
 
 export const ListaTodosOsTombosComLocalizacao = async (req, res, next) => {
     try {
-        const { cidade, page, search, limit } = req.query;
-
-        if (!cidade && !search && !page && !limit) {
-            const tombos = await Tombo.findAll({
-                attributes: ['hcf', 'latitude', 'longitude'],
-                include: {
-                    model: LocalColeta,
-                    include: {
-                        model: Cidade,
-                        attributes: ['nome', 'latitude', 'longitude'],
-                    },
-                },
-            });
-
-            const result = tombos.map(tombo => {
-                const localColeta = tombo.locais_coletum;
-                const cidadeObj = localColeta ? localColeta.cidade : null;
-
-                return {
-                    hcf: tombo.hcf,
-                    latitude: tombo.latitude,
-                    longitude: tombo.longitude,
-                    cidade: cidadeObj ? cidadeObj.nome : null,
-                    latitudeCidade: cidadeObj ? cidadeObj.latitude : null,
-                    longitudeCidade: cidadeObj ? cidadeObj.longitude : null,
-                };
-            });
-
-            return res.status(200).json(result);
-        }
-
-        const pageInt = parseInt(page, 10) || 1;
-        const limitInt = parseInt(limit, 10) || 5;
-        const offset = (pageInt - 1) * limitInt;
+        const { cidade, search } = req.query;
+        const { limit, pagina: pageInt, offset } = req.paginacao;
 
         const queryOptions = {
             attributes: ['hcf', 'latitude', 'longitude'],
-            where: {
-                latitude: null,
-                longitude: null,
-            },
+            where: {},
             include: {
                 model: LocalColeta,
                 required: true,
@@ -82,7 +47,7 @@ export const ListaTodosOsTombosComLocalizacao = async (req, res, next) => {
                 },
             },
             order: [['hcf', 'ASC']],
-            limit: limitInt,
+            limit,
             offset,
         };
 
@@ -106,16 +71,18 @@ export const ListaTodosOsTombosComLocalizacao = async (req, res, next) => {
                 hcf: tombo.hcf,
                 latitude: tombo.latitude,
                 longitude: tombo.longitude,
-                cidade: cidadeObj ? cidadeObj.nome : null,
-                latitudeCidade: cidadeObj ? cidadeObj.latitude : null,
-                longitudeCidade: cidadeObj ? cidadeObj.longitude : null,
+                cidade: {
+                    nome: cidadeObj ? cidadeObj.nome : null,
+                    latitude: cidadeObj ? cidadeObj.latitude : null,
+                    longitude: cidadeObj ? cidadeObj.longitude : null,
+                },
             };
         });
 
         return res.status(200).json({
             points: result,
             totalPoints: tombos.count,
-            totalPages: Math.ceil(tombos.count / limitInt),
+            totalPages: Math.ceil(tombos.count / limit),
             currentPage: pageInt,
         });
     } catch (error) {
