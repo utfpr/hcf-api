@@ -33,9 +33,44 @@ export const ListaTodosOsTombosComLocalizacao = async (req, res, next) => {
         const { cidade, search } = req.query;
         const { limite: limit, pagina: pageInt, offset } = req.paginacao;
 
+        if (!cidade && !search) {
+            const tombos = await Tombo.findAll({
+                attributes: ['hcf', 'latitude', 'longitude'],
+                include: {
+                    model: LocalColeta,
+                    include: {
+                        model: Cidade,
+                        attributes: ['nome', 'latitude', 'longitude'],
+                    },
+                },
+                order: [['hcf', 'ASC']],
+            });
+
+            const result = tombos.map(tombo => {
+                const localColeta = tombo.locais_coletum;
+                const cidadeObj = localColeta ? localColeta.cidade : null;
+
+                return {
+                    hcf: tombo.hcf,
+                    latitude: tombo.latitude,
+                    longitude: tombo.longitude,
+                    cidade: {
+                        nome: cidadeObj ? cidadeObj.nome : null,
+                        latitude: cidadeObj ? cidadeObj.latitude : null,
+                        longitude: cidadeObj ? cidadeObj.longitude : null,
+                    },
+                };
+            });
+
+            return res.status(200).json(result);
+        }
+
         const queryOptions = {
             attributes: ['hcf', 'latitude', 'longitude'],
-            where: {},
+            where: {
+                latitude: null,
+                longitude: null,
+            },
             include: {
                 model: LocalColeta,
                 required: true,
