@@ -37,6 +37,7 @@ export const cadastrarFamilia = (request, response, next) => {
 
 export const buscarFamilias = (request, response, next) => {
     const { limite, pagina, offset } = request.paginacao;
+    const { orderClause } = request.ordenacao;
     const { familia } = request.query;
     let where;
     where = {
@@ -49,13 +50,15 @@ export const buscarFamilias = (request, response, next) => {
         };
     }
     Promise.resolve()
-        .then(() => Familia.findAndCountAll({
-            attributes: ['id', 'nome'],
-            order: [['created_at', 'DESC']],
-            limit: limite,
-            offset,
-            where,
-        }))
+        .then(() =>
+            Familia.findAndCountAll({
+                attributes: ['id', 'nome'],
+                order: orderClause,
+                limit: limite,
+                offset,
+                where,
+            })
+        )
         .then(familias => {
             response.status(codigos.LISTAGEM).json({
                 metadados: {
@@ -197,11 +200,13 @@ export const cadastrarSubfamilia = (request, response, next) => {
 
 export const buscarSubfamilia = (request, response, next) => {
     const { limite, pagina, offset } = request.paginacao;
+    const { orderClause } = request.ordenacao;
     const { subfamilia, familia_id: familiaId, familia_nome: familiaNome } = request.query;
-    let where;
-    where = {
+
+    let where = {
         ativo: 1,
     };
+
     if (subfamilia) {
         where = {
             ...where,
@@ -224,7 +229,7 @@ export const buscarSubfamilia = (request, response, next) => {
         .then(() =>
             Subfamilia.findAndCountAll({
                 attributes: ['id', 'nome'],
-                order: [['created_at', 'DESC']],
+                order: orderClause,
                 limit: limite,
                 offset,
                 where,
@@ -386,6 +391,7 @@ export const cadastrarGenero = (request, response, next) => {
 
 export const buscarGeneros = (request, response, next) => {
     const { limite, pagina, offset } = request.paginacao;
+    const { orderClause } = request.ordenacao;
     const { genero, familia_id: familiaId, familia_nome: familiaNome } = request.query;
     let where;
     where = {
@@ -412,7 +418,7 @@ export const buscarGeneros = (request, response, next) => {
         .then(() =>
             Genero.findAndCountAll({
                 attributes: ['id', 'nome'],
-                order: [['created_at', 'DESC']],
+                order: orderClause,
                 limit: limite,
                 offset,
                 where,
@@ -599,11 +605,13 @@ export const cadastrarEspecie = (request, response, next) => {
 
 export const buscarEspecies = (request, response, next) => {
     const { limite, pagina, offset } = request.paginacao;
+    const { orderClause } = request.ordenacao;
     const { especie, genero_id: generoId, familia_nome: familiaNome, genero_nome: generoNome } = request.query;
-    let where;
-    where = {
+
+    let where = {
         ativo: 1,
     };
+
     if (especie) {
         where = {
             ...where,
@@ -631,7 +639,7 @@ export const buscarEspecies = (request, response, next) => {
         .then(() =>
             Especie.findAndCountAll({
                 attributes: ['id', 'nome'],
-                order: [['created_at', 'DESC']],
+                order: orderClause,
                 limit: limite,
                 offset,
                 where,
@@ -848,11 +856,13 @@ export const cadastrarSubespecie = (request, response, next) => {
 
 export const buscarSubespecies = (request, response, next) => {
     const { limite, pagina, offset } = request.paginacao;
+    const { orderClause } = request.ordenacao;
     const { subespecie, especie_id: especieId, familia_nome: familiaNome, genero_nome: generoNome, especie_nome: especieNome } = request.query;
-    let where;
-    where = {
+
+    let where = {
         ativo: 1,
     };
+
     if (subespecie) {
         where = {
             ...where,
@@ -884,7 +894,7 @@ export const buscarSubespecies = (request, response, next) => {
         .then(() =>
             Subespecie.findAndCountAll({
                 attributes: ['id', 'nome'],
-                order: [['created_at', 'DESC']],
+                order: orderClause,
                 limit: limite,
                 offset,
                 where,
@@ -1114,6 +1124,7 @@ export const cadastrarVariedade = (request, response, next) => {
 
 export const buscarVariedades = (request, response, next) => {
     const { limite, pagina, offset } = request.paginacao;
+    const { orderClause } = request.ordenacao;
     const {
         variedade,
         especie_id: especieId,
@@ -1157,7 +1168,7 @@ export const buscarVariedades = (request, response, next) => {
         .then(() =>
             Variedade.findAndCountAll({
                 attributes: ['id', 'nome'],
-                order: [['created_at', 'DESC']],
+                order: orderClause,
                 limit: limite,
                 offset,
                 where,
