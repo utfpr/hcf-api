@@ -1,4 +1,4 @@
-import { ListaTodosOsTombosComLocalizacao } from '../controllers/cidades-controller';
+import { ListaTodosOsTombosComLocalizacao, buscarHcfEspecifico } from '../controllers/cidades-controller';
 import fichaTomboController from '../controllers/fichas-tombos-controller';
 import {
     getDadosCadTombo, getNumeroTombo, cadastro, listagem,
@@ -145,4 +145,6 @@ export default app => {
     // app.route('/fichas/tombos/:tombo_id')
     //     .get(fichaTomboController);
     app.route('/pontos').get([listagensMiddleware, ListaTodosOsTombosComLocalizacao]);
+
+    app.route('/buscaHCF/:hcf').get(buscarHcfEspecifico);
 };

@@ -134,3 +134,41 @@ export const ListaTodosOsTombosComLocalizacao = async (req, res, next) => {
 
     return res.status(500).json({ message: 'Internal server error' });
 };
+
+export const buscarHcfEspecifico = async (req, res, next) => {
+    try {
+        const { hcf } = req.params;
+
+        const tombo = await Tombo.findOne({
+            where: { hcf },
+            attributes: ['hcf', 'latitude', 'longitude'],
+            include: {
+                model: LocalColeta,
+                include: {
+                    model: Cidade,
+                    attributes: ['nome'],
+                },
+            },
+        });
+
+        if (!tombo) {
+            return res.status(404).json({ message: 'Registro não encontrado' });
+        }
+
+        const localColeta = tombo.locais_coletum;
+        const cidadeObj = localColeta ? localColeta.cidade : null;
+
+        const result = {
+            hcf: tombo.hcf,
+            latitude: tombo.latitude || null,
+            longitude: tombo.longitude || null,
+            cidade: {
+                nome: cidadeObj ? cidadeObj.nome : null,
+            },
+        };
+
+        return res.status(200).json(result);
+    } catch (error) {
+        return next(error);
+    }
+};
