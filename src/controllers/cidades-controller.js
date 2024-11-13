@@ -172,3 +172,60 @@ export const buscarHcfEspecifico = async (req, res, next) => {
         return next(error);
     }
 };
+
+export const buscarHcfsPorFaixaDeAltitude = async (req, res, next) => {
+    try {
+        const { minAltitude, maxAltitude } = req.params;
+
+        const min = parseFloat(minAltitude);
+        const max = parseFloat(maxAltitude);
+
+        if (Number.isNaN(min) || Number.isNaN(max)) {
+            return res.status(400).json({ message: 'Parâmetros de altitude inválidos' });
+        }
+
+        const tombos = await Tombo.findAll({
+            where: {
+                altitude: {
+                    [Op.between]: [min, max],
+                },
+                latitude: { [Op.ne]: null },
+                longitude: { [Op.ne]: null },
+            },
+            attributes: ['hcf', 'altitude', 'latitude', 'longitude'],
+            include: {
+                model: LocalColeta,
+                include: {
+                    model: Cidade,
+                    attributes: ['nome'],
+                },
+            },
+        });
+
+        if (tombos.length === 0) {
+            return res.status(404).json({ message: 'Nenhum registro encontrado na faixa de altitude especificada' });
+        }
+
+        const resultados = tombos.map(tombo => {
+            const localColeta = tombo.locais_coletum;
+            const cidadeObj = localColeta ? localColeta.cidade : null;
+
+            return {
+                hcf: tombo.hcf,
+                altitude: tombo.altitude,
+                latitude: tombo.latitude,
+                longitude: tombo.longitude,
+                cidade: {
+                    nome: cidadeObj ? cidadeObj.nome : null,
+                },
+            };
+        });
+
+        return res.status(200).json({
+            total: resultados.length,
+            resultados,
+        });
+    } catch (error) {
+        return next(error);
+    }
+};
