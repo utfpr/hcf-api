@@ -1,3 +1,4 @@
+# Etapa de build
 FROM node:18.16-alpine AS build
 
 WORKDIR /tmp/app
@@ -10,16 +11,14 @@ RUN yarn install --production=false \
 # Imagem de produção
 FROM node:18.16-alpine
 
-# Alterar UID e GID do usuário e grupo 'node'
-RUN deluser node && delgroup node \
-  && addgroup -g 1010 node \
-  && adduser -u 1010 -G node -s /bin/sh -D node
+# Criar o usuário e grupo 'hcf' com UID e GID 1010
+RUN addgroup -g 1003 hcf && adduser -u 1003 -G hcf -s /bin/sh -D hcf
 
 EXPOSE 3000
 
 ENTRYPOINT ["node", "./dist/index.js"]
 
-WORKDIR /home/node/app
+WORKDIR /home/hcf/app
 
 COPY package.json yarn.lock ./
 
@@ -28,6 +27,6 @@ RUN yarn install --production
 COPY --from=build /tmp/app/dist ./dist
 COPY ./public ./public
 
-RUN chown -R node:node .
+RUN chown -R hcf:hcf .
 
-USER node
+USER hcf
