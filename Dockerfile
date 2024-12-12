@@ -7,13 +7,13 @@ COPY . .
 RUN yarn install --production=false \
   && yarn build
 
-
-# production image
-
+# Imagem de produção
 FROM node:18.16-alpine
 
-# Criar o usuário node com UID e GID 1010
-RUN addgroup -g 1010 node && adduser -u 1010 -G node -s /bin/sh -D node
+# Alterar UID e GID do usuário e grupo 'node'
+RUN deluser node && delgroup node \
+  && addgroup -g 1010 node \
+  && adduser -u 1010 -G node -s /bin/sh -D node
 
 EXPOSE 3000
 
