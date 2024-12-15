@@ -11,8 +11,8 @@ RUN yarn install --production=false \
 # Imagem de produção
 FROM node:18.16-alpine
 
-# Criar o usuário e grupo 'hcf' com UID e GID 1010
-RUN addgroup -g 1003 hcf && adduser -u 1003 -G hcf -s /bin/sh -D hcf
+# Criar o usuário e grupo 'hcf' com UID e GID 3000
+RUN addgroup -g 3000 hcf && adduser -u 3000 -G hcf -s /bin/sh -D hcf
 
 EXPOSE 3000
 
