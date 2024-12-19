@@ -2,7 +2,7 @@ import models from '../models';
 
 const { Op } = require('sequelize');
 
-const { Cidade, LocalColeta, Tombo } = models;
+const { Cidade, LocalColeta, Tombo, Familia, Subfamilia, Genero, Especie, Subespecie, Variedade, Autor } = models;
 
 export const listaTodosCidades = where =>
     Cidade.findAndCountAll({
@@ -225,6 +225,114 @@ export const buscarHcfsPorFaixaDeAltitude = async (req, res, next) => {
             total: resultados.length,
             resultados,
         });
+    } catch (error) {
+        return next(error);
+    }
+};
+
+export const buscarPontosTaxonomiaComFiltros = async (req, res, next) => {
+    try {
+        const {
+            nomeFamilia,
+            nomeSubFamilia,
+            nomeGenero,
+            nomeEspecie,
+            nomeSubEspecie,
+            nomeVariedade,
+            nomeAutor,
+        } = req.query;
+
+        if (
+            !nomeFamilia &&
+            !nomeSubFamilia &&
+            !nomeGenero &&
+            !nomeEspecie &&
+            !nomeSubEspecie &&
+            !nomeVariedade &&
+            !nomeAutor
+        ) {
+            return res
+                .status(400)
+                .json({ message: 'Pelo menos um filtro deve ser informado.' });
+        }
+
+        const pontos = await Tombo.findAll({
+            attributes: ['hcf', 'latitude', 'longitude'],
+            include: [
+                {
+                    model: Familia,
+                    where: nomeFamilia ? { nome: nomeFamilia } : {},
+                    attributes: ['nome'],
+                    required: !!nomeFamilia,
+                },
+                {
+                    model: Subfamilia,
+                    where: nomeSubFamilia ? { nome: nomeSubFamilia } : {},
+                    attributes: ['nome'],
+                    required: !!nomeSubFamilia || !!nomeAutor,
+                    include: nomeAutor
+                        ? [{ model: Autor, as: 'autor', where: { nome: nomeAutor }, attributes: ['nome'] }]
+                        : [],
+                },
+                {
+                    model: Genero,
+                    where: nomeGenero ? { nome: nomeGenero } : {},
+                    attributes: ['nome'],
+                    required: !!nomeGenero,
+                },
+                {
+                    model: Especie,
+                    where: nomeEspecie ? { nome: nomeEspecie } : {},
+                    attributes: ['nome'],
+                    required: !!nomeEspecie || !!nomeAutor,
+                    include: nomeAutor
+                        ? [{ model: Autor, as: 'autor', where: { nome: nomeAutor }, attributes: ['nome'] }]
+                        : [],
+                },
+                {
+                    model: Subespecie,
+                    where: nomeSubEspecie ? { nome: nomeSubEspecie } : {},
+                    attributes: ['nome'],
+                    required: !!nomeSubEspecie || !!nomeAutor,
+                    include: nomeAutor
+                        ? [{ model: Autor, as: 'autor', where: { nome: nomeAutor }, attributes: ['nome'] }]
+                        : [],
+                },
+                {
+                    model: Variedade,
+                    where: nomeVariedade ? { nome: nomeVariedade } : {},
+                    attributes: ['nome'],
+                    required: !!nomeVariedade || !!nomeAutor,
+                    include: nomeAutor
+                        ? [{ model: Autor, as: 'autor', where: { nome: nomeAutor }, attributes: ['nome'] }]
+                        : [],
+                },
+            ],
+        });
+
+        if (!pontos || pontos.length === 0) {
+            return res
+                .status(404)
+                .json({ message: 'Nenhum ponto encontrado com os filtros informados.' });
+        }
+
+        const result = pontos.map(ponto => ({
+            hcf: ponto.hcf,
+            latitude: ponto.latitude || null,
+            longitude: ponto.longitude || null,
+            familia: ponto.familia ? ponto.familia.nome : null,
+            subFamilia: ponto.sub_familia ? ponto.sub_familia.nome : null,
+            genero: ponto.genero ? ponto.genero.nome : null,
+            especie: ponto.especy ? ponto.especy.nome : null,
+            subEspecie: ponto.sub_especy ? ponto.sub_especy.nome : null,
+            variedade: ponto.variedade ? ponto.variedade.nome : null,
+            autor: ponto.sub_familia?.autor?.nome ||
+                   ponto.especy?.autor?.nome ||
+                   ponto.sub_especy?.autor?.nome ||
+                   ponto.variedade?.autor?.nome || null,
+        }));
+
+        return res.status(200).json(result);
     } catch (error) {
         return next(error);
     }

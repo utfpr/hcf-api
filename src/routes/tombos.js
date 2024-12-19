@@ -1,4 +1,7 @@
-import { ListaTodosOsTombosComLocalizacao, buscarHcfEspecifico, buscarHcfsPorFaixaDeAltitude } from '../controllers/cidades-controller';
+import {
+    ListaTodosOsTombosComLocalizacao, buscarHcfEspecifico,
+    buscarHcfsPorFaixaDeAltitude, buscarPontosTaxonomiaComFiltros,
+} from '../controllers/cidades-controller';
 import fichaTomboController from '../controllers/fichas-tombos-controller';
 import {
     getDadosCadTombo, getNumeroTombo, cadastro, listagem,
@@ -149,5 +152,7 @@ export default app => {
     app.route('/buscaHCF/:hcf').get(buscarHcfEspecifico);
 
     app.route('/buscaHcfsPorAltitude/:minAltitude/:maxAltitude').get(buscarHcfsPorFaixaDeAltitude);
+
+    app.route('/pontosTaxonomiaComFiltros').get(buscarPontosTaxonomiaComFiltros);
 
 };
