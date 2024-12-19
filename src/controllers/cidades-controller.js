@@ -2,7 +2,7 @@ import models from '../models';
 
 const { Op } = require('sequelize');
 
-const { Cidade, LocalColeta, Tombo, Familia, Subfamilia, Genero, Especie, Subespecie, Variedade, Autor } = models;
+const { Cidade, LocalColeta, Tombo, Familia, Subfamilia, Genero, Especie, Subespecie, Variedade } = models;
 
 export const listaTodosCidades = where =>
     Cidade.findAndCountAll({
@@ -261,51 +261,57 @@ export const buscarPontosTaxonomiaComFiltros = async (req, res, next) => {
             include: [
                 {
                     model: Familia,
-                    where: nomeFamilia ? { nome: nomeFamilia } : {},
-                    attributes: ['nome'],
+                    where: {
+                        ...(nomeFamilia ? { nome: { [Op.eq]: nomeFamilia } } : {}),
+                        ativo: 1,
+                    },
+                    attributes: ['id', 'nome'],
                     required: !!nomeFamilia,
                 },
                 {
                     model: Subfamilia,
-                    where: nomeSubFamilia ? { nome: nomeSubFamilia } : {},
-                    attributes: ['nome'],
-                    required: !!nomeSubFamilia || !!nomeAutor,
-                    include: nomeAutor
-                        ? [{ model: Autor, as: 'autor', where: { nome: nomeAutor }, attributes: ['nome'] }]
-                        : [],
+                    where: {
+                        ...(nomeSubFamilia ? { nome: { [Op.eq]: nomeSubFamilia } } : {}),
+                        ativo: 1,
+                    },
+                    attributes: ['id', 'nome'],
+                    required: !!nomeSubFamilia,
                 },
                 {
                     model: Genero,
-                    where: nomeGenero ? { nome: nomeGenero } : {},
-                    attributes: ['nome'],
+                    where: {
+                        ...(nomeGenero ? { nome: { [Op.eq]: nomeGenero } } : {}),
+                        ativo: 1,
+                    },
+                    attributes: ['id', 'nome'],
                     required: !!nomeGenero,
                 },
                 {
                     model: Especie,
-                    where: nomeEspecie ? { nome: nomeEspecie } : {},
-                    attributes: ['nome'],
-                    required: !!nomeEspecie || !!nomeAutor,
-                    include: nomeAutor
-                        ? [{ model: Autor, as: 'autor', where: { nome: nomeAutor }, attributes: ['nome'] }]
-                        : [],
+                    where: {
+                        ...(nomeEspecie ? { nome: { [Op.eq]: nomeEspecie } } : {}),
+                        ativo: 1,
+                    },
+                    attributes: ['id', 'nome'],
+                    required: !!nomeEspecie,
                 },
                 {
                     model: Subespecie,
-                    where: nomeSubEspecie ? { nome: nomeSubEspecie } : {},
-                    attributes: ['nome'],
-                    required: !!nomeSubEspecie || !!nomeAutor,
-                    include: nomeAutor
-                        ? [{ model: Autor, as: 'autor', where: { nome: nomeAutor }, attributes: ['nome'] }]
-                        : [],
+                    where: {
+                        ...(nomeSubEspecie ? { nome: { [Op.eq]: nomeSubEspecie } } : {}),
+                        ativo: 1,
+                    },
+                    attributes: ['id', 'nome'],
+                    required: !!nomeSubEspecie,
                 },
                 {
                     model: Variedade,
-                    where: nomeVariedade ? { nome: nomeVariedade } : {},
-                    attributes: ['nome'],
-                    required: !!nomeVariedade || !!nomeAutor,
-                    include: nomeAutor
-                        ? [{ model: Autor, as: 'autor', where: { nome: nomeAutor }, attributes: ['nome'] }]
-                        : [],
+                    where: {
+                        ...(nomeVariedade ? { nome: { [Op.eq]: nomeVariedade } } : {}),
+                        ativo: 1,
+                    },
+                    attributes: ['id', 'nome'],
+                    required: !!nomeVariedade,
                 },
             ],
         });
@@ -326,10 +332,6 @@ export const buscarPontosTaxonomiaComFiltros = async (req, res, next) => {
             especie: ponto.especy ? ponto.especy.nome : null,
             subEspecie: ponto.sub_especy ? ponto.sub_especy.nome : null,
             variedade: ponto.variedade ? ponto.variedade.nome : null,
-            autor: ponto.sub_familia?.autor?.nome ||
-                   ponto.especy?.autor?.nome ||
-                   ponto.sub_especy?.autor?.nome ||
-                   ponto.variedade?.autor?.nome || null,
         }));
 
         return res.status(200).json(result);
