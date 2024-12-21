@@ -239,7 +239,6 @@ export const buscarPontosTaxonomiaComFiltros = async (req, res, next) => {
             nomeEspecie,
             nomeSubEspecie,
             nomeVariedade,
-            nomeAutor,
         } = req.query;
 
         if (
@@ -248,8 +247,7 @@ export const buscarPontosTaxonomiaComFiltros = async (req, res, next) => {
             !nomeGenero &&
             !nomeEspecie &&
             !nomeSubEspecie &&
-            !nomeVariedade &&
-            !nomeAutor
+            !nomeVariedade
         ) {
             return res
                 .status(400)
