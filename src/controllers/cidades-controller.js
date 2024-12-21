@@ -338,10 +338,10 @@ export const buscarPontosTaxonomiaComFiltros = async (req, res, next) => {
             latitude: ponto.latitude,
             longitude: ponto.longitude,
             familia: ponto.familia ? ponto.familia.nome : null,
-            subFamilia: ponto.subfamilia ? ponto.subfamilia.nome : null,
+            subFamilia: ponto.sub_familia ? ponto.sub_familia.nome : null,
             genero: ponto.genero ? ponto.genero.nome : null,
-            especie: ponto.especie ? ponto.especie.nome : null,
-            subEspecie: ponto.subespecie ? ponto.subespecie.nome : null,
+            especie: ponto.especy ? ponto.especy.nome : null,
+            subEspecie: ponto.sub_especy ? ponto.sub_especy.nome : null,
             variedade: ponto.variedade ? ponto.variedade.nome : null,
         }));
 
