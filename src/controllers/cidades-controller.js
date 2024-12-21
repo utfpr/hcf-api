@@ -254,64 +254,77 @@ export const buscarPontosTaxonomiaComFiltros = async (req, res, next) => {
                 .json({ message: 'Pelo menos um filtro deve ser informado.' });
         }
 
+        const whereClause = {
+            include: [],
+            where: {
+                latitude: { [Op.ne]: null },
+                longitude: { [Op.ne]: null },
+            },
+        };
+
+        if (nomeFamilia) {
+            whereClause.include.push({
+                model: Familia,
+                where: { nome: { [Op.eq]: nomeFamilia }, ativo: 1 },
+                attributes: ['id', 'nome'],
+                required: true,
+            });
+        }
+
+        if (nomeSubFamilia) {
+            whereClause.include.push({
+                model: Subfamilia,
+                where: { nome: { [Op.eq]: nomeSubFamilia }, ativo: 1 },
+                attributes: ['id', 'nome'],
+                required: true,
+            });
+        }
+
+        if (nomeGenero) {
+            whereClause.include.push({
+                model: Genero,
+                where: { nome: { [Op.eq]: nomeGenero }, ativo: 1 },
+                attributes: ['id', 'nome'],
+                required: true,
+            });
+        }
+
+        if (nomeEspecie) {
+            whereClause.include.push({
+                model: Especie,
+                where: { nome: { [Op.eq]: nomeEspecie }, ativo: 1 },
+                attributes: ['id', 'nome'],
+                required: true,
+            });
+        }
+
+        if (nomeSubEspecie) {
+            whereClause.include.push({
+                model: Subespecie,
+                where: { nome: { [Op.eq]: nomeSubEspecie }, ativo: 1 },
+                attributes: ['id', 'nome'],
+                required: true,
+            });
+        }
+
+        if (nomeVariedade) {
+            whereClause.include.push({
+                model: Variedade,
+                where: { nome: { [Op.eq]: nomeVariedade }, ativo: 1 },
+                attributes: ['id', 'nome'],
+                required: true,
+            });
+        }
+
+        const total = await Tombo.count({
+            include: whereClause.include,
+            where: whereClause.where,
+        });
+
         const pontos = await Tombo.findAll({
+            include: whereClause.include,
             attributes: ['hcf', 'latitude', 'longitude'],
-            include: [
-                {
-                    model: Familia,
-                    where: {
-                        ...(nomeFamilia ? { nome: { [Op.eq]: nomeFamilia } } : {}),
-                        ativo: 1,
-                    },
-                    attributes: ['id', 'nome'],
-                    required: !!nomeFamilia,
-                },
-                {
-                    model: Subfamilia,
-                    where: {
-                        ...(nomeSubFamilia ? { nome: { [Op.eq]: nomeSubFamilia } } : {}),
-                        ativo: 1,
-                    },
-                    attributes: ['id', 'nome'],
-                    required: !!nomeSubFamilia,
-                },
-                {
-                    model: Genero,
-                    where: {
-                        ...(nomeGenero ? { nome: { [Op.eq]: nomeGenero } } : {}),
-                        ativo: 1,
-                    },
-                    attributes: ['id', 'nome'],
-                    required: !!nomeGenero,
-                },
-                {
-                    model: Especie,
-                    where: {
-                        ...(nomeEspecie ? { nome: { [Op.eq]: nomeEspecie } } : {}),
-                        ativo: 1,
-                    },
-                    attributes: ['id', 'nome'],
-                    required: !!nomeEspecie,
-                },
-                {
-                    model: Subespecie,
-                    where: {
-                        ...(nomeSubEspecie ? { nome: { [Op.eq]: nomeSubEspecie } } : {}),
-                        ativo: 1,
-                    },
-                    attributes: ['id', 'nome'],
-                    required: !!nomeSubEspecie,
-                },
-                {
-                    model: Variedade,
-                    where: {
-                        ...(nomeVariedade ? { nome: { [Op.eq]: nomeVariedade } } : {}),
-                        ativo: 1,
-                    },
-                    attributes: ['id', 'nome'],
-                    required: !!nomeVariedade,
-                },
-            ],
+            where: whereClause.where,
         });
 
         if (!pontos || pontos.length === 0) {
@@ -322,17 +335,20 @@ export const buscarPontosTaxonomiaComFiltros = async (req, res, next) => {
 
         const result = pontos.map(ponto => ({
             hcf: ponto.hcf,
-            latitude: ponto.latitude || null,
-            longitude: ponto.longitude || null,
+            latitude: ponto.latitude,
+            longitude: ponto.longitude,
             familia: ponto.familia ? ponto.familia.nome : null,
-            subFamilia: ponto.sub_familia ? ponto.sub_familia.nome : null,
+            subFamilia: ponto.subfamilia ? ponto.subfamilia.nome : null,
             genero: ponto.genero ? ponto.genero.nome : null,
-            especie: ponto.especy ? ponto.especy.nome : null,
-            subEspecie: ponto.sub_especy ? ponto.sub_especy.nome : null,
+            especie: ponto.especie ? ponto.especie.nome : null,
+            subEspecie: ponto.subespecie ? ponto.subespecie.nome : null,
             variedade: ponto.variedade ? ponto.variedade.nome : null,
         }));
 
-        return res.status(200).json(result);
+        return res.status(200).json({
+            total,
+            resultados: result,
+        });
     } catch (error) {
         return next(error);
     }
