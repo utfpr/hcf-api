@@ -1,9 +1,5 @@
-function associate(modelos) {
-    const { Familia, Reino } = modelos;
+function associate(/* modelos */) {
 
-    Familia.belongsTo(Reino, {
-        foreignKey: 'reino_id',
-    });
 }
 
 export const defaultScope = {
@@ -23,17 +19,9 @@ export default (Sequelize, DataTypes) => {
             autoIncrement: true,
             primaryKey: true,
         },
-        reino_id: {
-            type: DataTypes.INTEGER,
-            allowNull: true,
-        },
         nome: {
             type: DataTypes.STRING(200),
             allowNull: false,
-        },
-        ativo: {
-            type: DataTypes.BOOLEAN,
-            allowNull: true,
         },
     };
 
@@ -41,7 +29,7 @@ export default (Sequelize, DataTypes) => {
         defaultScope,
     };
 
-    const Model = Sequelize.define('familias', attributes, options);
+    const Model = Sequelize.define('reinos', attributes, options);
 
     Model.associate = associate;
 

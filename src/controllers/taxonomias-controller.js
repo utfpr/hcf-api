@@ -4,7 +4,7 @@ import codigos from '../resources/codigos-http';
 import listaTaxonomiasSQL from '../resources/sqls/lista-taxonomias';
 
 const {
-    sequelize, Sequelize: { Op }, Sequelize, Familia, Genero, Subfamilia, Especie, Variedade, Subespecie, Autor, Tombo,
+    sequelize, Sequelize: { Op }, Sequelize, Reino, Familia, Genero, Subfamilia, Especie, Variedade, Subespecie, Autor, Tombo,
 } = models;
 // ////////////////////FAMILIA///////////////////////////
 export const cadastrarFamilia = (request, response, next) => {
@@ -35,10 +35,52 @@ export const cadastrarFamilia = (request, response, next) => {
         .catch(next);
 };
 
+export const buscarReinos = (request, response, next) => {
+    const { limite, pagina, offset } = request.paginacao;
+    const { orderClause } = request.ordenacao;
+    const { reino, reinoId } = request.query;
+
+    let where;
+    if (reino) {
+        where = {
+            ativo: 1,
+            nome: { [Op.like]: `%${reino}%` },
+        };
+    }
+    if (reinoId) {
+        where = {
+            ...where,
+            reino_id: reinoId,
+        };
+    }
+
+    Promise.resolve()
+        .then(() =>
+            Reino.findAndCountAll({
+                attributes: ['id', 'nome'],
+                order: orderClause,
+                limit: limite,
+                offset,
+                where,
+            })
+        )
+        .then(reinos => {
+            response.status(codigos.LISTAGEM).json({
+                metadados: {
+                    total: reinos.count,
+                    pagina,
+                    limite,
+                },
+                resultado: reinos.rows,
+            });
+        })
+        .catch(next);
+};
+
 export const buscarFamilias = (request, response, next) => {
     const { limite, pagina, offset } = request.paginacao;
     const { orderClause } = request.ordenacao;
-    const { familia } = request.query;
+    const { familia, reino_id: reinoId } = request.query;
     let where;
     where = {
         ativo: 1,
@@ -49,6 +91,14 @@ export const buscarFamilias = (request, response, next) => {
             nome: { [Op.like]: `%${familia}%` },
         };
     }
+
+    if (reinoId) {
+        where = {
+            ...where,
+            reino_id: reinoId,
+        };
+    }
+
     Promise.resolve()
         .then(() =>
             Familia.findAndCountAll({
@@ -57,6 +107,12 @@ export const buscarFamilias = (request, response, next) => {
                 limit: limite,
                 offset,
                 where,
+                include: [
+                    {
+                        model: Reino,
+                        attributes: ['id', 'nome'],
+                    },
+                ],
             })
         )
         .then(familias => {
@@ -238,6 +294,12 @@ export const buscarSubfamilia = (request, response, next) => {
                         model: Familia,
                         attributes: ['id', 'nome'],
                         where: familiaWhere,
+                        include: [
+                            {
+                                model: Reino,
+                                attributes: ['id', 'nome'],
+                            },
+                        ],
                     },
                     {
                         model: Autor,
@@ -427,6 +489,12 @@ export const buscarGeneros = (request, response, next) => {
                         model: Familia,
                         attributes: ['id', 'nome'],
                         where: familiaWhere,
+                        include: [
+                            {
+                                model: Reino,
+                                attributes: ['id', 'nome'],
+                            },
+                        ],
                     },
                 ],
             })
@@ -648,6 +716,12 @@ export const buscarEspecies = (request, response, next) => {
                         model: Familia,
                         attributes: ['id', 'nome'],
                         where: familiaWhere,
+                        include: [
+                            {
+                                model: Reino,
+                                attributes: ['id', 'nome'],
+                            },
+                        ],
                     },
                     {
                         model: Genero,
@@ -903,6 +977,12 @@ export const buscarSubespecies = (request, response, next) => {
                         model: Familia,
                         attributes: ['id', 'nome'],
                         where: familiaWhere,
+                        include: [
+                            {
+                                model: Reino,
+                                attributes: ['id', 'nome'],
+                            },
+                        ],
                     },
                     {
                         model: Genero,
@@ -1177,6 +1257,12 @@ export const buscarVariedades = (request, response, next) => {
                         model: Familia,
                         attributes: ['id', 'nome'],
                         where: familiaWhere,
+                        include: [
+                            {
+                                model: Reino,
+                                attributes: ['id', 'nome'],
+                            },
+                        ],
                     },
                     {
                         model: Genero,
