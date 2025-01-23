@@ -9,6 +9,7 @@ function associate(modelos) {
 
     Subespecie.belongsTo(Autor, {
         foreignKey: 'autor_id',
+        as: 'autor',
     });
     Subespecie.belongsTo(Genero, {
         foreignKey: 'genero_id',
@@ -18,6 +19,7 @@ function associate(modelos) {
     });
     Subespecie.belongsTo(Especie, {
         foreignKey: 'especie_id',
+        as: 'especie',
     });
 }
 

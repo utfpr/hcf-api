@@ -4,7 +4,7 @@ import codigos from '../resources/codigos-http';
 import listaTaxonomiasSQL from '../resources/sqls/lista-taxonomias';
 
 const {
-    sequelize, Sequelize: { Op }, Sequelize, Familia, Genero, Subfamilia, Especie, Variedade, Subespecie, Autor,
+    sequelize, Sequelize: { Op }, Sequelize, Familia, Genero, Subfamilia, Especie, Variedade, Subespecie, Autor, Tombo,
 } = models;
 // ////////////////////FAMILIA///////////////////////////
 export const cadastrarFamilia = (request, response, next) => {
@@ -37,6 +37,7 @@ export const cadastrarFamilia = (request, response, next) => {
 
 export const buscarFamilias = (request, response, next) => {
     const { limite, pagina, offset } = request.paginacao;
+    const { orderClause } = request.ordenacao;
     const { familia } = request.query;
     let where;
     where = {
@@ -49,13 +50,15 @@ export const buscarFamilias = (request, response, next) => {
         };
     }
     Promise.resolve()
-        .then(() => Familia.findAndCountAll({
-            attributes: ['id', 'nome'],
-            order: [['created_at', 'DESC']],
-            limit: limite,
-            offset,
-            where,
-        }))
+        .then(() =>
+            Familia.findAndCountAll({
+                attributes: ['id', 'nome'],
+                order: orderClause,
+                limit: limite,
+                offset,
+                where,
+            })
+        )
         .then(familias => {
             response.status(codigos.LISTAGEM).json({
                 metadados: {
@@ -106,26 +109,51 @@ export const editarFamilia = (request, response, next) => {
 export const excluirFamilia = (request, response, next) => {
     const id = request.params.familia_id;
 
-    const callback = transaction => Promise.resolve()
-        .then(() => Familia.findOne({
-            where: {
-                id,
-                ativo: 1,
-            },
-            transaction,
-        }))
-        .then(familiaEncontrada => {
-            if (!familiaEncontrada) {
-                throw new BadRequestExeption(516);
-            }
-        })
-        .then(() => Familia.update({ ativo: 0 }, {
-            where: {
-                id,
-            },
-            transaction,
-        }));
-    sequelize.transaction(callback)
+    const callback = transaction =>
+        Promise.resolve()
+            .then(() =>
+                Familia.findOne({
+                    where: {
+                        id,
+                        ativo: 1,
+                    },
+                    transaction,
+                })
+            )
+            .then(familiaEncontrada => {
+                if (!familiaEncontrada) {
+                    throw new BadRequestExeption(516);
+                }
+            })
+            .then(() =>
+                Promise.all([
+                    Genero.count({ where: { familia_id: id }, transaction }),
+                    Especie.count({ where: { familia_id: id }, transaction }),
+                    Subespecie.count({ where: { familia_id: id }, transaction }),
+                    Variedade.count({ where: { familia_id: id }, transaction }),
+                    Subfamilia.count({ where: { familia_id: id }, transaction }),
+                    Tombo.count({ where: { familia_id: id }, transaction }),
+                ])
+            )
+            .then(([generosCount, especiesCount, subEspeciesCount, variedadesCount, subFamiliasCount, tombosCount]) => {
+                if (generosCount > 0 || especiesCount > 0 || subEspeciesCount > 0 || variedadesCount > 0 || subFamiliasCount > 0 || tombosCount > 0) {
+                    throw new BadRequestExeption('A família não pode ser excluída porque possui dependentes.');
+                }
+            })
+            .then(() =>
+                Familia.update(
+                    { ativo: 0 },
+                    {
+                        where: {
+                            id,
+                        },
+                        transaction,
+                    }
+                )
+            );
+
+    sequelize
+        .transaction(callback)
         .then(() => {
             response.status(codigos.DESATIVAR).send();
         })
@@ -172,11 +200,13 @@ export const cadastrarSubfamilia = (request, response, next) => {
 
 export const buscarSubfamilia = (request, response, next) => {
     const { limite, pagina, offset } = request.paginacao;
-    const { subfamilia, familia_id: familiaId } = request.query;
-    let where;
-    where = {
+    const { orderClause } = request.ordenacao;
+    const { subfamilia, familia_id: familiaId, familia_nome: familiaNome } = request.query;
+
+    let where = {
         ativo: 1,
     };
+
     if (subfamilia) {
         where = {
             ...where,
@@ -189,14 +219,34 @@ export const buscarSubfamilia = (request, response, next) => {
             familia_id: familiaId,
         };
     }
+
+    const familiaWhere = {};
+    if (familiaNome) {
+        familiaWhere.nome = { [Op.like]: `%${familiaNome}%` };
+    }
+
     Promise.resolve()
-        .then(() => Subfamilia.findAndCountAll({
-            attributes: ['id', 'nome', 'familia_id'],
-            order: [['created_at', 'DESC']],
-            limit: limite,
-            offset,
-            where,
-        }))
+        .then(() =>
+            Subfamilia.findAndCountAll({
+                attributes: ['id', 'nome'],
+                order: orderClause,
+                limit: limite,
+                offset,
+                where,
+                include: [
+                    {
+                        model: Familia,
+                        attributes: ['id', 'nome'],
+                        where: familiaWhere,
+                    },
+                    {
+                        model: Autor,
+                        attributes: ['id', 'nome'],
+                        as: 'autor',
+                    },
+                ],
+            })
+        )
         .then(subfamilias => {
             response.status(codigos.LISTAGEM).json({
                 metadados: {
@@ -213,26 +263,44 @@ export const buscarSubfamilia = (request, response, next) => {
 export const excluirSubfamilia = (request, response, next) => {
     const id = request.params.subfamilia_id;
 
-    const callback = transaction => Promise.resolve()
-        .then(() => Subfamilia.findOne({
-            where: {
-                id,
-                ativo: 1,
-            },
-            transaction,
-        }))
-        .then(encontrado => {
-            if (!encontrado) {
-                throw new BadRequestExeption(520);
-            }
-        })
-        .then(() => Subfamilia.update({ ativo: 0 }, {
-            where: {
-                id,
-            },
-            transaction,
-        }));
-    sequelize.transaction(callback)
+    const callback = transaction =>
+        Promise.resolve()
+            .then(() =>
+                Subfamilia.findOne({
+                    where: {
+                        id,
+                        ativo: 1,
+                    },
+                    transaction,
+                })
+            )
+            .then(encontrado => {
+                if (!encontrado) {
+                    throw new BadRequestExeption(520);
+                }
+            })
+            .then(() =>
+                Promise.all([Tombo.count({ where: { sub_familia_id: id }, transaction })])
+            )
+            .then(([tombosCount]) => {
+                if (tombosCount > 0) {
+                    throw new BadRequestExeption('A subfamília não pode ser excluída porque possui dependentes.');
+                }
+            })
+            .then(() =>
+                Subfamilia.update(
+                    { ativo: 0 },
+                    {
+                        where: {
+                            id,
+                        },
+                        transaction,
+                    }
+                )
+            );
+
+    sequelize
+        .transaction(callback)
         .then(() => {
             response.status(codigos.DESATIVAR).send();
         })
@@ -323,7 +391,8 @@ export const cadastrarGenero = (request, response, next) => {
 
 export const buscarGeneros = (request, response, next) => {
     const { limite, pagina, offset } = request.paginacao;
-    const { genero, familia_id: familiaId } = request.query;
+    const { orderClause } = request.ordenacao;
+    const { genero, familia_id: familiaId, familia_nome: familiaNome } = request.query;
     let where;
     where = {
         ativo: 1,
@@ -340,14 +409,28 @@ export const buscarGeneros = (request, response, next) => {
             familia_id: familiaId,
         };
     }
+
+    const familiaWhere = {};
+    if (familiaNome) {
+        familiaWhere.nome = { [Op.like]: `%${familiaNome}%` };
+    }
     Promise.resolve()
-        .then(() => Genero.findAndCountAll({
-            attributes: ['id', 'nome', 'familia_id'],
-            order: [['created_at', 'DESC']],
-            limit: limite,
-            offset,
-            where,
-        }))
+        .then(() =>
+            Genero.findAndCountAll({
+                attributes: ['id', 'nome'],
+                order: orderClause,
+                limit: limite,
+                offset,
+                where,
+                include: [
+                    {
+                        model: Familia,
+                        attributes: ['id', 'nome'],
+                        where: familiaWhere,
+                    },
+                ],
+            })
+        )
         .then(generos => {
             response.status(codigos.LISTAGEM).json({
                 metadados: {
@@ -364,26 +447,49 @@ export const buscarGeneros = (request, response, next) => {
 export const excluirGeneros = (request, response, next) => {
     const id = request.params.genero_id;
 
-    const callback = transaction => Promise.resolve()
-        .then(() => Genero.findOne({
-            where: {
-                id,
-                ativo: 1,
-            },
-            transaction,
-        }))
-        .then(encontrado => {
-            if (!encontrado) {
-                throw new BadRequestExeption(519);
-            }
-        })
-        .then(() => Genero.update({ ativo: 0 }, {
-            where: {
-                id,
-            },
-            transaction,
-        }));
-    sequelize.transaction(callback)
+    const callback = transaction =>
+        Promise.resolve()
+            .then(() =>
+                Genero.findOne({
+                    where: {
+                        id,
+                        ativo: 1,
+                    },
+                    transaction,
+                })
+            )
+            .then(generoEncontrado => {
+                if (!generoEncontrado) {
+                    throw new BadRequestExeption(519);
+                }
+            })
+            .then(() =>
+                Promise.all([
+                    Especie.count({ where: { genero_id: id }, transaction }),
+                    Subespecie.count({ where: { genero_id: id }, transaction }),
+                    Variedade.count({ where: { genero_id: id }, transaction }),
+                    Tombo.count({ where: { genero_id: id }, transaction }),
+                ])
+            )
+            .then(([especiesCount, subEspeciesCount, variedadesCount, tombosCount]) => {
+                if (especiesCount > 0 || subEspeciesCount > 0 || variedadesCount > 0 || tombosCount > 0) {
+                    throw new BadRequestExeption('O gênero não pode ser excluído porque possui dependentes.');
+                }
+            })
+            .then(() =>
+                Genero.update(
+                    { ativo: 0 },
+                    {
+                        where: {
+                            id,
+                        },
+                        transaction,
+                    }
+                )
+            );
+
+    sequelize
+        .transaction(callback)
         .then(() => {
             response.status(codigos.DESATIVAR).send();
         })
@@ -499,11 +605,13 @@ export const cadastrarEspecie = (request, response, next) => {
 
 export const buscarEspecies = (request, response, next) => {
     const { limite, pagina, offset } = request.paginacao;
-    const { especie, genero_id: generoId } = request.query;
-    let where;
-    where = {
+    const { orderClause } = request.ordenacao;
+    const { especie, genero_id: generoId, familia_nome: familiaNome, genero_nome: generoNome } = request.query;
+
+    let where = {
         ativo: 1,
     };
+
     if (especie) {
         where = {
             ...where,
@@ -516,14 +624,44 @@ export const buscarEspecies = (request, response, next) => {
             genero_id: generoId,
         };
     }
+
+    const familiaWhere = {};
+    if (familiaNome) {
+        familiaWhere.nome = { [Op.like]: `%${familiaNome}%` };
+    }
+
+    const generoWhere = {};
+    if (generoNome) {
+        generoWhere.nome = { [Op.like]: `%${generoNome}%` };
+    }
+
     Promise.resolve()
-        .then(() => Especie.findAndCountAll({
-            attributes: ['id', 'nome', 'genero_id', 'autor_id'],
-            order: [['created_at', 'DESC']],
-            limit: limite,
-            offset,
-            where,
-        }))
+        .then(() =>
+            Especie.findAndCountAll({
+                attributes: ['id', 'nome'],
+                order: orderClause,
+                limit: limite,
+                offset,
+                where,
+                include: [
+                    {
+                        model: Familia,
+                        attributes: ['id', 'nome'],
+                        where: familiaWhere,
+                    },
+                    {
+                        model: Genero,
+                        attributes: ['id', 'nome'],
+                        where: generoWhere,
+                    },
+                    {
+                        model: Autor,
+                        attributes: ['id', 'nome'],
+                        as: 'autor',
+                    },
+                ],
+            })
+        )
         .then(especies => {
             response.status(codigos.LISTAGEM).json({
                 metadados: {
@@ -540,26 +678,48 @@ export const buscarEspecies = (request, response, next) => {
 export const excluirEspecies = (request, response, next) => {
     const id = request.params.especie_id;
 
-    const callback = transaction => Promise.resolve()
-        .then(() => Especie.findOne({
-            where: {
-                id,
-                ativo: 1,
-            },
-            transaction,
-        }))
-        .then(encontrado => {
-            if (!encontrado) {
-                throw new BadRequestExeption(521);
-            }
-        })
-        .then(() => Especie.update({ ativo: 0 }, {
-            where: {
-                id,
-            },
-            transaction,
-        }));
-    sequelize.transaction(callback)
+    const callback = transaction =>
+        Promise.resolve()
+            .then(() =>
+                Especie.findOne({
+                    where: {
+                        id,
+                        ativo: 1,
+                    },
+                    transaction,
+                })
+            )
+            .then(encontrado => {
+                if (!encontrado) {
+                    throw new BadRequestExeption(521);
+                }
+            })
+            .then(() =>
+                Promise.all([
+                    Subespecie.count({ where: { especie_id: id }, transaction }),
+                    Variedade.count({ where: { especie_id: id }, transaction }),
+                    Tombo.count({ where: { especie_id: id }, transaction }),
+                ])
+            )
+            .then(([subEspeciesCount, variedadesCount, tombosCount]) => {
+                if (subEspeciesCount > 0 || variedadesCount > 0 || tombosCount > 0) {
+                    throw new BadRequestExeption('A espécie não pode ser excluída porque possui dependentes.');
+                }
+            })
+            .then(() =>
+                Especie.update(
+                    { ativo: 0 },
+                    {
+                        where: {
+                            id,
+                        },
+                        transaction,
+                    }
+                )
+            );
+
+    sequelize
+        .transaction(callback)
         .then(() => {
             response.status(codigos.DESATIVAR).send();
         })
@@ -696,11 +856,13 @@ export const cadastrarSubespecie = (request, response, next) => {
 
 export const buscarSubespecies = (request, response, next) => {
     const { limite, pagina, offset } = request.paginacao;
-    const { subespecie, especie_id: especieId } = request.query;
-    let where;
-    where = {
+    const { orderClause } = request.ordenacao;
+    const { subespecie, especie_id: especieId, familia_nome: familiaNome, genero_nome: generoNome, especie_nome: especieNome } = request.query;
+
+    let where = {
         ativo: 1,
     };
+
     if (subespecie) {
         where = {
             ...where,
@@ -713,14 +875,54 @@ export const buscarSubespecies = (request, response, next) => {
             especie_id: especieId,
         };
     }
+
+    const familiaWhere = {};
+    if (familiaNome) {
+        familiaWhere.nome = { [Op.like]: `%${familiaNome}%` };
+    }
+
+    const generoWhere = {};
+    if (generoNome) {
+        generoWhere.nome = { [Op.like]: `%${generoNome}%` };
+    }
+
+    const especieWhere = {};
+    if (especieNome) {
+        especieWhere.nome = { [Op.like]: `%${especieNome}%` };
+    }
     Promise.resolve()
-        .then(() => Subespecie.findAndCountAll({
-            attributes: ['id', 'nome', 'especie_id', 'autor_id'],
-            order: [['created_at', 'DESC']],
-            limit: limite,
-            offset,
-            where,
-        }))
+        .then(() =>
+            Subespecie.findAndCountAll({
+                attributes: ['id', 'nome'],
+                order: orderClause,
+                limit: limite,
+                offset,
+                where,
+                include: [
+                    {
+                        model: Familia,
+                        attributes: ['id', 'nome'],
+                        where: familiaWhere,
+                    },
+                    {
+                        model: Genero,
+                        attributes: ['id', 'nome'],
+                        where: generoWhere,
+                    },
+                    {
+                        model: Especie,
+                        attributes: ['id', 'nome'],
+                        where: especieWhere,
+                        as: 'especie',
+                    },
+                    {
+                        model: Autor,
+                        attributes: ['id', 'nome'],
+                        as: 'autor',
+                    },
+                ],
+            })
+        )
         .then(subespecies => {
             response.status(codigos.LISTAGEM).json({
                 metadados: {
@@ -737,26 +939,44 @@ export const buscarSubespecies = (request, response, next) => {
 export const excluirSubespecies = (request, response, next) => {
     const id = request.params.subespecie_id;
 
-    const callback = transaction => Promise.resolve()
-        .then(() => Subespecie.findOne({
-            where: {
-                id,
-                ativo: 1,
-            },
-            transaction,
-        }))
-        .then(encontrado => {
-            if (!encontrado) {
-                throw new BadRequestExeption(525);
-            }
-        })
-        .then(() => Subespecie.update({ ativo: 0 }, {
-            where: {
-                id,
-            },
-            transaction,
-        }));
-    sequelize.transaction(callback)
+    const callback = transaction =>
+        Promise.resolve()
+            .then(() =>
+                Subespecie.findOne({
+                    where: {
+                        id,
+                        ativo: 1,
+                    },
+                    transaction,
+                })
+            )
+            .then(encontrado => {
+                if (!encontrado) {
+                    throw new BadRequestExeption(525);
+                }
+            })
+            .then(() =>
+                Promise.all([Tombo.count({ where: { sub_especie_id: id }, transaction })])
+            )
+            .then(([tombosCount]) => {
+                if (tombosCount > 0) {
+                    throw new BadRequestExeption('A subespécie não pode ser excluída porque possui dependentes.');
+                }
+            })
+            .then(() =>
+                Subespecie.update(
+                    { ativo: 0 },
+                    {
+                        where: {
+                            id,
+                        },
+                        transaction,
+                    }
+                )
+            );
+
+    sequelize
+        .transaction(callback)
         .then(() => {
             response.status(codigos.DESATIVAR).send();
         })
@@ -904,7 +1124,14 @@ export const cadastrarVariedade = (request, response, next) => {
 
 export const buscarVariedades = (request, response, next) => {
     const { limite, pagina, offset } = request.paginacao;
-    const { variedade, especie_id: especieId } = request.query;
+    const { orderClause } = request.ordenacao;
+    const {
+        variedade,
+        especie_id: especieId,
+        familia_nome: familiaNome,
+        genero_nome: generoNome,
+        especie_nome: especieNome,
+    } = request.query;
     let where;
     where = {
         ativo: 1,
@@ -921,14 +1148,55 @@ export const buscarVariedades = (request, response, next) => {
             especie_id: especieId,
         };
     }
+
+    const familiaWhere = {};
+    if (familiaNome) {
+        familiaWhere.nome = { [Op.like]: `%${familiaNome}%` };
+    }
+
+    const generoWhere = {};
+    if (generoNome) {
+        generoWhere.nome = { [Op.like]: `%${generoNome}%` };
+    }
+
+    const especieWhere = {};
+    if (especieNome) {
+        especieWhere.nome = { [Op.like]: `%${especieNome}%` };
+    }
+
     Promise.resolve()
-        .then(() => Variedade.findAndCountAll({
-            attributes: ['id', 'nome', 'especie_id', 'autor_id'],
-            order: [['created_at', 'DESC']],
-            limit: limite,
-            offset,
-            where,
-        }))
+        .then(() =>
+            Variedade.findAndCountAll({
+                attributes: ['id', 'nome'],
+                order: orderClause,
+                limit: limite,
+                offset,
+                where,
+                include: [
+                    {
+                        model: Familia,
+                        attributes: ['id', 'nome'],
+                        where: familiaWhere,
+                    },
+                    {
+                        model: Genero,
+                        attributes: ['id', 'nome'],
+                        where: generoWhere,
+                    },
+                    {
+                        model: Especie,
+                        attributes: ['id', 'nome'],
+                        where: especieWhere,
+                        as: 'especie',
+                    },
+                    {
+                        model: Autor,
+                        attributes: ['id', 'nome'],
+                        as: 'autor',
+                    },
+                ],
+            })
+        )
         .then(variedades => {
             response.status(codigos.LISTAGEM).json({
                 metadados: {
@@ -1106,26 +1374,49 @@ export const buscarAutores = (request, response, next) => {
 export const excluirAutores = (request, response, next) => {
     const id = request.params.autor_id;
 
-    const callback = transaction => Promise.resolve()
-        .then(() => Autor.findOne({
-            where: {
-                id,
-                ativo: 1,
-            },
-            transaction,
-        }))
-        .then(encontrado => {
-            if (!encontrado) {
-                throw new BadRequestExeption(517);
-            }
-        })
-        .then(() => Autor.update({ ativo: 0 }, {
-            where: {
-                id,
-            },
-            transaction,
-        }));
-    sequelize.transaction(callback)
+    const callback = transaction =>
+        Promise.resolve()
+            .then(() =>
+                Autor.findOne({
+                    where: {
+                        id,
+                        ativo: 1,
+                    },
+                    transaction,
+                })
+            )
+            .then(encontrado => {
+                if (!encontrado) {
+                    throw new BadRequestExeption(517);
+                }
+            })
+            .then(() =>
+                Promise.all([
+                    Subfamilia.count({ where: { autor_id: id }, transaction }),
+                    Subespecie.count({ where: { autor_id: id }, transaction }),
+                    Especie.count({ where: { autor_id: id }, transaction }),
+                    Variedade.count({ where: { autor_id: id }, transaction }),
+                ])
+            )
+            .then(([subFamiliasCount, subEspeciesCount, especiesCount, variedadesCount]) => {
+                if (subFamiliasCount > 0 || subEspeciesCount > 0 || especiesCount > 0 || variedadesCount > 0) {
+                    throw new BadRequestExeption('O autor não pode ser excluído porque possui dependentes.');
+                }
+            })
+            .then(() =>
+                Autor.update(
+                    { ativo: 0 },
+                    {
+                        where: {
+                            id,
+                        },
+                        transaction,
+                    }
+                )
+            );
+
+    sequelize
+        .transaction(callback)
         .then(() => {
             response.status(codigos.DESATIVAR).send();
         })

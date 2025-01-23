@@ -8,72 +8,67 @@
     <title>Ficha Tombo</title>
     <style>
         @page {
-            margin: 0;
+          margin: 0;
         }
 
         html,
         body {
-            height: 1vh;
-            font-size: 11px;
-            font-family: Arial, Helvetica, sans-serif;
+          font-size: 11px;
+          font-family: Arial, Helvetica, sans-serif;
         }
 
         body {
-            max-width: 80%;
+          max-width: 80%;
         }
 
         .break-line-before {
-            page-break-before: always;
-            page-break-inside: avoid;
+          page-break-before: always;
+          page-break-inside: avoid;
         }
 
         .text-center {
-            text-align: center;
+          text-align: center;
         }
 
         .text-right {
-            text-align: right;
+          text-align: right;
         }
 
         .tabela-principal {
-            border-collapse: collapse;
-            width: 100%;
-            margin-bottom: 20px;
+          border-collapse: collapse;
+          border: 1px solid #333;
+          width: 14cm;
+          min-height: 9cm;
+          margin-bottom: 20px;
         }
 
         .tabela-principal td {
-            /* border: 1px solid #f0f; */
-            padding: 2px 8px;
+          padding: 2px 8px;
         }
 
-        .tabela-principal td:first-child {
-            border-left: 1px solid #333;
-        }
-
-        .tabela-principal td:last-child {
-            border-right: 1px solid #333;
-        }
-
-        .tabela-principal tr:first-child td {
-            border-top: 1px solid #333;
-        }
-
-        .tabela-principal tr:last-child td {
-            border-bottom: 1px solid #333;
+        .tabela-principal tr:first-child > td:first-child {
+          border-right: 1px solid #333;
         }
 
         .tabela-principal .linha-vazia {
-            height: 5px;
+          height: 5px;
         }
 
         .tabela-principal .celular-imagem {
-            border-right: 1px solid #333;
-            border-bottom: 1px solid #333;
+          border-right: 1px solid #333;
+          border-bottom: 1px solid #333;
         }
-    </style>
+
+        .border-bottom {
+          border-bottom: 1px solid #333;
+        }
+      </style>
 </head>
 
 <body>
+    <% if ( imprimir === '0') { %>
+        <% fotos.length = 1%>
+    <% } %>
     <% for (let i = 0; i < fotos.length; i++) { %>
     <% if (i !== 0 && i % 3 === 0) { %>
     <div class="break-line-before" style="height: 20px"></div>
@@ -81,35 +76,54 @@
     <table class="tabela-principal">
         <tr>
             <td rowspan="2" width="100" class="celular-imagem text-center">
-                <img width="100" src="/assets/logo-hcf.jpg" alt="Logo UTFPR">
+                <img width="100" src="/assets/logotipo_HCF.png" alt="Logo UTFPR">
                 <div style="font-size: .6em;"><b>CAMPUS CAMPO MOURÃO</b></div>
             </td>
             <td colspan="3" class="text-center">
                 <b>Herbário da Universidade Tecnológica Federal do Paraná - Campus Campo Mourão</b>
             </td>
         </tr>
-        <tr>
+        <tr class="border-bottom">
             <td colspan="2" style="border: none;">
                 <b>HCF:</b> <%- tombo.hcf %>
             </td>
             <td colspan="2">
-                <b>Data:</b> <%- tombo.data_tombo %>
+                <b>Data:</b> <%- romano_data_tombo %>
             </td>
         </tr>
         <% if (familia && familia.nome) { %>
         <tr>
             <td colspan="4">
-                <b>Família:</b> <%- tombo.familia.nome %>
+                <b>Família: </b> <%- tombo.familia.nome %>
             </td>
         </tr>
         <% } %>
-        <% if (especie && especie.nome) { %>
         <tr>
             <td colspan="4">
-                <b>Espécie:</b> <%- especie.nome %>
+                <b>Espécie:</b>
+                <% if (genero && genero.nome) { %>
+                    <i><%- genero.nome %></i>
+                <% } %>
+                <% if (especie && especie.nome) { %>
+                    <i><%- especie.nome %></i>
+                <% } %>
+                <% if (especie && especie.autore) { %>
+                    <%- especie.autore.nome %>
+                <% } %>
+                <% if (variedade && variedade.nome) { %>
+                    var. <i><%- variedade.nome %></i>
+                <% } %>
+                <% if (variedade && variedade.autore) { %>
+                    <%- variedade.autore.nome %>
+                <% } %>
+                <% if (subespecie && subespecie.nome) { %>
+                    ssp. <i><%- subespecie.nome %></i>
+                <% } %>
+                <% if (subespecie && subespecie.autore) { %>
+                    <%- subespecie.autore.nome %>
+                <% } %>
             </td>
         </tr>
-        <% } %>
         <tr>
             <td colspan="4" class="linha-vazia"></td>
         </tr>
@@ -124,18 +138,28 @@
                 <b>Identificador:</b> <%- identificacao.usuario.nome %>
             </td>
             <td>
-                <b>Data:</b> <%- identificacao.data_identificacao %>
+                <b>Data:</b> <%- romano_data_identificacao %>
             </td>
         </tr>
         <% } %>
         <tr>
             <td colspan="4">
                 <b>Local de coleta:</b>
-                <%- localColeta.descricao %>
-                - <%- localColeta.complemento %>
-                - <%- cidade.nome %>
-                - <%- cidade.estado.nome %>
-                - <%- cidade.estado.pais.nome %>
+                <% if (localColeta && localColeta.complemento) { %>
+                    <%- localColeta.complemento %>
+                <% } %>
+                <% if (localColeta && localColeta.descricao) { %>
+                    - <%- localColeta.descricao %>
+                <% } %>
+                <% if (cidade && cidade.nome) { %>
+                    - <%- cidade.nome %>
+                <% } %>
+                <% if (cidade && cidade.estado) { %>
+                    - <%- cidade.estado.nome %>
+                <% } %>
+                <% if (cidade && cidade.estado && cidade.estado.pais) { %>
+                    - <%- cidade.estado.pais.nome %>
+                <% } %>
             </td>
         </tr>
         <tr>
@@ -143,7 +167,31 @@
         </tr>
         <tr>
             <td colspan="4">
-                <b>Observações:</b> <%- tombo.observacao %>
+                <b>Observações:</b> 
+                <% if (tombo && tombo.observacao) { %>
+                    <%- tombo.observacao %>
+                <% } %>
+                <% if (tombo && tombo.latitude) { %>
+                    - Latitude: <%- tombo.latitude %>
+                <% } %>
+                <% if (tombo && tombo.longitude) { %>
+                    - Longitude: <%- tombo.longitude %>
+                <% } %>
+                <% if (tombo && tombo.altitude) { %>
+                    - Altitude: <%- tombo.altitude %>
+                <% } %>
+                <% if (localColeta && localColeta.solo) { %>
+                    - Solo: <%- localColeta.solo.nome %>
+                <% } %>
+                <% if (localColeta && localColeta.relevo) { %>
+                    - Relevo: <%- localColeta.relevo.nome %>
+                <% } %>
+                <% if (localColeta && localColeta.vegetaco) { %>
+                    - Vegetação: <%- localColeta.vegetaco.nome %>
+                <% } %>
+                <% if (localColeta && localColeta.fase_sucessional) { %>
+                    - Fase sucessional: <%- localColeta.fase_sucessional.nome %>
+                <% } %>
             </td>
         </tr>
         <tr>
@@ -160,10 +208,10 @@
                 <b>nº:</b> <%- tombo.numero_coleta %>
             </td>
             <td width="21%" class="text-right">
-                <b>Data:</b> <%- tombo.data_coleta %>
+                <b>Data:</b> <%- romano_data_coleta %>
             </td>
         </tr>
-        <% if (!!fotos[i]['id']) { %>
+        <% if (!!fotos[i]['id'] && imprimir !== '0') { %>
         <tr>
             <td colspan="4" class="text-right">
                 <svg id="<%- 'code128_' + fotos[i]['id'] %>"></svg>
@@ -171,7 +219,7 @@
         </tr>
         <% } %>
     </table>
-    <% if (!!fotos[i]['id']) { %>
+    <% if (!!fotos[i]['id'] && imprimir !== '0') { %>
     <script>
         window.addEventListener('load', () => {
             const id = "<%- '#code128_' + fotos[i]['id'] %>";

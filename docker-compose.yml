@@ -16,3 +16,13 @@ services:
       - --default-time-zone=+00:00
       - --character-set-server=utf8mb4
       - --sql-mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+
+  nginx:
+    image: nginx:1.17-alpine
+    container_name: herbario_nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./uploads:/usr/share/nginx/html
+    ports:
+      - 8080:80
