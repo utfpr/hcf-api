@@ -8,7 +8,7 @@ const {
 } = models;
 // ////////////////////FAMILIA///////////////////////////
 export const cadastrarFamilia = (request, response, next) => {
-    const { nome } = request.body;
+    const { nome, reinoId } = request.body;
 
     const callback = transaction => Promise.resolve()
         .then(() => Familia.findOne({
@@ -23,7 +23,7 @@ export const cadastrarFamilia = (request, response, next) => {
                 throw new BadRequestExeption(501);
             }
         })
-        .then(() => Familia.create({ nome }, transaction));
+        .then(() => Familia.create({ nome, reino_id: reinoId }, transaction));
     sequelize.transaction(callback)
         .then(familiaCriada => {
             console.log(familiaCriada); // eslint-disable-line
