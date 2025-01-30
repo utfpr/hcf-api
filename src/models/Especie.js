@@ -4,18 +4,26 @@ function associate(modelos) {
         Familia,
         Especie,
         Genero,
+        Reino,
     } = modelos;
 
     Especie.belongsTo(Autor, {
         foreignKey: 'autor_id',
         as: 'autor',
     });
+
     Especie.belongsTo(Genero, {
         foreignKey: 'genero_id',
     });
+
     Especie.belongsTo(Familia, {
         foreignKey: 'familia_id',
     });
+
+    Especie.belongsTo(Reino, {
+        foreignKey: 'reino_id',
+    });
+
 }
 
 export const defaultScope = {
@@ -54,6 +62,10 @@ export default (Sequelize, DataTypes) => {
         autor_id: {
             type: DataTypes.INTEGER,
             allowNull: true,
+        },
+        reino_id: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
         },
     };
 

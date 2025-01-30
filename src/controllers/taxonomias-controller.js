@@ -242,8 +242,13 @@ export const cadastrarSubfamilia = (request, response, next) => {
             if (!familiaEncontrada) {
                 throw new BadRequestExeption(516);
             }
+
+            return familiaEncontrada;
         })
-        .then(() => Subfamilia.create({ nome, familia_id: familiaId }, transaction));
+        .then(familia => Subfamilia.create({ nome,
+            familia_id: familiaId,
+            reino_id: familia.reino_id,
+        }, transaction));
     sequelize.transaction(callback)
         .then(subfamiliaCriado => {
             if (!subfamiliaCriado) {
@@ -294,12 +299,10 @@ export const buscarSubfamilia = (request, response, next) => {
                         model: Familia,
                         attributes: ['id', 'nome'],
                         where: familiaWhere,
-                        include: [
-                            {
-                                model: Reino,
-                                attributes: ['id', 'nome'],
-                            },
-                        ],
+                    },
+                    {
+                        model: Reino,
+                        attributes: ['id', 'nome'],
                     },
                     {
                         model: Autor,
@@ -439,8 +442,13 @@ export const cadastrarGenero = (request, response, next) => {
             if (!familiaEncontrada) {
                 throw new BadRequestExeption(516);
             }
+
+            return familiaEncontrada;
         })
-        .then(() => Genero.create({ nome, familia_id: familiaId }, transaction));
+        .then(familia => Genero.create({ nome,
+            familia_id: familiaId,
+            reino_id: familia.reino_id,
+        }, transaction));
     sequelize.transaction(callback)
         .then(generoCriado => {
             if (!generoCriado) {
@@ -489,12 +497,10 @@ export const buscarGeneros = (request, response, next) => {
                         model: Familia,
                         attributes: ['id', 'nome'],
                         where: familiaWhere,
-                        include: [
-                            {
-                                model: Reino,
-                                attributes: ['id', 'nome'],
-                            },
-                        ],
+                    },
+                    {
+                        model: Reino,
+                        attributes: ['id', 'nome'],
                     },
                 ],
             })
@@ -657,7 +663,11 @@ export const cadastrarEspecie = (request, response, next) => {
         })
         .then(genero => Especie.create(
             {
-                nome, genero_id: generoId, familia_id: genero.familia_id, autor_id: autorId,
+                nome,
+                genero_id: generoId,
+                familia_id: genero.familia_id,
+                reino_id: genero.reino_id,
+                autor_id: autorId,
             },
             transaction
         ));
@@ -716,12 +726,10 @@ export const buscarEspecies = (request, response, next) => {
                         model: Familia,
                         attributes: ['id', 'nome'],
                         where: familiaWhere,
-                        include: [
-                            {
-                                model: Reino,
-                                attributes: ['id', 'nome'],
-                            },
-                        ],
+                    },
+                    {
+                        model: Reino,
+                        attributes: ['id', 'nome'],
                     },
                     {
                         model: Genero,
@@ -916,6 +924,7 @@ export const cadastrarSubespecie = (request, response, next) => {
             genero_id: especie.genero_id,
             especie_id: especieId,
             familia_id: especie.familia_id,
+            reino_id: especie.reino_id,
             autor_id: autorId,
         }, transaction));
     sequelize.transaction(callback)
@@ -977,12 +986,10 @@ export const buscarSubespecies = (request, response, next) => {
                         model: Familia,
                         attributes: ['id', 'nome'],
                         where: familiaWhere,
-                        include: [
-                            {
-                                model: Reino,
-                                attributes: ['id', 'nome'],
-                            },
-                        ],
+                    },
+                    {
+                        model: Reino,
+                        attributes: ['id', 'nome'],
                     },
                     {
                         model: Genero,
@@ -1188,6 +1195,7 @@ export const cadastrarVariedade = (request, response, next) => {
                 genero_id: especie.genero_id,
                 especie_id: especieId,
                 familia_id: especie.familia_id,
+                reino_id: especie.reino_id,
                 autor_id: autorId,
             },
             transaction
@@ -1257,12 +1265,10 @@ export const buscarVariedades = (request, response, next) => {
                         model: Familia,
                         attributes: ['id', 'nome'],
                         where: familiaWhere,
-                        include: [
-                            {
-                                model: Reino,
-                                attributes: ['id', 'nome'],
-                            },
-                        ],
+                    },
+                    {
+                        model: Reino,
+                        attributes: ['id', 'nome'],
                     },
                     {
                         model: Genero,

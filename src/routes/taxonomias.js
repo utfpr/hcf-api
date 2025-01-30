@@ -32,12 +32,12 @@ import variedadeListagemEsquema from '../validators/variedade-listagem';
 const controller = require('../controllers/taxonomias-controller');
 
 const reinosOrdenacaoMiddleware = criaOrdenacaoMiddleware(['reino'], 'nome', 'asc');
-const familiasOrdenacaoMiddleware = criaOrdenacaoMiddleware(['familia'], 'nome', 'asc');
-const subfamiliasOrdenacaoMiddleware = criaOrdenacaoMiddleware(['subfamilia', 'familia', 'autor'], 'nome', 'asc');
-const generosOrdenacaoMiddleware = criaOrdenacaoMiddleware(['genero', 'familia'], 'nome', 'asc');
-const especiesOrdenacaoMiddleware = criaOrdenacaoMiddleware(['especie', 'familia', 'genero', 'familia'], 'nome', 'asc');
-const subEspeciesOrdenacaoMiddleware = criaOrdenacaoMiddleware(['subespecie', 'familia', 'genero', 'especie', 'autor'], 'nome', 'asc');
-const variedadesOrdenacaoMiddleware = criaOrdenacaoMiddleware(['variedade', 'familia', 'genero', 'especie', 'autor'], 'nome', 'asc');
+const familiasOrdenacaoMiddleware = criaOrdenacaoMiddleware(['reino', 'familia'], 'nome', 'asc');
+const subfamiliasOrdenacaoMiddleware = criaOrdenacaoMiddleware(['reino', 'subfamilia', 'familia', 'autor'], 'nome', 'asc');
+const generosOrdenacaoMiddleware = criaOrdenacaoMiddleware(['genero', 'familia', 'reino'], 'nome', 'asc');
+const especiesOrdenacaoMiddleware = criaOrdenacaoMiddleware(['especie', 'reino', 'familia', 'genero', 'familia'], 'nome', 'asc');
+const subEspeciesOrdenacaoMiddleware = criaOrdenacaoMiddleware(['subespecie', 'reino', 'familia', 'genero', 'especie', 'autor'], 'nome', 'asc');
+const variedadesOrdenacaoMiddleware = criaOrdenacaoMiddleware(['variedade', 'reino', 'familia', 'genero', 'especie', 'autor'], 'nome', 'asc');
 
 export default app => {
 

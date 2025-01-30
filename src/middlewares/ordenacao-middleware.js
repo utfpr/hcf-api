@@ -5,6 +5,7 @@ const {
     Genero,
     Subfamilia,
     Especie,
+    Reino,
     Variedade,
     Subespecie,
     Autor,
@@ -30,6 +31,10 @@ const criaListagemMiddleware = (allowedColumns, defaultSort = 'nome', defaultDir
         orderClause = [['nome', direction.toUpperCase()]];
 
         if (!request.path.includes('/autores')) orderClause = [[{ model: Autor, as: 'autor' }, 'nome', direction.toUpperCase()]];
+    } else if (column === 'reino') {
+        orderClause = [['nome', direction.toUpperCase()]];
+
+        if (!request.path.includes('/reinos')) orderClause = [[{ model: Reino }, 'nome', direction.toUpperCase()]];
     } else if (column === 'familia') {
         orderClause = [['nome', direction.toUpperCase()]];
 
