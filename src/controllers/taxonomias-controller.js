@@ -35,6 +35,66 @@ export const cadastrarFamilia = (request, response, next) => {
         .catch(next);
 };
 
+export const cadastrarReino = (request, response, next) => {
+    const { nome } = request.body;
+
+    const callback = transaction => Promise.resolve()
+        .then(() => Reino.findOne({
+            where: {
+                nome,
+            },
+            transaction,
+        }))
+        .then(reinoEncontrado => {
+            if (reinoEncontrado) {
+                throw new BadRequestExeption(501);
+            }
+        })
+        .then(() => Reino.create({ nome }, transaction));
+    sequelize.transaction(callback)
+        .then(reinoCriado => {
+            console.log(reinoCriado); // eslint-disable-line
+            if (!reinoCriado) {
+                throw new BadRequestExeption(502);
+            }
+            response.status(codigos.CADASTRO_SEM_RETORNO).send();
+        })
+        .catch(next);
+};
+
+export const editarReino = (request, response, next) => {
+    const id = request.params.reino_id;
+    const { nome } = request.body;
+
+    const callback = transaction => Promise.resolve()
+        .then(() => Reino.findOne({
+            where: {
+                id,
+            },
+            transaction,
+        }))
+        .then(reinoEncontrado => {
+            if (!reinoEncontrado) {
+                throw new BadRequestExeption(516);
+            }
+        })
+        .then(() => Reino.update({ nome }, {
+            where: {
+                id,
+            },
+            transaction,
+        }));
+    sequelize.transaction(callback)
+        .then(reinoEditado => {
+            console.log(reinoEditado); // eslint-disable-line
+            if (!reinoEditado) {
+                throw new BadRequestExeption(502);
+            }
+            response.status(codigos.CADASTRO_SEM_RETORNO).send();
+        })
+        .catch(next);
+};
+
 export const buscarReinos = (request, response, next) => {
     const { limite, pagina, offset } = request.paginacao;
     const { orderClause } = request.ordenacao;
@@ -43,7 +103,6 @@ export const buscarReinos = (request, response, next) => {
     let where;
     if (reino) {
         where = {
-            ativo: 1,
             nome: { [Op.like]: `%${reino}%` },
         };
     }

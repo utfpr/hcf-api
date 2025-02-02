@@ -18,6 +18,7 @@ import generoAtualizaEsquema from '../validators/genero-atualiza';
 import generoDesativarEsquema from '../validators/genero-desativar';
 import generoListagemEsquema from '../validators/genero-listagem';
 import nomeEsquema from '../validators/nome-obrigatorio';
+import atualizaReinoEsquema from '../validators/reino-atualiza';
 import reinoListagemEsquema from '../validators/reino-listagem';
 import subespecieEsquema from '../validators/subespecie';
 import subespecieAtualizaEsquema from '../validators/subespecie-atualiza';
@@ -47,12 +48,28 @@ export default app => {
             controller.listagem,
         ]);
 
-    app.route('/reinos')
+    app
+        .route('/reinos')
+        .post([
+            tokensMiddleware([TIPOS_USUARIOS.CURADOR, TIPOS_USUARIOS.OPERADOR, TIPOS_USUARIOS.IDENTIFICADOR]),
+            validacoesMiddleware(nomeEsquema),
+            controller.cadastrarReino,
+        ])
         .get([
             listagensMiddleware,
             reinosOrdenacaoMiddleware,
             validacoesMiddleware(reinoListagemEsquema),
             controller.buscarReinos,
+        ]);
+
+    app
+        .route('/reinos/:reino_id')
+        .put([
+            tokensMiddleware([
+                TIPOS_USUARIOS.CURADOR, TIPOS_USUARIOS.OPERADOR, TIPOS_USUARIOS.IDENTIFICADOR,
+            ]),
+            validacoesMiddleware(atualizaReinoEsquema),
+            controller.editarReino,
         ]);
 
     app
