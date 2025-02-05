@@ -353,3 +353,79 @@ export const buscarPontosTaxonomiaComFiltros = async (req, res, next) => {
         return next(error);
     }
 };
+
+export const buscarPontosPorNomePopular = async (req, res, next) => {
+    try {
+        const { nomePopular } = req.query;
+
+        if (!nomePopular) {
+            return res.status(400).json({ message: 'O nome popular deve ser informado.' });
+        }
+
+        const pontos = await Tombo.findAll({
+            where: {
+                latitude: { [Op.ne]: null },
+                longitude: { [Op.ne]: null },
+                nomes_populares: { [Op.like]: `%${nomePopular}%` },
+            },
+            attributes: ['hcf', 'latitude', 'longitude', 'nomes_populares'],
+        });
+
+        if (pontos.length === 0) {
+            return res.status(404).json({ message: 'Nenhum ponto encontrado com o nome popular informado.' });
+        }
+
+        const resultados = pontos.map(ponto => ({
+            hcf: ponto.hcf,
+            latitude: ponto.latitude,
+            longitude: ponto.longitude,
+            nomes_populares: ponto.nomes_populares,
+        }));
+
+        return res.status(200).json({
+            total: resultados.length,
+            resultados,
+        });
+
+    } catch (error) {
+        return next(error);
+    }
+};
+
+export const buscarPontosPorNomeCientifico = async (req, res, next) => {
+    try {
+        const { nomeCientifico } = req.query;
+
+        if (!nomeCientifico) {
+            return res.status(400).json({ message: 'O nome científico deve ser informado.' });
+        }
+
+        const pontos = await Tombo.findAll({
+            where: {
+                latitude: { [Op.ne]: null },
+                longitude: { [Op.ne]: null },
+                nome_cientifico: { [Op.eq]: nomeCientifico },
+            },
+            attributes: ['hcf', 'latitude', 'longitude', 'nome_cientifico'],
+        });
+
+        if (pontos.length === 0) {
+            return res.status(404).json({ message: 'Nenhum ponto encontrado com o nome científico informado.' });
+        }
+
+        const resultados = pontos.map(ponto => ({
+            hcf: ponto.hcf,
+            latitude: ponto.latitude,
+            longitude: ponto.longitude,
+            nome_cientifico: ponto.nome_cientifico,
+        }));
+
+        return res.status(200).json({
+            total: resultados.length,
+            resultados,
+        });
+
+    } catch (error) {
+        return next(error);
+    }
+};
