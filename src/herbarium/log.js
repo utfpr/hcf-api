@@ -57,8 +57,11 @@ export function transformaLog(conteudo) {
     const transformacaoUm = conteudo.replace(/\[/g, ' "[');
     const transformacaoDois = transformacaoUm.replace(/\./g, '." ,');
     const transformacaoTres = transformacaoDois.substring(0, transformacaoDois.lastIndexOf(','));
-    const transformacaoQuatro = `{ "log": [ ${transformacaoTres} ] }`;
-    return JSON.parse(transformacaoQuatro);
+
+    const jsonString = JSON.stringify(transformacaoTres);
+    const jsonObject = JSON.parse(jsonString);
+
+    return jsonObject;
 }
 
 /**
