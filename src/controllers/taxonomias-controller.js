@@ -4,11 +4,11 @@ import codigos from '../resources/codigos-http';
 import listaTaxonomiasSQL from '../resources/sqls/lista-taxonomias';
 
 const {
-    sequelize, Sequelize: { Op }, Sequelize, Familia, Genero, Subfamilia, Especie, Variedade, Subespecie, Autor, Tombo,
+    sequelize, Sequelize: { Op }, Sequelize, Reino, Familia, Genero, Subfamilia, Especie, Variedade, Subespecie, Autor, Tombo,
 } = models;
 // ////////////////////FAMILIA///////////////////////////
 export const cadastrarFamilia = (request, response, next) => {
-    const { nome } = request.body;
+    const { nome, reinoId } = request.body;
 
     const callback = transaction => Promise.resolve()
         .then(() => Familia.findOne({
@@ -23,7 +23,7 @@ export const cadastrarFamilia = (request, response, next) => {
                 throw new BadRequestExeption(501);
             }
         })
-        .then(() => Familia.create({ nome }, transaction));
+        .then(() => Familia.create({ nome, reino_id: reinoId }, transaction));
     sequelize.transaction(callback)
         .then(familiaCriada => {
             console.log(familiaCriada); // eslint-disable-line
@@ -35,10 +35,111 @@ export const cadastrarFamilia = (request, response, next) => {
         .catch(next);
 };
 
+export const cadastrarReino = (request, response, next) => {
+    const { nome } = request.body;
+
+    const callback = transaction => Promise.resolve()
+        .then(() => Reino.findOne({
+            where: {
+                nome,
+            },
+            transaction,
+        }))
+        .then(reinoEncontrado => {
+            if (reinoEncontrado) {
+                throw new BadRequestExeption(501);
+            }
+        })
+        .then(() => Reino.create({ nome }, transaction));
+    sequelize.transaction(callback)
+        .then(reinoCriado => {
+            console.log(reinoCriado); // eslint-disable-line
+            if (!reinoCriado) {
+                throw new BadRequestExeption(502);
+            }
+            response.status(codigos.CADASTRO_SEM_RETORNO).send();
+        })
+        .catch(next);
+};
+
+export const editarReino = (request, response, next) => {
+    const id = request.params.reino_id;
+    const { nome } = request.body;
+
+    const callback = transaction => Promise.resolve()
+        .then(() => Reino.findOne({
+            where: {
+                id,
+            },
+            transaction,
+        }))
+        .then(reinoEncontrado => {
+            if (!reinoEncontrado) {
+                throw new BadRequestExeption(516);
+            }
+        })
+        .then(() => Reino.update({ nome }, {
+            where: {
+                id,
+            },
+            transaction,
+        }));
+    sequelize.transaction(callback)
+        .then(reinoEditado => {
+            console.log(reinoEditado); // eslint-disable-line
+            if (!reinoEditado) {
+                throw new BadRequestExeption(502);
+            }
+            response.status(codigos.CADASTRO_SEM_RETORNO).send();
+        })
+        .catch(next);
+};
+
+export const buscarReinos = (request, response, next) => {
+    const { limite, pagina, offset } = request.paginacao;
+    const { orderClause } = request.ordenacao;
+    const { reino, reinoId } = request.query;
+
+    let where;
+    if (reino) {
+        where = {
+            nome: { [Op.like]: `%${reino}%` },
+        };
+    }
+    if (reinoId) {
+        where = {
+            ...where,
+            reino_id: reinoId,
+        };
+    }
+
+    Promise.resolve()
+        .then(() =>
+            Reino.findAndCountAll({
+                attributes: ['id', 'nome'],
+                order: orderClause,
+                limit: limite,
+                offset,
+                where,
+            })
+        )
+        .then(reinos => {
+            response.status(codigos.LISTAGEM).json({
+                metadados: {
+                    total: reinos.count,
+                    pagina,
+                    limite,
+                },
+                resultado: reinos.rows,
+            });
+        })
+        .catch(next);
+};
+
 export const buscarFamilias = (request, response, next) => {
     const { limite, pagina, offset } = request.paginacao;
     const { orderClause } = request.ordenacao;
-    const { familia } = request.query;
+    const { familia, reino_id: reinoId } = request.query;
     let where;
     where = {
         ativo: 1,
@@ -49,6 +150,14 @@ export const buscarFamilias = (request, response, next) => {
             nome: { [Op.like]: `%${familia}%` },
         };
     }
+
+    if (reinoId) {
+        where = {
+            ...where,
+            reino_id: reinoId,
+        };
+    }
+
     Promise.resolve()
         .then(() =>
             Familia.findAndCountAll({
@@ -57,6 +166,12 @@ export const buscarFamilias = (request, response, next) => {
                 limit: limite,
                 offset,
                 where,
+                include: [
+                    {
+                        model: Reino,
+                        attributes: ['id', 'nome'],
+                    },
+                ],
             })
         )
         .then(familias => {
@@ -186,8 +301,13 @@ export const cadastrarSubfamilia = (request, response, next) => {
             if (!familiaEncontrada) {
                 throw new BadRequestExeption(516);
             }
+
+            return familiaEncontrada;
         })
-        .then(() => Subfamilia.create({ nome, familia_id: familiaId }, transaction));
+        .then(familia => Subfamilia.create({ nome,
+            familia_id: familiaId,
+            reino_id: familia.reino_id,
+        }, transaction));
     sequelize.transaction(callback)
         .then(subfamiliaCriado => {
             if (!subfamiliaCriado) {
@@ -238,6 +358,10 @@ export const buscarSubfamilia = (request, response, next) => {
                         model: Familia,
                         attributes: ['id', 'nome'],
                         where: familiaWhere,
+                    },
+                    {
+                        model: Reino,
+                        attributes: ['id', 'nome'],
                     },
                     {
                         model: Autor,
@@ -377,8 +501,13 @@ export const cadastrarGenero = (request, response, next) => {
             if (!familiaEncontrada) {
                 throw new BadRequestExeption(516);
             }
+
+            return familiaEncontrada;
         })
-        .then(() => Genero.create({ nome, familia_id: familiaId }, transaction));
+        .then(familia => Genero.create({ nome,
+            familia_id: familiaId,
+            reino_id: familia.reino_id,
+        }, transaction));
     sequelize.transaction(callback)
         .then(generoCriado => {
             if (!generoCriado) {
@@ -427,6 +556,10 @@ export const buscarGeneros = (request, response, next) => {
                         model: Familia,
                         attributes: ['id', 'nome'],
                         where: familiaWhere,
+                    },
+                    {
+                        model: Reino,
+                        attributes: ['id', 'nome'],
                     },
                 ],
             })
@@ -589,7 +722,11 @@ export const cadastrarEspecie = (request, response, next) => {
         })
         .then(genero => Especie.create(
             {
-                nome, genero_id: generoId, familia_id: genero.familia_id, autor_id: autorId,
+                nome,
+                genero_id: generoId,
+                familia_id: genero.familia_id,
+                reino_id: genero.reino_id,
+                autor_id: autorId,
             },
             transaction
         ));
@@ -648,6 +785,10 @@ export const buscarEspecies = (request, response, next) => {
                         model: Familia,
                         attributes: ['id', 'nome'],
                         where: familiaWhere,
+                    },
+                    {
+                        model: Reino,
+                        attributes: ['id', 'nome'],
                     },
                     {
                         model: Genero,
@@ -842,6 +983,7 @@ export const cadastrarSubespecie = (request, response, next) => {
             genero_id: especie.genero_id,
             especie_id: especieId,
             familia_id: especie.familia_id,
+            reino_id: especie.reino_id,
             autor_id: autorId,
         }, transaction));
     sequelize.transaction(callback)
@@ -903,6 +1045,10 @@ export const buscarSubespecies = (request, response, next) => {
                         model: Familia,
                         attributes: ['id', 'nome'],
                         where: familiaWhere,
+                    },
+                    {
+                        model: Reino,
+                        attributes: ['id', 'nome'],
                     },
                     {
                         model: Genero,
@@ -1108,6 +1254,7 @@ export const cadastrarVariedade = (request, response, next) => {
                 genero_id: especie.genero_id,
                 especie_id: especieId,
                 familia_id: especie.familia_id,
+                reino_id: especie.reino_id,
                 autor_id: autorId,
             },
             transaction
@@ -1177,6 +1324,10 @@ export const buscarVariedades = (request, response, next) => {
                         model: Familia,
                         attributes: ['id', 'nome'],
                         where: familiaWhere,
+                    },
+                    {
+                        model: Reino,
+                        attributes: ['id', 'nome'],
                     },
                     {
                         model: Genero,

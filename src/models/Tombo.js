@@ -15,6 +15,7 @@ function associate(modelos) {
         ColecaoAnexa,
         Usuario,
         Alteracao,
+        Reino,
         // TomboColetor,
         Relevo,
         Remessa,
@@ -117,6 +118,10 @@ function associate(modelos) {
 
     Tombo.belongsTo(Familia, {
         foreignKey: 'familia_id',
+    });
+
+    Tombo.belongsTo(Reino, {
+        foreignKey: 'reino_id',
     });
 
     Tombo.belongsTo(Subfamilia, {
@@ -242,6 +247,10 @@ export default (Sequelize, DataTypes) => {
             allowNull: true,
         },
         familia_id: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
+        reino_id: {
             type: DataTypes.INTEGER,
             allowNull: true,
         },
