@@ -2,7 +2,7 @@ import models from '../models';
 
 const { Op } = require('sequelize');
 
-const { Cidade, LocalColeta, Tombo, Familia, Subfamilia, Genero, Especie, Subespecie, Variedade } = models;
+const { Cidade, LocalColeta, Tombo, Reino, Familia, Subfamilia, Genero, Especie, Subespecie, Variedade } = models;
 
 export const listaTodosCidades = where =>
     Cidade.findAndCountAll({
@@ -233,6 +233,7 @@ export const buscarHcfsPorFaixaDeAltitude = async (req, res, next) => {
 export const buscarPontosTaxonomiaComFiltros = async (req, res, next) => {
     try {
         const {
+            nomeReino,
             nomeFamilia,
             nomeSubFamilia,
             nomeGenero,
@@ -242,6 +243,7 @@ export const buscarPontosTaxonomiaComFiltros = async (req, res, next) => {
         } = req.query;
 
         if (
+            !nomeReino &&
             !nomeFamilia &&
             !nomeSubFamilia &&
             !nomeGenero &&
@@ -261,6 +263,15 @@ export const buscarPontosTaxonomiaComFiltros = async (req, res, next) => {
                 longitude: { [Op.ne]: null },
             },
         };
+
+        if (nomeReino) {
+            whereClause.include.push({
+                model: Reino,
+                where: { nome: { [Op.eq]: nomeReino } },
+                attributes: ['id', 'nome'],
+                required: true,
+            });
+        }
 
         if (nomeFamilia) {
             whereClause.include.push({
@@ -337,6 +348,7 @@ export const buscarPontosTaxonomiaComFiltros = async (req, res, next) => {
             hcf: ponto.hcf,
             latitude: ponto.latitude,
             longitude: ponto.longitude,
+            reino: ponto.reino ? ponto.reino.nome : null,
             familia: ponto.familia ? ponto.familia.nome : null,
             subFamilia: ponto.sub_familia ? ponto.sub_familia.nome : null,
             genero: ponto.genero ? ponto.genero.nome : null,
