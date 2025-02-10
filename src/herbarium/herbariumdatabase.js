@@ -17,6 +17,7 @@ import modeloEspecies from '../models/Especie';
 import modeloFamilias from '../models/Familia';
 import modeloGeneros from '../models/Genero';
 import modeloReflora from '../models/Reflora';
+import modeloSpecieslink from '../models/Specieslink';
 import modeloSubespecies from '../models/Subespecie';
 import modeloTombos from '../models/Tombo';
 import modeloTombosFotos from '../models/TomboFoto';
@@ -58,6 +59,20 @@ export function criaTabelaReflora() {
     tabelaReflora.sync({ force: true });
     // tabelaReflora.removeAttribute('id');
     return tabelaReflora;
+}
+
+/**
+ * A função criaTabelaSpecieslink, cria uma tabela chamada reflora,
+ * com base no modelo que foi chamado e dentro desse modelo,
+ * existe nome das colunas que estarão presentes nessa tabela.
+ * Nessa tabela é guardado os códigos de barras, e as respostas das requisições.
+ * Detalhe force: true é igual ao drop table.
+ * @return tabelaSpecieslink, que é a tabela que foi criada.
+ */
+export function criaTabelaSpecieslink() {
+    const tabelaSpecieslink = modeloSpecieslink(conexao, Sequelize);
+    tabelaSpecieslink.sync({ force: true });
+    return tabelaSpecieslink;
 }
 
 /**
@@ -293,6 +308,39 @@ export function insereTabelaReflora(tabelaReflora, listaCodBarra) {
     listaCodBarra.forEach((codBarra, index) => {
         throttle(() => {
             tabelaReflora.create({
+                cod_barra: codBarra.dataValues.codigo_barra,
+                tombo_json: null,
+                ja_requisitou: false,
+                nro_requisicoes: 3,
+            }).then(() => {
+                if (index === listaCodBarra.length - 1) {
+                    promessa.resolve();
+                }
+            });
+        });
+    });
+    return promessa.promise;
+}
+
+/**
+ * A função insereTabelaSpecieslink, percorre a lista que foi passada por parâmetro
+ * e a cada item dessa lista é adicionado o código de barra presente nessa
+ * lista na tabela do reflora. Um detalhe que vale a pena ressaltar é que
+ * Sem o throttle ele faz muitas conexões simultaneamente, acabando gerando
+ * erros. O throttle faz um por um, evitando erros. Algumas soluções no StackOverflow
+ * falavam para adicionar certas configurações na criação da conexão, porém nada deu certo.
+ * @param {*} tabelaSpecieslink, é a tabela do reflora aonde será adicionado os códigos de barra.
+ * @param {*} listaCodBarra, é a lista de códigos de barras que serão inseridos no
+ * banco de dados.
+ * @return promessa.promise, como é assíncrono ele só retorna quando resolver, ou seja,
+ * quando terminar de realizar a inserção.
+ */
+export function insereTabelaSpecieslink(tabelaSpecieslink, listaCodBarra) {
+    const throttle = throttledQueue(1, 200);
+    const promessa = Q.defer();
+    listaCodBarra.forEach((codBarra, index) => {
+        throttle(() => {
+            tabelaSpecieslink.create({
                 cod_barra: codBarra.dataValues.codigo_barra,
                 tombo_json: null,
                 ja_requisitou: false,
@@ -647,6 +695,26 @@ export function existeTabelaReflora() {
     conexao.query('SHOW TABLES', { type: Sequelize.QueryTypes.SHOWTABLES }).then(listaTabelas => {
         listaTabelas.forEach(tabelas => {
             if (tabelas === 'reflora') {
+                promessa.resolve(true);
+            }
+        });
+        promessa.resolve(false);
+    });
+    return promessa.promise;
+}
+
+/**
+ * A função existeTabelaReflora, executa um SHOW TABLES verificando
+ * se existe a tabela do reflora ou não. Se existir a tabela do reflora
+ * retorna true, e caso não exista false.
+ * @return promessa.promise, como é assíncrono ele só retorna quando resolver, ou seja,
+ * quando terminar de realizar a consulta de verificar se existe ou não a tabela.
+ */
+export function existeTabelaSpecieslink() {
+    const promessa = Q.defer();
+    conexao.query('SHOW TABLES', { type: Sequelize.QueryTypes.SHOWTABLES }).then(listaTabelas => {
+        listaTabelas.forEach(tabelas => {
+            if (tabelas === 'specieslink') {
                 promessa.resolve(true);
             }
         });

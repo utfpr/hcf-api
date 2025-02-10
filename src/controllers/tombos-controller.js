@@ -13,7 +13,7 @@ import models from '../models';
 import codigos from '../resources/codigos-http';
 
 const {
-    Solo, Relevo, Cidade, Estado, Vegetacao, FaseSucessional, Pais, Tipo, LocalColeta, Familia, sequelize,
+    Solo, Relevo, Cidade, Estado, Vegetacao, FaseSucessional, Pais, Tipo, LocalColeta, Reino, Familia, sequelize,
     Genero, Subfamilia, Autor, Coletor, Variedade, Subespecie, TomboFoto, Identificador,
     ColecaoAnexa, Especie, Herbario, Tombo, Alteracao, TomboIdentificador, ColetorComplementar, Sequelize: { Op },
 } = models;
@@ -303,9 +303,9 @@ export const cadastro = (request, response, next) => {
                     jsonTombo.altitude = localidade.altitude;
                 }
                 if (identificacao) {
-                    jsonTombo.data_identificacao_dia = identificacao.data_identificacao.dia;
-                    jsonTombo.data_identificacao_mes = identificacao.data_identificacao.mes;
-                    jsonTombo.data_identificacao_ano = identificacao.data_identificacao.ano;
+                    jsonTombo.data_identificacao_dia = identificacao.data_identificacao?.dia;
+                    jsonTombo.data_identificacao_mes = identificacao.data_identificacao?.mes;
+                    jsonTombo.data_identificacao_ano = identificacao.data_identificacao?.ano;
                 }
                 if (paisagem) {
                     jsonTombo.solo_id = paisagem.solo_id;
@@ -320,7 +320,7 @@ export const cadastro = (request, response, next) => {
                     jsonTombo = {
                         ...jsonTombo,
                         // eslint-disable-next-line max-len
-                        ...pick(taxonomia, ['nome_cientifico', 'variedade_id', 'especie_id', 'genero_id', 'familia_id', 'sub_familia_id', 'sub_especie_id']),
+                        ...pick(taxonomia, ['nome_cientifico', 'variedade_id', 'especie_id', 'genero_id', 'familia_id', 'reino_id', 'sub_familia_id', 'sub_especie_id']),
                     };
                 }
                 if (colecoesAnexas && colecoesAnexas.id) {
@@ -342,7 +342,7 @@ export const cadastro = (request, response, next) => {
                     status = 'APROVADO';
                 }
 
-                const dadosComplementares = coletor_complementar.complementares
+                const dadosComplementares = coletor_complementar?.complementares
                     ? {
                         hcf: tombo.hcf,
                         complementares: coletor_complementar.complementares,
@@ -1081,6 +1081,7 @@ export const buscarProximoNumeroColetor = (request, response, next) => {
 
 export const obterTombo = (request, response, next) => {
     const id = request.params.tombo_id;
+
     let resposta = {};
     let dadosTombo = {};
     // eslint-disable-next-line
@@ -1207,6 +1208,9 @@ export const obterTombo = (request, response, next) => {
                         model: Familia,
                     },
                     {
+                        model: Reino,
+                    },
+                    {
                         model: Subfamilia,
                     },
                     {
@@ -1229,34 +1233,33 @@ export const obterTombo = (request, response, next) => {
 
             dadosTombo = tombo;
 
-            // console.log(tombo);
-
             resposta = {
-                herbarioInicial: tombo.herbario !== null ? tombo.herbario.id : '',
-                localidadeInicial: tombo.cor !== null ? tombo.cor : '',
-                tipoInicial: tombo.tipo !== null ? tombo.tipo.id : '',
-                paisInicial: tombo.locais_coletum.cidade?.estado?.paise !== null ? tombo.locais_coletum.cidade?.estado.paise.id : '',
-                estadoInicial: tombo.locais_coletum.cidade?.estado !== null ? tombo.locais_coletum.cidade?.estado.id : '',
-                cidadeInicial: tombo.locais_coletum.cidade !== null ? tombo.locais_coletum.cidade.id : '',
-                familiaInicial: tombo.familia !== null ? tombo.familia.id : '',
-                subfamiliaInicial: tombo.sub_familia !== null ? tombo.sub_familia.id : '',
-                generoInicial: tombo.genero !== null ? tombo.genero.id : '',
-                especieInicial: tombo.especy !== null ? tombo.especy.id : '',
-                subespecieInicial: tombo.sub_especy !== null ? tombo.sub_especy.id : '',
-                variedadeInicial: tombo.variedade !== null ? tombo.variedade.id : '',
-                soloInicial: tombo.solo !== null ? tombo.solo.nome : '',
-                relevoInicial: tombo.relevo !== null ? tombo.relevo.nome : '',
-                vegetacaoInicial: tombo.vegetaco !== null ? tombo.vegetaco.nome : '',
+                herbarioInicial: tombo.herbario !== null ? tombo.herbario?.id : '',
+                localidadeInicial: tombo.cor !== null ? tombo?.cor : '',
+                tipoInicial: tombo.tipo !== null ? tombo.tipo?.id : '',
+                paisInicial: tombo.locais_coletum.cidade?.estado?.paise !== null ? tombo.locais_coletum.cidade?.estado?.paise?.id : '',
+                estadoInicial: tombo.locais_coletum.cidade?.estado !== null ? tombo.locais_coletum.cidade?.estado?.id : '',
+                cidadeInicial: tombo.locais_coletum.cidade !== null ? tombo.locais_coletum?.cidade?.id : '',
+                reinoInicial: tombo.reino !== null ? tombo.reino?.id : '',
+                familiaInicial: tombo.familia !== null ? tombo.familia?.id : '',
+                subfamiliaInicial: tombo.sub_familia !== null ? tombo.sub_familia?.id : '',
+                generoInicial: tombo.genero !== null ? tombo.genero?.id : '',
+                especieInicial: tombo.especy !== null ? tombo.especy?.id : '',
+                subespecieInicial: tombo.sub_especy !== null ? tombo.sub_especy?.id : '',
+                variedadeInicial: tombo.variedade !== null ? tombo.variedade?.id : '',
+                soloInicial: tombo.solo !== null ? tombo.solo?.nome : '',
+                relevoInicial: tombo.relevo !== null ? tombo.relevo?.nome : '',
+                vegetacaoInicial: tombo.vegetaco !== null ? tombo.vegetaco?.nome : '',
                 faseInicial:
-                tombo.locais_coletum !== null && tombo.locais_coletum.fase_sucessional !== null ? tombo.locais_coletum.fase_sucessional.numero : '',
+                tombo.locais_coletum !== null && tombo.locais_coletum?.fase_sucessional !== null ? tombo.locais_coletum?.fase_sucessional?.numero : '',
                 //   coletoresInicial: tombo.coletores.map((coletor) => ({
                 //     key: `${coletor.id}`,
                 //     label: coletor.nome,
                 //   })),
                 coletor: tombo.coletore
                     ? {
-                        id: tombo.coletore.id,
-                        nome: tombo.coletore.nome,
+                        id: tombo.coletore?.id,
+                        nome: tombo.coletore?.nome,
                     }
                     : null,
                 // coletorComplementar: tombo.coletorComplementar
@@ -1265,15 +1268,15 @@ export const obterTombo = (request, response, next) => {
                 //         complementares: tombo.coletorComplementar.complementares,
                 //     }
                 //     : '',
-                colecaoInicial: tombo.colecoes_anexa !== null ? tombo.colecoes_anexa.tipo : '',
-                complementoInicial: tombo.localizacao !== null && tombo.localizacao !== undefined ? tombo.localizacao.complemento : '',
+                colecaoInicial: tombo.colecoes_anexa !== null ? tombo.colecoes_anexa?.tipo : '',
+                complementoInicial: tombo.localizacao !== null && tombo.localizacao !== undefined ? tombo.localizacao?.complemento : '',
                 hcf: tombo.hcf,
                 situacao: tombo.situacao,
                 data_tombo: tombo.data_tombo,
                 observacao: tombo.observacao !== null ? tombo.observacao : '',
-                tipo: tombo.tipo !== null ? tombo.tipo.nome : '',
+                tipo: tombo.tipo !== null ? tombo.tipo?.nome : '',
                 numero_coleta: tombo.numero_coleta,
-                herbario: tombo.herbario !== null ? `${tombo.herbario.sigla} - ${tombo.herbario.nome}` : '',
+                herbario: tombo.herbario !== null ? `${tombo.herbario?.sigla} - ${tombo.herbario?.nome}` : '',
                 localizacao: {
                     latitude: tombo.latitude !== null ? tombo.latitude : '',
                     longitude: tombo.longitude !== null ? tombo.longitude : '',
@@ -1286,42 +1289,43 @@ export const obterTombo = (request, response, next) => {
                     long_min: tombo.longitude !== null ? converteDecimalParaGMSMinutos(tombo.longitude, false) : '',
                     long_sec: tombo.longitude !== null ? converteDecimalParaGMSSegundos(tombo.longitude, false) : '',
                     altitude: tombo.altitude !== null ? tombo.altitude : '',
-                    cidade: tombo.locais_coletum !== null && tombo.locais_coletum.cidade !== null ? tombo.locais_coletum.cidade.nome : '',
-                    estado: tombo.locais_coletum !== null && tombo.locais_coletum.cidade !== null ? tombo.locais_coletum.cidade.estado.nome : '',
-                    pais: tombo.locais_coletum !== null && tombo.locais_coletum.cidade !== null ? tombo.locais_coletum.cidade.estado.paise.nome : '',
+                    cidade: tombo.locais_coletum !== null && tombo.locais_coletum.cidade !== null ? tombo.locais_coletum?.cidade?.nome : '',
+                    estado: tombo.locais_coletum !== null && tombo.locais_coletum.cidade !== null ? tombo.locais_coletum.cidade?.estado?.nome : '',
+                    pais: tombo.locais_coletum !== null && tombo.locais_coletum.cidade !== null ? tombo.locais_coletum.cidade.estado?.paise?.nome : '',
                     cor: tombo.cor !== null ? tombo.cor : '',
-                    complemento: tombo.locais_coletum.complemento !== null ? tombo.locais_coletum.complemento : '',
+                    complemento: tombo.locais_coletum?.complemento !== null ? tombo.locais_coletum?.complemento : '',
                 },
                 local_coleta: {
-                    descricao: tombo.locais_coletum !== null && tombo.locais_coletum.descricao !== null ? tombo.locais_coletum.descricao : '',
-                    solo: tombo.solo !== null ? tombo.solo.nome : '',
-                    relevo: tombo.relevo !== null ? tombo.relevo.nome : '',
-                    vegetacao: tombo.vegetaco !== null ? tombo.vegetaco.nome : '',
+                    descricao: tombo.locais_coletum !== null && tombo.locais_coletum?.descricao !== null ? tombo.locais_coletum.descricao : '',
+                    solo: tombo.solo !== null ? tombo.solo?.nome : '',
+                    relevo: tombo.relevo !== null ? tombo.relevo?.nome : '',
+                    vegetacao: tombo.vegetaco !== null ? tombo.vegetaco?.nome : '',
                     fase_sucessional:
-                  tombo.locais_coletum !== null && tombo.locais_coletum.fase_sucessional !== null ? tombo.locais_coletum.fase_sucessional : '',
+                  tombo.locais_coletum !== null && tombo.locais_coletum?.fase_sucessional !== null ? tombo.locais_coletum?.fase_sucessional : '',
                 },
                 taxonomia: {
                     nome_cientifico: tombo.nome_cientifico !== null ? tombo.nome_cientifico : '',
                     nome_popular: tombo.nomes_populares !== null ? tombo.nomes_populares : '',
-                    familia: tombo.familia !== null ? tombo.familia.nome : '',
-                    sub_familia: tombo.sub_familia !== null ? tombo.sub_familia.nome : '',
-                    genero: tombo.genero !== null ? tombo.genero.nome : '',
+                    reino: tombo.reino !== null ? tombo.reino?.nome : '',
+                    familia: tombo.familia !== null ? tombo.familia?.nome : '',
+                    sub_familia: tombo.sub_familia !== null ? tombo.sub_familia?.nome : '',
+                    genero: tombo.genero !== null ? tombo.genero?.nome : '',
                     especie: {
-                        nome: tombo.especy !== null ? tombo.especy.nome : '',
-                        autor: tombo.especy !== null && tombo.especy.autor !== null ? tombo.especy.autor.nome : '',
+                        nome: tombo.especy !== null ? tombo.especy?.nome : '',
+                        autor: tombo.especy !== null && tombo.especy?.autor !== null ? tombo.especy?.autor?.nome : '',
                     },
                     sub_especie: {
-                        nome: tombo.sub_especy !== null ? tombo.sub_especy.nome : '',
-                        autor: tombo.sub_especy !== null && tombo.sub_especy.autor !== null ? tombo.sub_especy.autor.nome : '',
+                        nome: tombo.sub_especy !== null ? tombo.sub_especy?.nome : '',
+                        autor: tombo.sub_especy !== null && tombo.sub_especy?.autor !== null ? tombo.sub_especy?.autor?.nome : '',
                     },
                     variedade: {
-                        nome: tombo.variedade !== null ? tombo.variedade.nome : '',
-                        autor: tombo.variedade !== null && tombo.variedade.autor !== null ? tombo.variedade.autor.nome : '',
+                        nome: tombo.variedade !== null ? tombo.variedade?.nome : '',
+                        autor: tombo.variedade !== null && tombo.variedade?.autor !== null ? tombo.variedade?.autor?.nome : '',
                     },
                 },
                 colecao_anexa: {
-                    tipo: tombo.colecoes_anexa !== null ? tombo.colecoes_anexa.tipo : '',
-                    observacao: tombo.colecoes_anexa !== null ? tombo.colecoes_anexa.observacoes : '',
+                    tipo: tombo.colecoes_anexa !== null ? tombo.colecoes_anexa?.tipo : '',
+                    observacao: tombo.colecoes_anexa !== null ? tombo.colecoes_anexa?.observacoes : '',
                 },
             };
             let dataCol = '';
@@ -1374,7 +1378,7 @@ export const obterTombo = (request, response, next) => {
         .then(() =>
             Estado.findAll({
                 where: {
-                    pais_id: dadosTombo.locais_coletum.cidade?.estado.paise.id,
+                    pais_id: dadosTombo.locais_coletum.cidade?.estado?.paise?.id,
                 },
             })
         )
@@ -1383,17 +1387,28 @@ export const obterTombo = (request, response, next) => {
         .then(() =>
             Cidade.findAll({
                 where: {
-                    estado_id: dadosTombo.locais_coletum.cidade?.estado.id,
+                    estado_id: dadosTombo.locais_coletum.cidade?.estado?.id,
                 },
             })
         )
     // eslint-disable-next-line no-return-assign
         .then(cidades => (resposta.cidades = cidades))
+        .then(() =>
+            Familia.findAll({
+                where: {
+                    id: dadosTombo.familia?.id,
+                    reino_id: dadosTombo.reino?.id,
+                },
+            })
+        )
+        .then(familias => {
+            resposta.familias = familias;
+        })
         .then(() => {
             if (dadosTombo.familia) {
                 return Subfamilia.findAll({
                     where: {
-                        familia_id: dadosTombo.familia.id,
+                        familia_id: dadosTombo.familia?.id,
                     },
                     include: [
                         {
@@ -1417,7 +1432,7 @@ export const obterTombo = (request, response, next) => {
             if (dadosTombo.familia) {
                 return Genero.findAll({
                     where: {
-                        familia_id: dadosTombo.familia.id,
+                        familia_id: dadosTombo.familia?.id,
                     },
                 });
             }
@@ -1434,7 +1449,7 @@ export const obterTombo = (request, response, next) => {
             if (dadosTombo.genero) {
                 return Especie.findAll({
                     where: {
-                        genero_id: dadosTombo.genero.id,
+                        genero_id: dadosTombo.genero?.id,
                     },
                     include: [
                         {
@@ -1458,7 +1473,7 @@ export const obterTombo = (request, response, next) => {
             if (dadosTombo.especy) {
                 return Subespecie.findAll({
                     where: {
-                        especie_id: dadosTombo.especy.id,
+                        especie_id: dadosTombo.especy?.id,
                     },
                     include: [
                         {
@@ -1482,7 +1497,7 @@ export const obterTombo = (request, response, next) => {
             if (dadosTombo.especy) {
                 return Variedade.findAll({
                     where: {
-                        especie_id: dadosTombo.especy.id,
+                        especie_id: dadosTombo.especy?.id,
                     },
                     include: [
                         {

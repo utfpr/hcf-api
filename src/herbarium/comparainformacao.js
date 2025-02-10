@@ -107,7 +107,7 @@ export function ehIgualFamilia(idFamilia, nomeFamiliaHerbarioVirtual) {
         }
         const processaNomeFamiliaBD = processaString(nomeFamiliaBd);
         const processaNomeFamiliaReflora = processaString(nomeFamiliaHerbarioVirtual);
-        if (processaNomeFamiliaBD === processaNomeFamiliaReflora) {
+        if (processaNomeFamiliaBD.toLowerCase() === processaNomeFamiliaReflora.toLowerCase()) {
             promessa.resolve(-1);
             return promessa.promise;
         }
@@ -158,7 +158,7 @@ export function ehIgualGenero(idGenero, nomeGeneroHerbarioVirtual) {
         }
         const processaNomeGeneroBd = processaString(nomeGeneroBd);
         const processaNomeGeneroReflora = processaString(nomeGeneroHerbarioVirtual);
-        if (processaNomeGeneroBd === processaNomeGeneroReflora) {
+        if (processaNomeGeneroBd.toLowerCase() === processaNomeGeneroReflora.toLowerCase()) {
             promessa.resolve(-1);
             return promessa.promise;
         }
@@ -209,7 +209,7 @@ export function ehIgualEspecie(idEspecie, nomeEspecieHerbarioVirtual) {
         }
         const processaNomeEspecieBd = processaString(nomeEspecieBd);
         const processaNomeEspecieReflora = processaString(nomeEspecieHerbarioVirtual);
-        if (processaNomeEspecieBd === processaNomeEspecieReflora) {
+        if (processaNomeEspecieBd.toLowerCase() === processaNomeEspecieReflora.toLowerCase()) {
             promessa.resolve(-1);
             return promessa.promise;
         }

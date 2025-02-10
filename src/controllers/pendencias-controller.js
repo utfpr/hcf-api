@@ -6,6 +6,7 @@ import subespecie from '../validators/subespecie';
 
 const {
     Alteracao,
+    Autor,
     Usuario,
     Herbario,
     Solo,
@@ -1306,208 +1307,338 @@ export const aprovarComJson = async (changes, hcf, response, next) => {
     // );
 };
 
-// export const aprovarComJsonNome = (alteracao, hcf, transaction) => {
-//     const parametros = {};
+export const aprovarComJsonId = (alteracao, hcf, transaction) => {
+    const parametros = {};
 
-//     return new Promise((resolve, reject) => Familia.findOne({
-//         where: {
-//             nome: { [Op.like]: `%${alteracao.familia_nome}%` },
-//         },
-//         transaction,
-//     })
-//         .then(familia => {
-//             if (familia) {
-//                 return familia;
-//             }
-//             return Familia.create({ nome: alteracao.familia_nome }, transaction);
-//         })
-//         .then(familia => {
-//             if (familia) {
-//                 parametros.familia = familia;
-//             }
-//             if (alteracao.subfamilia_nome) {
-//                 return Subfamilia.findOne({
-//                     where: {
-//                         nome: { [Op.like]: `%${alteracao.subfamilia_nome}%` },
-//                     },
-//                     transaction,
-//                 });
-//             }
-//             return undefined;
-//         })
-//         .then(subfamilia => {
-//             if (subfamilia) {
-//                 parametros.subfamilia = subfamilia;
-//             } else if (alteracao.subfamilia_nome) {
-//                 return Subfamilia.create({ nome: alteracao.subfamilia_nome }, transaction);
-//             }
-//             return undefined;
-//         })
-//         .then(subfamilia => {
-//             if (subfamilia) {
-//                 parametros.subfamilia = subfamilia;
-//             }
-//             if (alteracao.genero_nome) {
-//                 return Genero.findOne({
-//                     where: {
-//                         nome: { [Op.like]: `%${alteracao.genero_nome}%` },
-//                     },
-//                     transaction,
-//                 });
-//             }
-//             return undefined;
-//         })
-//         .then(genero => {
-//             if (genero) {
-//                 parametros.genero = genero;
-//             } else if (alteracao.genero_nome) {
-//                 return Genero.create({
-//                     where: {
-//                         nome: { [Op.like]: `%${alteracao.genero_nome}%` },
-//                     },
-//                     transaction,
-//                 });
-//             }
-//             return undefined;
-//         })
-//         .then(genero => {
-//             if (alteracao.genero_nome) {
-//                 parametros.genero = genero;
-//             }
-//             if (alteracao.especie_nome) {
-//                 return Especie.findOne({
-//                     where: {
-//                         nome: { [Op.like]: `%${alteracao.especie_nome}%` },
-//                     },
-//                     transaction,
-//                 });
-//             }
-//             return undefined;
-//         })
-//         .then(especie => {
-//             if (especie) {
-//                 parametros.especie = especie;
-//             } else if (alteracao.especie_nome) {
-//                 return Especie.create({
-//                     where: {
-//                         nome: { [Op.like]: `%${alteracao.especie_nome}%` },
-//                     },
-//                     transaction,
-//                 });
-//             }
-//             return undefined;
-//         })
-//         .then(especie => {
-//             if (alteracao.especie_nome) {
-//                 parametros.especie = especie;
-//             }
-//             if (alteracao.subespecie_nome) {
-//                 return Subespecie.findOne({
-//                     where: {
-//                         nome: { [Op.like]: `%${alteracao.subespecie_nome}%` },
-//                     },
-//                     transaction,
-//                 });
-//             }
-//             return undefined;
-//         })
-//         .then(subspecie => {
-//             if (subspecie) {
-//                 parametros.subespecie = subspecie;
-//             } else if (alteracao.subespecie_nome) {
-//                 return Subespecie.create({
-//                     where: {
-//                         nome: { [Op.like]: `%${alteracao.subespecie_nome}%` },
-//                     },
-//                     transaction,
-//                 });
-//             }
-//             return undefined;
-//         })
-//         .then(subspecie => {
-//             if (alteracao.subespecie_nome) {
-//                 parametros.subespecie = subspecie;
-//             }
-//             if (alteracao.variedade_nome) {
-//                 return Variedade.findOne({
-//                     where: {
-//                         nome: { [Op.like]: `%${alteracao.variedade_nome}%` },
-//                     },
-//                     transaction,
-//                 });
-//             }
-//             return undefined;
-//         })
-//         .then(variedade => {
-//             if (variedade) {
-//                 parametros.variedade = variedade;
-//             } else if (alteracao.variedade_nome) {
-//                 return Variedade.create({
-//                     where: {
-//                         nome: { [Op.like]: `%${alteracao.variedade_nome}%` },
-//                     },
-//                     transaction,
-//                 });
-//             }
-//             return undefined;
-//         })
-//         .then(variedade => {
-//             if (alteracao.variedade_nome) {
-//                 parametros.variedade = variedade;
-//             }
-//             const update = {};
-//             if (parametros.familia) {
-//                 update.familia_id = parametros.familia.id;
-//                 update.nome_cientifico = `${parametros.familia.nome} `;
-//             }
-//             if (parametros.subfamilia) {
-//                 update.sub_familia_id = parametros.subfamilia.id;
-//                 update.nome_cientifico += `${parametros.subfamilia.nome} `;
-//             }
-//             if (parametros.genero) {
-//                 update.genero_id = parametros.genero.id;
-//                 update.nome_cientifico += `${parametros.genero.nome} `;
-//             }
-//             if (parametros.especie) {
-//                 update.especie_id = parametros.especie.id;
-//                 update.nome_cientifico += `${parametros.especie.nome} `;
-//             }
-//             if (parametros.subespecie) {
-//                 update.sub_especie_id = parametros.subespecie.id;
-//                 update.nome_cientifico += `${parametros.subespecie.nome} `;
-//             }
-//             if (parametros.variedade) {
-//                 update.variedade_id = parametros.variedade.id;
-//                 update.nome_cientifico += `${parametros.variedade.nome}`;
-//             }
-//             return Tombo.update(update, {
-//                 where: {
-//                     hcf,
-//                     ativo: true,
-//                 },
-//                 transaction,
-//             });
-//         })
-//         .then(() => {
-//             resolve(true);
-//         })
-//         .catch(reject));
-// };
+    return Tombo.findOne({
+        where: {
+            hcf,
+        },
+        transaction,
+    })
+        .then(tombo => {
+            parametros.tombo = tombo;
+        })
+        .then(() => {
+            if (alteracao.genero_nome) {
+                return Genero.findOrCreate({
+                    where: {
+                        nome: alteracao.genero_nome,
+                    },
+                    defaults: {
+                        nome: alteracao.genero_nome,
+                        familia_id: parametros.tombo.dataValues.familia_id,
+                        ativo: true,
+                    },
+                    attributes: ['id', 'nome'],
+                    transaction,
+                })
+                    .then(([genero]) => {
+                        parametros.genero = genero;
+                    });
+            }
+            return undefined;
+        })
+        .then(() => {
+            if (alteracao.especie_nome) {
+                const iniciais = alteracao.autor.match(/([A-Z])/g).join('.');
+                return Autor.findOrCreate({
+                    where: {
+                        nome: alteracao.autor,
+                    },
+                    defaults: {
+                        nome: alteracao.autor,
+                        iniciais,
+                        ativo: true,
+                    },
+                    attributes: ['id', 'nome', 'iniciais'],
+                    transaction,
+                })
+                    .then(([autor]) => Especie.findOrCreate({
+                        where: {
+                            nome: alteracao.especie_nome,
+                        },
+                        defaults: {
+                            nome: alteracao.especie_nome,
+                            genero_id: parametros.tombo.dataValues.genero_id,
+                            familia_id: parametros.tombo.dataValues.familia_id,
+                            autor_id: autor.id,
+                            ativo: true,
+                        },
+                        attributes: ['id', 'nome'],
+                        transaction,
+                    })
+                        .then(([especie]) => {
+                            parametros.especie = especie;
+                        }));
+            }
+            return undefined;
+        })
+        .then(() => {
+            if (alteracao.subfamilia_nome) {
+                return Subfamilia.findOne({
+                    where: {
+                        nome: alteracao.subfamilia_nome,
+                    },
+                    attributes: ['id', 'nome'],
+                    transaction,
+                })
+                    .then(subfamilia => {
+                        parametros.subfamilia = subfamilia;
+                    });
+            }
+            return undefined;
+        })
+        .then(() => {
+            if (alteracao.subespecie_nome) {
+                return Subespecie.findOne({
+                    where: {
+                        nome: alteracao.subespecie_nome,
+                    },
+                    attributes: ['id', 'nome'],
+                    transaction,
+                })
+                    .then(subEspecie => {
+                        parametros.subespecie = subEspecie;
+                    });
+            }
+            return undefined;
+        })
+        .then(() => {
+            if (alteracao.variedade_nome) {
+                return Variedade.findOne({
+                    where: {
+                        nome: alteracao.variedade_nome,
+                    },
+                    attributes: ['id', 'nome'],
+                    transaction,
+                })
+                    .then(variedade => {
+                        parametros.variedade = variedade;
+                    });
+            }
+            return undefined;
+        })
+        .then(() => parametros.tombo.update({
+            especie_id: parametros.especie ? parametros.especie.id : parametros.tombo.especie_id,
+            genero_id: parametros.genero ? parametros.genero.id : parametros.tombo.genero_id,
+            subfamilia_id: parametros.subfamilia ? parametros.subfamilia.id : parametros.tombo.subfamilia_id,
+            subespecie_id: parametros.subespecie ? parametros.subespecie.id : parametros.tombo.subespecie_id,
+            variedade_id: parametros.variedade ? parametros.variedade.id : parametros.tombo.variedade_id,
+        }, {
+            transaction,
+        }))
+        .then(() =>
+            Promise.all([
+                Genero.findOne({
+                    where: {
+                        id: parametros.tombo.genero_id,
+                    },
+                    attributes: ['nome'],
+                    transaction,
+                }),
+                Especie.findOne({
+                    where: {
+                        id: parametros.tombo.especie_id,
+                    },
+                    attributes: ['nome'],
+                    transaction,
+                }),
+            ])
+        )
+        .then(([genero, especie]) =>
+            parametros.tombo.update({
+                nome_cientifico: `${genero.nome} ${especie.nome}`,
+            }, {
+                transaction,
+            })
+        );
+};
 
-// export const aprovarComCadastroJson = (alteracao, hcf, transaction) => true;
+export const aprovarComJsonNome = (alteracao, hcf, transaction) => {
+    const parametros = {};
 
-// export const aprovarComCadastro = (hcf, transaction) => new Promise((resolve, reject) => Tombo.update({
-//     rascunho: 0,
-// }, {
-//     where: {
-//         hcf,
-//     },
-//     transaction,
-// })
-//     .then(() => {
-//         resolve(true);
-//     })
-//     .catch(reject));
+    return Familia.findOne({
+        where: {
+            nome: { [Op.like]: `%${alteracao.familia_nome}%` },
+        },
+        transaction,
+    })
+        .then(familia => {
+            if (familia) {
+                return familia;
+            }
+            return Familia.create({ nome: alteracao.familia_nome }, transaction);
+        })
+        .then(familia => {
+            if (familia) {
+                parametros.familia = familia;
+            }
+            if (alteracao.subfamilia_nome) {
+                return Subfamilia.findOne({
+                    where: {
+                        nome: { [Op.like]: `%${alteracao.subfamilia_nome}%` },
+                    },
+                    transaction,
+                });
+            }
+            return undefined;
+        })
+        .then(subfamilia => {
+            if (subfamilia) {
+                parametros.subfamilia = subfamilia;
+            } else if (alteracao.subfamilia_nome) {
+                return Subfamilia.create({ nome: alteracao.subfamilia_nome }, transaction);
+            }
+            return undefined;
+        })
+        .then(subfamilia => {
+            if (subfamilia) {
+                parametros.subfamilia = subfamilia;
+            }
+            if (alteracao.genero_nome) {
+                return Genero.findOne({
+                    where: {
+                        nome: { [Op.like]: `%${alteracao.genero_nome}%` },
+                    },
+                    transaction,
+                });
+            }
+            return undefined;
+        })
+        .then(genero => {
+            if (genero) {
+                parametros.genero = genero;
+            } else if (alteracao.genero_nome) {
+                return Genero.create({
+                    where: {
+                        nome: { [Op.like]: `%${alteracao.genero_nome}%` },
+                    },
+                    transaction,
+                });
+            }
+            return undefined;
+        })
+        .then(genero => {
+            if (alteracao.genero_nome) {
+                parametros.genero = genero;
+            }
+            if (alteracao.especie_nome) {
+                return Especie.findOne({
+                    where: {
+                        nome: { [Op.like]: `%${alteracao.especie_nome}%` },
+                    },
+                    transaction,
+                });
+            }
+            return undefined;
+        })
+        .then(especie => {
+            if (especie) {
+                parametros.especie = especie;
+            } else if (alteracao.especie_nome) {
+                return Especie.create({
+                    where: {
+                        nome: { [Op.like]: `%${alteracao.especie_nome}%` },
+                    },
+                    transaction,
+                });
+            }
+            return undefined;
+        })
+        .then(especie => {
+            if (alteracao.especie_nome) {
+                parametros.especie = especie;
+            }
+            if (alteracao.subespecie_nome) {
+                return Subespecie.findOne({
+                    where: {
+                        nome: { [Op.like]: `%${alteracao.subespecie_nome}%` },
+                    },
+                    transaction,
+                });
+            }
+            return undefined;
+        })
+        .then(subspecie => {
+            if (subspecie) {
+                parametros.subespecie = subspecie;
+            } else if (alteracao.subespecie_nome) {
+                return Subespecie.create({
+                    where: {
+                        nome: { [Op.like]: `%${alteracao.subespecie_nome}%` },
+                    },
+                    transaction,
+                });
+            }
+            return undefined;
+        })
+        .then(subspecie => {
+            if (alteracao.subespecie_nome) {
+                parametros.subespecie = subspecie;
+            }
+            if (alteracao.variedade_nome) {
+                return Variedade.findOne({
+                    where: {
+                        nome: { [Op.like]: `%${alteracao.variedade_nome}%` },
+                    },
+                    transaction,
+                });
+            }
+            return undefined;
+        })
+        .then(variedade => {
+            if (variedade) {
+                parametros.variedade = variedade;
+            } else if (alteracao.variedade_nome) {
+                return Variedade.create({
+                    where: {
+                        nome: { [Op.like]: `%${alteracao.variedade_nome}%` },
+                    },
+                    transaction,
+                });
+            }
+            return undefined;
+        })
+        .then(variedade => {
+            if (alteracao.variedade_nome) {
+                parametros.variedade = variedade;
+            }
+            const update = {};
+            if (parametros.familia) {
+                update.familia_id = parametros.familia.id;
+                update.nome_cientifico = `${parametros.familia.nome} `;
+            }
+            if (parametros.subfamilia) {
+                update.sub_familia_id = parametros.subfamilia.id;
+                update.nome_cientifico += `${parametros.subfamilia.nome} `;
+            }
+            if (parametros.genero) {
+                update.genero_id = parametros.genero.id;
+                update.nome_cientifico += `${parametros.genero.nome} `;
+            }
+            if (parametros.especie) {
+                update.especie_id = parametros.especie.id;
+                update.nome_cientifico += `${parametros.especie.nome} `;
+            }
+            if (parametros.subespecie) {
+                update.sub_especie_id = parametros.subespecie.id;
+                update.nome_cientifico += `${parametros.subespecie.nome} `;
+            }
+            if (parametros.variedade) {
+                update.variedade_id = parametros.variedade.id;
+                update.nome_cientifico += `${parametros.variedade.nome}`;
+            }
+            return Tombo.update(update, {
+                where: {
+                    hcf,
+                    ativo: true,
+                },
+                transaction,
+            });
+        })
+        .then(() => true);
+};
 
 export const visualizarComJsonNome = (alteracao, hcf, transaction) => new Promise((resolve, reject) => {
     Tombo.findOne({
