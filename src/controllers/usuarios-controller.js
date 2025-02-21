@@ -1,6 +1,7 @@
+import { UserRegistrationDTO } from '../dtos/UserRegistrationDTO';
+import BadRequestExeption from '../errors/bad-request-exception';
 import { comparaSenha, gerarSenha } from '../helpers/senhas';
 import { constroiPayloadUsuario, geraTokenUsuario } from '../helpers/tokens';
-import BadRequestExeption from '../errors/bad-request-exception';
 import models from '../models';
 import codigos from '../resources/codigos-http';
 
@@ -24,7 +25,6 @@ export const encontraUsuarioAtivoPorEmail = email => {
 };
 
 export const cadastraUsuario = usuario => Usuario.create(usuario);
-
 
 export const atualizaUsuario = (usuario, usuarioId) => Usuario.update(usuario, {
     where: {
@@ -102,7 +102,7 @@ export const recuperarSenha = (request, response, next) => {
                     where: {
                         id: usuario.id,
                     },
-                },
+                }
             );
         })
         .then(retorno => {
@@ -173,7 +173,8 @@ export const cadastro = (request, response, next) => {
             if (!retorno) {
                 throw new BadRequestExeption(112);
             }
-            response.status(codigos.CADASTRO_RETORNO).json(retorno);
+
+            response.status(codigos.CADASTRO_RETORNO).json(new UserRegistrationDTO(retorno));
         })
         .catch(next);
 };

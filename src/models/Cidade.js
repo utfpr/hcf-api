@@ -1,8 +1,5 @@
 function associate(modelos) {
-    const {
-        Estado,
-        Cidade,
-    } = modelos;
+    const { Estado, Cidade } = modelos;
 
     Cidade.belongsTo(Estado, {
         foreignKey: 'estado_id',
@@ -11,15 +8,11 @@ function associate(modelos) {
 
 export const defaultScope = {
     attributes: {
-        exclude: [
-            'created_at',
-            'updated_at',
-        ],
+        exclude: ['created_at', 'updated_at'],
     },
 };
 
 export default (Sequelize, DataTypes) => {
-
     const attributes = {
         id: {
             type: DataTypes.INTEGER,
@@ -30,16 +23,16 @@ export default (Sequelize, DataTypes) => {
             type: DataTypes.STRING(200),
             allowNull: false,
         },
+        estado_id: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
         latitude: {
             type: DataTypes.DOUBLE,
             allowNull: true,
         },
         longitude: {
             type: DataTypes.DOUBLE,
-            allowNull: true,
-        },
-        estado_id: {
-            type: DataTypes.INTEGER,
             allowNull: true,
         },
     };

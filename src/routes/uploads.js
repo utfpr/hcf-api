@@ -1,4 +1,5 @@
 import multer from 'multer';
+
 import { upload } from '../config/directory';
 import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middleware';
 
@@ -15,5 +16,25 @@ export default app => {
             ]),
             uploadMiddleware.single('imagem'),
             controller.post,
+        ]);
+
+    app.route('/uploads/atualizaImagem')
+        .post([
+            tokensMiddleware([
+                TIPOS_USUARIOS.CURADOR,
+                TIPOS_USUARIOS.OPERADOR,
+            ]),
+            uploadMiddleware.single('imagem'),
+            controller.put,
+        ]);
+
+    app.route('/uploads/criaCodigoSemFoto')
+        .post([
+            tokensMiddleware([
+                TIPOS_USUARIOS.CURADOR,
+                TIPOS_USUARIOS.OPERADOR,
+            ]),
+            uploadMiddleware.single('imagem'),
+            controller.postBarrSemFotos,
         ]);
 };

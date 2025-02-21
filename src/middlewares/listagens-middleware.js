@@ -11,7 +11,7 @@ export default (request, response, next) => {
         pagina = 1;
     }
 
-    const offset = (pagina * limite) - limite;
+    const offset = pagina * limite - limite;
 
     request.paginacao = {
         limite,
@@ -19,5 +19,5 @@ export default (request, response, next) => {
         offset,
     };
 
-    next();
+    return next();
 };

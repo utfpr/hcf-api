@@ -1,5 +1,27 @@
 {
     "presets": [
-        "@babel/env"
-    ]
+        [
+            "@babel/env",
+            {
+                "targets": {
+                    "node": "18.16"
+                }
+            }
+        ],
+        "@babel/typescript"
+    ],
+    "plugins": [
+        [
+            "module-resolver",
+            {
+                "cwd": "babelrc",
+                "alias": {
+                    "~": "./src"
+                }
+            }
+        ],
+        "@babel/plugin-proposal-class-properties"
+    ],
+    "comments": false,
+    "sourceMaps": "inline"
 }

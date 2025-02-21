@@ -1,9 +1,8 @@
 import BadRequestExeption from '../errors/bad-request-exception';
 import NotFoundExeption from '../errors/not-found-exception';
-import models from '../models';
 import omit from '../helpers/omit';
+import models from '../models';
 import codigos from '../resources/codigos-http';
-
 
 const {
     sequelize,
@@ -176,7 +175,7 @@ export const editar = (request, response, next) => {
 
             return Herbario.findOne({ attributes, where, transaction });
         })
-        .then(herbario => {
+        .then(async herbario => {
             if (!herbario) {
                 throw new NotFoundExeption(200);
             }
@@ -187,11 +186,20 @@ export const editar = (request, response, next) => {
                 id: herbario.endereco_id,
             };
 
-            return Endereco.update(endereco, { where, transaction })
-                .then(() => herbario);
-        })
-        .then(herbario => {
+            if (herbario.endereco_id === null) {
+                const localizacao = await Endereco.create(endereco, { transaction });
+
+                const dados = {
+                    ...request.body.herbario,
+                    endereco_id: localizacao.id,
+                };
+
+                return herbario.update(dados, { transaction });
+            }
+
             const dados = omit(request.body.herbario, ['id', 'endereco_id']);
+
+            await Endereco.update(endereco, { where, transaction });
 
             return herbario.update(dados, { transaction })
                 .then(() => herbario);
@@ -208,7 +216,6 @@ export const editar = (request, response, next) => {
                 where,
             });
         });
-
 
     sequelize.transaction(callback)
         .then(herbario => {

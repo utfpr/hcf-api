@@ -1,13 +1,14 @@
 /* eslint-disable max-len */
-import request from 'request';
 import Q from 'q';
+import request from 'request';
 import throttledQueue from 'throttled-queue';
-import { escreveLOG } from '../log';
+
 import {
     selectUmCodBarra,
     atualizaTabelaReflora,
     decrementaTabelaReflora,
 } from '../herbariumdatabase';
+import { escreveLOG } from '../log';
 
 /**
  * A função processaRespostaReflora, converte o resultado da resposta do Reflora

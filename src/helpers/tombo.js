@@ -1,6 +1,5 @@
 import { converteParaDecimal } from './coordenadas';
 
-
 export default {};
 
 export function converteInteiroParaRomano(numero) {
@@ -40,7 +39,6 @@ export function converteRequisicaoParaTombo(requisicao) {
 
     const { data_coleta: dataColeta } = principal;
     const { data_identificacao: dataIdentificacao } = identificacao;
-
 
     return {
         hcf: null,

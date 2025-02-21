@@ -1,11 +1,11 @@
 import path from 'path';
-import knex from '../factories/knex';
-import PreconditionFailedException from '../errors/precondition-failed-exception';
+
 import BadRequestException from '../errors/bad-request-exception';
+import PreconditionFailedException from '../errors/precondition-failed-exception';
+import knex from '../factories/knex';
 import renderizaArquivoHtml from '../helpers/renderiza-arquivo-html';
 
-
-function adicionaColunaDataColeta(consulta, coluna) {
+function adicionaColunaDataColeta(consulta) {
     const funcao = knex.raw('concat_ws(?, ??, ??, ??)', [
         '/',
         'tmb.data_coleta_dia',
@@ -97,7 +97,6 @@ function adicionaColunasTombosFotos(consulta, coluna, juncoes) {
 
     consulta.columns(coluna);
 }
-
 
 const COLUNAS = {
     hcf: consulta => { consulta.column('hcf'); },

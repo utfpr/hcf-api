@@ -5,10 +5,12 @@ function associate(modelos) {
         Especie,
         Genero,
         Variedade,
+        Reino,
     } = modelos;
 
     Variedade.belongsTo(Autor, {
         foreignKey: 'autor_id',
+        as: 'autor',
     });
     Variedade.belongsTo(Genero, {
         foreignKey: 'genero_id',
@@ -18,6 +20,10 @@ function associate(modelos) {
     });
     Variedade.belongsTo(Especie, {
         foreignKey: 'especie_id',
+        as: 'especie',
+    });
+    Variedade.belongsTo(Reino, {
+        foreignKey: 'reino_id',
     });
 }
 
@@ -61,6 +67,10 @@ export default (Sequelize, DataTypes) => {
         autor_id: {
             type: DataTypes.INTEGER,
             allowNull: true,
+        },
+        reino_id: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
         },
     };
 

@@ -8,32 +8,26 @@ function associate(modelos) {
         Especie,
         Genero,
         Coletor,
+        ColetorComplementar,
         Familia,
         Subfamilia,
         Subespecie,
         ColecaoAnexa,
         Usuario,
         Alteracao,
-        TomboColetor,
+        Reino,
+        // TomboColetor,
+        Relevo,
         Remessa,
+        Vegetacao,
         RetiradaExsiccata,
+        Solo,
         TomboFoto,
+        TomboIdentificador,
+        Identificador,
     } = modelos;
 
     Tombo.hasMany(TomboFoto, {
-        foreignKey: 'tombo_hcf',
-    });
-
-    Tombo.belongsToMany(Usuario, {
-        as: 'identificadores',
-        through: {
-            model: Alteracao,
-            scope: {
-                ativo: true,
-                status: 'APROVADO',
-                identificacao: true,
-            },
-        },
         foreignKey: 'tombo_hcf',
     });
 
@@ -42,13 +36,49 @@ function associate(modelos) {
         foreignKey: 'tombo_hcf',
     });
 
+    Tombo.belongsToMany(Identificador, {
+        as: 'identificadores',
+        through: TomboIdentificador,
+        foreignKey: 'tombo_hcf',
+        otherKey: 'identificador_id',
+    });
+
+    Tombo.belongsTo(Solo, {
+        foreignKey: 'solo_id',
+    });
+
+    Tombo.belongsTo(Relevo, {
+        foreignKey: 'relevo_id',
+    });
+
+    Tombo.belongsTo(Vegetacao, {
+        foreignKey: 'vegetacao_id',
+    });
+
     Tombo.belongsToMany(Remessa, {
         through: RetiradaExsiccata,
         foreignKey: 'tombo_hcf',
     });
 
-    Tombo.belongsToMany(Coletor, {
-        through: TomboColetor,
+    Tombo.belongsTo(Coletor, {
+        foreignKey: 'coletor_id',
+    });
+
+    // Tombo.belongsToMany(Coletor, {
+    //     through: TomboColetor,
+    //     foreignKey: 'tombo_hcf',
+    // });
+
+    // Tombo.hasMany(TomboColetor, {
+    //     foreignKey: 'tombo_hcf',
+    // });
+    Tombo.hasOne(ColetorComplementar, {
+        foreignKey: 'hcf',
+        as: 'coletor_complementar',
+    });
+
+    Tombo.hasMany(Alteracao, {
+        as: 'alteracoes_tombos',
         foreignKey: 'tombo_hcf',
     });
 
@@ -90,6 +120,10 @@ function associate(modelos) {
         foreignKey: 'familia_id',
     });
 
+    Tombo.belongsTo(Reino, {
+        foreignKey: 'reino_id',
+    });
+
     Tombo.belongsTo(Subfamilia, {
         foreignKey: 'sub_familia_id',
     });
@@ -105,15 +139,11 @@ function associate(modelos) {
 
 export const defaultScope = {
     attributes: {
-        exclude: [
-            'updated_at',
-            'created_at',
-        ],
+        exclude: ['updated_at', 'created_at'],
     },
 };
 
 export default (Sequelize, DataTypes) => {
-
     const attributes = {
         hcf: {
             type: DataTypes.INTEGER,
@@ -122,6 +152,18 @@ export default (Sequelize, DataTypes) => {
         },
         data_tombo: {
             type: DataTypes.DATE,
+            allowNull: true,
+        },
+        data_identificacao_dia: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
+        data_identificacao_mes: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
+        data_identificacao_ano: {
+            type: DataTypes.INTEGER,
             allowNull: true,
         },
         data_coleta_dia: {
@@ -208,6 +250,10 @@ export default (Sequelize, DataTypes) => {
             type: DataTypes.INTEGER,
             allowNull: true,
         },
+        reino_id: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
         sub_familia_id: {
             type: DataTypes.INTEGER,
             allowNull: true,
@@ -217,6 +263,10 @@ export default (Sequelize, DataTypes) => {
             allowNull: true,
         },
         colecao_anexa_id: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
+        solo_id: {
             type: DataTypes.INTEGER,
             allowNull: true,
         },

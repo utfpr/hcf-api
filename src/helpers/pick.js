@@ -17,6 +17,5 @@ export default function pick(object, attributes = []) {
         return { ...output, [key]: value };
     }
 
-
     return attributes.reduce(reducer, {});
 }

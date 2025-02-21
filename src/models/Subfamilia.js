@@ -3,13 +3,20 @@ function associate(modelos) {
         Autor,
         Familia,
         Subfamilia,
+        Reino,
     } = modelos;
 
     Subfamilia.belongsTo(Autor, {
         foreignKey: 'autor_id',
+        as: 'autor',
     });
+
     Subfamilia.belongsTo(Familia, {
         foreignKey: 'familia_id',
+    });
+
+    Subfamilia.belongsTo(Reino, {
+        foreignKey: 'reino_id',
     });
 }
 
@@ -39,6 +46,10 @@ export default (Sequelize, DataTypes) => {
             allowNull: true,
         },
         familia_id: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+        },
+        reino_id: {
             type: DataTypes.INTEGER,
             allowNull: false,
         },

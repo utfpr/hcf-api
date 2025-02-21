@@ -1,5 +1,5 @@
-const controller = require('../controllers/reflora-controller');
 const controllerComum = require('../controllers/herbariovirtual-controller');
+const controller = require('../controllers/reflora-controller');
 
 /**
  * Essa variável app, está relacionada as rotas que vem do front end. Então se no front end

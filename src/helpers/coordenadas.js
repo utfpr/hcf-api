@@ -1,5 +1,10 @@
 export default {};
 
+const CHAR_DEG = '\u00B0';
+const CHAR_MIN = '\u0027';
+const CHAR_SEC = '\u0022';
+const CHAR_SEP = '\u0020';
+
 export const converteParaDecimal = coordenada => {
     const regex = /^(\d+)\D+(\d+)\D+(\d+(?:[.,]\d+)?)\W+([NSWE])$/;
     const matches = coordenada.match(regex);
@@ -20,10 +25,6 @@ export const converteParaDecimal = coordenada => {
 
 export const converteDecimalParaGraus = (decimal, isLat) => {
     let max = 180;
-    const CHAR_DEG = '\u00B0';
-    const CHAR_MIN = '\u0027';
-    const CHAR_SEC = '\u0022';
-    const CHAR_SEP = '\u0020';
 
     if (isLat) {
         max = 90;
@@ -58,7 +59,6 @@ export const converteDecimalParaGraus = (decimal, isLat) => {
 
 export const converteDecimalParaGMSGrau = (decimal, isLat) => {
     let max = 180;
-    const sign = decimal < 0 ? -1 : 1;
 
     if (isLat) {
         max = 90;

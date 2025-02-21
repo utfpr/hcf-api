@@ -1,6 +1,6 @@
 import { expect } from 'chai';
-import { comparaSenha, gerarSenha } from '../../src/helpers/senhas';
 
+import { comparaSenha, gerarSenha } from '../../src/helpers/senhas';
 
 const HASH_SENHA_123456 = '$2a$10$x0101wtzcpm81ArnUyM3LuUAFET12gKOqNcPD5qUn7Uj5NZ3xUQpm';
 

@@ -1,11 +1,11 @@
-logs
-dist
-node_modules
-coverage
-storage
-uploads
+dist/
+uploads/
+mysql/data/
+node_modules/
 
-.env
+*.env*
+!.env.example
+.eslintcache
+
 *.log
-*.bak
-*.sql
+npm-debug.log

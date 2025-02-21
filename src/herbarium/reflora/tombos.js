@@ -2,6 +2,7 @@
 /* eslint-disable max-len */
 import Q from 'q';
 import throttledQueue from 'throttled-queue';
+
 import {
     ehIgualFamilia,
     ehIgualGenero,
@@ -11,10 +12,6 @@ import {
     ehIgualSubespecie,
 } from '../comparainformacao';
 import {
-    processaRespostaReflora,
-    temResultadoRespostaReflora,
-} from './reflora';
-import {
     selectUmaInformacaoReflora,
     selectNroTomboNumBarra,
     selectTombo,
@@ -23,6 +20,10 @@ import {
     selectExisteServicoUsuario,
     insereIdentificadorUsuario,
 } from '../herbariumdatabase';
+import {
+    processaRespostaReflora,
+    temResultadoRespostaReflora,
+} from './reflora';
 
 /**
  * A função fazComparacaoInformacao, é comparado informações do banco de dados com as que
@@ -67,6 +68,7 @@ export async function geraJsonAlteracao(nroTombo, codBarra, informacaoReflora) {
             await ehIgualGenero(processaInformacaoBd.genero_id, informacaoReflora.genus).then(genero => {
                 if (genero !== -1) {
                     alteracaoInformacao += `"genero_nome": "${genero}", `;
+                    alteracaoInformacao += `"autor": "${informacaoReflora.scientificnameauthorship}", `;
                 }
             });
         }
@@ -75,6 +77,7 @@ export async function geraJsonAlteracao(nroTombo, codBarra, informacaoReflora) {
             await ehIgualEspecie(processaInformacaoBd.especie_id, informacaoReflora.specificepithet).then(especie => {
                 if (especie !== -1) {
                     alteracaoInformacao += `"especie_nome": "${especie}", `;
+                    alteracaoInformacao += `"autor": "${informacaoReflora.scientificnameauthorship}", `;
                 }
             });
         }

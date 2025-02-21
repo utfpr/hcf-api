@@ -1,11 +1,11 @@
 import knex from 'knex';
+
 import {
     database,
     username,
     password,
     options,
 } from '../config/database';
-
 
 const instance = knex({
     client: 'mysql2',

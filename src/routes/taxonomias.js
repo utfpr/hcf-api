@@ -1,33 +1,44 @@
 import listagensMiddleware from '../middlewares/listagens-middleware';
+import criaOrdenacaoMiddleware from '../middlewares/ordenacao-middleware';
 import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middleware';
 import validacoesMiddleware from '../middlewares/validacoes-middleware';
-import nomeEsquema from '../validators/nome-obrigatorio';
-import generoEsquema from '../validators/genero';
-import especieEsquema from '../validators/especie';
-import subespecieEsquema from '../validators/subespecie';
-import listagemFamiliaEsquema from '../validators/familia-listagem';
-import atualizaFamiliaEsquema from '../validators/familia-atualiza';
+import autorAtualizaEsquema from '../validators/autor-atualiza';
+import autorCadastroEsquema from '../validators/autor-cadastro';
+import autorDesativaEsquema from '../validators/autor-desativa';
+import autorListagemEsquema from '../validators/autor-listagem';
 import desativarFamiliaEsquema from '../validators/desativar-familia';
-import subfamiliaListagemEsquema from '../validators/subfamilia-listagem';
-import subfamiliaAtualizaEsquema from '../validators/subfamilia-atualiza';
-import subfamiliaDesativarEsquema from '../validators/subfamilia-desativar';
-import generoListagemEsquema from '../validators/genero-listagem';
-import generoAtualizaEsquema from '../validators/genero-atualiza';
-import generoDesativarEsquema from '../validators/genero-desativar';
-import especieListagemEsquema from '../validators/especie-listagem';
+import especieEsquema from '../validators/especie';
 import especieAtualizaEsquema from '../validators/especie-atualiza';
 import especieDesativaEsquema from '../validators/especie-desativa';
-import subespecieListagemEsquema from '../validators/subespecie-listagem';
+import especieListagemEsquema from '../validators/especie-listagem';
+import atualizaFamiliaEsquema from '../validators/familia-atualiza';
+import listagemFamiliaEsquema from '../validators/familia-listagem';
+import generoEsquema from '../validators/genero';
+import generoAtualizaEsquema from '../validators/genero-atualiza';
+import generoDesativarEsquema from '../validators/genero-desativar';
+import generoListagemEsquema from '../validators/genero-listagem';
+import nomeEsquema from '../validators/nome-obrigatorio';
+import atualizaReinoEsquema from '../validators/reino-atualiza';
+import reinoListagemEsquema from '../validators/reino-listagem';
+import subespecieEsquema from '../validators/subespecie';
 import subespecieAtualizaEsquema from '../validators/subespecie-atualiza';
-import variedadeListagemEsquema from '../validators/variedade-listagem';
+import subespecieListagemEsquema from '../validators/subespecie-listagem';
+import subfamiliaAtualizaEsquema from '../validators/subfamilia-atualiza';
+import subfamiliaDesativarEsquema from '../validators/subfamilia-desativar';
+import subfamiliaListagemEsquema from '../validators/subfamilia-listagem';
 import variedadeAtualizaEsquema from '../validators/variedade-atualiza';
 import variedadeDesativaEsquema from '../validators/variedade-desativa';
-import autorCadastroEsquema from '../validators/autor-cadastro';
-import autorListagemEsquema from '../validators/autor-listagem';
-import autorAtualizaEsquema from '../validators/autor-atualiza';
-import autorDesativaEsquema from '../validators/autor-desativa';
+import variedadeListagemEsquema from '../validators/variedade-listagem';
 
 const controller = require('../controllers/taxonomias-controller');
+
+const reinosOrdenacaoMiddleware = criaOrdenacaoMiddleware(['reino'], 'nome', 'asc');
+const familiasOrdenacaoMiddleware = criaOrdenacaoMiddleware(['reino', 'familia'], 'nome', 'asc');
+const subfamiliasOrdenacaoMiddleware = criaOrdenacaoMiddleware(['reino', 'subfamilia', 'familia', 'autor'], 'nome', 'asc');
+const generosOrdenacaoMiddleware = criaOrdenacaoMiddleware(['genero', 'familia', 'reino'], 'nome', 'asc');
+const especiesOrdenacaoMiddleware = criaOrdenacaoMiddleware(['especie', 'reino', 'familia', 'genero', 'familia'], 'nome', 'asc');
+const subEspeciesOrdenacaoMiddleware = criaOrdenacaoMiddleware(['subespecie', 'reino', 'familia', 'genero', 'especie', 'autor'], 'nome', 'asc');
+const variedadesOrdenacaoMiddleware = criaOrdenacaoMiddleware(['variedade', 'reino', 'familia', 'genero', 'especie', 'autor'], 'nome', 'asc');
 
 export default app => {
 
@@ -37,16 +48,40 @@ export default app => {
             controller.listagem,
         ]);
 
-    app.route('/familias')
+    app
+        .route('/reinos')
         .post([
+            tokensMiddleware([TIPOS_USUARIOS.CURADOR, TIPOS_USUARIOS.OPERADOR, TIPOS_USUARIOS.IDENTIFICADOR]),
+            validacoesMiddleware(nomeEsquema),
+            controller.cadastrarReino,
+        ])
+        .get([
+            listagensMiddleware,
+            reinosOrdenacaoMiddleware,
+            validacoesMiddleware(reinoListagemEsquema),
+            controller.buscarReinos,
+        ]);
+
+    app
+        .route('/reinos/:reino_id')
+        .put([
             tokensMiddleware([
                 TIPOS_USUARIOS.CURADOR, TIPOS_USUARIOS.OPERADOR, TIPOS_USUARIOS.IDENTIFICADOR,
             ]),
+            validacoesMiddleware(atualizaReinoEsquema),
+            controller.editarReino,
+        ]);
+
+    app
+        .route('/familias')
+        .post([
+            tokensMiddleware([TIPOS_USUARIOS.CURADOR, TIPOS_USUARIOS.OPERADOR, TIPOS_USUARIOS.IDENTIFICADOR]),
             validacoesMiddleware(nomeEsquema),
             controller.cadastrarFamilia,
         ])
         .get([
             listagensMiddleware,
+            familiasOrdenacaoMiddleware,
             validacoesMiddleware(listagemFamiliaEsquema),
             controller.buscarFamilias,
         ]);
@@ -77,6 +112,7 @@ export default app => {
         ])
         .get([
             listagensMiddleware,
+            generosOrdenacaoMiddleware,
             validacoesMiddleware(generoListagemEsquema),
             controller.buscarGeneros,
         ]);
@@ -107,6 +143,7 @@ export default app => {
         ])
         .get([
             listagensMiddleware,
+            subfamiliasOrdenacaoMiddleware,
             validacoesMiddleware(subfamiliaListagemEsquema),
             controller.buscarSubfamilia,
         ]);
@@ -137,6 +174,7 @@ export default app => {
         ])
         .get([
             listagensMiddleware,
+            especiesOrdenacaoMiddleware,
             validacoesMiddleware(especieListagemEsquema),
             controller.buscarEspecies,
         ]);
@@ -167,6 +205,7 @@ export default app => {
         ])
         .get([
             listagensMiddleware,
+            subEspeciesOrdenacaoMiddleware,
             validacoesMiddleware(subespecieListagemEsquema),
             controller.buscarSubespecies,
         ]);
@@ -196,6 +235,7 @@ export default app => {
         ])
         .get([
             listagensMiddleware,
+            variedadesOrdenacaoMiddleware,
             validacoesMiddleware(variedadeListagemEsquema),
             controller.buscarVariedades,
         ]);

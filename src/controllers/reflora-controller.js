@@ -1,14 +1,15 @@
 /* eslint-disable max-len */
 import moment from 'moment';
-import {
-    getHoraAtual,
-} from '../herbarium/log';
+
 import {
     selectTemExecucaoServico,
     insereExecucao,
     atualizaTabelaConfiguracaoReflora,
     selectEstaExecutandoServico,
 } from '../herbarium/herbariumdatabase';
+import {
+    getHoraAtual,
+} from '../herbarium/log';
 
 /**
  * A função preparaRequisicao, faz um select no banco verificando se tem registros
@@ -25,7 +26,7 @@ import {
  * @param {*} response, é a resposta que será enviada ao back end.
  * @param {*} next, é utilizado para chamar a próxima função da pilha.
  */
-export const preparaRequisicao = (request, response, next) => {
+export const preparaRequisicao = (request, response) => {
     const { periodicidade } = request.query;
     const proximaAtualizacao = request.query.data_proxima_atualizacao;
     selectEstaExecutandoServico(1).then(listaExecucaoReflora => {
@@ -73,7 +74,7 @@ export const preparaRequisicao = (request, response, next) => {
  * @param {*} response, é a resposta que será enviada ao back end.
  * @param {*} next, é utilizado para chamar a próxima função da pilha.
  */
-export const estaExecutando = (request, response, next) => {
+export const estaExecutando = (_, response) => {
     selectEstaExecutandoServico(1).then(listaExecucaoReflora => {
         response.header('Access-Control-Allow-Origin', '*');
         response.header('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type');

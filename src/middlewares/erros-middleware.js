@@ -16,13 +16,24 @@ function handleHttpException(error, request, response) {
         });
 }
 
-
 // eslint-disable-next-line
 export default (error, request, response, next) => {
     console.error(error); // eslint-disable-line
 
     if (error instanceof HttpException) {
         handleHttpException(error, request, response);
+        return;
+    }
+
+    if (error.name === 'TokenExpiredError') {
+        response.status(401)
+            .json({
+                error: {
+                    code: 401,
+                    message: 'Token expirado',
+                },
+            });
+
         return;
     }
 
