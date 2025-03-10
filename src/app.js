@@ -10,7 +10,7 @@ import routes from './routes';
 
 const app = express();
 app.use(cors());
-app.use(parser.json());
+app.use(parser.json({ limit: '50mb' }));
 app.use(morgan('dev'));
 
 app.use('/fotos', express.static(upload));

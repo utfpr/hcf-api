@@ -29,6 +29,11 @@ const jsreport = jsreportCore({
     },
     express: {
         inputRequestLimit: '900mb',
+        bodyParser: {
+            json: {
+                limit: '900mb', // Aumente o limite para 50MB, por exemplo
+            },
+        },
     },
     chrome: {
         timeout: 600000,
