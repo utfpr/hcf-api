@@ -737,6 +737,19 @@ export function apagaTabelaReflora() {
 }
 
 /**
+ * A função apagaTabelaSpecieslink, executa um DROP TABLE, ou seja,
+ * apagar uma tabela que no caso é a tabela do specieslink.
+ * @return promessa.promise, como é assíncrono ele só retorna quando resolver, ou seja,
+ * quando terminar de apagar a tabela.
+ */
+export function apagaTabelaSpecieslink() {
+    const promessa = Q.defer();
+    const tabelaSpecieslink = modeloSpecieslink(conexao, Sequelize);
+    promessa.resolve(tabelaSpecieslink.drop());
+    return promessa.promise;
+}
+
+/**
  * A função selectExisteServicoUsuario, verifica se existe um usuário
  * que foi passado por parâmetro, que pode ser REFLORA ou SPECIESLINK.
  * @param {*} servico, é o nome do serviço que pode ser 'REFLORA' ou 'SPECIESLINK'.

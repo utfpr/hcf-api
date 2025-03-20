@@ -97,7 +97,7 @@ function ehPossivelFazerComparacaoReflora(nomeArquivo) {
 function preparaExecucaoReflora(existeExecucaoReflora) {
     const promessa = Q.defer();
     const nomeArquivo = processaNomeLog(existeExecucaoReflora.dataValues.hora_inicio);
-    ehPossivelFazerComparacaoReflora(nomeArquivo).then(() => {
+    ehPossivelFazerComparacaoReflora(nomeArquivo, 1).then(() => {
         const { id } = existeExecucaoReflora.dataValues;
         const conteudoLOG = leLOG(`reflora/${nomeArquivo}`);
         if (conteudoLOG.includes('O processo de comparação do Reflora acabou.')) {

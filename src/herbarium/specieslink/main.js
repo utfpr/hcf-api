@@ -41,48 +41,21 @@ export function agendaComparacaoSpeciesLink(nomeArquivo, response) {
 }
 
 /**
- * A função daemonSpeciesLink(), executa de um em um minuto. Nesse tempo
- * é feito um select verificando se existe algum registro de execução
- * do speciesLink na tabela de configuração. Se existe algum registro
- * verifico se o horário final é igual a nulo, se for mudo o valor dessa coluna,
- * processo o arquivo de entrada, escrevo no LOG, e realizo a comparação. Após,
- * o processo de comparação escrevo que terminou no LOG, e atualizo o horário
- * de término no BD.
+ * A função daemonSpeciesLink(), executa de um em um minuto,
+ * e faz uma consulta na tabela de configuração, verificando se
+ * é necessário realizar a comparação. Se é retornado alguma resultado
+ * verifico se a periodicidade foi definida como manual ou não. Se foi
+ * definida como manual significa que devo executar imediatamente,
+ * caso seja um valor diferente disso, eu verifico qual a periodicidade.
  */
 export function daemonSpeciesLink() {
     setInterval(() => {
-        selectEstaExecutandoServico(2).then(statusExecucao => {
-            if (statusExecucao.length > 0) {
-                const horaFim = statusExecucao[0].dataValues.hora_fim;
-                const horaInicio = statusExecucao[0].dataValues.hora_inicio;
-                const nomeArquivo = processaNomeLog(horaInicio);
-                const arquivoSpeciesLink = statusExecucao[0].dataValues.nome_arquivo;
-                const { id } = statusExecucao[0].dataValues;
-                const quantidadeAmostras = 0;
-                if (horaFim === null) {
-                    atualizaHoraFimSpeciesLink(id, 'EXECUTANDO').then(() => {
-                        const listaConteudoArquivo = processaArquivo(arquivoSpeciesLink);
-                        escreveLOG(`specieslink/${nomeArquivo}`, 'Inicializando a aplicação do SpeciesLink.');
-                        realizaComparacao(horaInicio, geraListaAleatorio(listaConteudoArquivo, quantidadeAmostras)).then(acabou => {
-                            if (acabou) {
-                                escreveLOG(`specieslink/${nomeArquivo}`, 'O processo de comparação do SpeciesLink acabou.');
-                                atualizaHoraFimSpeciesLink(id, getHoraAtual());
-                            }
-                        });
-                    });
-                } else if (horaFim === 'EXECUTANDO') {
-                    if (!fs.existsSync(`specieslink/${nomeArquivo}`)) {
-                        const listaConteudoArquivo = processaArquivo(arquivoSpeciesLink);
-                        escreveLOG(`specieslink/${nomeArquivo}`, 'Inicializando a aplicação do SpeciesLink.');
-                        realizaComparacao(horaInicio, geraListaAleatorio(listaConteudoArquivo, quantidadeAmostras)).then(acabou => {
-                            if (acabou) {
-                                escreveLOG(`specieslink/${nomeArquivo}`, 'O processo de comparação do SpeciesLink acabou.');
-                                atualizaHoraFimSpeciesLink(id, getHoraAtual());
-                            }
-                        });
-                    }
-                    // eslint-disable-next-line no-console
-                    console.log('TÁ EXECUTANDO!!!!11');
+        selectEstaExecutandoServico(1).then(existeExecucaoReflora => {
+            if (existeExecucaoReflora.length === 1) {
+                if (existeExecucaoReflora[0].periodicidade === 'MANUAL') {
+                    preparaExecucaoReflora(existeExecucaoReflora[0]);
+                } else {
+                    verificaRequisicoesAgendado(existeExecucaoReflora);
                 }
             }
         });
