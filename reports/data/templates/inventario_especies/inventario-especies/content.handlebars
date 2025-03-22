@@ -13,7 +13,8 @@
       .rounded {
           border-radius: 25px;
           border: 2px solid gray;
-          padding: 20px; 
+          padding: 10px; 
+          padding-top: 5px;
           width: 100%;
         }
 
@@ -50,7 +51,7 @@
         <div class="rounded avoid" style="width:100%">
             <div class="row" style="background-color: #D3D3D3;padding: 3px;">
                 <div class="col-xs-4">
-                    <p><b>Família: </b>{{familia}}</p>
+                    <p style="font-size: 12px;"><b>Família: </b>{{familia}}</p>
                 </div>
                 <div class="col-xs-4"></div>
                 <div class="col-xs-4"></div>
@@ -59,15 +60,15 @@
                     <table class='table striped'>
                         <thead>
                             <tr>
-                                <th>Espécie</th>
-                                <th>Tombos relacionados</th>
+                                <th style="font-size: 12px;">Espécie</th>
+                                <th style="font-size: 12px;">Tombos relacionados</th>
                             </tr>
                         </thead>
                         <tbody>
                             {{#each especies}}
                                 <tr>
-                                    <td>{{especie}}</td>
-                                    <td style="vertical-align: middle;">{{tombos}}</td>
+                                    <td style="font-size: 12px;">{{especie}}</td>
+                                    <td style="vertical-align: middle; font-size: 12px;">{{tombos}}</td>
                                 </tr>
                             {{/each}}
                         </tbody>

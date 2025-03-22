@@ -78,7 +78,6 @@ export const obtemDadosDoRelatorioDeInventarioDeEspeciesParaTabela = async (req,
                     required: true,
                 },
             ],
-            limit: limite,
             offset,
         });
 
