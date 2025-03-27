@@ -17,7 +17,7 @@ import {
 } from '../log';
 import { geraListaAleatorio } from '../teste';
 import { fazRequisicaoReflora } from './reflora';
-import { fazComparacaoTombo } from './tombos';
+import { fazComparacaoTomboReflora } from './tombos';
 
 /**
  * A função comecaAtualizacaoReflora, primeiramente pega o maior valor de código
@@ -41,7 +41,7 @@ function comecaAtualizacaoReflora(nomeArquivo) {
         insereTabelaReflora(tabelaReflora, geraListaAleatorio(listaCodBarra, 0)).then(() => {
             fazRequisicaoReflora(nomeArquivo).then(resultadoRequisicaoReflora => {
                 if (resultadoRequisicaoReflora) {
-                    fazComparacaoTombo().then(resultadoComparacao => {
+                    fazComparacaoTomboReflora().then(resultadoComparacao => {
                         if (resultadoComparacao) {
                             escreveLOG(`reflora/${nomeArquivo}`, 'O processo de comparação do Reflora acabou.');
                             apagaTabelaReflora().then(() => {

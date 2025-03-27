@@ -267,7 +267,7 @@ export function fazComparacaoInformacao(codBarra, informacaoReflora) {
 }
 
 /**
- * A função fazComparacaoTombo, faz um select na tabela do reflora verificando
+ * A função fazComparacaoTomboReflora, faz um select na tabela do reflora verificando
  * se tem algum tombo que já foi comparado ou não. Se o resultado dessa requisição
  * é maior que zero, então eu pego o json e começo a realizar as comparações, e depois
  * marco que esse json já foi comparado. Após isso, eu chamo novamente essa função
@@ -275,7 +275,7 @@ export function fazComparacaoInformacao(codBarra, informacaoReflora) {
  * @return promessa.promise, como é assíncrono ele só retorna quando resolver, ou seja,
  * quando acabar de realizar a recursão.
  */
-export function fazComparacaoTombo() {
+export function fazComparacaoTomboReflora() {
     const promessa = Q.defer();
     const throttle = throttledQueue(1, 2000);
     selectUmaInformacaoReflora().then(informacaoReflora => {

@@ -13,7 +13,7 @@ import {
     escreveLOG, leLOG, processaNomeLog, getHoraFim, getHoraAtual,
 } from './log';
 import { fazRequisicaoReflora } from './reflora/reflora';
-import { fazComparacaoTombo } from './reflora/tombos';
+import { fazComparacaoTomboReflora } from './reflora/tombos';
 
 /**
  * A função comecaAtualizacao, primeiramente pega o maior valor de código
@@ -40,7 +40,7 @@ function comecaAtualizacao(nomeArquivo, idServico) {
             insereTabelaReflora(tabelaReflora, geraListaAleatorio(listaCodBarra, 0)).then(() => {
                 fazRequisicaoReflora(nomeArquivo).then(resultadoRequisicaoReflora => {
                     if (resultadoRequisicaoReflora) {
-                        fazComparacaoTombo().then(resultadoComparacao => {
+                        fazComparacaoTomboReflora().then(resultadoComparacao => {
                             if (resultadoComparacao) {
                                 escreveLOG(`reflora/${nomeArquivo}`, 'O processo de comparação do Reflora acabou.');
                                 apagaTabelaReflora().then(() => {
@@ -60,7 +60,7 @@ function comecaAtualizacao(nomeArquivo, idServico) {
             criaTabelaSpecieslink(tabelaSpecieslink, geraListaAleatorio(listaCodBarra, 0)).then(() => {
                 fazRequisicaoReflora(nomeArquivo).then(resultadoRequisicaoSpecieslink => {
                     if (resultadoRequisicaoSpecieslink) {
-                        fazComparacaoTombo().then(resultadoComparacao => {
+                        fazComparacaoTomboReflora().then(resultadoComparacao => {
                             if (resultadoComparacao) {
                                 escreveLOG(`specieslink/${nomeArquivo}`, 'O processo de comparação do SpeciesLink acabou.');
                                 apagaTabelaSpecieslink().then(() => {
@@ -95,7 +95,7 @@ function ehPossivelFazerComparacao(nomeArquivo, idServico) {
             if (existe) {
                 promessa.resolve();
             } else {
-                comecaAtualizacao(nomeArquivo).then(() => {
+                comecaAtualizacao(nomeArquivo, 1).then(() => {
                     promessa.resolve();
                 });
             }
@@ -105,7 +105,7 @@ function ehPossivelFazerComparacao(nomeArquivo, idServico) {
             if (existe) {
                 promessa.resolve();
             } else {
-                comecaAtualizacaoSpeciesLink(nomeArquivo).then(() => {
+                comecaAtualizacao(nomeArquivo, 2).then(() => {
                     promessa.resolve();
                 });
             }
