@@ -32,8 +32,7 @@
   "include": [
     "src/",
     "test/",
-    "database/",
-    "reports/"
+    "database/"
   ],
   "exclude": [
     "node_modules/",
