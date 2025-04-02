@@ -9,16 +9,15 @@ const {
 const agruparPorNomeCientifico = dados => dados.reduce((acc, obj) => {
     const { especy } = obj;
     const { genero, nome } = especy;
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const nome_cientifico = genero ? `${genero.nome} ${nome}` : nome;
+    const nomeCientifico = genero ? `${genero.nome} ${nome}` : nome;
 
-    const grupoExistente = acc.find(item => item.especie === nome_cientifico);
+    const grupoExistente = acc.find(item => item.especie === nomeCientifico);
 
     if (grupoExistente) {
         grupoExistente.tombos.push(obj.hcf);
     } else {
         acc.push({
-            especie: nome_cientifico,
+            especie: nomeCientifico,
             tombos: [obj.hcf],
         });
     }
@@ -172,5 +171,3 @@ export const obtemDadosDoRelatorioDeInventarioDeEspecies = async (req, res, next
         next(e);
     }
 };
-
-export const outraFn = async () => {};

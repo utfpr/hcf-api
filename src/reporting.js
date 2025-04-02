@@ -1,13 +1,12 @@
-/* eslint-disable import/no-extraneous-dependencies */
-const jsreportAssets = require('@jsreport/jsreport-assets');
-const jsreportChromePdf = require('@jsreport/jsreport-chrome-pdf');
-const jsreportCore = require('@jsreport/jsreport-core');
-const jsreportExpress = require('@jsreport/jsreport-express');
-const jsreportFs = require('@jsreport/jsreport-fs-store');
-const jsreportHandlebars = require('@jsreport/jsreport-handlebars');
-const jsreportPdfUtil = require('@jsreport/jsreport-pdf-utils');
-const express = require('express');
-const path = require('path');
+import jsreportAssets from '@jsreport/jsreport-assets';
+import jsreportChromePdf from '@jsreport/jsreport-chrome-pdf';
+import jsreportCore from '@jsreport/jsreport-core';
+import jsreportExpress from '@jsreport/jsreport-express';
+import jsreportFs from '@jsreport/jsreport-fs-store';
+import jsreportHandlebars from '@jsreport/jsreport-handlebars';
+import jsreportPdfUtil from '@jsreport/jsreport-pdf-utils';
+import express from 'express';
+import path from 'path';
 
 const reportingApp = express();
 
