@@ -3,3 +3,4 @@ mysql/
 node_modules/
 
 public/js/
+reports/

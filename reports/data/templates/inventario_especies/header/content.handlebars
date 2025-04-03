@@ -1,0 +1,32 @@
+<html>
+    <head>
+         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/metro/4.1.5/css/metro.min.css">
+         <style>
+            {{asset "../shared/styles.css" "utf8"}}
+        </style>
+    </head>
+    <body>
+        {{#each $pdf.pages}}
+          {{#if @index}}
+            <div style="page-break-before: always;"></div>
+          {{/if}}
+          <main class="main">
+            <header class="header">
+              {{#with (lookup ../$pdf.pages @index)}}
+                <h1>{{group}}</h1>
+              {{/with}}
+            </header>
+            <footer class="footer">
+              <div style="display: flex;justify-content: space-between;">
+                <div>
+                  <small>Pag. {{getPageNumber @index}} de {{getTotalPages ../$pdf.pages}}</small>
+                </div>
+                <div>
+                  <small>({{nowLocalStr}})</small>
+                </div>
+              </div>
+            </footer>
+          </main>
+        {{/each}}
+    </body>
+</html>
