@@ -291,7 +291,7 @@ export function fazComparacaoTomboReflora() {
             throttle(() => {
                 fazComparacaoInformacao(getCodBarra, getInformacaoReflora).then(() => {
                     atualizaJaComparouTabelaReflora(getCodBarra);
-                    promessa.resolve(fazComparacaoTombo());
+                    promessa.resolve(fazComparacaoTomboReflora());
                 });
             });
         }

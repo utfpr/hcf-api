@@ -7,13 +7,17 @@ import {
     apagaTabelaReflora,
     apagaTabelaSpecieslink,
     insereTabelaReflora,
+    insereTabelaSpecieslink,
     selectCodBarra,
 } from './herbariumdatabase';
 import {
     escreveLOG, leLOG, processaNomeLog, getHoraFim, getHoraAtual,
 } from './log';
 import { fazRequisicaoReflora } from './reflora/reflora';
+import { fazRequisicaoSpecieslink } from './specieslink/specieslink';
 import { fazComparacaoTomboReflora } from './reflora/tombos';
+import { fazComparacaoTomboSpecieslink } from './specieslink/tombos';
+import { geraListaAleatorio } from './teste';
 
 /**
  * A função comecaAtualizacao, primeiramente pega o maior valor de código
@@ -37,7 +41,7 @@ function comecaAtualizacao(nomeArquivo, idServico) {
         const tabelaReflora = criaTabelaReflora();
         selectCodBarra().then(listaCodBarra => {
             // insereTabelaReflora(tabelaReflora, listaCodBarra.slice(0, 1)).then(() => {
-            insereTabelaReflora(tabelaReflora, geraListaAleatorio(listaCodBarra, 0)).then(() => {
+            insereTabelaReflora(tabelaReflora, geraListaAleatorio(listaCodBarra, 10)).then(() => {
                 fazRequisicaoReflora(nomeArquivo).then(resultadoRequisicaoReflora => {
                     if (resultadoRequisicaoReflora) {
                         fazComparacaoTomboReflora().then(resultadoComparacao => {
@@ -57,10 +61,10 @@ function comecaAtualizacao(nomeArquivo, idServico) {
         const tabelaSpecieslink = criaTabelaSpecieslink();
         selectCodBarra().then(listaCodBarra => {
             // insereTabelaSpecieslink(tabelaSpecieslink, listaCodBarra.slice(0, 1)).then(() => {
-            criaTabelaSpecieslink(tabelaSpecieslink, geraListaAleatorio(listaCodBarra, 0)).then(() => {
-                fazRequisicaoReflora(nomeArquivo).then(resultadoRequisicaoSpecieslink => {
+                insereTabelaSpecieslink(tabelaSpecieslink, geraListaAleatorio(listaCodBarra, 10)).then(() => {
+                fazRequisicaoSpecieslink(nomeArquivo).then(resultadoRequisicaoSpecieslink => {
                     if (resultadoRequisicaoSpecieslink) {
-                        fazComparacaoTomboReflora().then(resultadoComparacao => {
+                        fazComparacaoTomboSpecieslink().then(resultadoComparacao => {
                             if (resultadoComparacao) {
                                 escreveLOG(`specieslink/${nomeArquivo}`, 'O processo de comparação do SpeciesLink acabou.');
                                 apagaTabelaSpecieslink().then(() => {

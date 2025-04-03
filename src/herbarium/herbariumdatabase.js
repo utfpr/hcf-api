@@ -156,10 +156,12 @@ export function insereExecucao(horaAtual, horaFim, periodicidadeUsuario, proxima
 }
 
 /**
- * A função atualizaTabelaConfiguracaoReflora, ele pega o registro na tabela
+ * A função atualizaTabelaConfiguracao, ele pega o registro na tabela
  * com base no identificador que foi passado como parâmetro e atualiza
  * com a nova hora de início, hora de fim, data de próxima atualização,
  * periodicidade passada por parâmetro.
+ *  * @param {*} idServico, em que o identificador um é o serviço do Reflora e o identificador
+ * dois é o serviço do species Link.
  * @param {*} idExecucao, é o identificador do serviço da execução na qual terá
  * os novos valores de hora de início, fim, periodicidade e proxima atualização.
  * @param {*} horaInicio, é a hora de início com a nova hora de início da execução do serviço.
@@ -170,21 +172,38 @@ export function insereExecucao(horaAtual, horaFim, periodicidadeUsuario, proxima
  * @return promessa.promise, como é assíncrono ele só retorna quando resolver, ou seja,
  * quando terminar de realizar a atualização.
  */
-export function atualizaTabelaConfiguracaoReflora(idExecucao, horaInicio, horaFim, periodicidadeUsuario, proximaAtualizacao) {
-    const tabelaConfiguracaoReflora = modeloConfiguracao(conexao, Sequelize);
-    const promessa = Q.defer();
-    tabelaConfiguracaoReflora.update(
-        {
-            hora_inicio: horaInicio,
-            hora_fim: horaFim,
-            periodicidade: periodicidadeUsuario,
-            data_proxima_atualizacao: proximaAtualizacao,
-        },
-        { where: { id: idExecucao } }
-    ).then(() => {
-        promessa.resolve();
-    });
-    return promessa.promise;
+export function atualizaTabelaConfiguracao(idServico, idExecucao, horaInicio, horaFim, periodicidadeUsuario, proximaAtualizacao) {
+    if (idServico === 1) {
+        const tabelaConfiguracaoReflora = modeloConfiguracao(conexao, Sequelize);
+        const promessa = Q.defer();
+        tabelaConfiguracaoReflora.update(
+            {
+                hora_inicio: horaInicio,
+                hora_fim: horaFim,
+                periodicidade: periodicidadeUsuario,
+                data_proxima_atualizacao: proximaAtualizacao,
+            },
+            { where: { id: idExecucao } }
+        ).then(() => {
+            promessa.resolve();
+        });
+        return promessa.promise;
+    } else {
+        const tabelaConfiguracaoSpeciesLink = modeloConfiguracao(conexao, Sequelize);
+        const promessa = Q.defer();
+        tabelaConfiguracaoSpeciesLink.update(
+            {
+                hora_inicio: horaInicio,
+                hora_fim: horaFim,
+                periodicidade: periodicidadeUsuario,
+                data_proxima_atualizacao: proximaAtualizacao,
+            },
+            { where: { id: idExecucao } }
+        ).then(() => {
+            promessa.resolve();
+        });
+        return promessa.promise;
+    }
 }
 
 /**
@@ -198,9 +217,9 @@ export function atualizaTabelaConfiguracaoReflora(idExecucao, horaInicio, horaFi
  * quando terminar de realizar a atualização.
  */
 export function atualizaFimTabelaConfiguracao(idExecucao, horaTerminou) {
-    const tabelaConfiguracaoReflora = modeloConfiguracao(conexao, Sequelize);
+    const tabelaConfiguracao = modeloConfiguracao(conexao, Sequelize);
     const promessa = Q.defer();
-    tabelaConfiguracaoReflora.update(
+    tabelaConfiguracao.update(
         { hora_fim: horaTerminou },
         { where: { id: idExecucao } }
     ).then(() => {
@@ -424,6 +443,46 @@ export function atualizaJaComparouTabelaReflora(codBarra) {
         { ja_comparou: true },
         { where: { cod_barra: codBarra } }
     );
+}
+
+/**
+ * A função atualizaJaComparouTabelaSpecieslink, é utilizado para marcar
+ * os códigos de barras que tiveram as suas respostas de requisições vindas do Specieslink
+ * comparadas com as que estão no banco de dados.
+ * @param {*} codBarra, é o código de barra na qual é necessário para colocar que já foi
+ * feito a comparação.
+ */
+export function atualizaJaComparouTabelaSpecieslink(codBarra) {
+    const tabelaSpecieslink = modeloSpecieslink(conexao, Sequelize);
+    tabelaSpecieslink.update(
+        { ja_comparou: true },
+        { where: { cod_barra: codBarra } }
+    );
+}
+
+/**
+ * A função selectUmaInformacaoSpecieslink, realiza uma consulta no banco de dados onde são
+ * retornados apenas um registro na tabela do specieslink, em que são registros que tem no banco de dados
+ * salvo a resposta da requisição specieslink e que não foram comparados.
+ * @return promessa.promise, como é assíncrono ele só retorna quando resolver, ou seja,
+ * quando terminar de realizar a consulta.
+ */
+export function selectUmaInformacaoSpecieslink() {
+    const tabelaReflora = modeloSpecieslink(conexao, Sequelize);
+    const promessa = Q.defer();
+    // conexao.sync().then(() => {
+    tabelaReflora.findAll({
+        attributes: ['cod_barra', 'tombo_json'],
+        where: {
+            [Sequelize.Op.and]:
+                [{ ja_comparou: false }, { ja_requisitou: true }],
+        },
+        limit: 1,
+    }).then(informacaoSpecieslink => {
+        promessa.resolve(informacaoSpecieslink);
+    });
+    // });
+    return promessa.promise;
 }
 
 /**
