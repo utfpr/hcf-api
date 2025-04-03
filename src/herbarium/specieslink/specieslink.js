@@ -1,184 +1,113 @@
 /* eslint-disable max-len */
 import Q from 'q';
+import request from 'request';
+import throttledQueue from 'throttled-queue';
 
 import {
-    ehIgualFamilia,
-    ehIgualGenero,
-    ehIgualEspecie,
-    ehIgualSubespecie,
-    existeAlteracaoSugerida,
-} from '../comparainformacao';
-import {
-    selectTombo,
-    insereAlteracaoSugerida,
-    selectExisteServicoUsuario,
-    insereIdentificadorUsuario,
+    selectUmCodBarra,
+    atualizaTabelaReflora,
+    decrementaTabelaReflora,
 } from '../herbariumdatabase';
+import { escreveLOG } from '../log';
 
 /**
- * A função getDiaIdentificacao verifica se o dia que foi passado não
- * é uma string vazia ou se é um não número, e se for um desses casos
- * é nulo. Caso não seja nenhum desses retorna o valor.
- * @param {*} diaIdentificacao, é uma string na qual será verificado se está correto ou não o dia.
- * @return valorDiaIdentificacao ou null, retorna o dia que foi feita a identificação
- * caso esteja correto, caso contrário retorna nulo.
+ * A função processaRespostaSpecieslink, converte o resultado da resposta do Specieslink
+ * que é recebido por parâmetro que é uma string para o formato JSON.
+ * Nessa conversão aparece os acentos presentes nas palavras.
+ * @param {*} respostaSpecieslink, resposta com informações do tombo presente no Specieslink.
+ * @return JSON, retorna a informação do Specieslink no formato JSON.
  */
-export function getDiaIdentificacao(diaIdentificacao) {
-    if (diaIdentificacao.length === 0) {
-        return null;
-    }
-    const valorDiaIdentificacao = parseInt(diaIdentificacao);
-    if (Number.isNaN(valorDiaIdentificacao)) {
-        return null;
-    }
-    if (valorDiaIdentificacao > 0 && valorDiaIdentificacao < 32) {
-        return valorDiaIdentificacao;
-    }
-    return null;
+export function processaRespostaSpecieslink(respostaSpecieslink) {
+    return JSON.parse(respostaSpecieslink);
 }
 
 /**
- * A função getMesIdentificacao verifica se o mês que foi passado não
- * é uma string vazia ou se é um não número, e se for um desses casos
- * é nulo. Caso não seja nenhum desses retorna o valor.
- * @param {*} mesIdentificacao, é uma string na qual será verificado se está correto ou não o mês.
- * @return valorMesIdentificacao ou null, retorna o mês que foi feita a identificação
- * caso esteja correto, caso contrário retorna nulo.
+ * A função temResultadoRespostaSpecieslink, verifica três coisas:
+ * se tem resultado na chave 'result' retornado pela requisição do Specieslink,
+ * se a informação dessa chave é nula e o parâmetro que contêm essa chave não é nulo.
+ * Se não for nenhum dessas condições representa que tem resultado e é retornado
+ * true, caso seja uma dessas é false.
+ * @param {*} respostaSpecieslink, resposta com informações do tombo presente no Specieslink.
+ * @return true ou false, retorna true caso tenha resultado, e caso não tenha resultado retorna false.
  */
-export function getMesIdentificacao(mesIdentificacao) {
-    if (mesIdentificacao.length === 0) {
-        return null;
+export function temResultadoRespostaSpecieslink(respostaSpecieslink) {
+    if ((respostaSpecieslink === null) || (respostaSpecieslink.result === null) || (respostaSpecieslink.result.length === 0)) {
+        return false;
     }
-    const valorMesIdentificacao = parseInt(mesIdentificacao);
-    if (Number.isNaN(valorMesIdentificacao)) {
-        return null;
-    }
-    if (valorMesIdentificacao > 0 && valorMesIdentificacao < 13) {
-        return valorMesIdentificacao;
-    }
-    return null;
+    return true;
 }
 
 /**
- * A função getAnoIdentificacao verifica se o ano que foi passado não
- * é uma string vazia ou se é um não número, e se for um desses casos
- * é nulo. Caso não seja nenhum desses retorna o valor.
- * @param {*} anoIdentificacao, é uma string na qual será verificado se está correto ou não o ano.
- * @return valorMesIdentificacao ou null, retorna o ano que foi feita a identificação
- * caso esteja correto, caso contrário retorna nulo.
+ * A função jsonTemErro, verifica se no JSON retornado pelo
+ * Specieslink é um JSON de erro, que percebemos que algumas vezes nos
+ * retornava. Então se o JSON retornado ao igual ao retornado JSON, retornamos
+ * true, ou seja, existe erro, caso contrário é retornado false.
+ * @param {*} respostaSpecieslink, resposta com informações do tombo presente no Specieslink.
+ * @return true ou false, retorna true caso seja o JSON com erro, e caso não seja retorna false.
  */
-export function getAnoIdentificacao(anoIdentificacao) {
-    if (anoIdentificacao.length === 0) {
-        return null;
+function jsonTemErro(respostaSpecieslink) {
+    if (respostaSpecieslink === '{"erro":"500","message":"Oops, something\'s gone wrong in server!"}') {
+        return true;
     }
-    const valorAnoIdentificacao = parseInt(anoIdentificacao);
-    if (Number.isNaN(valorAnoIdentificacao)) {
-        return null;
-    }
-    if (valorAnoIdentificacao > 0) {
-        return valorAnoIdentificacao;
-    }
-    return null;
+    return false;
 }
 
 /**
- * A função realizaComparacao, ela percorre a lista de conteúdo de informações
- * presentes no arquivo do species Link que foi passado por parâmetro, e de maneira
- * recursivamente, e em cada iteração que retorna um elemento da lista é feito a
- * comparação das informações. Todas as informações que forem divergentes que forem encontradas
- * serão adicionadas no JSON. Com esse JSON gerado, é verificado se esse JSON já
- * está presente na tabela de alterações, se está na tabela de alterações não será inserido,
- * caso não esteja presente é inserido essa alteração.
- * Para o pessoal do herbário submeter os dados para os species Link, é utilizado o
- * software spLinker e nele você pode escolher quais informações você deseja enviar
- * para o species Link, porém não existe a opção de enviar informações de subfamília
- * e variedade (Informações obtidas a partir do manual do software, e do README
- * disponível no software).
- * @param {*} nomeArquivo, é o nome do arquivo aonde será escrito quando iniciou ou terminou
- * o processo de comparação.
- * @param {*} listaConteudoArquivo, é o conteúdo do arquivo do species Link carregado nessa lista.
- * @return promessa.promise, como é assíncrono ele só retorna quando resolver, ou seja,
- * quando acabar de realizar a comparação de informações.
+ * A função salvaRespostaSpecieslink, verifica se o que foi retornado é uma mensagem de erro, e
+ * se for é adicionado no log, juntamente com o código de barra e o erro. Caso não seja essa mensagem
+ * é verifica se o JSON é o JSON de erro ou não. Se for o JSON com erro, eu guardo no banco de dados
+ * e o ja_requisitou fica igual a zero (O ja_requisitou quando é false significa que não foi feita a requisição,
+ * caso seja true é que foi feito a requisição). Caso seja o JSON esperado, eu guardo ele no banco de
+ * dados e valor da coluna ja_requisitou fica igual a true.
+ * @param {*} nomeArquivo, é o nome do arquivo aonde será escrito as mensagens de erros, caso ela ocorra.
+ * @param {*} codBarra, é o código de barra do tombo que foi feito a requisição no Specieslink.
+ * @param {*} error, é o erro que pode ser retornado pela tentativa de requisição.
+ * @param {*} response, é a resposta que pode ser retornado pela tentativa de requisição.
+ * @param {*} body, é o corpo que pode ser retornado pela tentativa de requisição.
  */
-export function realizaComparacao(nomeArquivo, listaConteudoArquivo) {
-    const promessa = Q.defer();
-    if (listaConteudoArquivo.length === 0) {
-        promessa.resolve(true);
+export function salvaRespostaSpecieslink(nomeArquivo, codBarra, error, response, body) {
+    // if ((error !== null) && (error.code !== null)) {
+    if (!error && response.statusCode === 200 && error === null) {
+        if (jsonTemErro(body)) {
+            atualizaTabelaReflora(codBarra, body, false);
+        } else {
+            atualizaTabelaReflora(codBarra, body, true);
+        }
     } else {
-        const conteudo = listaConteudoArquivo.pop();
-        const codBarra = conteudo[3];
-        selectTombo(codBarra).then(async tombo => {
-            if (tombo.length === 0) {
-                promessa.resolve(realizaComparacao(nomeArquivo, listaConteudoArquivo));
-            } else {
-                let alteracaoInformacao = '{';
-                const informacoesTomboBd = tombo[0].dataValues;
-                // INFORMAÇÕES DO SPECIESLINK
-                const nomeFamilia = conteudo[10].replace(/"/g, '');
-                const nomeGenero = conteudo[11].replace(/"/g, '');
-                const nomeEspecie = conteudo[12].replace(/"/g, '');
-                const nomeSubespecie = conteudo[13].replace(/"/g, '');
-                const identificador = conteudo[15].replace(/"/g, '');
-                const anoIdentificacao = conteudo[16].replace(/"/g, '');
-                const mesIdentificacao = conteudo[17].replace(/"/g, '');
-                const diaIdentificacao = conteudo[18].replace(/"/g, '');
-                await ehIgualFamilia(informacoesTomboBd.familia_id, nomeFamilia).then(familia => {
-                    if (familia !== -1) {
-                        alteracaoInformacao += `"familia_nome": "${familia}", `;
-                    }
-                });
-                await ehIgualGenero(informacoesTomboBd.genero_id, nomeGenero).then(genero => {
-                    if (genero !== -1) {
-                        alteracaoInformacao += `"genero_nome": "${genero}", `;
-                    }
-                });
-                await ehIgualEspecie(informacoesTomboBd.especie_id, nomeEspecie).then(especie => {
-                    if (especie !== -1) {
-                        alteracaoInformacao += `"especie_nome": "${especie}", `;
-                    }
-                });
-                // subespecie
-                await ehIgualSubespecie(informacoesTomboBd.sub_especie_id, nomeSubespecie).then(subespecie => {
-                    if (subespecie !== -1) {
-                        alteracaoInformacao += `"subespecie_nome: ${subespecie}", `;
-                    }
-                });
-                alteracaoInformacao = alteracaoInformacao.substring(0, alteracaoInformacao.lastIndexOf(','));
-                alteracaoInformacao += '}';
-                if (alteracaoInformacao.length > 2) {
-                    existeAlteracaoSugerida(codBarra, alteracaoInformacao).then(existe => {
-                        if (!existe) {
-                            selectExisteServicoUsuario(identificador).then(listaUsuario => {
-                                if (listaUsuario.length === 0) {
-                                    insereIdentificadorUsuario(identificador).then(idUsuario => {
-                                        insereAlteracaoSugerida(idUsuario, 'ESPERANDO', codBarra, alteracaoInformacao, getDiaIdentificacao(diaIdentificacao), getMesIdentificacao(mesIdentificacao), getAnoIdentificacao(anoIdentificacao));
-                                        // eslint-disable-next-line no-console
-                                        console.log(identificador);
-                                        // eslint-disable-next-line no-console
-                                        console.log(`${diaIdentificacao}/${mesIdentificacao}/${anoIdentificacao}`);
-                                        promessa.resolve(realizaComparacao(nomeArquivo, listaConteudoArquivo));
-                                    });
-                                } else {
-                                    const { id } = listaUsuario[0].dataValues;
-                                    insereAlteracaoSugerida(id, 'ESPERANDO', codBarra, alteracaoInformacao, getDiaIdentificacao(diaIdentificacao), getMesIdentificacao(mesIdentificacao), getAnoIdentificacao(anoIdentificacao));
-                                    // eslint-disable-next-line no-console
-                                    console.log(identificador);
-                                    // eslint-disable-next-line no-console
-                                    console.log(`${diaIdentificacao}/${mesIdentificacao}/${anoIdentificacao}`);
-                                    promessa.resolve(realizaComparacao(nomeArquivo, listaConteudoArquivo));
-                                }
-                            });
-                        } else {
-                            promessa.resolve(realizaComparacao(nomeArquivo, listaConteudoArquivo));
-                        }
-                    });
-                } else {
-                    promessa.resolve(realizaComparacao(nomeArquivo, listaConteudoArquivo));
-                }
-            }
-        });
+        escreveLOG(`reflora/${nomeArquivo}`, `Falha na requisição do código de barra {${codBarra}} que foi ${error}`);
+        decrementaTabelaReflora(codBarra);
     }
+    // }
+}
+
+/**
+ * A função fazRequisicaoSpecieslink, faz um select no banco de dados, em que cada select feito
+ * retorna apenas um valor de código de barra, e com esse código de barra
+ * é feito a requisição ao Specieslink para obter as informações daquele código de barra.
+ * Com as informações será verificado se as informações serão salvas ou não no banco
+ * de dados.
+ * @param {*} nomeArquivo, é o nome do arquivo aonde será escrito as mensagens de erros, caso ela ocorra.
+ * quando acabar de realizar as requisições de todas as informações do Specieslink.
+ */
+export function fazRequisicaoSpecieslink(nomeArquivo) {
+    const promessa = Q.defer();
+    const throttle = throttledQueue(1, 1500);
+    selectUmCodBarra().then(codBarra => {
+        if (codBarra.length === 0) {
+            promessa.resolve(true);
+        } else {
+            const getCodBarra = codBarra[0].dataValues.cod_barra;
+            throttle(() => {
+                request(`https://specieslink.net/ws/1.0/search?apikey=0bnfKgk1s8TwZfVjdHJf&barcode=${getCodBarra}`, { timeout: 4000 }, (error, response, body) => {
+                    salvaRespostaSpecieslink(nomeArquivo, getCodBarra, error, response, body);
+                    promessa.resolve(fazRequisicaoSpecieslink(nomeArquivo));
+                });
+            });
+        }
+    });
     return promessa.promise;
 }
 
-export default {};
+export default {
+
+};
