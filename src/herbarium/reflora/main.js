@@ -1,114 +1,14 @@
 /* eslint-disable max-len */
 import moment from 'moment';
-import Q from 'q';
 
 import {
-    criaTabelaReflora,
-    insereTabelaReflora,
-    selectCodBarra,
-    apagaTabelaReflora,
-    existeTabelaReflora,
     selectEstaExecutandoServico,
-    atualizaFimTabelaConfiguracao,
-    atualizaTabelaConfiguracaoReflora,
+    atualizaTabelaConfiguracao,
 } from '../herbariumdatabase';
 import {
-    escreveLOG, leLOG, processaNomeLog, getHoraFim, getHoraAtual,
+    getHoraAtual,
 } from '../log';
-import { geraListaAleatorio } from '../teste';
-import { fazRequisicaoReflora } from './reflora';
-import { fazComparacaoTomboReflora } from './tombos';
-
-/**
- * A função comecaAtualizacaoReflora, primeiramente pega o maior valor de código
- * de barra existente, e partir do código de barra HCF000000001 até o maior valor
- * de código de barra e insere na tabela do Reflora. Com todos os códigos carregados
- * é pego um código de barra de cada vez e faz a requisição desse código de barra e inserido
- * em uma coluna da tabela. Após, obter informações de todos os códigos de barras, é iniciado
- * a comparação, e por fim, quando acaba o processo de comparação de todos os códigos
- * barras, apaga-se essa tabela do Reflora.
- * @param {*} nomeArquivo, é o nome do arquivo aonde será escrito quando iniciou, terminou
- * e algum erro que acontenceu durante o processo de comparação.
- * @return promessa.promise, como é assíncrono ele só retorna quando resolver, ou seja,
- * quando acabar de realizar a comparação de informações.
- */
-function comecaAtualizacaoReflora(nomeArquivo) {
-    const promessa = Q.defer();
-    escreveLOG(`reflora/${nomeArquivo}`, 'Inicializando a aplicação do Reflora.');
-    const tabelaReflora = criaTabelaReflora();
-    selectCodBarra().then(listaCodBarra => {
-        // insereTabelaReflora(tabelaReflora, listaCodBarra.slice(0, 1)).then(() => {
-        insereTabelaReflora(tabelaReflora, geraListaAleatorio(listaCodBarra, 0)).then(() => {
-            fazRequisicaoReflora(nomeArquivo).then(resultadoRequisicaoReflora => {
-                if (resultadoRequisicaoReflora) {
-                    fazComparacaoTomboReflora().then(resultadoComparacao => {
-                        if (resultadoComparacao) {
-                            escreveLOG(`reflora/${nomeArquivo}`, 'O processo de comparação do Reflora acabou.');
-                            apagaTabelaReflora().then(() => {
-                                promessa.resolve();
-                            });
-                        }
-                    });
-                }
-            });
-        });
-    });
-
-    return promessa.promise;
-}
-
-/**
- * A função ehPossivelFazerComparacaoReflora, faz uma consulta no banco de dados
- * verificando se existe a tabela do reflora. Se essa tabela não existe
- * pode ser executado, caso contrário não pode ser executado.
- * @param {*} nomeArquivo, é o nome do arquivo aonde será escrito quando iniciou, terminou
- * e algum erro que acontenceu durante o processo de comparação.
- * @return promessa.promise, como é assíncrono ele só retorna quando resolver, ou seja,
- * quando acabar de verificar se existe uma tabela do reflora.
- */
-function ehPossivelFazerComparacaoReflora(nomeArquivo) {
-    const promessa = Q.defer();
-    existeTabelaReflora().then(existe => {
-        if (existe) {
-            promessa.resolve();
-        } else {
-            comecaAtualizacaoReflora(nomeArquivo).then(() => {
-                promessa.resolve();
-            });
-        }
-    });
-
-    return promessa.promise;
-}
-
-/**
- * A função preparaExecucaoReflora, pega o resultado da existência da execução
- * de Reflora na tabela de configuração e pega a hora de início que está
- * nesse resultado e transforma ele para que ele possa ser nome de arquivo.
- * Assim, ele verificar se é possível fazer a comparação do reflora, se foi
- * possível fazer, se foi feito a comparação do Reflora, ele verifica se
- * acabou mesmo o processo do Reflora, verificando se tem a mensagem desejada,
- * se sim atualiza com a hora que acabou o processo no banco de dados.
- * @param {*} existeExecucaoReflora, é o resultado da existência da execução
- * do Reflora na tabela de configuração.
- * @return promessa.promise, como é assíncrono ele só retorna quando resolver, ou seja,
- * quando acabar de realizar a comparação de informações.
- */
-function preparaExecucaoReflora(existeExecucaoReflora) {
-    const promessa = Q.defer();
-    const nomeArquivo = processaNomeLog(existeExecucaoReflora.dataValues.hora_inicio);
-    ehPossivelFazerComparacaoReflora(nomeArquivo, 1).then(() => {
-        const { id } = existeExecucaoReflora.dataValues;
-        const conteudoLOG = leLOG(`reflora/${nomeArquivo}`);
-        if (conteudoLOG.includes('O processo de comparação do Reflora acabou.')) {
-            const horaFim = getHoraFim(conteudoLOG);
-            atualizaFimTabelaConfiguracao(id, horaFim);
-            promessa.resolve();
-        }
-    });
-    return promessa.promise;
-}
-
+import { preparaExecucao } from '../main';
 /**
  * A função verificaRequisicoesAgendado, verifica a periodicidade
  * que foi definida pelo usuário e a partir disso calcula
@@ -132,8 +32,8 @@ function verificaRequisicoesAgendado(existeExecucaoReflora) {
     }
     if (moment().format('DD/MM/YYYY') === existeExecucaoReflora[0].data_proxima_atualizacao) {
         if (moment().format('HH') === '00') {
-            preparaExecucaoReflora(existeExecucaoReflora[0]).then(() => {
-                atualizaTabelaConfiguracaoReflora(existeExecucaoReflora[0].id, getHoraAtual(), null, existeExecucaoReflora[0].periodicidade, moment().day(agendamento)
+            preparaExecucao(existeExecucaoReflora[0], 1).then(() => {
+                atualizaTabelaConfiguracao(1, existeExecucaoReflora[0].id, getHoraAtual(), null, existeExecucaoReflora[0].periodicidade, moment().day(agendamento)
                     .format('DD/MM/YYYY'));
             });
         } else {
@@ -159,7 +59,7 @@ export function daemonFazRequisicaoReflora() {
         selectEstaExecutandoServico(1).then(existeExecucaoReflora => {
             if (existeExecucaoReflora.length === 1) {
                 if (existeExecucaoReflora[0].periodicidade === 'MANUAL') {
-                    preparaExecucaoReflora(existeExecucaoReflora[0]);
+                    preparaExecucao(existeExecucaoReflora[0], 1);
                 } else {
                     verificaRequisicoesAgendado(existeExecucaoReflora);
                 }
