@@ -1,0 +1,19 @@
+{
+    "name": "header",
+    "engine": "handlebars",
+    "recipe": "chrome-pdf",
+    "creationDate": {
+        "$$date": 1740799697164
+    },
+    "modificationDate": {
+        "$$date": 1740800024492
+    },
+    "shortid": "ci_-6zX",
+    "_id": "f2pPXrWcmhk8MYCM",
+    "$entitySet": "templates",
+    "chrome": {
+        "marginTop": "1.5cm",
+        "marginRight": "1.5cm",
+        "marginLeft": "1.5cm"
+    }
+}

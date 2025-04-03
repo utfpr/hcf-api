@@ -2,6 +2,10 @@ dist/
 uploads/
 mysql/data/
 node_modules/
+reports/data/fs.journal
+reports/data/fs.version
+reports/data/profiles
+reports/data/settings
 
 *.env*
 !.env.example
