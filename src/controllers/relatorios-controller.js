@@ -1,70 +1,23 @@
+import { format, isBefore } from 'date-fns';
+
+import {
+    agruparPorFamilia,
+    formatarDadosParaRealtorioDeInventarioDeEspecies,
+    formataTextFilter,
+    formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData,
+} from '~/helpers/formata-dados-relatorio';
+import { gerarRelatorioPDF } from '~/helpers/gerador-relatorio';
 import codigosHttp from '~/resources/codigos-http';
 
 import models from '../models';
 
 const {
-    Sequelize: { Op }, Familia, Especie, Genero, Tombo,
+    Sequelize: { Op, literal }, Familia, Especie, Genero, Tombo, LocalColeta, Coletor, Sequelize, sequelize,
 } = models;
 
-const agruparPorNomeCientifico = dados => dados.reduce((acc, obj) => {
-    const { especy } = obj;
-    const { genero, nome } = especy;
-    const nomeCientifico = genero ? `${genero.nome} ${nome}` : nome;
-
-    const grupoExistente = acc.find(item => item.especie === nomeCientifico);
-
-    if (grupoExistente) {
-        grupoExistente.tombos.push(obj.hcf);
-    } else {
-        acc.push({
-            especie: nomeCientifico,
-            tombos: [obj.hcf],
-        });
-    }
-
-    return acc;
-}, []).map(item => ({
-    ...item,
-    tombos: item.tombos.join(', '),
-}));
-
-const formatarDadosParaRealtorioDeInventarioDeEspecies = dados => {
-    const dadosFormatados = dados.map(dado => ({
-        familia: dado.familia,
-        especies: agruparPorNomeCientifico(dado.itens).sort((a, b) => a.especie.localeCompare(b.especie)),
-    }));
-    return dadosFormatados;
-};
-
-const agruparPorFamilia = dados => dados.reduce((acc, obj) => {
-    const { familia } = obj.especy;
-    const { nome } = familia;
-
-    const grupoExistente = acc.find(item => item.familia === nome);
-
-    if (grupoExistente) {
-        grupoExistente.itens.push(obj);
-    } else {
-        acc.push({
-            familia: nome,
-            itens: [obj],
-        });
-    }
-
-    return acc;
-}, []);
-
-export const obtemDadosDoRelatorioDeInventarioDeEspeciesParaTabela = async (req, res, next) => {
-    const { query, paginacao } = req;
+export const obtemDadosDoRelatorioDeInventarioDeEspeciesParaTabela = async (req, res, next, where, dados) => {
+    const { paginacao } = req;
     const { limite, pagina, offset } = paginacao;
-    const { familia } = query;
-
-    let where = {};
-    if (familia) {
-        where = {
-            nome: { [Op.like]: `%${familia}%` },
-        };
-    }
 
     try {
         const especiesFiltradas = await Especie.findAndCountAll({
@@ -80,34 +33,6 @@ export const obtemDadosDoRelatorioDeInventarioDeEspeciesParaTabela = async (req,
             offset,
         });
 
-        const especieIds = especiesFiltradas.rows.map(e => e.id);
-
-        const tombos = await Tombo.findAll({
-            attributes: ['hcf', 'numero_coleta', 'nome_cientifico'],
-            include: [
-                {
-                    model: Especie,
-                    attributes: ['id', 'nome'],
-                    where: {
-                        id: especieIds, // Filtra apenas pelas espécies que atendem ao critério da família
-                    },
-                    include: [
-                        {
-                            model: Genero,
-                            attributes: ['id', 'nome'],
-                        },
-                        {
-                            model: Familia,
-                            attributes: ['id', 'nome'],
-                        },
-                    ],
-                },
-            ],
-        });
-
-        const agrupamentoPorFamilia = agruparPorFamilia(tombos);
-        const dados = formatarDadosParaRealtorioDeInventarioDeEspecies(agrupamentoPorFamilia);
-
         res.status(codigosHttp.LISTAGEM).json({
             metadados: {
                 total: especiesFiltradas.count,
@@ -122,24 +47,98 @@ export const obtemDadosDoRelatorioDeInventarioDeEspeciesParaTabela = async (req,
 };
 
 export const obtemDadosDoRelatorioDeInventarioDeEspecies = async (req, res, next) => {
-    const { query } = req;
-    const { familia, paraTabela } = query;
+    const { familia, toPdf } = req.query;
 
+    let replacements = {};
     let where = {};
+    let query = `
+        SELECT 
+            t.hcf,
+            t.numero_coleta,
+            t.nome_cientifico,
+            f.nome AS nome_familia,
+            g.nome AS nome_genero,
+            e.nome AS nome_especie 
+        FROM tombos t 
+            LEFT JOIN especies e ON t.especie_id = e.id 
+            LEFT JOIN generos g ON t.genero_id = g.id
+            LEFT JOIN familias f ON t.familia_id = f.id
+    `;
     if (familia) {
+        query += ' WHERE f.nome LIKE :nomeFamilia';
+        replacements = {
+            nomeFamilia: `%${familia}%`,
+        };
         where = {
             nome: { [Op.like]: `%${familia}%` },
         };
     }
 
-    if (paraTabela) {
-        await obtemDadosDoRelatorioDeInventarioDeEspeciesParaTabela(req, res, next);
+    const [results] = await sequelize.query(query, {
+        replacements,
+    });
+
+    const agrupamentoPorFamilia = agruparPorFamilia(results);
+    const dados = formatarDadosParaRealtorioDeInventarioDeEspecies(agrupamentoPorFamilia);
+
+    if (!toPdf) {
+        await obtemDadosDoRelatorioDeInventarioDeEspeciesParaTabela(req, res, next, where, dados);
         return;
     }
 
     try {
-        const tombos = await Tombo.findAll({
-            attributes: ['hcf', 'numero_coleta', 'nome_cientifico'],
+        gerarRelatorioPDF(res, {
+            tipoDoRelatorio: 'Inventário de Espécies',
+            textoFiltro: familia ? `Espécies da Família ${familia}` : 'Todos os dados',
+            data: format(new Date(), 'dd/MM/yyyy'),
+            dados,
+            tableFormato: 2,
+        });
+    } catch (e) {
+        next(e);
+    }
+};
+
+export const obtemDadosDoRelatorioDeColetaPorLocalEIntervaloDeData = async (req, res, next) => {
+    const { paginacao } = req;
+    const { limite, pagina, offset } = paginacao;
+    const { local, dataInicio, dataFim, toPdf } = req.query;
+
+    let whereLocal = {};
+    let whereData = {};
+    if (local) {
+        whereLocal = {
+            descricao: { [Op.like]: `%${local}%` },
+        };
+    }
+    if (dataInicio) {
+        if (dataFim && isBefore(new Date(dataFim), new Date(dataInicio))) {
+            res.status(codigosHttp.BAD_REQUEST).json({
+                mensagem: 'A data de fim não pode ser anterior à data de início.',
+            });
+        }
+        if (isBefore(new Date(), new Date(dataInicio))) {
+            res.status(codigosHttp.BAD_REQUEST).json({
+                mensagem: 'A data de início não pode ser maior que a data atual.',
+            });
+        }
+        whereData = {
+            [Op.and]: [
+                // Transforma os valores em uma data e compara com o intervalo
+                Sequelize.where(
+                    literal(
+                        "STR_TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes, 2, '0'), '-', LPAD(data_coleta_dia, 2, '0')), '%Y-%m-%d')"
+                    ),
+                    { [Op.between]: [dataInicio, dataFim || new Date()] }
+                ),
+            ],
+        };
+    }
+
+    try {
+        const tombos = await Tombo.findAndCountAll({
+            attributes: ['hcf', 'numero_coleta', 'nome_cientifico', 'data_coleta_ano', 'data_coleta_mes', 'data_coleta_dia'],
+            where: whereData,
             include: [
                 {
                     model: Especie,
@@ -153,20 +152,44 @@ export const obtemDadosDoRelatorioDeInventarioDeEspecies = async (req, res, next
                         {
                             model: Familia,
                             attributes: ['id', 'nome'],
-                            where,
                             required: true,
                         },
                     ],
                 },
+                {
+                    model: LocalColeta,
+                    attributes: ['id', 'descricao', 'complemento'],
+                    where: whereLocal,
+                    required: true,
+                },
+                {
+                    model: Coletor,
+                    attributes: ['id', 'nome'],
+                },
             ],
+            offset,
         });
 
-        const agrupamentoPorFamilia = agruparPorFamilia(tombos);
-        const dados = formatarDadosParaRealtorioDeInventarioDeEspecies(agrupamentoPorFamilia);
+        if (toPdf) {
+            gerarRelatorioPDF(res, {
+                tipoDoRelatorio: 'Coleta por Local e Intervalo de Data',
+                textoFiltro: formataTextFilter(local, dataInicio, dataFim || new Date()),
+                data: format(new Date(), 'dd/MM/yyyy'),
+                dados: formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData(tombos.rows),
+                tableFormato: 1,
+            });
+        } else {
+            res.json({
+                metadados: {
+                    total: tombos.count,
+                    pagina,
+                    limite,
+                },
+                resultado: formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData(tombos.rows),
+                filtro: formataTextFilter(local, dataInicio, dataFim || new Date()),
+            });
+        }
 
-        res.json({
-            dados,
-        });
     } catch (e) {
         next(e);
     }
