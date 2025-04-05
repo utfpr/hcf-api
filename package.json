@@ -46,14 +46,6 @@
 		"typescript": "5.2.2"
 	},
 	"dependencies": {
-		"@jsreport/jsreport-assets": "^4.2.1",
-		"@jsreport/jsreport-chrome-pdf": "^4.1.1",
-		"@jsreport/jsreport-core": "^4.6.1",
-		"@jsreport/jsreport-express": "^4.2.0",
-		"@jsreport/jsreport-fs-store": "^4.1.0",
-		"@jsreport/jsreport-handlebars": "^4.0.1",
-		"@jsreport/jsreport-pdf-utils": "^4.3.0",
-		"@jsreport/jsreport-studio": "^4.3.0",
 		"bcrypt": "5.1.1",
 		"bluebird": "3.7.2",
 		"body-parser": "1.20.2",
@@ -71,11 +63,13 @@
 		"morgan": "1.10.0",
 		"multer": "1.4.5-lts.1",
 		"mysql2": "3.6.0",
+		"node-wkhtmltopdf": "^2.0.0",
 		"puppeteer": "^24.3.0",
 		"q": "^1.5.1",
 		"request": "^2.88.0",
 		"sequelize": "^4.38.0",
 		"throttled-queue": "^1.0.5",
-		"uuid": "9.0.0"
+		"uuid": "9.0.0",
+		"wkhtmltopdf": "^0.4.0"
 	}
 }

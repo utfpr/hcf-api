@@ -9,4 +9,16 @@ export default app => {
             listagensMiddleware,
             controller.obtemDadosDoRelatorioDeInventarioDeEspecies,
         ]);
+
+    app.route('/relatorio/inventario-especies')
+        .post([
+            listagensMiddleware,
+            controller.obtemDadosDoRelatorioDeInventarioDeEspecies,
+        ]);
+
+    app.route('/relatorio/coleta-por-local-intervalo-de-data')
+        .get([
+            listagensMiddleware,
+            controller.obtemDadosDoRelatorioDeColetaPorLocalEIntervaloDeData,
+        ]);
 };
