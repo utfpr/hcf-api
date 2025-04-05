@@ -1,0 +1,13 @@
+{
+  "skipVerifyingDomains": "true",
+  "certbotCertCommandRules": [
+    {
+      "domain": "captain.server.hcf.cm.utfpr.edu.br",
+      "command": "certbot certonly --webroot -w ${webroot} -d captain.hcf.cm.utfpr.edu.br"
+    },
+    {
+      "domain": "*",
+      "command": "certbot certonly --webroot -w ${webroot} -d ${domainName}"
+    }
+  ]
+}

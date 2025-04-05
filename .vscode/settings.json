@@ -8,12 +8,19 @@
   "editor.semanticHighlighting.enabled": false,
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
-},
+  },
   "editor.rulers": [
     120
   ],
   "files.trimFinalNewlines": true,
   "files.insertFinalNewline": true,
-"files.eol": "\n",
-"liveServer.settings.port": 5501
+  "files.eol": "\n",
+  "liveServer.settings.port": 5501,
+  "cSpell.words": [
+    "distro",
+    "caprover",
+    "certbot",
+    "lineinfile",
+    "blockinfile"
+  ]
 }

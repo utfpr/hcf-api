@@ -1,0 +1,29 @@
+# CapRover NGINX needs the storage folders to be mounted somewhere inside "/captain/data/nginx-shared/"
+
+- name: Create folder structure
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Ensure CapRover config-override.json is present
+      copy:
+        src: files/captain/data/config-override.json
+        dest: /captain/data/config-override.json
+        owner: root
+        group: root
+        mode: "0600"
+        backup: yes
+
+    - name: Ensure storage folder for prod and dev are mounted
+      ansible.posix.mount:
+        src: "{{ item.src }}"
+        path: "{{ item.dest }}"
+        fstype: none
+        opts: bind
+        state: mounted
+        backup: yes
+      with_items:
+        - src: /hcf-data/storage-cm/dev
+          dest: /captain/data/nginx-shared/srv-captain--api-dev/uploads
+        - src: /hcf-data/storage-cm/prod
+          dest: /captain/data/nginx-shared/srv-captain--api-prod/uploads
