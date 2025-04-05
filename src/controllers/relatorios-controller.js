@@ -15,7 +15,7 @@ const {
     Sequelize: { Op, literal }, Familia, Especie, Genero, Tombo, LocalColeta, Coletor, Sequelize, sequelize,
 } = models;
 
-export const obtemDadosDoRelatorioDeInventarioDeEspeciesParaTabela = async (req, res, next, where, dados) => {
+export const obtemDadosDoRelatorioDeInventarioDeEspeciesParaTabela = async (req, res, next, where, dados, qtd) => {
     const { paginacao } = req;
     const { limite, pagina, offset } = paginacao;
 
@@ -40,6 +40,7 @@ export const obtemDadosDoRelatorioDeInventarioDeEspeciesParaTabela = async (req,
                 limite,
             },
             resultado: dados,
+            quantidadeDeTombos: qtd,
         });
     } catch (e) {
         next(e);
@@ -82,7 +83,7 @@ export const obtemDadosDoRelatorioDeInventarioDeEspecies = async (req, res, next
     const dados = formatarDadosParaRealtorioDeInventarioDeEspecies(agrupamentoPorFamilia);
 
     if (!toPdf) {
-        await obtemDadosDoRelatorioDeInventarioDeEspeciesParaTabela(req, res, next, where, dados);
+        await obtemDadosDoRelatorioDeInventarioDeEspeciesParaTabela(req, res, next, where, dados, results.length);
         return;
     }
 
