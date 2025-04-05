@@ -48,7 +48,7 @@ export const obtemDadosDoRelatorioDeInventarioDeEspeciesParaTabela = async (req,
 };
 
 export const obtemDadosDoRelatorioDeInventarioDeEspecies = async (req, res, next) => {
-    const { familia, toPdf } = req.query;
+    const { familia } = req.query;
 
     let replacements = {};
     let where = {};
@@ -82,7 +82,7 @@ export const obtemDadosDoRelatorioDeInventarioDeEspecies = async (req, res, next
     const agrupamentoPorFamilia = agruparPorFamilia(results);
     const dados = formatarDadosParaRealtorioDeInventarioDeEspecies(agrupamentoPorFamilia);
 
-    if (!toPdf) {
+    if (req.method === 'GET') {
         await obtemDadosDoRelatorioDeInventarioDeEspeciesParaTabela(req, res, next, where, dados, results.length);
         return;
     }

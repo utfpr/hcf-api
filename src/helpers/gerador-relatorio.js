@@ -129,6 +129,9 @@ const gerarRelatorioPDF = async (res, {
     adicionarTotalizador,
     total,
 }) => {
+    res.setHeader('Content-Disposition', 'attachment; filename=relatorio.pdf');
+    res.setHeader('Content-Type', 'application/pdf');
+
     wkhtmltopdf(
         template1(tipoDoRelatorio, textoFiltro, data, dados, tableFormato, adicionarTotalizador, total),
         { pageSize: 'A4', encoding: 'utf-8' }
