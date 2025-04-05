@@ -1,7 +1,16 @@
 import { format } from 'date-fns';
 
 export const agruparPorNomeCientifico = dados => dados.reduce((acc, obj) => {
-    const nomeCientifico = obj?.nome_genero ? `${obj?.nome_genero} ${obj?.nome_especie}` : obj?.nome_especie || 'Não Informada';
+    let nomeCientifico;
+    if (obj?.nome_genero && obj?.nome_especie) {
+        nomeCientifico = `${obj?.nome_genero} ${obj?.nome_especie}`;
+    } else if (obj?.nome_genero) {
+        nomeCientifico = obj?.nome_genero;
+    } else if (obj?.nome_especie) {
+        nomeCientifico = obj?.nome_especie;
+    } else {
+        nomeCientifico = 'Não Informada';
+    }
 
     const grupoExistente = acc.find(item => item.especie === nomeCientifico);
 
