@@ -1,3 +1,5 @@
+import Q from 'q';
+
 import {
     existeTabelaReflora,
     existeTabelaSpecieslink,
@@ -11,11 +13,11 @@ import {
     selectCodBarra,
 } from './herbariumdatabase';
 import {
-    escreveLOG, leLOG, processaNomeLog, getHoraFim, getHoraAtual,
+    escreveLOG, leLOG, processaNomeLog, getHoraFim,
 } from './log';
 import { fazRequisicaoReflora } from './reflora/reflora';
-import { fazRequisicaoSpecieslink } from './specieslink/specieslink';
 import { fazComparacaoTomboReflora } from './reflora/tombos';
+import { fazRequisicaoSpecieslink } from './specieslink/specieslink';
 import { fazComparacaoTomboSpecieslink } from './specieslink/tombos';
 import { geraListaAleatorio } from './teste';
 
@@ -61,7 +63,7 @@ function comecaAtualizacao(nomeArquivo, idServico) {
         const tabelaSpecieslink = criaTabelaSpecieslink();
         selectCodBarra().then(listaCodBarra => {
             // insereTabelaSpecieslink(tabelaSpecieslink, listaCodBarra.slice(0, 1)).then(() => {
-                insereTabelaSpecieslink(tabelaSpecieslink, geraListaAleatorio(listaCodBarra, 10)).then(() => {
+            insereTabelaSpecieslink(tabelaSpecieslink, geraListaAleatorio(listaCodBarra, 0)).then(() => {
                 fazRequisicaoSpecieslink(nomeArquivo).then(resultadoRequisicaoSpecieslink => {
                     if (resultadoRequisicaoSpecieslink) {
                         fazComparacaoTomboSpecieslink().then(resultadoComparacao => {
@@ -119,7 +121,6 @@ function ehPossivelFazerComparacao(nomeArquivo, idServico) {
     return promessa.promise;
 }
 
-
 /**
  * A função preparaExecucao, pega o resultado da existência da execução
  * de Reflora ou Specieslink na tabela de configuração e pega a hora de início que está
@@ -135,6 +136,7 @@ function ehPossivelFazerComparacao(nomeArquivo, idServico) {
  * @return promessa.promise, como é assíncrono ele só retorna quando resolver, ou seja,
  * quando acabar de realizar a comparação de informações.
  */
+// eslint-disable-next-line import/prefer-default-export
 export function preparaExecucao(existeExecucao, idServico) {
     const promessa = Q.defer();
     const nomeArquivo = processaNomeLog(existeExecucao.dataValues.hora_inicio);
@@ -146,7 +148,7 @@ export function preparaExecucao(existeExecucao, idServico) {
         } else if (idServico === 2) {
             conteudoLOG = leLOG(`specieslink/${nomeArquivo}`);
         }
-        if (conteudoLOG.includes('O processo de comparação do Reflora acabou.' || 'O processo de comparação do SpeciesLink acabou.')) {
+        if (conteudoLOG.includes('O processo de comparação do Reflora acabou.') || conteudoLOG.includes('O processo de comparação do SpeciesLink acabou.')) {
             const horaFim = getHoraFim(conteudoLOG);
             atualizaFimTabelaConfiguracao(id, horaFim);
             promessa.resolve();
