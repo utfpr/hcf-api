@@ -1,0 +1,85 @@
+<html>
+<head>
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/metro/4.1.5/css/metro.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flexboxgrid/6.3.1/flexboxgrid.min.css" type="text/css" >
+  <style>
+      @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+      * {
+          font-family: 'Roboto', sans-serif;
+      }
+  </style>
+  <style>
+      .rounded {
+          border-radius: 25px;
+          border: 2px solid gray;
+          padding: 10px; 
+          padding-top: 5px;
+          width: 100%;
+        }
+
+        .home > .avoid.rounded {
+          page-break-inside: auto;
+        }
+
+        
+        .home > .avoid.rounded ~ .avoid.rounded {
+          page-break-inside: avoid;
+        }
+  </style>
+</head>
+<body>
+  <div class="row">
+    <div class="col-xs-10"> 
+      <div class="row">
+        <div  class="col-xs-12"> 
+          <h6><b>HCF</b></h6>
+        </div>      
+        <div  class="col-xs-12"> 
+          <h6><b>Relatório de Inventário de Espécies</b></h6>
+        </div>  
+        <div  class="col-xs-12"> 
+          <h6><b>Data: {{data}}</b></h6>
+        </div>         
+      </div>
+    </div>
+    <div class="col-xs-2"></div>
+  </div>
+  <br>
+  <div class="home" style="width:100%">
+    {{#each dados}}
+        <div class="rounded avoid" style="width:100%">
+            <div class="row" style="background-color: #D3D3D3;padding: 3px;">
+                <div class="col-xs-4">
+                    <p style="font-size: 12px;"><b>Família: </b>{{familia}}</p>
+                </div>
+                <div class="col-xs-4"></div>
+                <div class="col-xs-4"></div>
+            </div>
+                {{#if especies.length}}
+                    <table class='table striped'>
+                        <thead>
+                            <tr>
+                                <th style="font-size: 12px;">Espécie</th>
+                                <th style="font-size: 12px;">Tombos relacionados</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#each especies}}
+                                <tr>
+                                    <td style="font-size: 12px;">{{especie}}</td>
+                                    <td style="vertical-align: middle; font-size: 12px;">{{tombos}}</td>
+                                </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                {{else}}
+                    <p style="text-align: center;"><b>Nenhum resultado encontrado</b></p>
+                {{/if}}
+            </div>
+        <br>
+    {{/each}}
+  </div>
+        
+</body>
+</html>

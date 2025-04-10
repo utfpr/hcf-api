@@ -1,0 +1,57 @@
+- name: Setup Ansible
+  hosts: all
+  become: yes
+
+  pre_tasks:
+    - name: Upgrade distro (Ubuntu / Debian)
+      apt:
+        upgrade: dist
+        update_cache: yes
+      when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
+
+  tasks:
+    - name: Ensure ansible user is present
+      user:
+        name: ansible
+        groups: root
+        create_home: yes
+        shell: /bin/bash
+
+    - name: Ensure ansible user authorized key is present
+      ansible.posix.authorized_key:
+        user: ansible
+        key: "{{ bootstrap_ssh_key }}"
+
+    - name: Ensure ansible user sudoers file is present
+      copy:
+        src: files/etc/sudoers.d/ansible
+        dest: /etc/sudoers.d/ansible
+        owner: root
+        group: root
+        mode: "0440"
+
+    - name: Ensure SSH access is strict
+      blockinfile:
+        path: /etc/ssh/sshd_config.d/50-cloud-init.conf
+        block: |
+          PasswordAuthentication no
+          TCPKeepAlive yes
+          ClientAliveInterval 60
+          ClientAliveCountMax 3
+        backup: yes
+        validate: /usr/sbin/sshd -T -f %s
+      register: sshd_config_file
+
+    - name: Restart SSH
+      service:
+        name: "{{ item.name }}"
+        enabled: "{{ item.enabled }}"
+        state: "{{ item.state }}"
+      with_items:
+        - name: ssh.socket
+          enabled: no
+          state: stopped
+        - name: ssh.service
+          enabled: yes
+          state: restarted
+      when: sshd_config_file.changed
