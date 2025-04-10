@@ -188,22 +188,22 @@ export function atualizaTabelaConfiguracao(idServico, idExecucao, horaInicio, ho
             promessa.resolve();
         });
         return promessa.promise;
-    } else {
-        const tabelaConfiguracaoSpeciesLink = modeloConfiguracao(conexao, Sequelize);
-        const promessa = Q.defer();
-        tabelaConfiguracaoSpeciesLink.update(
-            {
-                hora_inicio: horaInicio,
-                hora_fim: horaFim,
-                periodicidade: periodicidadeUsuario,
-                data_proxima_atualizacao: proximaAtualizacao,
-            },
-            { where: { id: idExecucao } }
-        ).then(() => {
-            promessa.resolve();
-        });
-        return promessa.promise;
     }
+    const tabelaConfiguracaoSpeciesLink = modeloConfiguracao(conexao, Sequelize);
+    const promessa = Q.defer();
+    tabelaConfiguracaoSpeciesLink.update(
+        {
+            hora_inicio: horaInicio,
+            hora_fim: horaFim,
+            periodicidade: periodicidadeUsuario,
+            data_proxima_atualizacao: proximaAtualizacao,
+        },
+        { where: { id: idExecucao } }
+    ).then(() => {
+        promessa.resolve();
+    });
+    return promessa.promise;
+
 }
 
 /**
@@ -400,6 +400,29 @@ export function selectUmCodBarra() {
 }
 
 /**
+ * A função selectUmCodBarra, realiza uma consulta no banco de dados onde são
+ * retornados apenas um registro da tabela onde o valor da coluna é zero (ou seja,
+ * onde não foi feita a requisição dele).
+ * @return promessa.promise, como é assíncrono ele só retorna quando resolver, ou seja,
+ * quando terminar de realizar a consulta.
+ */
+export function selectUmCodBarraSpecieslink() {
+    const tabelaSpecieslink = modeloSpecieslink(conexao, Sequelize);
+    const promessa = Q.defer();
+    tabelaSpecieslink.findAll({
+        attributes: ['cod_barra'],
+        where: {
+            [Sequelize.Op.and]:
+                [{ nro_requisicoes: { [Sequelize.Op.ne]: 0 } }, { ja_requisitou: false }],
+        },
+        limit: 1,
+    }).then(codBarra => {
+        promessa.resolve(codBarra);
+    });
+    return promessa.promise;
+}
+
+/**
  * A função atualizaTabelaReflora, ele pega a resposta da requisição do Reflora e salva
  * esse registro equivalente ao seu código de barra. Além disso, troca o valor
  * da coluna ja_requisitou de false para true na qual representa que já foi conseguido
@@ -428,6 +451,37 @@ export function atualizaTabelaReflora(codBarra, json, valorJaRequisitou) {
 export function decrementaTabelaReflora(codBarra) {
     const tabelaReflora = modeloReflora(conexao, Sequelize);
     tabelaReflora.decrement('nro_requisicoes', { where: { cod_barra: codBarra } });
+}
+
+/**
+ * A função atualizaTabelaSpecieslink, ele pega a resposta da requisição do Specieslink e salva
+ * esse registro equivalente ao seu código de barra. Além disso, troca o valor
+ * da coluna ja_requisitou de false para true na qual representa que já foi conseguido
+ * a resposta da requisiçã odo Specieslink.
+ * @param {*} codBarra, é o código de barra na qual é necessário para colocar
+ * a resposta da requisição no registro correto.
+ * @param {*} json, é o JSON com a resposta vinda da requisição do Specieslink.
+ * @param {*} valorJaRequisitou, é o valor utilizado para marcar que já foi feita
+ * a requisição, sendo false que não feito e true que foi feito a requisição.
+ */
+export function atualizaTabelaSpecieslink(codBarra, json, valorJaRequisitou) {
+    const tabelaSpecieslink = modeloSpecieslink(conexao, Sequelize);
+    tabelaSpecieslink.update(
+        { tombo_json: json, ja_requisitou: valorJaRequisitou },
+        { where: { cod_barra: codBarra } }
+    );
+}
+
+/**
+ * A função decrementaTabelaSpecieslink, é invocada quando temos erros
+ * na requisição dos códigos de barras, assim é decrementado o valor
+ * presente na coluna nro_requisicoes.
+ * @param {*} codBarra, é o código de barra na qual aconteceu um erro
+ * e é decrementado o valor da coluna nro_requisicoes.
+ */
+export function decrementaTabelaSpecieslink(codBarra) {
+    const tabelaSpecieslink = modeloSpecieslink(conexao, Sequelize);
+    tabelaSpecieslink.decrement('nro_requisicoes', { where: { cod_barra: codBarra } });
 }
 
 /**
