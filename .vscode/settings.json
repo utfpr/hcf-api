@@ -1,5 +1,5 @@
 {
-  "editor.tabSize": 4,
+  "editor.tabSize": 2,
   "editor.useTabStops": true,
   "editor.insertSpaces": true,
   "editor.formatOnSave": false,
@@ -21,6 +21,10 @@
     "caprover",
     "certbot",
     "lineinfile",
-    "blockinfile"
-  ]
+    "blockinfile",
+    "pipeable"
+  ],
+  "[javascript]": {
+    "editor.tabSize": 4
+  }
 }
