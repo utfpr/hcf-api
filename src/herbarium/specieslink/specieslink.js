@@ -4,9 +4,9 @@ import request from 'request';
 import throttledQueue from 'throttled-queue';
 
 import {
-    selectUmCodBarra,
-    atualizaTabelaReflora,
-    decrementaTabelaReflora,
+    selectUmCodBarraSpecieslink,
+    atualizaTabelaSpecieslink,
+    decrementaTabelaSpecieslink,
 } from '../herbariumdatabase';
 import { escreveLOG } from '../log';
 
@@ -31,7 +31,7 @@ export function processaRespostaSpecieslink(respostaSpecieslink) {
  * @return true ou false, retorna true caso tenha resultado, e caso não tenha resultado retorna false.
  */
 export function temResultadoRespostaSpecieslink(respostaSpecieslink) {
-    if ((respostaSpecieslink === null) || (respostaSpecieslink.result === null) || (respostaSpecieslink.result.length === 0)) {
+    if (respostaSpecieslink === null || (respostaSpecieslink.features === null) || (respostaSpecieslink.features.length === 0)) {
         return false;
     }
     return true;
@@ -69,13 +69,13 @@ export function salvaRespostaSpecieslink(nomeArquivo, codBarra, error, response,
     // if ((error !== null) && (error.code !== null)) {
     if (!error && response.statusCode === 200 && error === null) {
         if (jsonTemErro(body)) {
-            atualizaTabelaReflora(codBarra, body, false);
+            atualizaTabelaSpecieslink(codBarra, body, false);
         } else {
-            atualizaTabelaReflora(codBarra, body, true);
+            atualizaTabelaSpecieslink(codBarra, body, true);
         }
     } else {
-        escreveLOG(`reflora/${nomeArquivo}`, `Falha na requisição do código de barra {${codBarra}} que foi ${error}`);
-        decrementaTabelaReflora(codBarra);
+        escreveLOG(`specieslink/${nomeArquivo}`, `Falha na requisição do código de barra {${codBarra}} que foi ${error}`);
+        decrementaTabelaSpecieslink(codBarra);
     }
     // }
 }
@@ -92,7 +92,7 @@ export function salvaRespostaSpecieslink(nomeArquivo, codBarra, error, response,
 export function fazRequisicaoSpecieslink(nomeArquivo) {
     const promessa = Q.defer();
     const throttle = throttledQueue(1, 1500);
-    selectUmCodBarra().then(codBarra => {
+    selectUmCodBarraSpecieslink().then(codBarra => {
         if (codBarra.length === 0) {
             promessa.resolve(true);
         } else {
