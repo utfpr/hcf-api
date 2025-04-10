@@ -26,6 +26,7 @@ RUN yarn install --production
 
 COPY --from=build /tmp/app/dist ./dist
 COPY ./public ./public
+COPY src/reports/assets/fonts/*.ttf /usr/share/fonts/truetype/
 
 RUN chown -R hcf_api:hcf_api .
 

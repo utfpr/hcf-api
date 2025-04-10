@@ -1,0 +1,68 @@
+:root {
+  font-size: 16px; /* base: 1rem = 16px */
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0px;
+  padding: 0px;
+}
+
+body {
+  font-family: 'Source Serif 4', Arial;
+  font-size: 0.75rem;
+  margin: 1.875rem 2.5rem;
+  color: #000;
+}
+
+h1, h2, h3 {
+  text-align: center;
+  font-weight: bold;
+}
+
+h1 {
+  font-size: 1rem;
+}
+
+h2 {
+  font-size: 0.875rem;
+}
+
+h3 {
+  font-size: 0.625rem;
+  margin-top: 0.625rem;
+}
+
+p {
+  font-size: 0.625rem;
+  margin-bottom: 0.25rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem; /* 12px */
+}
+
+thead {
+  border-bottom: 1px solid black;
+}
+
+th, td {
+  padding: 0.25em 0.375em;
+  text-align: left;
+}
+
+th {
+  font-weight: bold;
+}
+
+tfoot {
+  font-size: 0.625rem;
+  text-align: right;
+  margin-top: 0.625rem;
+}
