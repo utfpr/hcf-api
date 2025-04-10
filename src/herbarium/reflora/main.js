@@ -65,7 +65,7 @@ export function daemonFazRequisicaoReflora() {
                 }
             }
         });
-    }, 7200000);
+    }, 60000);
 }
 
 export default {};
