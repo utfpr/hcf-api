@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 import {
     selectTemExecucaoServico,
     insereExecucaoSpeciesLink,
@@ -5,7 +7,7 @@ import {
     atualizaNomeArquivoSpeciesLink,
     atualizaTabelaConfiguracao,
 } from '../herbariumdatabase';
-import { getHoraAtual, processaNomeLog } from '../log';
+import { getHoraAtual } from '../log';
 import { preparaExecucao } from '../main';
 
 /**
@@ -45,21 +47,21 @@ export function agendaComparacaoSpeciesLink(nomeArquivo, response) {
  * pego a data que foi feita anteriormente e atualizo para a data
  * da próxima atualização.
  * @param {*} existeExecucaoReflora, é o resultado da existência da execução
- * do Reflora na tabela de configuração.
+ * do SpeexisteExecucaoSpeciesLink na tabela de configuração.
  */
-function verificaRequisicoesAgendado(existeExecucaoReflora) {
+function verificaRequisicoesAgendado(existeExecucaoSpeciesLink) {
     let agendamento = -1;
-    if (existeExecucaoReflora[0].periodicidade === 'SEMANAL') {
+    if (existeExecucaoSpeciesLink[0].periodicidade === 'SEMANAL') {
         agendamento = moment().isoWeekday() + 7;
-    } else if (existeExecucaoReflora[0].periodicidade === '1MES') {
+    } else if (existeExecucaoSpeciesLink[0].periodicidade === '1MES') {
         agendamento = moment().isoWeekday() + 30;
-    } else if (existeExecucaoReflora[0].periodicidade === '2MESES') {
+    } else if (existeExecucaoSpeciesLink[0].periodicidade === '2MESES') {
         agendamento = moment().isoWeekday() + 60;
     }
-    if (moment().format('DD/MM/YYYY') === existeExecucaoReflora[0].data_proxima_atualizacao) {
+    if (moment().format('DD/MM/YYYY') === existeExecucaoSpeciesLink[0].data_proxima_atualizacao) {
         if (moment().format('HH') === '00') {
-            preparaExecucao(existeExecucaoReflora[0], 2).then(() => {
-                atualizaTabelaConfiguracao(2, existeExecucaoReflora[0].id, getHoraAtual(), null, existeExecucaoReflora[0].periodicidade, moment().day(agendamento)
+            preparaExecucao(existeExecucaoSpeciesLink[0], 2).then(() => {
+                atualizaTabelaConfiguracao(2, existeExecucaoSpeciesLink[0].id, getHoraAtual(), null, existeExecucaoSpeciesLink[0].periodicidade, moment().day(agendamento)
                     .format('DD/MM/YYYY'));
             });
         } else {
@@ -85,13 +87,13 @@ export function daemonSpeciesLink() {
         selectEstaExecutandoServico(2).then(existeExecucaoSpeciesLink => {
             if (existeExecucaoSpeciesLink.length === 1) {
                 if (existeExecucaoSpeciesLink[0].periodicidade === 'MANUAL') {
-                    preparaExecucao(existeExecucaoReflora[0], 2);
+                    preparaExecucao(existeExecucaoSpeciesLink[0], 2);
                 } else {
                     verificaRequisicoesAgendado(existeExecucaoSpeciesLink);
                 }
             }
         });
-    }, 7200000);
+    }, 60000);
 }
 
 export default {};
