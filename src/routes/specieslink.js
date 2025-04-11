@@ -1,49 +1,19 @@
-import moment from 'moment';
-import multer from 'multer';
-import path from 'path';
-
-import { upload } from '../config/directory';
-
 const controllerComum = require('../controllers/herbariovirtual-controller');
 const controller = require('../controllers/specieslink-controller');
 
 /**
- * Essa variável storage, ela salva o arquivo com o nome que
- * foi definido. Nesse caso o arquivo que é recebido pelo upload
- * será salvo com o seguinte nome: ArquivoSpciesLink + as horas e a data +
- * a extensão do arquivo.
- */
-const storage = multer.diskStorage({
-    destination: './public/uploads/',
-    filename: (req, file, cb) => {
-        cb(null, `ArquivoSpeciesLink${moment().format('HH-mm-ss-DD-MM-YYYY')}${path.extname(file.originalname)}`);
-    },
-});
-
-/**
- * Essa variável uploadMiddleware, ela pega o arquivo que foi feito
- * o upload, a partir do nome que foi utilizado no front end. Então
- * a partir desses local que foi definido, é slavo o arquivo nesse local.
- */
-const uploadMiddleware = multer({
-    dest: upload,
-    storage,
-}).single('arquivoSpeciesLink');
-
-/**
  * Essa variável app, está relacionada as rotas que vem do front end. Então se no front end
- * é feito uma requisição que ao backend que é uma dessas requisições: /specieslink-executa,
- * /specieslink-status-execucao, /specieslink-todoslogs, /specieslink-log, ela irá chamar
- * a sua respectiva função, que no caso da URL /specieslink-executa é preparaAtualizacao, e assim
+ * é feito uma requisição que ao backend que é uma dessas requisições: /specieslink,
+ * /specieslink-executando, /specieslink-todoslogs, /specieslink-log, ela irá chamar
+ * a sua respectiva função, que no caso da URL /specieslink é preparaRequisição, e assim
  * por diante.
  */
 export default app => {
-    app.route('/specieslink-executa').post([
-        uploadMiddleware,
-        controller.preparaAtualizacao,
+    app.route('/specieslink').get([
+        controller.preparaRequisicao,
     ]);
-    app.route('/specieslink-status-execucao').get([
-        controller.statusExecucao,
+    app.route('/specieslink-executando').get([
+        controller.estaExecutando,
     ]);
     app.route('/specieslink-todoslogs').get([
         controllerComum.todosLogs,
