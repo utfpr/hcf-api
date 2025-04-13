@@ -10,6 +10,8 @@
 		"node": "^22"
 	},
 	"scripts": {
+		"migration:create": "tsx --env-file=.env src/database/cli.ts migration:create",
+		"migration:apply": "tsx --env-file=.env src/database/cli.ts migration:apply",
 		"lint:typescript": "tsc --noEmit",
 		"lint:eslint": "eslint --cache --fix --ext '.js,.ts,.tsx' .",
 		"lint": "run-p lint:typescript lint:eslint",
@@ -53,6 +55,7 @@
 		"bcrypt": "5.1.1",
 		"bluebird": "3.7.2",
 		"body-parser": "1.20.2",
+		"commander": "13.1.0",
 		"cors": "2.8.5",
 		"date-fns": "^2.30.0",
 		"dotenv": "16.3.1",
@@ -77,6 +80,7 @@
 		"swagger-jsdoc": "^6.2.8",
 		"swagger-ui-express": "^5.0.1",
 		"throttled-queue": "^1.0.5",
+		"tsx": "4.19.3",
 		"uuid": "9.0.0",
 		"wkhtmltopdf": "^0.4.0"
 	},
