@@ -22,5 +22,8 @@
     "certbot",
     "lineinfile",
     "blockinfile"
-  ]
+  ],
+  "[typescript]": {
+    "editor.tabSize": 2
+  }
 }
