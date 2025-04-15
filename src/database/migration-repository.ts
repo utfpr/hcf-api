@@ -5,7 +5,7 @@ interface Dependencies {
   tableName: string
 }
 
-export class MigrationDataSource {
+export class MigrationRepository {
 
   private readonly knex: Knex
   private readonly tableName: string
@@ -19,9 +19,10 @@ export class MigrationDataSource {
     const exists = await this.knex.schema.hasTable(this.tableName)
     if (exists) return
 
-    await this.knex.schema.createTableIfNotExists(this.tableName, table => {
+    await this.knex.schema.createTable(this.tableName, table => {
       table.string('name', 300).primary()
       table.dateTime('applied_at').notNullable()
+        .defaultTo(this.knex.fn.now())
     })
   }
 
@@ -30,6 +31,7 @@ export class MigrationDataSource {
   }
 
   async applyMigration(name: string, content: string): Promise<void> {
+    console.info(`Applying migration ${name}`) // eslint-disable-line no-console
     await this.knex.transaction(async trx => {
       await trx.raw(content)
       await trx(this.tableName).insert({ name, applied_at: new Date() })
