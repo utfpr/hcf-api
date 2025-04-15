@@ -162,7 +162,15 @@
                 "*.tsx"
             ],
             "rules": {
-                "no-undef": "off"
+                "no-undef": "off",
+                "indent": "off",
+                "semi": "off",
+                "comma-dangle": "off",
+                "@typescript-eslint/quotes": ["error", "single"],
+                "import/prefer-default-export": "off",
+                "@typescript-eslint/comma-dangle": ["error", "never"],
+                "@typescript-eslint/semi": ["error", "never"],
+                "@typescript-eslint/indent": ["error", 2]
             }
         }
     ]
