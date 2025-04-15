@@ -1,30 +1,30 @@
 import path from 'node:path'
 
 import { CorruptedDirectoryError } from './errors/corrupted-directory-error'
-import { MigrationDataSource } from './migration-data-source'
 import { MigrationFileSystem } from './migration-file-system'
+import { MigrationRepository } from './migration-repository'
 
 interface Dependencies {
   migrationFileSystem: MigrationFileSystem
-  migrationDataSource: MigrationDataSource
+  migrationRepository: MigrationRepository
 }
 
 export class ApplyMigrationService {
 
   private readonly migrationFileSystem: MigrationFileSystem
-  private readonly migrationDataSource: MigrationDataSource
+  private readonly migrationRepository: MigrationRepository
 
   constructor(readonly dependencies: Dependencies) {
     this.migrationFileSystem = dependencies.migrationFileSystem
-    this.migrationDataSource = dependencies.migrationDataSource
+    this.migrationRepository = dependencies.migrationRepository
   }
 
   async execute() {
     const migrationFilePaths = await this.migrationFileSystem.listMigrationFiles()
     const migrationFileNames = migrationFilePaths.map(file => path.basename(file, '.sql'))
 
-    await this.migrationDataSource.ensureMigrationTableExists()
-    const appliedMigrations = await this.migrationDataSource.getAppliedMigrations()
+    await this.migrationRepository.ensureMigrationTableExists()
+    const appliedMigrations = await this.migrationRepository.getAppliedMigrations()
 
     const missingMigrations = appliedMigrations.filter(appliedMigration => !migrationFileNames.includes(appliedMigration.name))
     if (missingMigrations.length) {
@@ -43,7 +43,7 @@ export class ApplyMigrationService {
     /* eslint-disable no-restricted-syntax, no-await-in-loop */
     for (const migrationFileName of unappliedMigrations) {
       const migrationFileContent = await this.migrationFileSystem.getMigrationFileContent(migrationFileName)
-      await this.migrationDataSource.applyMigration(migrationFileName, migrationFileContent)
+      await this.migrationRepository.applyMigration(migrationFileName, migrationFileContent)
     }
     /* eslint-enable no-restricted-syntax */
   }

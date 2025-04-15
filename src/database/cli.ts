@@ -4,8 +4,8 @@ import path from 'node:path'
 
 import { ApplyMigrationService } from './apply-migration-service'
 import { CreateMigrationService } from './create-migration-service'
-import { MigrationDataSource } from './migration-data-source'
 import { MigrationFileSystem } from './migration-file-system'
+import { MigrationRepository } from './migration-repository'
 
 const {
   MYSQL_DATABASE,
@@ -22,12 +22,13 @@ const migrationKnex = createKnex({
     host: MYSQL_HOST,
     port: parseInt(MYSQL_PORT),
     user: MYSQL_MIGRATION_USERNAME,
-    password: MYSQL_MIGRATION_PASSWORD
+    password: MYSQL_MIGRATION_PASSWORD,
+    multipleStatements: true
   }
 })
 
 const migrationFileSystem = new MigrationFileSystem({ migrationsPath: path.join(__dirname, 'migrations') })
-const migrationDataSource = new MigrationDataSource({ knex: migrationKnex, tableName: 'migrations' })
+const migrationDataSource = new MigrationRepository({ knex: migrationKnex, tableName: 'migrations' })
 
 async function createMigration(name: string) {
   const createMigrationService = new CreateMigrationService({ migrationFileSystem })
@@ -35,7 +36,7 @@ async function createMigration(name: string) {
 }
 
 async function applyMigrations() {
-  const applyMigrationsService = new ApplyMigrationService({ migrationFileSystem, migrationDataSource })
+  const applyMigrationsService = new ApplyMigrationService({ migrationFileSystem, migrationRepository: migrationDataSource })
   await applyMigrationsService.execute()
   await migrationKnex.destroy()
 }
