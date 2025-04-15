@@ -1,5 +1,5 @@
 # Etapa de build
-FROM node:18.16-alpine AS build
+FROM node:jod-alpine AS build
 
 WORKDIR /tmp/app
 
@@ -8,10 +8,9 @@ COPY . .
 RUN yarn install --production=false \
   && yarn build
 
-# Imagem de produção
-FROM node:18.16-alpine
 
-# Criar o usuário e grupo 'hcf_api' com UID e GID 3000
+FROM node:jod-alpine
+
 RUN addgroup -g 3000 hcf_api && adduser -u 3000 -G hcf_api -s /bin/sh -D hcf_api
 
 EXPOSE 3000
