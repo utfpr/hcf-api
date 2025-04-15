@@ -4,7 +4,7 @@ import moment from 'moment';
 import {
     selectTemExecucaoServico,
     insereExecucao,
-    atualizaTabelaConfiguracaoReflora,
+    atualizaTabelaConfiguracao,
     selectEstaExecutandoServico,
 } from '../herbarium/herbariumdatabase';
 import {
@@ -37,7 +37,7 @@ export const preparaRequisicao = (request, response) => {
             } else if ((periodicidadeBD === 'SEMANAL') || (periodicidadeBD === '1MES') || (periodicidadeBD === '2MESES')) {
                 if (moment().format('DD/MM/YYYY') !== listaExecucaoReflora[0].dataValues.data_proxima_atualizacao) {
                     const { id } = listaExecucaoReflora[0].dataValues;
-                    atualizaTabelaConfiguracaoReflora(id, getHoraAtual(), null, periodicidade, proximaAtualizacao).then(() => {
+                    atualizaTabelaConfiguracao(1, id, getHoraAtual(), null, periodicidade, proximaAtualizacao).then(() => {
                         response.status(200).json(JSON.parse(' { "result": "success" } '));
                     });
                 } else {
@@ -52,7 +52,7 @@ export const preparaRequisicao = (request, response) => {
                     });
                 } else {
                     const { id } = execucaoReflora[0].dataValues;
-                    atualizaTabelaConfiguracaoReflora(id, getHoraAtual(), null, periodicidade, proximaAtualizacao).then(() => {
+                    atualizaTabelaConfiguracao(1, id, getHoraAtual(), null, periodicidade, proximaAtualizacao).then(() => {
                         response.status(200).json(JSON.parse(' { "result": "success" } '));
                     });
                 }

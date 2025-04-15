@@ -7,34 +7,32 @@ import {
     ehIgualFamilia,
     ehIgualGenero,
     ehIgualEspecie,
-    ehIgualVariedade,
     existeAlteracaoSugerida,
-    ehIgualSubespecie,
 } from '../comparainformacao';
 import {
-    selectUmaInformacaoReflora,
+    selectUmaInformacaoSpecieslink,
     selectNroTomboNumBarra,
     selectTombo,
-    atualizaJaComparouTabelaReflora,
+    atualizaJaComparouTabelaSpecieslink,
     insereAlteracaoSugerida,
     selectExisteServicoUsuario,
     insereIdentificadorUsuario,
 } from '../herbariumdatabase';
 import {
-    processaRespostaReflora,
-    temResultadoRespostaReflora,
-} from './reflora';
+    processaRespostaSpecieslink,
+    temResultadoRespostaSpecieslink,
+} from './specieslink';
 
 /**
  * A função fazComparacaoInformacao, é comparado informações do banco de dados com as que
- * estão no Reflora. As informações a serem comparadas são: família, gênero,
+ * estão no Specieslink. As informações a serem comparadas são: família, gênero,
  * espécie, subespécie e variedade. Depois de comparar cada uma dessas informações
  * quando encontrado divergência é adicionado em um JSON. Após realizar todas as comparações
  * ele procurar na tabela de alterações e verifica se encontra um JSON parecido com o
  * que está no banco de dados, se for encontrado um JSON igual não é adicionado,
  * caso não seja encontrado é adicionado um novo registro na tabela de alterações.
  * Além disso, alguns detalhes que vale a pena ressaltar é que não é comparado
- * informação da subfamília, isso porque no JSON vindo do Reflora não é retornado
+ * informação da subfamília, isso porque no JSON vindo do Specieslink não é retornado
  * informação de subfamília. Foram vistos outros sete herbários (UNOP, HUCP, HUEM,
  * DVPR, MBM, UNIP, HUFU) e também não retornam esse tipo de informação.
  * Uma última coisa que vale a pena ressaltar é que o script feito pela Elaine para gerar o
@@ -42,12 +40,12 @@ import {
  * @param {*} nroTombo, é o número do tombo para serem pesquisadas informações no banco de dados.
  * @param {*} codBarra, é o código de barra relacionado ao tombo do HCF a qual será gerado o JSON
  * de alteração.
- * @param {*} informacaoReflora, informação do tombo que irá ser comparado com as presentes no banco
+ * @param {*} informacaoSpecieslink, informação do tombo que irá ser comparado com as presentes no banco
  * de dados.
  * @return promessa.promise, como é assíncrono ele só retorna quando resolver, ou seja,
  * quando acabar de realizar a comparação de informações.
  */
-export async function geraJsonAlteracao(nroTombo, codBarra, informacaoReflora) {
+export async function geraJsonAlteracao(nroTombo, codBarra, informacaoSpecieslink) {
     const promessa = Q.defer();
     selectTombo(nroTombo).then(async tomboBd => {
         if (tomboBd.length === 0) {
@@ -57,54 +55,34 @@ export async function geraJsonAlteracao(nroTombo, codBarra, informacaoReflora) {
         const processaInformacaoBd = tomboBd[0].dataValues;
         // família
         if (processaInformacaoBd.familia_id !== null) {
-            await ehIgualFamilia(processaInformacaoBd.familia_id, informacaoReflora.family).then(familia => {
+            await ehIgualFamilia(processaInformacaoBd.familia_id, informacaoSpecieslink.family).then(familia => {
                 if (familia !== -1) {
                     alteracaoInformacao += `"familia_nome": "${familia}", `;
+                    alteracaoInformacao += `"autor": "${informacaoSpecieslink.scientificnameauthorship}", `;
                 }
             });
         }
         // gênero
         if (processaInformacaoBd.genero_id !== null) {
-            await ehIgualGenero(processaInformacaoBd.genero_id, informacaoReflora.genus).then(genero => {
+            await ehIgualGenero(processaInformacaoBd.genero_id, informacaoSpecieslink.genus).then(genero => {
                 if (genero !== -1) {
                     alteracaoInformacao += `"genero_nome": "${genero}", `;
-                    alteracaoInformacao += `"autor": "${informacaoReflora.scientificnameauthorship}", `;
+                    alteracaoInformacao += `"autor": "${informacaoSpecieslink.scientificnameauthorship}", `;
                 }
             });
         }
         // espécie
         if (processaInformacaoBd.especie_id !== null) {
-            await ehIgualEspecie(processaInformacaoBd.especie_id, informacaoReflora.specificepithet).then(especie => {
+            await ehIgualEspecie(processaInformacaoBd.especie_id, informacaoSpecieslink.specificepithet).then(especie => {
                 if (especie !== -1) {
                     alteracaoInformacao += `"especie_nome": "${especie}", `;
-                    alteracaoInformacao += `"autor": "${informacaoReflora.scientificnameauthorship}", `;
+                    alteracaoInformacao += `"autor": "${informacaoSpecieslink.scientificnameauthorship}", `;
                 }
             });
         }
-        if (informacaoReflora.taxonrank !== null) {
-            if (informacaoReflora.taxonrank === 'SUB_ESPECIE') {
-                // subespecie
-                if (processaInformacaoBd.sub_especie_id !== null) {
-                    await ehIgualSubespecie(processaInformacaoBd.sub_especie_id, informacaoReflora.infraespecificepithet).then(subespecie => {
-                        if (subespecie !== -1) {
-                            alteracaoInformacao += `"subespecie_nome": "${subespecie}", `;
-                        }
-                    });
-                }
-            } else if (informacaoReflora.taxonrank === 'VARIEDADE') {
-                // variedade
-                if (processaInformacaoBd.variedade_id !== null) {
-                    await ehIgualVariedade(processaInformacaoBd.variedade_id, informacaoReflora.infraespecificepithet).then(variedade => {
-                        if (variedade !== -1) {
-                            alteracaoInformacao += `"variedade_nome": "${variedade}", `;
-                        }
-                    });
-                }
-            }
-        }
         alteracaoInformacao = alteracaoInformacao.substring(0, alteracaoInformacao.lastIndexOf(','));
         alteracaoInformacao += '}';
-        atualizaJaComparouTabelaReflora(codBarra);
+        atualizaJaComparouTabelaSpecieslink(codBarra);
         promessa.resolve(alteracaoInformacao);
     });
     return promessa.promise;
@@ -204,51 +182,51 @@ export function getAnoIdentificacao(dataIdentificacao) {
 
 /**
  * A função fazComparacaoInformacao, primeiramente verifica se tem informações
- * do reflora esperado. Se tem as informações esperada eu pego o número de tombo
+ * do Specieslink esperado. Se tem as informações esperada eu pego o número de tombo
  * equivalente aquele tombo de código de barra, e com esse valor de número de tombo
  * eu consigo pegar informações relacionadas a esse tombo. Comparando as informações
- * vindas do Reflora com as presentes no banco de dados, eu verifico se me gerou
+ * vindas do Specieslink com as presentes no banco de dados, eu verifico se me gerou
  * um JSON. Quando me retorna JSON, eu verifico se existe essa alteração no banco
  * de dados se não existe eu insiro ela no banco de dados.
  * @param {*} codBarra, é o código de barra relacionado ao tombo do HCF.
- * @param {*} informacaoReflora, informação do tombo que está exposta do Reflora.
+ * @param {*} informacaoSpecieslink, informação do tombo que está exposta do Specieslink.
  * @return promessa.promise, como é assíncrono ele só retorna quando resolver, ou seja,
  * quando acabar de realizar a comparação de informações.
  */
-export function fazComparacaoInformacao(codBarra, informacaoReflora) {
+export function fazComparacaoInformacao(codBarra, informacaoSpecieslink) {
     const promessa = Q.defer();
-    if (temResultadoRespostaReflora(informacaoReflora)) {
+    if (temResultadoRespostaSpecieslink(informacaoSpecieslink)) {
         selectNroTomboNumBarra(codBarra).then(nroTombo => {
             if (nroTombo.length > 0) {
                 const getNroTombo = nroTombo[0].dataValues.tombo_hcf;
-                const getInformacaoReflora = informacaoReflora.result[0];
-                geraJsonAlteracao(getNroTombo, codBarra, getInformacaoReflora).then(alteracao => {
+                const getInformacaoSpecieslink = informacaoSpecieslink.features[0].properties;
+                geraJsonAlteracao(getNroTombo, codBarra, getInformacaoSpecieslink).then(alteracao => {
                     if (alteracao.length > 2) {
                         existeAlteracaoSugerida(getNroTombo, alteracao).then(existe => {
                             if (!existe) {
-                                const nomeIdentificador = getInformacaoReflora.identifiedby;
+                                const nomeIdentificador = getInformacaoSpecieslink.identifiedby ?? '';
                                 selectExisteServicoUsuario(nomeIdentificador).then(listaUsuario => {
                                     if (listaUsuario.length === 0) {
                                         insereIdentificadorUsuario(nomeIdentificador).then(idUsuario => {
-                                            const diaIdentificacao = getDiaIdentificacao(getInformacaoReflora.dateidentified);
-                                            const mesIdentificacao = getMesIdentificacao(getInformacaoReflora.dateidentified);
-                                            const anoIdentificacao = getAnoIdentificacao(getInformacaoReflora.dateidentified);
+                                            const diaIdentificacao = getInformacaoSpecieslink.dayidentified;
+                                            const mesIdentificacao = getInformacaoSpecieslink.monthidentified;
+                                            const anoIdentificacao = getInformacaoSpecieslink.yearidentified;
                                             insereAlteracaoSugerida(idUsuario, 'ESPERANDO', getNroTombo, alteracao, diaIdentificacao, mesIdentificacao, anoIdentificacao);
                                             // eslint-disable-next-line no-console
-                                            console.log(getInformacaoReflora.identifiedby);
+                                            console.log(getInformacaoSpecieslink.identifiedby);
                                             // eslint-disable-next-line no-console
-                                            console.log(getInformacaoReflora.dateidentified);
+                                            console.log(getInformacaoSpecieslink.dateidentified);
                                         });
                                     } else {
-                                        const diaIdentificacao = getDiaIdentificacao(getInformacaoReflora.dateidentified);
-                                        const mesIdentificacao = getMesIdentificacao(getInformacaoReflora.dateidentified);
-                                        const anoIdentificacao = getAnoIdentificacao(getInformacaoReflora.dateidentified);
+                                        const diaIdentificacao = getInformacaoSpecieslink.dayidentified;
+                                        const mesIdentificacao = getInformacaoSpecieslink.monthidentified;
+                                        const anoIdentificacao = getInformacaoSpecieslink.yearidentified;
                                         const { id } = listaUsuario[0].dataValues;
                                         insereAlteracaoSugerida(id, 'ESPERANDO', getNroTombo, alteracao, diaIdentificacao, mesIdentificacao, anoIdentificacao);
                                         // eslint-disable-next-line no-console
-                                        console.log(getInformacaoReflora.identifiedby);
+                                        console.log(getInformacaoSpecieslink.identifiedby);
                                         // eslint-disable-next-line no-console
-                                        console.log(getInformacaoReflora.dateidentified);
+                                        console.log(getInformacaoSpecieslink.dateidentified);
                                     }
                                 });
                                 promessa.resolve();
@@ -267,7 +245,7 @@ export function fazComparacaoInformacao(codBarra, informacaoReflora) {
 }
 
 /**
- * A função fazComparacaoTomboReflora, faz um select na tabela do reflora verificando
+ * A função fazComparacaoTomboSpecieslink, faz um select na tabela do specieslink verificando
  * se tem algum tombo que já foi comparado ou não. Se o resultado dessa requisição
  * é maior que zero, então eu pego o json e começo a realizar as comparações, e depois
  * marco que esse json já foi comparado. Após isso, eu chamo novamente essa função
@@ -275,23 +253,23 @@ export function fazComparacaoInformacao(codBarra, informacaoReflora) {
  * @return promessa.promise, como é assíncrono ele só retorna quando resolver, ou seja,
  * quando acabar de realizar a recursão.
  */
-export function fazComparacaoTomboReflora() {
+export function fazComparacaoTomboSpecieslink() {
     const promessa = Q.defer();
     const throttle = throttledQueue(1, 2000);
-    selectUmaInformacaoReflora().then(informacaoReflora => {
-        if (informacaoReflora.length === 0) {
+    selectUmaInformacaoSpecieslink().then(informacaoSpecieslink => {
+        if (informacaoSpecieslink.length === 0) {
             // eslint-disable-next-line no-console
             console.log('akc');
             promessa.resolve(true);
         } else {
             // eslint-disable-next-line no-console
             console.log('akd');
-            const getCodBarra = informacaoReflora[0].dataValues.cod_barra;
-            const getInformacaoReflora = processaRespostaReflora(informacaoReflora[0].dataValues.tombo_json);
+            const getCodBarra = informacaoSpecieslink[0].dataValues.cod_barra;
+            const getInformacaoSpecieslink = processaRespostaSpecieslink(informacaoSpecieslink[0].dataValues.tombo_json);
             throttle(() => {
-                fazComparacaoInformacao(getCodBarra, getInformacaoReflora).then(() => {
-                    atualizaJaComparouTabelaReflora(getCodBarra);
-                    promessa.resolve(fazComparacaoTomboReflora());
+                fazComparacaoInformacao(getCodBarra, getInformacaoSpecieslink).then(() => {
+                    atualizaJaComparouTabelaSpecieslink(getCodBarra);
+                    promessa.resolve(fazComparacaoTomboSpecieslink());
                 });
             });
         }
