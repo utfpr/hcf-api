@@ -47,24 +47,24 @@ export const obtemDadosDoRelatorioDeInventarioDeEspeciesParaTabela = async (req,
     }
 };
 
-export const obtemDadosDoRelatorioDeInventarioDeEspecies = async (req, res, next) => {
+export const obtemDadosDoRelatorioDeEspeciesReturn = async req => {
     const { familia } = req.query;
 
     let replacements = {};
     let where = {};
     let query = `
-        SELECT 
-            t.hcf,
-            t.numero_coleta,
-            t.nome_cientifico,
-            f.nome AS nome_familia,
-            g.nome AS nome_genero,
-            e.nome AS nome_especie 
-        FROM tombos t 
-            LEFT JOIN especies e ON t.especie_id = e.id 
-            LEFT JOIN generos g ON t.genero_id = g.id
-            LEFT JOIN familias f ON t.familia_id = f.id
-    `;
+      SELECT 
+          t.hcf,
+          t.numero_coleta,
+          t.nome_cientifico,
+          f.nome AS nome_familia,
+          g.nome AS nome_genero,
+          e.nome AS nome_especie 
+      FROM tombos t 
+          LEFT JOIN especies e ON t.especie_id = e.id 
+          LEFT JOIN generos g ON t.genero_id = g.id
+          LEFT JOIN familias f ON t.familia_id = f.id
+  `;
     if (familia) {
         query += ' WHERE f.nome LIKE :nomeFamilia';
         replacements = {
@@ -81,6 +81,17 @@ export const obtemDadosDoRelatorioDeInventarioDeEspecies = async (req, res, next
 
     const agrupamentoPorFamilia = agruparPorFamilia(results);
     const dados = formatarDadosParaRealtorioDeInventarioDeEspecies(agrupamentoPorFamilia);
+
+    return {
+        where,
+        dados,
+        results,
+        familia,
+    };
+};
+
+export const obtemDadosDoRelatorioDeInventarioDeEspecies = async (req, res, next) => {
+    const { where, dados, results, familia } = await obtemDadosDoRelatorioDeEspeciesReturn(req);
 
     if (req.method === 'GET') {
         await obtemDadosDoRelatorioDeInventarioDeEspeciesParaTabela(req, res, next, where, dados, results.length);
