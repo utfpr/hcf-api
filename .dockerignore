@@ -1,7 +1,11 @@
-.vscode
+.github/
+.vscode/
+.husky/
+ansible/
+caprover/
+nginx/
+mysql/
 
-docs
-dist
-test
-scripts
-node_modules
+dist/
+test/
+node_modules/

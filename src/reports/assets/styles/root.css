@@ -48,10 +48,6 @@ table {
   font-size: 0.75rem; /* 12px */
 }
 
-thead {
-  border-bottom: 1px solid black;
-}
-
 th, td {
   padding: 0.25em 0.375em;
   text-align: left;
@@ -65,4 +61,8 @@ tfoot {
   font-size: 0.625rem;
   text-align: right;
   margin-top: 0.625rem;
+}
+
+.content-container thead {
+  border-bottom: 1px solid black;
 }
