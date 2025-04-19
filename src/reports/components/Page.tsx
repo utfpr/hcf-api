@@ -24,7 +24,7 @@ export function Page({
       </thead>
       <tbody>
         <tr>
-          <td>
+          <td className="content-container">
             {children}
           </td>
         </tr>

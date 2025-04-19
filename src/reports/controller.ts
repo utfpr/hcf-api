@@ -10,7 +10,7 @@ export function reportPreview(_: Request, response: Response) {
 export async function generatePreview(request: Request, response: Response) {
   try {
     const { fileName } = request.params
-    const { default: ReportTemplate } = await import(path.join(__dirname, `../reports/templates/${fileName}.tsx`))
+    const { default: ReportTemplate } = await import(path.join(__dirname, `../reports/templates/${fileName}`))
 
     const buffer = await generateReport(ReportTemplate, request.body ?? {})
     response.setHeader('Content-Type', 'application/pdf')

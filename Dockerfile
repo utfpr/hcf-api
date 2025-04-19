@@ -1,33 +1,70 @@
-# Etapa de build
-FROM node:18.16-alpine AS build
+FROM node:jod-slim AS build
 
-WORKDIR /tmp/app
+WORKDIR /usr/src/app
 
 COPY . .
 
-RUN yarn install --production=false \
-  && yarn build
+RUN yarn install --production=false && \
+  yarn build
 
-# Imagem de produção
-FROM node:18.16-alpine
 
-# Criar o usuário e grupo 'hcf_api' com UID e GID 3000
-RUN addgroup -g 3000 hcf_api && adduser -u 3000 -G hcf_api -s /bin/sh -D hcf_api
+FROM node:jod-slim
 
-EXPOSE 3000
+ARG \
+  HCF_API_GID=3000 \
+  HCF_API_UID=3000 \
+  PORT=3000
 
-ENTRYPOINT ["node", "./dist/index.js"]
+ENV \
+  PORT=$PORT \
+  LANG=en_US.UTF-8 \
+  PUPPETEER_SKIP_DOWNLOAD=true \
+  PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
+
+EXPOSE $PORT
+CMD node dist/index.js
+
+RUN \
+  apt-get update && \
+  apt-get install --yes \
+    curl \
+    gpg && \
+  mkdir -p /etc/apt/keyrings && \
+  curl -fsSL https://dl.google.com/linux/linux_signing_key.pub | \
+    gpg --dearmor > /etc/apt/keyrings/google-chrome.gpg && \
+  echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > \
+    /etc/apt/sources.list.d/google-chrome.list && \
+  apt-get update && \
+  apt-get install --no-install-recommends --yes \
+    google-chrome-stable && \
+  apt-get remove --purge --yes \
+    curl \
+    gpg && \
+  apt autoremove --purge --yes && \
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists/*
+
+RUN \
+  groupadd --system \
+    --gid $HCF_API_GID \
+    hcf_api && \
+  useradd --system \
+    --uid $HCF_API_UID \
+    --gid hcf_api \
+    --shell /usr/sbin/nologin \
+    hcf_api
 
 WORKDIR /home/hcf_api/app
 
 COPY package.json yarn.lock ./
 
-RUN yarn install --production
+RUN yarn install --production && \
+  yarn cache clean --force
 
-COPY --from=build /tmp/app/dist ./dist
+COPY --from=build /usr/src/app/dist ./dist
 COPY ./public ./public
 COPY src/reports/assets/fonts/*.ttf /usr/share/fonts/truetype/
 
-RUN chown -R hcf_api:hcf_api .
+RUN chown -R hcf_api:hcf_api /home/hcf_api/app
 
 USER hcf_api

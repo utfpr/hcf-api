@@ -7,14 +7,14 @@
 	"license": "MIT",
 	"private": true,
 	"engines": {
-		"node": "~18.16"
+		"node": "^22"
 	},
 	"scripts": {
 		"lint:typescript": "tsc --noEmit",
 		"lint:eslint": "eslint --cache --fix --ext '.js,.ts,.tsx' .",
 		"lint": "run-p lint:typescript lint:eslint",
 		"clean": "rimraf dist",
-		"build:app": "babel src -d dist --copy-files",
+		"build:app": "babel -d ./dist -x '.js,.ts,.tsx' --copy-files --no-copy-ignored ./src",
 		"start": "nodemon --ext 'js,ts,tsx' --exec babel-node --extensions '.js,.ts,.tsx' ./src/index.js",
 		"build": "run-s clean build:app",
 		"test": "jest",
