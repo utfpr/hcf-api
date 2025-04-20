@@ -4,6 +4,13 @@
   hosts: all
   become: yes
 
+  vars:
+    storage_folders:
+      - src: /hcf-data/storage-cm/dev
+        mount_point: /captain/data/nginx-shared/srv-captain--api-dev/uploads
+      - src: /hcf-data/storage-cm/prod
+        mount_point: /captain/data/nginx-shared/srv-captain--api-prod/uploads
+
   tasks:
     - name: Ensure CapRover config-override.json is present
       copy:
@@ -14,16 +21,36 @@
         mode: "0600"
         backup: yes
 
-    - name: Ensure storage folder for prod and dev are mounted
+    - name: Ensure hcf_api group is present
+      group:
+        gid: 3000
+        name: hcf_api
+        system: yes
+
+    - name: Ensure hcf_api user is present
+      user:
+        uid: 3000
+        name: hcf_api
+        group: hcf_api
+        create_home: no
+        shell: /usr/sbin/nologin
+        system: yes
+
+    - name: Ensure storage folders are present with the correct permissions
+      file:
+        path: "{{ item.src }}"
+        owner: hcf_api
+        group: hcf_api
+        mode: "0755"
+        state: directory
+      with_items: "{{ storage_folders }}"
+
+    - name: Ensure storage folders are mounted
       ansible.posix.mount:
         src: "{{ item.src }}"
-        path: "{{ item.dest }}"
+        path: "{{ item.mount_point }}"
         fstype: none
         opts: bind
         state: mounted
         backup: yes
-      with_items:
-        - src: /hcf-data/storage-cm/dev
-          dest: /captain/data/nginx-shared/srv-captain--api-dev/uploads
-        - src: /hcf-data/storage-cm/prod
-          dest: /captain/data/nginx-shared/srv-captain--api-prod/uploads
+      loop: "{{ storage_folders }}"
