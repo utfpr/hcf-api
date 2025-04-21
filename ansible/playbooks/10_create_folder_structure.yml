@@ -42,6 +42,7 @@
         owner: hcf_api
         group: hcf_api
         mode: "0755"
+        recurse: yes
         state: directory
       with_items: "{{ storage_folders }}"
 
