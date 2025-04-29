@@ -51,6 +51,14 @@ export const formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData = dados 
         autor: dado.coletore?.nome || 'Não Informado',
 
     }));
+
+    dadosFormatados.sort((a, b) => {
+        const dataA = new Date(`${a.data.split('/')[2]}-${a.data.split('/')[1]}-${a.data.split('/')[0]}`);
+        const dataB = new Date(`${b.data.split('/')[2]}-${b.data.split('/')[1]}-${b.data.split('/')[0]}`);
+
+        return dataA - dataB; // Ordena de forma crescente (do mais antigo para o mais recente)
+    });
+
     return dadosFormatados;
 };
 
