@@ -2,25 +2,26 @@ import React from "react";
 import { Page } from "../components/Page";
 
 interface Tombo {
-  dataColeta: string;
+  data: string;
   familia: string;
   especie: string;
-  hcf: string;
+  autor: string;
+  tombo: string;
 }
 
 interface RelacaoTombosProps {
-  tombos: Tombo[]
+  dados: Tombo[]
 }
 
-function RelacaoTombos({ tombos }: RelacaoTombosProps) {
+function RelacaoTombos({ dados }: RelacaoTombosProps) {
 
   const renderItem = (item: Tombo) => {
     return (
-      <tr key={item.hcf}>
-        <td>{item.dataColeta}</td>
+      <tr key={item.tombo}>
+        <td>{item.data}</td>
         <td>{item.familia}</td>
         <td style={{ fontStyle: 'italic' }}>{item.especie}</td>
-        <td>{item.hcf}</td>
+        <td>{item.tombo}</td>
       </tr>
     )
   }
@@ -37,7 +38,7 @@ function RelacaoTombos({ tombos }: RelacaoTombosProps) {
           </tr>
         </thead>
         <tbody>
-          {tombos.map(renderItem)}
+          {dados.map(renderItem)}
         </tbody>
       </table>
     </Page>

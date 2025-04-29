@@ -21,4 +21,10 @@ export default app => {
             listagensMiddleware,
             controller.obtemDadosDoRelatorioDeColetaPorLocalEIntervaloDeData,
         ]);
+
+    app.route('/relatorio/coleta-por-local-intervalo-de-data')
+        .post([
+            listagensMiddleware,
+            controller.obtemDadosDoRelatorioDeColetaPorLocalEIntervaloDeData,
+        ]);
 };

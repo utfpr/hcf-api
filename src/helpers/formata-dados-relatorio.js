@@ -45,10 +45,10 @@ export const formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData = dados 
             dado.locais_coletum.descricao,
         data: `${String(dado.data_coleta_dia).padStart(2, '0')}/${String(dado.data_coleta_mes).padStart(2, '0')}/${dado.data_coleta_ano}`,
         tombo: dado?.hcf,
-        numeroColeta: dado.numero_coleta,
+        numeroColeta: dado.numero_coleta || '-',
         especie: dado.especy.nome,
         familia: dado.especy.familia.nome,
-        autor: dado.coletore.nome,
+        autor: dado.coletore?.nome || 'Não Informado',
 
     }));
     return dadosFormatados;
