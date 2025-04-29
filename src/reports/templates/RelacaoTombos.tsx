@@ -10,10 +10,19 @@ interface Tombo {
 }
 
 interface RelacaoTombosProps {
-  dados: Tombo[]
+  dados: Tombo[];
+  total?: number;
 }
 
-function RelacaoTombos({ dados }: RelacaoTombosProps) {
+function RelacaoTombos({ dados, total }: RelacaoTombosProps) {
+  const renderTotalizador = () => {
+    if (!total) return <div/>;
+    return (
+      <div style={{ marginTop: '1em', borderTop: '1px solid #000', paddingTop: '0.5em' }}>
+        Total: {total}
+      </div>
+    )
+  }
 
   const renderItem = (item: Tombo) => {
     return (
@@ -41,6 +50,7 @@ function RelacaoTombos({ dados }: RelacaoTombosProps) {
           {dados.map(renderItem)}
         </tbody>
       </table>
+      {renderTotalizador()}
     </Page>
   )
 }

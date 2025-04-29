@@ -106,7 +106,7 @@ export const obtemDadosDoRelatorioDeInventarioDeEspecies = async (req, res, next
 export const obtemDadosDoRelatorioDeColetaPorLocalEIntervaloDeData = async (req, res, next) => {
     const { paginacao } = req;
     const { limite, pagina, offset } = paginacao;
-    const { local, dataInicio, dataFim } = req.query;
+    const { local, dataInicio, dataFim, variante } = req.query;
 
     let whereLocal = {};
     let whereData = {};
@@ -189,7 +189,11 @@ export const obtemDadosDoRelatorioDeColetaPorLocalEIntervaloDeData = async (req,
 
         try {
             const dadosFormatados = formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData(tombos.rows);
-            const buffer = await generateReport(ReportColetaPorLocalIntervaloDeData, { dados: dadosFormatados });
+            const buffer = await generateReport(
+                ReportColetaPorLocalIntervaloDeData, {
+                    dados: dadosFormatados,
+                    total: variante === 'analitico' ? tombos.count : undefined,
+                });
             const readable = new Readable();
             // eslint-disable-next-line no-underscore-dangle
             readable._read = () => {}; // Implementa o método _read (obrigatório)
