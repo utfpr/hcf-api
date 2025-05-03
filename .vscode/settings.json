@@ -16,14 +16,6 @@
   "files.insertFinalNewline": true,
   "files.eol": "\n",
   "liveServer.settings.port": 5501,
-  "cSpell.words": [
-    "distro",
-    "caprover",
-    "certbot",
-    "lineinfile",
-    "blockinfile",
-    "pipeable"
-  ],
   "[javascript]": {
     "editor.tabSize": 4
   }
