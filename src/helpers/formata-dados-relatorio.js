@@ -61,7 +61,7 @@ export const formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData = dados 
         local: dado.locais_coletum?.complemento ?
             `${dado.locais_coletum.descricao} ${dado.locais_coletum.complemento}` :
             dado.locais_coletum.descricao,
-        data: `${String(dado.data_coleta_dia).padStart(2, '0')}/${romanos[dado.data_coleta_mes]}/${dado.data_coleta_ano}`,
+        data: `${String(dado.data_coleta_dia).padStart(2, '0')}/${romanos[dado.data_coleta_mes - 1]}/${dado.data_coleta_ano}`,
         tombo: dado?.hcf,
         numeroColeta: dado.numero_coleta || '-',
         especie: defineNomeCientifico(dado),
