@@ -12,9 +12,10 @@ interface Tombo {
 interface RelacaoTombosProps {
   dados: Tombo[];
   total?: number;
+  textoFiltro?: string;
 }
 
-function RelacaoTombos({ dados, total }: RelacaoTombosProps) {
+function RelacaoTombos({ dados, total, textoFiltro }: RelacaoTombosProps) {
   const renderTotalizador = () => {
     if (!total) return <div/>;
     return (
@@ -30,19 +31,21 @@ function RelacaoTombos({ dados, total }: RelacaoTombosProps) {
         <td>{item.data}</td>
         <td>{item.familia}</td>
         <td style={{ fontStyle: 'italic' }}>{item.especie}</td>
-        <td>{item.tombo}</td>
+        <td>{item.autor}</td>
+        <td style={{ textAlign: 'right' }}>{item.tombo}</td>
       </tr>
     )
   }
 
   return (
-    <Page title="Relação de Tombos">
+    <Page title="Relação de Tombos" textoFiltro={textoFiltro}>
       <table>
         <thead>
           <tr>
             <th>Data</th>
             <th>Família</th>
             <th>Espécie</th>
+            <th>Autor</th>
             <th>Tombo</th>
           </tr>
         </thead>

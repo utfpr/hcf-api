@@ -193,6 +193,7 @@ export const obtemDadosDoRelatorioDeColetaPorLocalEIntervaloDeData = async (req,
                 ReportColetaPorLocalIntervaloDeData, {
                     dados: dadosFormatados,
                     total: variante === 'analitico' ? tombos.count : undefined,
+                    textoFiltro: formataTextFilter(local, dataInicio, dataFim || new Date()),
                 });
             const readable = new Readable();
             // eslint-disable-next-line no-underscore-dangle

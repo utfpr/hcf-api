@@ -38,26 +38,40 @@ export const formatarDadosParaRealtorioDeInventarioDeEspecies = dados => {
     return dadosFormatados;
 };
 
+const defineNomeCientifico = dado => {
+    let nomeCientifico;
+    const nomeEspecie = dado?.especy?.nome;
+    const nomeGenero = dado?.especy?.genero?.nome;
+    if (nomeGenero && nomeEspecie) {
+        nomeCientifico = `${nomeGenero} ${nomeEspecie}`;
+    } else if (nomeGenero) {
+        nomeCientifico = nomeGenero;
+    } else if (nomeEspecie) {
+        nomeCientifico = nomeEspecie;
+    } else {
+        nomeCientifico = 'Não Informada';
+    }
+
+    return nomeCientifico;
+};
+
 export const formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData = dados => {
+    const romanos = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
     const dadosFormatados = dados.map(dado => ({
         local: dado.locais_coletum?.complemento ?
             `${dado.locais_coletum.descricao} ${dado.locais_coletum.complemento}` :
             dado.locais_coletum.descricao,
-        data: `${String(dado.data_coleta_dia).padStart(2, '0')}/${String(dado.data_coleta_mes).padStart(2, '0')}/${dado.data_coleta_ano}`,
+        data: `${String(dado.data_coleta_dia).padStart(2, '0')}/${romanos[dado.data_coleta_mes]}/${dado.data_coleta_ano}`,
         tombo: dado?.hcf,
         numeroColeta: dado.numero_coleta || '-',
-        especie: dado.especy.nome,
+        especie: defineNomeCientifico(dado),
         familia: dado.especy.familia.nome,
         autor: dado.coletore?.nome || 'Não Informado',
 
     }));
 
-    dadosFormatados.sort((a, b) => {
-        const dataA = new Date(`${a.data.split('/')[2]}-${a.data.split('/')[1]}-${a.data.split('/')[0]}`);
-        const dataB = new Date(`${b.data.split('/')[2]}-${b.data.split('/')[1]}-${b.data.split('/')[0]}`);
-
-        return dataA - dataB; // Ordena de forma crescente (do mais antigo para o mais recente)
-    });
+    // Ordena os dados formatados por ordem alfabética
+    dadosFormatados.sort((a, b) => a.familia.localeCompare(b.familia));
 
     return dadosFormatados;
 };
