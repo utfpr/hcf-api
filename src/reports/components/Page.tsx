@@ -3,10 +3,12 @@ import React from 'react';
 interface PageProps {
   title: string;
   children: React.ReactNode;
+  textoFiltro?: string;
 }
 
 export function Page({
   title,
+  textoFiltro,
   children
 }: PageProps) {
   return (
@@ -19,6 +21,9 @@ export function Page({
               Herbário da Universidade Tecnológica Federal do Paraná - Campus Campo Mourão
             </h1>
             <h2>{title}</h2>
+            <div style={{ textAlign: 'right', display: 'flex' }}>
+              {textoFiltro && <span>{textoFiltro}</span>}
+            </div>
           </th>
         </tr>
       </thead>

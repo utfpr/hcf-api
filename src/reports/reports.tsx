@@ -64,7 +64,8 @@ export async function generateReport<P extends React.Attributes>(Component: Comp
 
   const buffer = await page.pdf({
     format: 'A4',
-    printBackground: true
+    printBackground: true,
+    timeout: 120000
   })
 
   await browser.close()
