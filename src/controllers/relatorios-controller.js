@@ -1,4 +1,5 @@
 import { format, isBefore } from 'date-fns';
+import { Readable } from 'stream';
 
 import {
     agruparPorFamilia,
@@ -7,6 +8,8 @@ import {
     formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData,
 } from '~/helpers/formata-dados-relatorio';
 import { gerarRelatorioPDF } from '~/helpers/gerador-relatorio';
+import { generateReport } from '~/reports/reports';
+import ReportColetaPorLocalIntervaloDeData from '~/reports/templates/RelacaoTombos';
 import codigosHttp from '~/resources/codigos-http';
 
 import models from '../models';
@@ -189,6 +192,102 @@ export const obtemDadosDoRelatorioDeColetaPorLocalEIntervaloDeData = async (req,
                 resultado: formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData(tombos.rows),
                 filtro: formataTextFilter(local, dataInicio, dataFim || new Date()),
             });
+        }
+
+    } catch (e) {
+        next(e);
+    }
+};
+
+export const obtemDadosDoRelatorioDeColetaIntervaloDeData = async (req, res, next) => {
+    const { paginacao } = req;
+    const { limite, pagina, offset } = paginacao;
+    const { dataInicio, dataFim, variante } = req.query;
+
+    let whereData = {};
+    if (dataInicio) {
+        if (dataFim && isBefore(new Date(dataFim), new Date(dataInicio))) {
+            res.status(codigosHttp.BAD_REQUEST).json({
+                mensagem: 'A data de fim não pode ser anterior à data de início.',
+            });
+        }
+        if (isBefore(new Date(), new Date(dataInicio))) {
+            res.status(codigosHttp.BAD_REQUEST).json({
+                mensagem: 'A data de início não pode ser maior que a data atual.',
+            });
+        }
+        whereData = {
+            [Op.and]: [
+                // Transforma os valores em uma data e compara com o intervalo
+                Sequelize.where(
+                    literal(
+                        "STR_TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes, 2, '0'), '-', LPAD(data_coleta_dia, 2, '0')), '%Y-%m-%d')"
+                    ),
+                    { [Op.between]: [dataInicio, dataFim || new Date()] }
+                ),
+            ],
+        };
+    }
+
+    try {
+        const tombos = await Tombo.findAndCountAll({
+            attributes: ['hcf', 'numero_coleta', 'nome_cientifico', 'data_coleta_ano', 'data_coleta_mes', 'data_coleta_dia'],
+            where: whereData,
+            include: [
+                {
+                    model: Especie,
+                    attributes: ['id', 'nome'],
+                    required: true,
+                    include: [
+                        {
+                            model: Genero,
+                            attributes: ['id', 'nome'],
+                        },
+                        {
+                            model: Familia,
+                            attributes: ['id', 'nome'],
+                            required: true,
+                        },
+                    ],
+                },
+                {
+                    model: Coletor,
+                    attributes: ['id', 'nome'],
+                },
+            ],
+            offset,
+        });
+
+        if (req.method === 'GET') {
+            res.json({
+                metadados: {
+                    total: tombos.count,
+                    pagina,
+                    limite,
+                },
+                resultado: formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData(tombos.rows),
+                filtro: formataTextFilter(null, dataInicio, dataFim || new Date()),
+            });
+            return;
+        }
+
+        try {
+            const dadosFormatados = formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData(tombos.rows);
+            const buffer = await generateReport(
+                ReportColetaPorLocalIntervaloDeData, {
+                    dados: dadosFormatados,
+                    total: variante === 'analitico' ? tombos.count : undefined,
+                    textoFiltro: formataTextFilter(null, dataInicio, dataFim || new Date()),
+                });
+            const readable = new Readable();
+            // eslint-disable-next-line no-underscore-dangle
+            readable._read = () => {}; // Implementa o método _read (obrigatório)
+            readable.push(buffer); // Empurrar os dados binários para o stream
+            readable.push(null); // Indica o fim do fluxo de dados
+            res.setHeader('Content-Type', 'application/pdf');
+            readable.pipe(res);
+        } catch (e) {
+            next(e);
         }
 
     } catch (e) {
