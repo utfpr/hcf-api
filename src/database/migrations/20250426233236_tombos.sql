@@ -74,6 +74,17 @@ create table `fase_sucessional` (
 ) engine=innodb default charset=utf8mb4 collate=utf8mb4_unicode_ci;
 
 
+LOCK TABLES `fase_sucessional` WRITE;
+
+INSERT INTO `fase_sucessional` VALUES
+(1, '1º fase sucessão vegetal'),
+(2, '2º fase sucessão vegetal'),
+(3, '3º fase ou capoeirinhia'),
+(4, '4º fase capoeira'),
+(5, '5º fase capoeirão'),
+(6, '6º fase floresta secundária')
+
+
 create table `locais_coleta` (
   `id` int unsigned not null auto_increment,
   `descricao` text,
@@ -236,3 +247,5 @@ create table `retirada_exsicata_tombos` (
   constraint `retirada_exsicata_tombos_remessas_fk` foreign key (`retirada_exsicata_id`) references `remessas` (`id`),
   constraint `retirada_exsicata_tombos_tombos_fk` foreign key (`tombo_hcf`) references `tombos` (`hcf`)
 ) engine=innodb default charset=utf8mb4 collate=utf8mb4_unicode_ci;
+
+UNLOCK TABLES;
