@@ -51,8 +51,11 @@ RUN \
   useradd --system \
     --uid $HCF_API_UID \
     --gid hcf_api \
+    --groups audio,video \
     --shell /usr/sbin/nologin \
-    hcf_api
+    hcf_api && \
+  mkdir -p /home/hcf_api/.local && \
+  chown -R hcf_api:hcf_api /home/hcf_api/.local
 
 WORKDIR /home/hcf_api/app
 
@@ -65,8 +68,6 @@ COPY --from=build /usr/src/app/dist ./dist
 COPY ./public ./public
 COPY src/reports/assets/fonts/*.ttf /usr/share/fonts/truetype/
 
-RUN chown -R hcf_api:hcf_api /home/hcf_api/app && \
-  mkdir -p /home/hcf_api/.local && \
-  chmod -R 777 /home/hcf_api/.local
+RUN chown -R hcf_api:hcf_api /home/hcf_api/app
 
 USER hcf_api
