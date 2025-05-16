@@ -65,6 +65,8 @@ COPY --from=build /usr/src/app/dist ./dist
 COPY ./public ./public
 COPY src/reports/assets/fonts/*.ttf /usr/share/fonts/truetype/
 
-RUN chown -R hcf_api:hcf_api /home/hcf_api/app
+RUN chown -R hcf_api:hcf_api /home/hcf_api/app && \
+  mkdir -p /home/hcf_api/.local && \
+  chmod -R 777 /home/hcf_api/.local
 
 USER hcf_api
