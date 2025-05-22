@@ -2,6 +2,7 @@ import listagensMiddleware from '../middlewares/listagens-middleware';
 import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middleware';
 import validacoesMiddleware from '../middlewares/validacoes-middleware';
 import atualizarUsuarioEsquema from '../validators/usuario-atualiza';
+import atualizarSenhaEsquema from '../validators/usuario-atualiza-senha';
 import cadastrarUsuarioEsquema from '../validators/usuario-cadastro';
 import desativarUsuarioEsquema from '../validators/usuario-desativa';
 import listagemUsuarioEsquema from '../validators/usuario-listagem';
@@ -70,5 +71,16 @@ export default app => {
             ]),
             validacoesMiddleware(desativarUsuarioEsquema),
             controller.desativar,
+        ]);
+
+    app.route('/usuarios/:usuario_id/senha')
+        .put([
+            tokensMiddleware([
+                TIPOS_USUARIOS.CURADOR,
+                TIPOS_USUARIOS.OPERADOR,
+                TIPOS_USUARIOS.IDENTIFICADOR,
+            ]),
+            validacoesMiddleware(atualizarSenhaEsquema),
+            controller.atualizarSenha,
         ]);
 };
