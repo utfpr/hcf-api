@@ -17,8 +17,8 @@ const generateFullHtmlOutput = (content: string, title: string = 'HCF') => `<!DO
 
 export async function generateReport<P extends React.Attributes>(Component: ComponentType<P>, props: P) {
   const browser = await puppeteer.launch({
-    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
     headless: true,
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
