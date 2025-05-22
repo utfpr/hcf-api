@@ -286,15 +286,15 @@ export const atualizarSenha = (request, response, next) => {
             where: { id: usuarioId, ativo: true },
             attributes: ['senha'],
         }))
-        .then(usuario => {
-            if (!usuario) {
+        .then(user => {
+            if (!user) {
                 throw new BadRequestExeption(106);
             }
-            if (!usuario.senha) {
+            if (!user.senha) {
                 throw new BadRequestExeption(100);
             }
 
-            if (!comparaSenha(senhaAtual, usuario.senha)) {
+            if (!comparaSenha(senhaAtual, user.senha)) {
                 throw new BadRequestExeption(100);
             }
             const novaSenhaHash = gerarSenha(novaSenha);
