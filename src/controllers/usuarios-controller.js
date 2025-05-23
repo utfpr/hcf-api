@@ -277,4 +277,33 @@ export const obtemIdentificadores = (request, response, next) => {
         .catch(next);
 };
 
+export const atualizarSenha = (request, response, next) => {
+    const { usuarioId } = request.params;
+    const { senhaAtual, novaSenha } = request.body;
+
+    Promise.resolve()
+        .then(() => Usuario.scope(null).findOne({
+            where: { id: usuarioId, ativo: true },
+            attributes: ['senha'],
+        }))
+        .then(user => {
+            if (!user) {
+                throw new BadRequestExeption(106);
+            }
+            if (!user.senha) {
+                throw new BadRequestExeption(100);
+            }
+
+            if (!comparaSenha(senhaAtual, user.senha)) {
+                throw new BadRequestExeption(100);
+            }
+            const novaSenhaHash = gerarSenha(novaSenha);
+            return Usuario.update({ senha: novaSenhaHash }, { where: { id: usuarioId } });
+        })
+        .then(() => {
+            response.status(codigos.EDITAR_SEM_RETORNO).send();
+        })
+        .catch(next);
+};
+
 export default {};
