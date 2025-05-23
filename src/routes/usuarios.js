@@ -73,7 +73,7 @@ export default app => {
             controller.desativar,
         ]);
 
-    app.route('/usuarios/:usuario_id/senha')
+    app.route('/usuarios/:usuarioId/senha')
         .put([
             tokensMiddleware([
                 TIPOS_USUARIOS.CURADOR,
