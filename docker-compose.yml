@@ -1,6 +1,6 @@
 services:
   mysql:
-    image: mysql:5.7
+    image: mysql:8.0
     container_name: hcf_mysql
     environment:
       MYSQL_DATABASE: $MYSQL_DATABASE
