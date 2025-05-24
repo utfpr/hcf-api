@@ -66,7 +66,7 @@ export const formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData = dados 
         numeroColeta: dado.numero_coleta || '-',
         especie: defineNomeCientifico(dado),
         familia: dado.especy.familia.nome,
-        autor: dado.coletore?.nome || 'Não Informado',
+        autor: dado.especy?.autor?.nome || 'Não Informado',
 
     }));
 
