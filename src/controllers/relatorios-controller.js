@@ -15,7 +15,7 @@ import codigosHttp from '~/resources/codigos-http';
 import models from '../models';
 
 const {
-    Sequelize: { Op, literal }, Familia, Especie, Genero, Tombo, LocalColeta, Coletor, Sequelize, sequelize,
+    Sequelize: { Op, literal }, Familia, Especie, Genero, Tombo, LocalColeta, Autor, Sequelize, sequelize,
 } = models;
 
 export const obtemDadosDoRelatorioDeInventarioDeEspeciesParaTabela = async (req, res, next, where, dados, qtd) => {
@@ -158,6 +158,11 @@ export const obtemDadosDoRelatorioDeColetaPorLocalEIntervaloDeData = async (req,
                             attributes: ['id', 'nome'],
                             required: true,
                         },
+                        {
+                            model: Autor,
+                            attributes: ['id', 'nome'],
+                            as: 'autor'
+                        },
                     ],
                 },
                 {
@@ -165,10 +170,6 @@ export const obtemDadosDoRelatorioDeColetaPorLocalEIntervaloDeData = async (req,
                     attributes: ['id', 'descricao', 'complemento'],
                     where: whereLocal,
                     required: true,
-                },
-                {
-                    model: Coletor,
-                    attributes: ['id', 'nome'],
                 },
             ],
             offset,
