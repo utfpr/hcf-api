@@ -161,7 +161,7 @@ export const obtemDadosDoRelatorioDeColetaPorLocalEIntervaloDeData = async (req,
                         {
                             model: Autor,
                             attributes: ['id', 'nome'],
-                            as: 'autor'
+                            as: 'autor',
                         },
                     ],
                 },
