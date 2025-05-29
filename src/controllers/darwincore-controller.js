@@ -256,13 +256,15 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
             dataIdentificacao = tombo.data_identificacao_ano;
         }
         if (tombo.data_identificacao_mes) {
+            const mesFormatado = tombo.data_identificacao_mes.toString().padStart(2, '0');
             if (dataIdentificacao !== '') {
-                dataIdentificacao += `-${tombo.data_identificacao_mes}`;
+                dataIdentificacao += `-${mesFormatado}`;
             }
         }
         if (tombo.data_identificacao_dia) {
+            const diaFormatado = tombo.data_identificacao_dia.toString().padStart(2, '0');
             if (dataIdentificacao !== '') {
-                dataIdentificacao += `-${tombo.data_identificacao_dia}`;
+                dataIdentificacao += `-${diaFormatado}`;
             }
         }
         if (tombo.especy) {
