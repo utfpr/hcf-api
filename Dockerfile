@@ -2,27 +2,16 @@ FROM node:jod-slim AS build
 
 WORKDIR /usr/src/app
 
-COPY . .
+COPY package.json yarn.lock tsconfig.json .babelrc ./
 
-RUN yarn install --production=false && \
-  yarn build
+RUN yarn install --production=false
+
+COPY ./src/ ./src/
+
+RUN yarn build
 
 
 FROM node:jod-slim
-
-ARG \
-  HCF_API_GID=3000 \
-  HCF_API_UID=3000 \
-  PORT=3000
-
-ENV \
-  PORT=$PORT \
-  LANG=en_US.UTF-8 \
-  PUPPETEER_SKIP_DOWNLOAD=true \
-  PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
-
-EXPOSE $PORT
-CMD node dist/index.js
 
 RUN \
   apt-get update && \
@@ -44,13 +33,26 @@ RUN \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/*
 
+
+ARG \
+  PORT=3000 \
+  HCF_API_GID=3000 \
+  HCF_API_UID=3000 \
+  PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
+
+ENV \
+  PORT=$PORT \
+  PUPPETEER_SKIP_DOWNLOAD=true \
+  PUPPETEER_EXECUTABLE_PATH=$PUPPETEER_EXECUTABLE_PATH
+
 RUN \
-  groupadd --system \
+  groupadd \
     --gid $HCF_API_GID \
     hcf_api && \
-  useradd --system \
+  useradd --create-home \
     --uid $HCF_API_UID \
-    --gid hcf_api \
+    --gid $HCF_API_GID \
+    --groups audio,video \
     --shell /usr/sbin/nologin \
     hcf_api
 
@@ -65,6 +67,10 @@ COPY --from=build /usr/src/app/dist ./dist
 COPY ./public ./public
 COPY src/reports/assets/fonts/*.ttf /usr/share/fonts/truetype/
 
-RUN chown -R hcf_api:hcf_api /home/hcf_api/app
+RUN chown -R hcf_api:hcf_api /home/hcf_api
 
 USER hcf_api
+
+EXPOSE $PORT
+
+CMD node dist/index.js

@@ -91,13 +91,9 @@ export const obtemDadosDoRelatorioDeInventarioDeEspecies = async (req, res, next
     }
 
     try {
-        gerarRelatorioPDF(res, {
-            tipoDoRelatorio: 'Inventário de Espécies',
-            textoFiltro: familia ? `Espécies da Família ${familia}` : 'Todos os dados',
-            data: format(new Date(), 'dd/MM/yyyy'),
-            dados,
-            tableFormato: 2,
-        });
+        const buffer = await generateReport(ReportInevntarioEspeciesTemplate, { dados });
+        res.setHeader('Content-Type', 'application/pdf');
+        res.end(buffer);
     } catch (e) {
         next(e);
     }
