@@ -26,7 +26,6 @@ const {
     Herbario,
     Tombo,
     TomboFoto,
-    TomboColetor,
     Solo,
     Relevo,
     Vegetacao,
@@ -282,8 +281,6 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
         const linhasProcessadas = [];
         if (tombo.tombos_fotos && tombo.tombos_fotos.length > 0) {
             tombo.tombos_fotos.forEach(foto => {
-                console.log(tombo.updated_at, dataIdentificacao);
-
                 const dataAtualizacao = format(tombo.updated_at, 'yyyy-MM-dd');
 
                 let linha = [
