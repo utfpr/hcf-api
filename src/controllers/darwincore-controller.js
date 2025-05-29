@@ -85,6 +85,10 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
             'sub_familia_id',
             'sub_especie_id',
             'colecao_anexa_id',
+            'vegetacao_id',
+            'relevo_id',
+            'solo_id',
+            'coletor_id',
         ],
         include: [
             {
@@ -131,6 +135,7 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
                 model: Variedade,
                 include: {
                     model: Autor,
+                    as: 'autor',
                     attributes: {
                         exclude: ['updated_at', 'created_at', 'ativo'],
                     },
@@ -162,6 +167,7 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
                 model: Especie,
                 include: {
                     model: Autor,
+                    as: 'autor',
                     attributes: {
                         exclude: ['updated_at', 'created_at', 'ativo'],
                     },
@@ -186,13 +192,11 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
                 model: Subespecie,
                 include: {
                     model: Autor,
+                    as: 'autor',
                     attributes: {
                         exclude: ['updated_at', 'created_at', 'ativo'],
                     },
                 },
-            },
-            {
-                model: TomboColetor,
             },
         ],
     });
@@ -212,7 +216,7 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
             tombo.locais_coletum && tombo.locais_coletum.cidade ? tombo.locais_coletum.cidade.estado.nome : '';
         const cidadeNome = tombo.locais_coletum && tombo.locais_coletum.cidade ? tombo.locais_coletum.cidade.nome : '';
         const vegetacao =
-            tombo.locais_coletum && tombo.locais_coletum.vegetaco ? tombo.locais_coletum.vegetaco.nome : '';
+            tombo.locais_coletum && tombo.locais_coletum.vegetacao ? tombo.locais_coletum.vegetacao.nome : '';
         const familiaNome = tombo.familia ? tombo.familia.nome : '';
         const generoNome = tombo.genero ? tombo.genero.nome : '';
         const especieNome = tombo.especy ? tombo.especy.nome : '';
@@ -278,6 +282,8 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
         const linhasProcessadas = [];
         if (tombo.tombos_fotos && tombo.tombos_fotos.length > 0) {
             tombo.tombos_fotos.forEach(foto => {
+                console.log(tombo.updated_at, dataIdentificacao);
+
                 const dataAtualizacao = format(tombo.updated_at, 'yyyy-MM-dd');
 
                 let linha = [
