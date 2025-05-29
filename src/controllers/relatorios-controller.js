@@ -1,4 +1,4 @@
-import { format, isBefore } from 'date-fns';
+import { isBefore } from 'date-fns';
 import { Readable } from 'stream';
 
 import {
@@ -7,8 +7,8 @@ import {
     formataTextFilter,
     formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData,
 } from '~/helpers/formata-dados-relatorio';
-import { gerarRelatorioPDF } from '~/helpers/gerador-relatorio';
 import { generateReport } from '~/reports/reports';
+import ReportInevntarioEspeciesTemplate from '~/reports/templates/InventarioEspecies';
 import ReportColetaPorLocalIntervaloDeData from '~/reports/templates/RelacaoTombos';
 import codigosHttp from '~/resources/codigos-http';
 
