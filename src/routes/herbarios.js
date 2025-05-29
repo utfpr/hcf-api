@@ -13,12 +13,15 @@ export default app => {
     app.route('/herbarios')
         .post([
             tokensMiddleware([
-                TIPOS_USUARIOS.CURADOR, TIPOS_USUARIOS.OPERADOR,
+                TIPOS_USUARIOS.CURADOR, TIPOS_USUARIOS.OPERADOR, 
             ]),
             validacoesMiddleware(cadastrarHerbarioEsquema),
             controller.cadastro,
         ])
         .get([
+            tokensMiddleware([
+                TIPOS_USUARIOS.CURADOR, TIPOS_USUARIOS.OPERADOR, TIPOS_USUARIOS.IDENTIFICADOR,
+            ]),
             listagensMiddleware,
             validacoesMiddleware(listagemHerbarioEsquema),
             controller.listagem,
@@ -39,6 +42,9 @@ export default app => {
             controller.desativar,
         ])
         .get([
+            tokensMiddleware([
+                TIPOS_USUARIOS.CURADOR, TIPOS_USUARIOS.OPERADOR, TIPOS_USUARIOS.IDENTIFICADOR,
+            ]),
             validacoesMiddleware(desativarHerbarioEsquema),
             controller.buscarHerbario,
         ]);

@@ -41,16 +41,31 @@ export default app => {
             getCodigoBarraTombo,
         ])
         .delete([
+            tokensMiddleware([
+            TIPOS_USUARIOS.CURADOR, 
+            TIPOS_USUARIOS.OPERADOR, 
+            TIPOS_USUARIOS.IDENTIFICADOR,
+            ]),
             deletarCodigoBarra,
         ]);
 
     app.route('/tombos/codBarras')
         .put([
+            tokensMiddleware([
+            TIPOS_USUARIOS.CURADOR, 
+            TIPOS_USUARIOS.OPERADOR, 
+            TIPOS_USUARIOS.IDENTIFICADOR,
+            ]),
             editarCodigoBarra,
         ]);
 
     app.route('/tombos/MaxcodBarras/:emVivo')
         .put([
+            tokensMiddleware([
+            TIPOS_USUARIOS.CURADOR, 
+            TIPOS_USUARIOS.OPERADOR, 
+            TIPOS_USUARIOS.IDENTIFICADOR,
+            ]),
             getUltimoNumeroCodigoBarras,
         ]);
 
