@@ -13,7 +13,7 @@ export default app => {
     app.route('/herbarios')
         .post([
             tokensMiddleware([
-                TIPOS_USUARIOS.CURADOR, TIPOS_USUARIOS.OPERADOR, 
+                TIPOS_USUARIOS.CURADOR, TIPOS_USUARIOS.OPERADOR,
             ]),
             validacoesMiddleware(cadastrarHerbarioEsquema),
             controller.cadastro,

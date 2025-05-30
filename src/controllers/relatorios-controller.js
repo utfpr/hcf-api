@@ -7,8 +7,8 @@ import {
     formataTextFilter,
     formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData,
 } from '~/helpers/formata-dados-relatorio';
+import { gerarRelatorioPDF } from '~/helpers/gerador-relatorio';
 import { generateReport } from '~/reports/reports';
-import ReportInevntarioEspeciesTemplate from '~/reports/templates/InventarioEspecies';
 import ReportColetaPorLocalIntervaloDeData from '~/reports/templates/RelacaoTombos';
 import codigosHttp from '~/resources/codigos-http';
 
@@ -56,15 +56,15 @@ export const obtemDadosDoRelatorioDeInventarioDeEspecies = async (req, res, next
     let replacements = {};
     let where = {};
     let query = `
-        SELECT 
+        SELECT
             t.hcf,
             t.numero_coleta,
             t.nome_cientifico,
             f.nome AS nome_familia,
             g.nome AS nome_genero,
-            e.nome AS nome_especie 
-        FROM tombos t 
-            LEFT JOIN especies e ON t.especie_id = e.id 
+            e.nome AS nome_especie
+        FROM tombos t
+            LEFT JOIN especies e ON t.especie_id = e.id
             LEFT JOIN generos g ON t.genero_id = g.id
             LEFT JOIN familias f ON t.familia_id = f.id
     `;
