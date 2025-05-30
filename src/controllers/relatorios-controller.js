@@ -1,4 +1,4 @@
-import { isBefore } from 'date-fns';
+import { format, isBefore } from 'date-fns';
 import { Readable } from 'stream';
 
 import {
@@ -91,9 +91,13 @@ export const obtemDadosDoRelatorioDeInventarioDeEspecies = async (req, res, next
     }
 
     try {
-        const buffer = await generateReport(ReportInevntarioEspeciesTemplate, { dados });
-        res.setHeader('Content-Type', 'application/pdf');
-        res.end(buffer);
+        gerarRelatorioPDF(res, {
+            tipoDoRelatorio: 'Inventário de Espécies',
+            textoFiltro: familia ? `Espécies da Família ${familia}` : 'Todos os dados',
+            data: format(new Date(), 'dd/MM/yyyy'),
+            dados,
+            tableFormato: 2,
+        });
     } catch (e) {
         next(e);
     }
@@ -195,6 +199,103 @@ export const obtemDadosDoRelatorioDeColetaPorLocalEIntervaloDeData = async (req,
             const readable = new Readable();
             // eslint-disable-next-line no-underscore-dangle
             readable._read = () => {}; // Implementa o método _read (obrigatório)
+            readable.push(buffer); // Empurrar os dados binários para o stream
+            readable.push(null); // Indica o fim do fluxo de dados
+            res.setHeader('Content-Type', 'application/pdf');
+            readable.pipe(res);
+        } catch (e) {
+            next(e);
+        }
+
+    } catch (e) {
+        next(e);
+    }
+};
+
+export const obtemDadosDoRelatorioDeColetaIntervaloDeData = async (req, res, next) => {
+    const { paginacao } = req;
+    const { limite, pagina, offset } = paginacao;
+    const { dataInicio, dataFim, variante } = req.query;
+
+    let whereData = {};
+    if (dataInicio) {
+        if (dataFim && isBefore(new Date(dataFim), new Date(dataInicio))) {
+            res.status(codigosHttp.BAD_REQUEST).json({
+                mensagem: 'A data de fim não pode ser anterior à data de início.',
+            });
+        }
+        if (isBefore(new Date(), new Date(dataInicio))) {
+            res.status(codigosHttp.BAD_REQUEST).json({
+                mensagem: 'A data de início não pode ser maior que a data atual.',
+            });
+        }
+        whereData = {
+            [Op.and]: [
+                // Transforma os valores em uma data e compara com o intervalo
+                Sequelize.where(
+                    literal(
+                        "STR_TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes, 2, '0'), '-', LPAD(data_coleta_dia, 2, '0')), '%Y-%m-%d')"
+                    ),
+                    { [Op.between]: [dataInicio, dataFim || new Date()] }
+                ),
+            ],
+        };
+    }
+
+    try {
+        const tombos = await Tombo.findAndCountAll({
+            attributes: ['hcf', 'numero_coleta', 'nome_cientifico', 'data_coleta_ano', 'data_coleta_mes', 'data_coleta_dia'],
+            where: whereData,
+            include: [
+                {
+                    model: Especie,
+                    attributes: ['id', 'nome'],
+                    required: true,
+                    include: [
+                        {
+                            model: Genero,
+                            attributes: ['id', 'nome'],
+                        },
+                        {
+                            model: Familia,
+                            attributes: ['id', 'nome'],
+                            required: true,
+                        },
+                        {
+                            model: Autor,
+                            attributes: ['id', 'nome'],
+                            as: 'autor',
+                        },
+                    ],
+                },
+            ],
+            offset,
+        });
+
+        if (req.method === 'GET') {
+            res.json({
+                metadados: {
+                    total: tombos.count,
+                    pagina,
+                    limite,
+                },
+                resultado: formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData(tombos.rows),
+                filtro: formataTextFilter(null, dataInicio, dataFim || new Date()),
+            });
+            return;
+        }
+
+        try {
+            const dadosFormatados = formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData(tombos.rows);
+            const buffer = await generateReport(
+                ReportColetaPorLocalIntervaloDeData, {
+                    dados: dadosFormatados,
+                    total: variante === 'analitico' ? tombos.count : undefined,
+                    textoFiltro: formataTextFilter(null, dataInicio, dataFim || new Date()),
+                });
+            const readable = new Readable();
+            // eslint-disable-next-line no-underscore-dangle
+            readable._read = () => { }; // Implementa o método _read (obrigatório)
             readable.push(buffer); // Empurrar os dados binários para o stream
             readable.push(null); // Indica o fim do fluxo de dados
             res.setHeader('Content-Type', 'application/pdf');
