@@ -1,3 +1,5 @@
+import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middleware';
+
 const controllerComum = require('../controllers/herbariovirtual-controller');
 const controller = require('../controllers/specieslink-controller');
 
@@ -10,15 +12,35 @@ const controller = require('../controllers/specieslink-controller');
  */
 export default app => {
     app.route('/specieslink').get([
+        tokensMiddleware([
+            TIPOS_USUARIOS.CURADOR,
+            TIPOS_USUARIOS.OPERADOR,
+            TIPOS_USUARIOS.IDENTIFICADOR,
+        ]),
         controller.preparaRequisicao,
     ]);
     app.route('/specieslink-executando').get([
+        tokensMiddleware([
+            TIPOS_USUARIOS.CURADOR,
+            TIPOS_USUARIOS.OPERADOR,
+            TIPOS_USUARIOS.IDENTIFICADOR,
+        ]),
         controller.estaExecutando,
     ]);
     app.route('/specieslink-todoslogs').get([
+        tokensMiddleware([
+            TIPOS_USUARIOS.CURADOR,
+            TIPOS_USUARIOS.OPERADOR,
+            TIPOS_USUARIOS.IDENTIFICADOR,
+        ]),
         controllerComum.todosLogs,
     ]);
     app.route('/specieslink-log').get([
+        tokensMiddleware([
+            TIPOS_USUARIOS.CURADOR,
+            TIPOS_USUARIOS.OPERADOR,
+            TIPOS_USUARIOS.IDENTIFICADOR,
+        ]),
         controllerComum.getLog,
     ]);
 };

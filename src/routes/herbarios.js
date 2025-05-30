@@ -19,6 +19,9 @@ export default app => {
             controller.cadastro,
         ])
         .get([
+            tokensMiddleware([
+                TIPOS_USUARIOS.CURADOR, TIPOS_USUARIOS.OPERADOR, TIPOS_USUARIOS.IDENTIFICADOR,
+            ]),
             listagensMiddleware,
             validacoesMiddleware(listagemHerbarioEsquema),
             controller.listagem,
@@ -39,6 +42,9 @@ export default app => {
             controller.desativar,
         ])
         .get([
+            tokensMiddleware([
+                TIPOS_USUARIOS.CURADOR, TIPOS_USUARIOS.OPERADOR, TIPOS_USUARIOS.IDENTIFICADOR,
+            ]),
             validacoesMiddleware(desativarHerbarioEsquema),
             controller.buscarHerbario,
         ]);
