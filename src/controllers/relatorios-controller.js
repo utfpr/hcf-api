@@ -7,8 +7,8 @@ import {
     formataTextFilter,
     formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData,
 } from '~/helpers/formata-dados-relatorio';
-import { gerarRelatorioPDF } from '~/helpers/gerador-relatorio';
 import { generateReport } from '~/reports/reports';
+import ReportInevntarioEspeciesTemplate from '~/reports/templates/InventarioEspecies';
 import ReportColetaPorLocalIntervaloDeData from '~/reports/templates/RelacaoTombos';
 import codigosHttp from '~/resources/codigos-http';
 
@@ -106,7 +106,7 @@ export const obtemDadosDoRelatorioDeInventarioDeEspecies = async (req, res, next
 export const obtemDadosDoRelatorioDeColetaPorLocalEIntervaloDeData = async (req, res, next) => {
     const { paginacao } = req;
     const { limite, pagina, offset } = paginacao;
-    const { local, dataInicio, dataFim, toPdf } = req.query;
+    const { local, dataInicio, dataFim, variante } = req.query;
 
     let whereLocal = {};
     let whereData = {};
@@ -175,15 +175,7 @@ export const obtemDadosDoRelatorioDeColetaPorLocalEIntervaloDeData = async (req,
             offset,
         });
 
-        if (toPdf) {
-            gerarRelatorioPDF(res, {
-                tipoDoRelatorio: 'Coleta por Local e Intervalo de Data',
-                textoFiltro: formataTextFilter(local, dataInicio, dataFim || new Date()),
-                data: format(new Date(), 'dd/MM/yyyy'),
-                dados: formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData(tombos.rows),
-                tableFormato: 1,
-            });
-        } else {
+        if (req.method === 'GET') {
             res.json({
                 metadados: {
                     total: tombos.count,
@@ -193,6 +185,26 @@ export const obtemDadosDoRelatorioDeColetaPorLocalEIntervaloDeData = async (req,
                 resultado: formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData(tombos.rows),
                 filtro: formataTextFilter(local, dataInicio, dataFim || new Date()),
             });
+            return;
+        }
+
+        try {
+            const dadosFormatados = formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData(tombos.rows);
+            const buffer = await generateReport(
+                ReportColetaPorLocalIntervaloDeData, {
+                    dados: dadosFormatados,
+                    total: variante === 'analitico' ? tombos.count : undefined,
+                    textoFiltro: formataTextFilter(local, dataInicio, dataFim || new Date()),
+                });
+            const readable = new Readable();
+            // eslint-disable-next-line no-underscore-dangle
+            readable._read = () => {}; // Implementa o método _read (obrigatório)
+            readable.push(buffer); // Empurrar os dados binários para o stream
+            readable.push(null); // Indica o fim do fluxo de dados
+            res.setHeader('Content-Type', 'application/pdf');
+            readable.pipe(res);
+        } catch (e) {
+            next(e);
         }
 
     } catch (e) {

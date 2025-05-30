@@ -26,7 +26,6 @@ const {
     Herbario,
     Tombo,
     TomboFoto,
-    TomboColetor,
     Solo,
     Relevo,
     Vegetacao,
@@ -85,6 +84,10 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
             'sub_familia_id',
             'sub_especie_id',
             'colecao_anexa_id',
+            'vegetacao_id',
+            'relevo_id',
+            'solo_id',
+            'coletor_id',
         ],
         include: [
             {
@@ -131,6 +134,7 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
                 model: Variedade,
                 include: {
                     model: Autor,
+                    as: 'autor',
                     attributes: {
                         exclude: ['updated_at', 'created_at', 'ativo'],
                     },
@@ -162,6 +166,7 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
                 model: Especie,
                 include: {
                     model: Autor,
+                    as: 'autor',
                     attributes: {
                         exclude: ['updated_at', 'created_at', 'ativo'],
                     },
@@ -186,13 +191,11 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
                 model: Subespecie,
                 include: {
                     model: Autor,
+                    as: 'autor',
                     attributes: {
                         exclude: ['updated_at', 'created_at', 'ativo'],
                     },
                 },
-            },
-            {
-                model: TomboColetor,
             },
         ],
     });
@@ -212,7 +215,7 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
             tombo.locais_coletum && tombo.locais_coletum.cidade ? tombo.locais_coletum.cidade.estado.nome : '';
         const cidadeNome = tombo.locais_coletum && tombo.locais_coletum.cidade ? tombo.locais_coletum.cidade.nome : '';
         const vegetacao =
-            tombo.locais_coletum && tombo.locais_coletum.vegetaco ? tombo.locais_coletum.vegetaco.nome : '';
+            tombo.locais_coletum && tombo.locais_coletum.vegetacao ? tombo.locais_coletum.vegetacao.nome : '';
         const familiaNome = tombo.familia ? tombo.familia.nome : '';
         const generoNome = tombo.genero ? tombo.genero.nome : '';
         const especieNome = tombo.especy ? tombo.especy.nome : '';
@@ -253,13 +256,15 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
             dataIdentificacao = tombo.data_identificacao_ano;
         }
         if (tombo.data_identificacao_mes) {
+            const mesFormatado = tombo.data_identificacao_mes.toString().padStart(2, '0');
             if (dataIdentificacao !== '') {
-                dataIdentificacao += `-${tombo.data_identificacao_mes}`;
+                dataIdentificacao += `-${mesFormatado}`;
             }
         }
         if (tombo.data_identificacao_dia) {
+            const diaFormatado = tombo.data_identificacao_dia.toString().padStart(2, '0');
             if (dataIdentificacao !== '') {
-                dataIdentificacao += `-${tombo.data_identificacao_dia}`;
+                dataIdentificacao += `-${diaFormatado}`;
             }
         }
         if (tombo.especy) {
@@ -291,7 +296,7 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
                     `${cidadeNome}\t${tombo.altitude}\t${tombo.altitude}\t\t\t${tombo.latitude}\t`,
                     `${tombo.longitude}\t${'WGS84'}\t${'GPS'}\t${'Plantae'}\t${familiaNome}\t${generoNome}\t`,
                     `${especieNome}\t${menorNomeCientifico}\t${tombo.nome_cientifico}\t${autores}\t${tombo.taxon}`,
-                    `\t${tombo.nomes_populares}\t\t${nomeTipo}\t${nomeIdentificador}\t${format(new Date(dataIdentificacao), 'yyyy-MM-dd')}`,
+                    `\t${tombo.nomes_populares}\t\t${nomeTipo}\t${nomeIdentificador}\t${dataIdentificacao}`,
                     `\t${identificationQualifier}`,
                 ].join('');
                 linha = linha.replace(/(null|undefined)/g, '');
@@ -312,7 +317,7 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
                 `${cidadeNome}\t${tombo.altitude}\t${tombo.altitude}\t\t\t${tombo.latitude}\t`,
                 `${tombo.longitude}\t${'WGS84'}\t${'GPS'}\t${'Plantae'}\t${familiaNome}\t${generoNome}\t`,
                 `${especieNome}\t${menorNomeCientifico}\t${tombo.nome_cientifico}\t${autores}\t${tombo.taxon}`,
-                `\t${tombo.nomes_populares}\t\t${nomeTipo}\t${nomeIdentificador}\t${format(new Date(dataIdentificacao), 'yyyy-MM-dd')}`,
+                `\t${tombo.nomes_populares}\t\t${nomeTipo}\t${nomeIdentificador}\t${dataIdentificacao}`,
                 `\t${identificationQualifier}`,
             ].join('');
 

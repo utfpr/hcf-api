@@ -1,5 +1,6 @@
 const controllerComum = require('../controllers/herbariovirtual-controller');
 const controller = require('../controllers/specieslink-controller');
+import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middleware';
 
 /**
  * Essa variável app, está relacionada as rotas que vem do front end. Então se no front end
@@ -10,15 +11,35 @@ const controller = require('../controllers/specieslink-controller');
  */
 export default app => {
     app.route('/specieslink').get([
+        tokensMiddleware([
+            TIPOS_USUARIOS.CURADOR, 
+            TIPOS_USUARIOS.OPERADOR, 
+            TIPOS_USUARIOS.IDENTIFICADOR,
+        ]),
         controller.preparaRequisicao,
     ]);
     app.route('/specieslink-executando').get([
+        tokensMiddleware([
+            TIPOS_USUARIOS.CURADOR, 
+            TIPOS_USUARIOS.OPERADOR, 
+            TIPOS_USUARIOS.IDENTIFICADOR,
+        ]),
         controller.estaExecutando,
     ]);
     app.route('/specieslink-todoslogs').get([
+        tokensMiddleware([
+            TIPOS_USUARIOS.CURADOR, 
+            TIPOS_USUARIOS.OPERADOR, 
+            TIPOS_USUARIOS.IDENTIFICADOR,
+        ]),
         controllerComum.todosLogs,
     ]);
     app.route('/specieslink-log').get([
+        tokensMiddleware([
+            TIPOS_USUARIOS.CURADOR, 
+            TIPOS_USUARIOS.OPERADOR, 
+            TIPOS_USUARIOS.IDENTIFICADOR,
+        ]),
         controllerComum.getLog,
     ]);
 };
