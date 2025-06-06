@@ -6,18 +6,22 @@ import {
     formatarDadosParaRealtorioDeInventarioDeEspecies,
     formataTextFilter,
     formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData,
+    formatarDadosParaRelatorioDeColetaPorColetorEIntervaloDeData,
+    formataTextFilterColetor,
 } from '~/helpers/formata-dados-relatorio';
 import { gerarRelatorioPDF } from '~/helpers/gerador-relatorio';
 import { generateReport } from '~/reports/reports';
-import ReportColetaPorLocalIntervaloDeData from '~/reports/templates/RelacaoTombos';
+import ReportColetaModelo1 from '~/reports/templates/RelacaoTombos';
+import ReportColetaModelo2 from '~/reports/templates/RelacaoTombosComColeta';
 import codigosHttp from '~/resources/codigos-http';
 
 import models from '../models';
 
 const {
-    Sequelize: { Op, literal }, Familia, Especie, Genero, Tombo, LocalColeta, Autor, Sequelize, sequelize,
+    Sequelize: { Op, literal }, Familia, Especie, Genero, Tombo, LocalColeta, Autor, Sequelize, sequelize, Coletor,
 } = models;
 
+/// ////// Relatório de Inventário de Espécies //////////
 export const obtemDadosDoRelatorioDeInventarioDeEspeciesParaTabela = async (req, res, next, where, dados, qtd) => {
     const { paginacao } = req;
     const { limite, pagina, offset } = paginacao;
@@ -103,6 +107,7 @@ export const obtemDadosDoRelatorioDeInventarioDeEspecies = async (req, res, next
     }
 };
 
+/// ////// Relatório de Coleta por Local e Intervalo de Data //////////
 export const obtemDadosDoRelatorioDeColetaPorLocalEIntervaloDeData = async (req, res, next) => {
     const { paginacao } = req;
     const { limite, pagina, offset } = paginacao;
@@ -191,7 +196,7 @@ export const obtemDadosDoRelatorioDeColetaPorLocalEIntervaloDeData = async (req,
         try {
             const dadosFormatados = formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData(tombos.rows);
             const buffer = await generateReport(
-                ReportColetaPorLocalIntervaloDeData, {
+                ReportColetaModelo1, {
                     dados: dadosFormatados,
                     total: variante === 'analitico' ? tombos.count : undefined,
                     textoFiltro: formataTextFilter(local, dataInicio, dataFim || new Date()),
@@ -212,6 +217,7 @@ export const obtemDadosDoRelatorioDeColetaPorLocalEIntervaloDeData = async (req,
     }
 };
 
+// ////// Relatório de Coleta por Intervalo de Data //////////
 export const obtemDadosDoRelatorioDeColetaIntervaloDeData = async (req, res, next) => {
     const { paginacao } = req;
     const { limite, pagina, offset } = paginacao;
@@ -288,7 +294,7 @@ export const obtemDadosDoRelatorioDeColetaIntervaloDeData = async (req, res, nex
         try {
             const dadosFormatados = formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData(tombos.rows);
             const buffer = await generateReport(
-                ReportColetaPorLocalIntervaloDeData, {
+                ReportColetaModelo1, {
                     dados: dadosFormatados,
                     total: variante === 'analitico' ? tombos.count : undefined,
                     textoFiltro: formataTextFilter(null, dataInicio, dataFim || new Date()),
@@ -296,6 +302,121 @@ export const obtemDadosDoRelatorioDeColetaIntervaloDeData = async (req, res, nex
             const readable = new Readable();
             // eslint-disable-next-line no-underscore-dangle
             readable._read = () => { }; // Implementa o método _read (obrigatório)
+            readable.push(buffer); // Empurrar os dados binários para o stream
+            readable.push(null); // Indica o fim do fluxo de dados
+            res.setHeader('Content-Type', 'application/pdf');
+            readable.pipe(res);
+        } catch (e) {
+            next(e);
+        }
+
+    } catch (e) {
+        next(e);
+    }
+};
+
+// ////// Relatório de Coleta por Coletor e Intervalo de Data //////////
+export const obtemDadosDoRelatorioDeColetaPorColetorEIntervaloDeData = async (req, res, next) => {
+    const { paginacao } = req;
+    const { limite, pagina, offset } = paginacao;
+    const { coletor, dataInicio, dataFim, variante, modelo } = req.query;
+
+    let whereColetor = {};
+    let whereData = {};
+    if (coletor) {
+        whereColetor = {
+            nome: { [Op.like]: `%${coletor}%` },
+        };
+    }
+    if (dataInicio) {
+        if (dataFim && isBefore(new Date(dataFim), new Date(dataInicio))) {
+            res.status(codigosHttp.BAD_REQUEST).json({
+                mensagem: 'A data de fim não pode ser anterior à data de início.',
+            });
+        }
+        if (isBefore(new Date(), new Date(dataInicio))) {
+            res.status(codigosHttp.BAD_REQUEST).json({
+                mensagem: 'A data de início não pode ser maior que a data atual.',
+            });
+        }
+        whereData = {
+            [Op.and]: [
+                // Transforma os valores em uma data e compara com o intervalo
+                Sequelize.where(
+                    literal(
+                        "STR_TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes, 2, '0'), '-', LPAD(data_coleta_dia, 2, '0')), '%Y-%m-%d')"
+                    ),
+                    { [Op.between]: [dataInicio, dataFim || new Date()] }
+                ),
+            ],
+        };
+    }
+
+    try {
+        const tombos = await Tombo.findAndCountAll({
+            attributes: ['hcf', 'numero_coleta', 'nome_cientifico', 'data_coleta_ano', 'data_coleta_mes', 'data_coleta_dia'],
+            where: whereData,
+            include: [
+                {
+                    model: Especie,
+                    attributes: ['id', 'nome'],
+                    required: true,
+                    include: [
+                        {
+                            model: Genero,
+                            attributes: ['id', 'nome'],
+                        },
+                        {
+                            model: Familia,
+                            attributes: ['id', 'nome'],
+                            required: true,
+                        },
+                        {
+                            model: Autor,
+                            attributes: ['id', 'nome'],
+                            as: 'autor',
+                        },
+                    ],
+                },
+                {
+                    model: Coletor,
+                    where: whereColetor,
+                    required: true,
+                    attributes: ['id', 'nome'],
+                },
+            ],
+            offset,
+        });
+
+        if (req.method === 'GET') {
+            res.json({
+                metadados: {
+                    total: tombos.count,
+                    pagina,
+                    limite,
+                },
+                resultado: formatarDadosParaRelatorioDeColetaPorColetorEIntervaloDeData(tombos.rows),
+                filtro: formataTextFilterColetor(coletor, dataInicio, dataFim || new Date()),
+            });
+            return;
+        }
+
+        try {
+            const dadosFormatados = formatarDadosParaRelatorioDeColetaPorColetorEIntervaloDeData(tombos.rows);
+            const buffer = !modelo || modelo === '1' ? await generateReport(
+                ReportColetaModelo1, {
+                    dados: dadosFormatados,
+                    total: variante === 'analitico' ? tombos.count : undefined,
+                    textoFiltro: formataTextFilterColetor(coletor || null, dataInicio, dataFim || new Date()),
+                }) : await generateReport(
+                ReportColetaModelo2, {
+                    dados: dadosFormatados,
+                    total: variante === 'analitico' ? tombos.count : undefined,
+                    textoFiltro: formataTextFilterColetor(coletor || null, dataInicio, dataFim || new Date()),
+                });
+            const readable = new Readable();
+            // eslint-disable-next-line no-underscore-dangle
+            readable._read = () => {}; // Implementa o método _read (obrigatório)
             readable.push(buffer); // Empurrar os dados binários para o stream
             readable.push(null); // Indica o fim do fluxo de dados
             res.setHeader('Content-Type', 'application/pdf');

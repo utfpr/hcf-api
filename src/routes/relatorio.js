@@ -55,4 +55,16 @@ export default app => {
             listagensMiddleware,
             controller.obtemDadosDoRelatorioDeColetaIntervaloDeData,
         ]);
+
+    app.route('/relatorio/coleta-por-coletor-intervalo-de-data')
+        .get([
+            listagensMiddleware,
+            controller.obtemDadosDoRelatorioDeColetaPorColetorEIntervaloDeData,
+        ]);
+
+    app.route('/relatorio/coleta-por-coletor-intervalo-de-data')
+        .post([
+            listagensMiddleware,
+            controller.obtemDadosDoRelatorioDeColetaPorColetorEIntervaloDeData,
+        ]);
 };
