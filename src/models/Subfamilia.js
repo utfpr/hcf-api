@@ -3,7 +3,6 @@ function associate(modelos) {
         Autor,
         Familia,
         Subfamilia,
-        Reino,
     } = modelos;
 
     Subfamilia.belongsTo(Autor, {
@@ -15,9 +14,6 @@ function associate(modelos) {
         foreignKey: 'familia_id',
     });
 
-    Subfamilia.belongsTo(Reino, {
-        foreignKey: 'reino_id',
-    });
 }
 
 export const defaultScope = {
@@ -46,10 +42,6 @@ export default (Sequelize, DataTypes) => {
             allowNull: true,
         },
         familia_id: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-        },
-        reino_id: {
             type: DataTypes.INTEGER,
             allowNull: false,
         },
