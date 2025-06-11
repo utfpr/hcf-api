@@ -40,30 +40,55 @@ export default app => {
 
     app.route('/relatorio/coleta-por-local-intervalo-de-data')
         .post([
+            tokensMiddleware([
+                TIPOS_USUARIOS.CURADOR,
+                TIPOS_USUARIOS.OPERADOR,
+                TIPOS_USUARIOS.IDENTIFICADOR,
+            ]),
             listagensMiddleware,
             controller.obtemDadosDoRelatorioDeColetaPorLocalEIntervaloDeData,
         ]);
 
     app.route('/relatorio/coleta-por-intervalo-de-data')
         .get([
+            tokensMiddleware([
+                TIPOS_USUARIOS.CURADOR,
+                TIPOS_USUARIOS.OPERADOR,
+                TIPOS_USUARIOS.IDENTIFICADOR,
+            ]),
             listagensMiddleware,
             controller.obtemDadosDoRelatorioDeColetaIntervaloDeData,
         ]);
 
     app.route('/relatorio/coleta-por-intervalo-de-data')
         .post([
+            tokensMiddleware([
+                TIPOS_USUARIOS.CURADOR,
+                TIPOS_USUARIOS.OPERADOR,
+                TIPOS_USUARIOS.IDENTIFICADOR,
+            ]),
             listagensMiddleware,
             controller.obtemDadosDoRelatorioDeColetaIntervaloDeData,
         ]);
 
     app.route('/relatorio/coleta-por-coletor-intervalo-de-data')
         .get([
+            tokensMiddleware([
+                TIPOS_USUARIOS.CURADOR,
+                TIPOS_USUARIOS.OPERADOR,
+                TIPOS_USUARIOS.IDENTIFICADOR,
+            ]),
             listagensMiddleware,
             controller.obtemDadosDoRelatorioDeColetaPorColetorEIntervaloDeData,
         ]);
 
     app.route('/relatorio/coleta-por-coletor-intervalo-de-data')
         .post([
+            tokensMiddleware([
+                TIPOS_USUARIOS.CURADOR,
+                TIPOS_USUARIOS.OPERADOR,
+                TIPOS_USUARIOS.IDENTIFICADOR,
+            ]),
             listagensMiddleware,
             controller.obtemDadosDoRelatorioDeColetaPorColetorEIntervaloDeData,
         ]);
