@@ -1,4 +1,4 @@
-import { format, isBefore } from 'date-fns';
+import { isBefore } from 'date-fns';
 import { Readable } from 'stream';
 
 import {
@@ -9,8 +9,8 @@ import {
     formatarDadosParaRelatorioDeColetaPorColetorEIntervaloDeData,
     formataTextFilterColetor,
 } from '~/helpers/formata-dados-relatorio';
-import { gerarRelatorioPDF } from '~/helpers/gerador-relatorio';
 import { generateReport } from '~/reports/reports';
+import ReportInventario from '~/reports/templates/InventarioEspecies';
 import ReportColetaModelo1 from '~/reports/templates/RelacaoTombos';
 import ReportColetaModelo2 from '~/reports/templates/RelacaoTombosComColeta';
 import codigosHttp from '~/resources/codigos-http';
@@ -95,13 +95,25 @@ export const obtemDadosDoRelatorioDeInventarioDeEspecies = async (req, res, next
     }
 
     try {
-        gerarRelatorioPDF(res, {
-            tipoDoRelatorio: 'Inventário de Espécies',
-            textoFiltro: familia ? `Espécies da Família ${familia}` : 'Todos os dados',
-            data: format(new Date(), 'dd/MM/yyyy'),
-            dados,
-            tableFormato: 2,
-        });
+        const dadosFormatados = dados;
+        const buffer = await generateReport(
+            ReportInventario, {
+                dados: dadosFormatados,
+            });
+        const readable = new Readable();
+        // eslint-disable-next-line no-underscore-dangle
+        readable._read = () => { }; // Implementa o método _read (obrigatório)
+        readable.push(buffer); // Empurrar os dados binários para o stream
+        readable.push(null); // Indica o fim do fluxo de dados
+        res.setHeader('Content-Type', 'application/pdf');
+        readable.pipe(res);
+        // gerarRelatorioPDF(res, {
+        //     tipoDoRelatorio: 'Inventário de Espécies',
+        //     textoFiltro: familia ? `Espécies da Família ${familia}` : 'Todos os dados',
+        //     data: format(new Date(), 'dd/MM/yyyy'),
+        //     dados,
+        //     tableFormato: 2,
+        // });
     } catch (e) {
         next(e);
     }
