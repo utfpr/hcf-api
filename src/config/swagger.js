@@ -14,6 +14,20 @@ const options = {
                 description: 'Servidor local',
             },
         ],
+        components: {
+            securitySchemes: {
+                ApiKeyAuth: {
+                    type: 'apiKey',
+                    in: 'header',
+                    name: 'token',
+                },
+            },
+        },
+        security: [
+            {
+                ApiKeyAuth: [],
+            },
+        ],
     },
     apis: [
         './src/routes/*.js',
