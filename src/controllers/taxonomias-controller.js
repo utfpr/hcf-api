@@ -1,7 +1,30 @@
+import axios from 'axios';
+
 import BadRequestExeption from '../errors/bad-request-exception';
 import models from '../models';
 import codigos from '../resources/codigos-http';
 import listaTaxonomiasSQL from '../resources/sqls/lista-taxonomias';
+
+const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET_KEY;
+
+async function verifyRecaptcha(request) {
+    const token = request.query.recaptchaToken;
+    if (!token) {
+        throw new BadRequestExeption(400, 'reCAPTCHA token ausente');
+    }
+
+    const { data } = await axios.post(
+        'https://www.google.com/recaptcha/api/siteverify',
+        null,
+        { params: { secret: RECAPTCHA_SECRET, response: token } }
+    );
+
+    if (!data.success || (data.score !== undefined && data.score < 0.5)) {
+        throw new BadRequestExeption(400, 'Falha na verificação do reCAPTCHA');
+    }
+
+    return true;
+}
 
 const {
     sequelize, Sequelize: { Op }, Sequelize, Reino, Familia, Genero, Subfamilia, Especie, Variedade, Subespecie, Autor, Tombo,
@@ -95,96 +118,77 @@ export const editarReino = (request, response, next) => {
         .catch(next);
 };
 
-export const buscarReinos = (request, response, next) => {
-    const { limite, pagina, offset } = request.paginacao;
-    const { orderClause } = request.ordenacao;
-    const { reino, reinoId } = request.query;
+export const buscarReinos = async (request, response, next) => {
+    try {
+        if (request.query.recaptchaToken) {
+            verifyRecaptcha(request);
+        }
 
-    let where;
-    if (reino) {
-        where = {
-            nome: { [Op.like]: `%${reino}%` },
-        };
-    }
-    if (reinoId) {
-        where = {
-            ...where,
-            reino_id: reinoId,
-        };
-    }
+        const { limite, pagina, offset } = request.paginacao;
+        const { orderClause } = request.ordenacao;
+        const { reino, reinoId } = request.query;
 
-    Promise.resolve()
-        .then(() =>
-            Reino.findAndCountAll({
-                attributes: ['id', 'nome'],
-                order: orderClause,
-                limit: limite,
-                offset,
-                where,
-            })
-        )
-        .then(reinos => {
-            response.status(codigos.LISTAGEM).json({
-                metadados: {
-                    total: reinos.count,
-                    pagina,
-                    limite,
-                },
-                resultado: reinos.rows,
-            });
-        })
-        .catch(next);
+        let where;
+        if (reino) {
+            where = { nome: { [Op.like]: `%${reino}%` } };
+        }
+        if (reinoId) {
+            where = { ...where, reino_id: reinoId };
+        }
+
+        const resultado = await Reino.findAndCountAll({
+            attributes: ['id', 'nome'],
+            order: orderClause,
+            limit: limite,
+            offset,
+            where,
+        });
+
+        response.status(codigos.LISTAGEM).json({
+            metadados: {
+                total: resultado.count,
+                pagina,
+                limite,
+            },
+            resultado: resultado.rows,
+        });
+    } catch (err) {
+        next(err);
+    }
+    return true;
 };
 
-export const buscarFamilias = (request, response, next) => {
-    const { limite, pagina, offset } = request.paginacao;
-    const { orderClause } = request.ordenacao;
-    const { familia, reino_id: reinoId } = request.query;
-    let where;
-    where = {
-        ativo: 1,
-    };
-    if (familia) {
-        where = {
-            ativo: 1,
-            nome: { [Op.like]: `%${familia}%` },
-        };
-    }
+export const buscarFamilias = async (request, response, next) => {
+    try {
+        if (request.query.recaptchaToken) {
+            verifyRecaptcha(request);
+        }
 
-    if (reinoId) {
-        where = {
-            ...where,
-            reino_id: reinoId,
-        };
-    }
+        const { limite, pagina, offset } = request.paginacao;
+        const { orderClause } = request.ordenacao;
+        const { familia, reino_id: reinoId } = request.query;
 
-    Promise.resolve()
-        .then(() =>
-            Familia.findAndCountAll({
-                attributes: ['id', 'nome'],
-                order: orderClause,
-                limit: limite,
-                offset,
-                where,
-                include: [
-                    {
-                        model: Reino,
-                        attributes: ['id', 'nome'],
-                    },
-                ],
-            })
-        )
-        .then(familias => {
-            response.status(codigos.LISTAGEM).json({
-                metadados: {
-                    total: familias.count,
-                    pagina,
-                    limite,
-                },
-                resultado: familias.rows,
-            });
-        })
-        .catch(next);
+        const where = { ativo: 1 };
+        if (familia) where.nome = { [Op.like]: `%${familia}%` };
+        if (reinoId) where.reino_id = reinoId;
+
+        const result = await Familia.findAndCountAll({
+            attributes: ['id', 'nome'],
+            order: orderClause,
+            limit: limite,
+            offset,
+            where,
+            include: [{ model: Reino, attributes: ['id', 'nome'] }],
+        });
+
+        return response.status(codigos.LISTAGEM).json({
+            metadados: { total: result.count, pagina, limite },
+            resultado: result.rows,
+        });
+    } catch (err) {
+        next(err);
+    }
+    return true;
 };
 
 export const editarFamilia = (request, response, next) => {
@@ -318,70 +322,61 @@ export const cadastrarSubfamilia = (request, response, next) => {
         .catch(next);
 };
 
-export const buscarSubfamilia = (request, response, next) => {
-    const { limite, pagina, offset } = request.paginacao;
-    const { orderClause } = request.ordenacao;
-    const { subfamilia, familia_id: familiaId, familia_nome: familiaNome } = request.query;
+export const buscarSubfamilia = async (req, res, next) => {
+    try {
+        if (req.query.recaptchaToken) {
+            verifyRecaptcha(req);
+        }
 
-    let where = {
-        ativo: 1,
-    };
+        const { limite, pagina, offset } = req.paginacao;
+        const { orderClause } = req.ordenacao;
 
-    if (subfamilia) {
-        where = {
-            ...where,
-            nome: { [Op.like]: `%${subfamilia}%` },
-        };
+        const {
+            subfamilia: nomeFiltro,
+            familia_id: familiaIdRaw,
+            familia_nome: familiaNomeFiltro,
+        } = req.query;
+
+        const where = { ativo: 1 };
+        if (nomeFiltro) {
+            where.nome = { [Op.like]: `%${nomeFiltro}%` };
+        }
+        if (familiaIdRaw) {
+            const familiaId = parseInt(familiaIdRaw, 10);
+            if (!Number.isNaN(familiaId)) {
+                where.familia_id = familiaId;
+            }
+        }
+
+        const familiaWhere = {};
+        if (familiaNomeFiltro) {
+            familiaWhere.nome = { [Op.like]: `%${familiaNomeFiltro}%` };
+        }
+
+        const { count, rows } = await Subfamilia.findAndCountAll({
+            attributes: ['id', 'nome'],
+            where,
+            order: orderClause,
+            limit: parseInt(limite, 10),
+            offset: parseInt(offset, 10),
+            include: [
+                { model: Familia, attributes: ['id', 'nome'], where: familiaWhere },
+                { model: Autor, attributes: ['id', 'nome'], as: 'autor' },
+            ],
+        });
+
+        return res.status(codigos.LISTAGEM).json({
+            metadados: {
+                total: count,
+                pagina: parseInt(pagina, 10),
+                limite: parseInt(limite, 10),
+            },
+            resultado: rows,
+        });
+    } catch (err) {
+        return next(err);
     }
-    if (familiaId) {
-        where = {
-            ...where,
-            familia_id: familiaId,
-        };
-    }
-
-    const familiaWhere = {};
-    if (familiaNome) {
-        familiaWhere.nome = { [Op.like]: `%${familiaNome}%` };
-    }
-
-    Promise.resolve()
-        .then(() =>
-            Subfamilia.findAndCountAll({
-                attributes: ['id', 'nome'],
-                order: orderClause,
-                limit: limite,
-                offset,
-                where,
-                include: [
-                    {
-                        model: Familia,
-                        attributes: ['id', 'nome'],
-                        where: familiaWhere,
-                    },
-                    {
-                        model: Reino,
-                        attributes: ['id', 'nome'],
-                    },
-                    {
-                        model: Autor,
-                        attributes: ['id', 'nome'],
-                        as: 'autor',
-                    },
-                ],
-            })
-        )
-        .then(subfamilias => {
-            response.status(codigos.LISTAGEM).json({
-                metadados: {
-                    total: subfamilias.count,
-                    pagina,
-                    limite,
-                },
-                resultado: subfamilias.rows,
-            });
-        })
-        .catch(next);
+    return true;
 };
 
 export const excluirSubfamilia = (request, response, next) => {
@@ -518,63 +513,42 @@ export const cadastrarGenero = (request, response, next) => {
         .catch(next);
 };
 
-export const buscarGeneros = (request, response, next) => {
-    const { limite, pagina, offset } = request.paginacao;
-    const { orderClause } = request.ordenacao;
-    const { genero, familia_id: familiaId, familia_nome: familiaNome } = request.query;
-    let where;
-    where = {
-        ativo: 1,
-    };
-    if (genero) {
-        where = {
-            ...where,
-            nome: { [Op.like]: `%${genero}%` },
-        };
-    }
-    if (familiaId) {
-        where = {
-            ...where,
-            familia_id: familiaId,
-        };
-    }
+export const buscarGeneros = async (request, response, next) => {
+    try {
+        if (request.query.recaptchaToken) {
+            verifyRecaptcha(request);
+        }
 
-    const familiaWhere = {};
-    if (familiaNome) {
-        familiaWhere.nome = { [Op.like]: `%${familiaNome}%` };
+        const { limite, pagina, offset } = request.paginacao;
+        const { orderClause } = request.ordenacao;
+        const { genero, familia_id: familiaId, familia_nome: familiaNome } = request.query;
+
+        const where = { ativo: 1 };
+        if (genero) where.nome = { [Op.like]: `%${genero}%` };
+        if (familiaId) where.familia_id = familiaId;
+
+        const familiaWhere = {};
+        if (familiaNome) familiaWhere.nome = { [Op.like]: `%${familiaNome}%` };
+
+        const result = await Genero.findAndCountAll({
+            attributes: ['id', 'nome'],
+            order: orderClause,
+            limit: limite,
+            offset,
+            where,
+            include: [
+                { model: Familia, attributes: ['id', 'nome'], where: familiaWhere },
+            ],
+        });
+
+        return response.status(codigos.LISTAGEM).json({
+            metadados: { total: result.count, pagina, limite },
+            resultado: result.rows,
+        });
+    } catch (err) {
+        next(err);
     }
-    Promise.resolve()
-        .then(() =>
-            Genero.findAndCountAll({
-                attributes: ['id', 'nome'],
-                order: orderClause,
-                limit: limite,
-                offset,
-                where,
-                include: [
-                    {
-                        model: Familia,
-                        attributes: ['id', 'nome'],
-                        where: familiaWhere,
-                    },
-                    {
-                        model: Reino,
-                        attributes: ['id', 'nome'],
-                    },
-                ],
-            })
-        )
-        .then(generos => {
-            response.status(codigos.LISTAGEM).json({
-                metadados: {
-                    total: generos.count,
-                    pagina,
-                    limite,
-                },
-                resultado: generos.rows,
-            });
-        })
-        .catch(next);
+    return true;
 };
 
 export const excluirGeneros = (request, response, next) => {
@@ -740,80 +714,51 @@ export const cadastrarEspecie = (request, response, next) => {
         .catch(next);
 };
 
-export const buscarEspecies = (request, response, next) => {
-    const { limite, pagina, offset } = request.paginacao;
-    const { orderClause } = request.ordenacao;
-    const { especie, genero_id: generoId, familia_nome: familiaNome, genero_nome: generoNome } = request.query;
+export const buscarEspecies = async (request, response, next) => {
+    try {
+        if (request.query.recaptchaToken) {
+            verifyRecaptcha(request);
+        }
 
-    let where = {
-        ativo: 1,
-    };
+        const { limite, pagina, offset } = request.paginacao;
+        const { orderClause } = request.ordenacao;
+        const {
+            especie, genero_id: generoId,
+            familia_nome: familiaNome,
+            genero_nome: generoNome,
+        } = request.query;
 
-    if (especie) {
-        where = {
-            ...where,
-            nome: { [Op.like]: `%${especie}%` },
-        };
+        const where = { ativo: 1 };
+        if (especie) where.nome = { [Op.like]: `%${especie}%` };
+        if (generoId) where.genero_id = generoId;
+
+        const familiaWhere = {};
+        if (familiaNome) familiaWhere.nome = { [Op.like]: `%${familiaNome}%` };
+
+        const generoWhere = {};
+        if (generoNome) generoWhere.nome = { [Op.like]: `%${generoNome}%` };
+
+        const result = await Especie.findAndCountAll({
+            attributes: ['id', 'nome'],
+            order: orderClause,
+            limit: limite,
+            offset,
+            where,
+            include: [
+                { model: Familia, attributes: ['id', 'nome'], where: familiaWhere },
+                { model: Genero, attributes: ['id', 'nome'], where: generoWhere },
+                { model: Autor, attributes: ['id', 'nome'], as: 'autor' },
+            ],
+        });
+
+        return response.status(codigos.LISTAGEM).json({
+            metadados: { total: result.count, pagina, limite },
+            resultado: result.rows,
+        });
+    } catch (err) {
+        next(err);
     }
-    if (generoId) {
-        where = {
-            ...where,
-            genero_id: generoId,
-        };
-    }
-
-    const familiaWhere = {};
-    if (familiaNome) {
-        familiaWhere.nome = { [Op.like]: `%${familiaNome}%` };
-    }
-
-    const generoWhere = {};
-    if (generoNome) {
-        generoWhere.nome = { [Op.like]: `%${generoNome}%` };
-    }
-
-    Promise.resolve()
-        .then(() =>
-            Especie.findAndCountAll({
-                attributes: ['id', 'nome'],
-                order: orderClause,
-                limit: limite,
-                offset,
-                where,
-                include: [
-                    {
-                        model: Familia,
-                        attributes: ['id', 'nome'],
-                        where: familiaWhere,
-                    },
-                    {
-                        model: Reino,
-                        attributes: ['id', 'nome'],
-                    },
-                    {
-                        model: Genero,
-                        attributes: ['id', 'nome'],
-                        where: generoWhere,
-                    },
-                    {
-                        model: Autor,
-                        attributes: ['id', 'nome'],
-                        as: 'autor',
-                    },
-                ],
-            })
-        )
-        .then(especies => {
-            response.status(codigos.LISTAGEM).json({
-                metadados: {
-                    total: especies.count,
-                    pagina,
-                    limite,
-                },
-                resultado: especies.rows,
-            });
-        })
-        .catch(next);
+    return true;
 };
 
 export const excluirEspecies = (request, response, next) => {
@@ -996,90 +941,57 @@ export const cadastrarSubespecie = (request, response, next) => {
         .catch(next);
 };
 
-export const buscarSubespecies = (request, response, next) => {
-    const { limite, pagina, offset } = request.paginacao;
-    const { orderClause } = request.ordenacao;
-    const { subespecie, especie_id: especieId, familia_nome: familiaNome, genero_nome: generoNome, especie_nome: especieNome } = request.query;
+export const buscarSubespecies = async (request, response, next) => {
+    try {
+        if (request.query.recaptchaToken) {
+            verifyRecaptcha(request);
+        }
 
-    let where = {
-        ativo: 1,
-    };
-
-    if (subespecie) {
-        where = {
-            ...where,
-            nome: { [Op.like]: `%${subespecie}%` },
-        };
-    }
-    if (especieId) {
-        where = {
-            ...where,
+        const { limite, pagina, offset } = request.paginacao;
+        const { orderClause } = request.ordenacao;
+        const {
+            subespecie,
             especie_id: especieId,
-        };
-    }
+            familia_nome: familiaNome,
+            genero_nome: generoNome,
+            especie_nome: especieNome,
+        } = request.query;
 
-    const familiaWhere = {};
-    if (familiaNome) {
-        familiaWhere.nome = { [Op.like]: `%${familiaNome}%` };
-    }
+        const where = { ativo: 1 };
+        if (subespecie) where.nome = { [Op.like]: `%${subespecie}%` };
+        if (especieId) where.especie_id = especieId;
 
-    const generoWhere = {};
-    if (generoNome) {
-        generoWhere.nome = { [Op.like]: `%${generoNome}%` };
-    }
+        const familiaWhere = {};
+        if (familiaNome) familiaWhere.nome = { [Op.like]: `%${familiaNome}%` };
 
-    const especieWhere = {};
-    if (especieNome) {
-        especieWhere.nome = { [Op.like]: `%${especieNome}%` };
+        const generoWhere = {};
+        if (generoNome) generoWhere.nome = { [Op.like]: `%${generoNome}%` };
+
+        const especieWhere = {};
+        if (especieNome) especieWhere.nome = { [Op.like]: `%${especieNome}%` };
+
+        const result = await Subespecie.findAndCountAll({
+            attributes: ['id', 'nome'],
+            order: orderClause,
+            limit: limite,
+            offset,
+            where,
+            include: [
+                { model: Familia, attributes: ['id', 'nome'], where: familiaWhere },
+                { model: Genero, attributes: ['id', 'nome'], where: generoWhere },
+                { model: Especie, attributes: ['id', 'nome'], where: especieWhere, as: 'especie' },
+                { model: Autor, attributes: ['id', 'nome'], as: 'autor' },
+            ],
+        });
+
+        return response.status(codigos.LISTAGEM).json({
+            metadados: { total: result.count, pagina, limite },
+            resultado: result.rows,
+        });
+    } catch (err) {
+        next(err);
     }
-    Promise.resolve()
-        .then(() =>
-            Subespecie.findAndCountAll({
-                attributes: ['id', 'nome'],
-                order: orderClause,
-                limit: limite,
-                offset,
-                where,
-                include: [
-                    {
-                        model: Familia,
-                        attributes: ['id', 'nome'],
-                        where: familiaWhere,
-                    },
-                    {
-                        model: Reino,
-                        attributes: ['id', 'nome'],
-                    },
-                    {
-                        model: Genero,
-                        attributes: ['id', 'nome'],
-                        where: generoWhere,
-                    },
-                    {
-                        model: Especie,
-                        attributes: ['id', 'nome'],
-                        where: especieWhere,
-                        as: 'especie',
-                    },
-                    {
-                        model: Autor,
-                        attributes: ['id', 'nome'],
-                        as: 'autor',
-                    },
-                ],
-            })
-        )
-        .then(subespecies => {
-            response.status(codigos.LISTAGEM).json({
-                metadados: {
-                    total: subespecies.count,
-                    pagina,
-                    limite,
-                },
-                resultado: subespecies.rows,
-            });
-        })
-        .catch(next);
+    return true;
 };
 
 export const excluirSubespecies = (request, response, next) => {
@@ -1269,96 +1181,57 @@ export const cadastrarVariedade = (request, response, next) => {
         .catch(next);
 };
 
-export const buscarVariedades = (request, response, next) => {
-    const { limite, pagina, offset } = request.paginacao;
-    const { orderClause } = request.ordenacao;
-    const {
-        variedade,
-        especie_id: especieId,
-        familia_nome: familiaNome,
-        genero_nome: generoNome,
-        especie_nome: especieNome,
-    } = request.query;
-    let where;
-    where = {
-        ativo: 1,
-    };
-    if (variedade) {
-        where = {
-            ...where,
-            nome: { [Op.like]: `%${variedade}%` },
-        };
-    }
-    if (especieId) {
-        where = {
-            ...where,
+export const buscarVariedades = async (request, response, next) => {
+    try {
+        if (request.query.recaptchaToken) {
+            verifyRecaptcha(request);
+        }
+
+        const { limite, pagina, offset } = request.paginacao;
+        const { orderClause } = request.ordenacao;
+        const {
+            variedade,
             especie_id: especieId,
-        };
-    }
+            familia_nome: familiaNome,
+            genero_nome: generoNome,
+            especie_nome: especieNome,
+        } = request.query;
 
-    const familiaWhere = {};
-    if (familiaNome) {
-        familiaWhere.nome = { [Op.like]: `%${familiaNome}%` };
-    }
+        const where = { ativo: 1 };
+        if (variedade) where.nome = { [Op.like]: `%${variedade}%` };
+        if (especieId) where.especie_id = especieId;
 
-    const generoWhere = {};
-    if (generoNome) {
-        generoWhere.nome = { [Op.like]: `%${generoNome}%` };
-    }
+        const familiaWhere = {};
+        if (familiaNome) familiaWhere.nome = { [Op.like]: `%${familiaNome}%` };
 
-    const especieWhere = {};
-    if (especieNome) {
-        especieWhere.nome = { [Op.like]: `%${especieNome}%` };
-    }
+        const generoWhere = {};
+        if (generoNome) generoWhere.nome = { [Op.like]: `%${generoNome}%` };
 
-    Promise.resolve()
-        .then(() =>
-            Variedade.findAndCountAll({
-                attributes: ['id', 'nome'],
-                order: orderClause,
-                limit: limite,
-                offset,
-                where,
-                include: [
-                    {
-                        model: Familia,
-                        attributes: ['id', 'nome'],
-                        where: familiaWhere,
-                    },
-                    {
-                        model: Reino,
-                        attributes: ['id', 'nome'],
-                    },
-                    {
-                        model: Genero,
-                        attributes: ['id', 'nome'],
-                        where: generoWhere,
-                    },
-                    {
-                        model: Especie,
-                        attributes: ['id', 'nome'],
-                        where: especieWhere,
-                        as: 'especie',
-                    },
-                    {
-                        model: Autor,
-                        attributes: ['id', 'nome'],
-                        as: 'autor',
-                    },
-                ],
-            })
-        )
-        .then(variedades => {
-            response.status(codigos.LISTAGEM).json({
-                metadados: {
-                    total: variedades.count,
-                    pagina,
-                    limite,
-                },
-                resultado: variedades.rows,
-            });
-        })
-        .catch(next);
+        const especieWhere = {};
+        if (especieNome) especieWhere.nome = { [Op.like]: `%${especieNome}%` };
+
+        const result = await Variedade.findAndCountAll({
+            attributes: ['id', 'nome'],
+            order: orderClause,
+            limit: limite,
+            offset,
+            where,
+            include: [
+                { model: Familia, attributes: ['id', 'nome'], where: familiaWhere },
+                { model: Genero, attributes: ['id', 'nome'], where: generoWhere },
+                { model: Especie, attributes: ['id', 'nome'], where: especieWhere, as: 'especie' },
+                { model: Autor, attributes: ['id', 'nome'], as: 'autor' },
+            ],
+        });
+
+        return response.status(codigos.LISTAGEM).json({
+            metadados: { total: result.count, pagina, limite },
+            resultado: result.rows,
+        });
+    } catch (err) {
+        next(err);
+    }
+    return true;
 };
 
 export const excluirVariedades = (request, response, next) => {
@@ -1487,39 +1360,34 @@ export const cadastrarAutores = (request, response, next) => {
         .catch(next);
 };
 
-export const buscarAutores = (request, response, next) => {
-    const { limite, pagina, offset } = request.paginacao;
-    const { autor } = request.query;
-    let where;
-    where = {
-        ativo: 1,
-    };
-    if (autor) {
-        where = {
-            ativo: 1,
-            nome: { [Op.like]: `%${autor}%` },
-        };
-    }
+export const buscarAutores = async (request, response, next) => {
+    try {
+        if (request.query.recaptchaToken) {
+            verifyRecaptcha(request);
+        }
 
-    Promise.resolve()
-        .then(() => Autor.findAndCountAll({
+        const { limite, pagina, offset } = request.paginacao;
+        const { autor } = request.query;
+
+        const where = { ativo: 1 };
+        if (autor) where.nome = { [Op.like]: `%${autor}%` };
+
+        const result = await Autor.findAndCountAll({
             attributes: ['id', 'nome', 'iniciais'],
             order: [['created_at', 'DESC']],
             limit: limite,
             offset,
             where,
-        }))
-        .then(autores => {
-            response.status(codigos.LISTAGEM).json({
-                metadados: {
-                    total: autores.count,
-                    pagina,
-                    limite,
-                },
-                resultado: autores.rows,
-            });
-        })
-        .catch(next);
+        });
+
+        return response.status(codigos.LISTAGEM).json({
+            metadados: { total: result.count, pagina, limite },
+            resultado: result.rows,
+        });
+    } catch (err) {
+        next(err);
+    }
+    return true;
 };
 
 export const excluirAutores = (request, response, next) => {
