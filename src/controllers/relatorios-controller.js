@@ -9,10 +9,14 @@ import {
     formatarDadosParaRelatorioDeColetaPorColetorEIntervaloDeData,
     formataTextFilterColetor,
     agruparPorLocal,
+    agruparPorFamiliaGeneroEspecie,
+    agruparPorFamilia2,
+    agruparResultadoPorFamilia,
 } from '~/helpers/formata-dados-relatorio';
 import { generateReport } from '~/reports/reports';
 import ReportInventario from '~/reports/templates/InventarioEspecies';
 import ReportLocalColeta from '~/reports/templates/LocaisColeta';
+import ReportFamiliasGeneros from '~/reports/templates/RelacaoFamiliasGenero';
 import ReportColetaModelo1 from '~/reports/templates/RelacaoTombos';
 import ReportColetaModelo2 from '~/reports/templates/RelacaoTombosComColeta';
 import codigosHttp from '~/resources/codigos-http';
@@ -569,6 +573,81 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
                     dados: dadosFormatados.locais,
                     total: dadosFormatados?.quantidadeTotal || 0,
                     textoFiltro: formataTextFilter(local, dataInicio, dataFim || new Date()),
+                });
+            const readable = new Readable();
+            // eslint-disable-next-line no-underscore-dangle
+            readable._read = () => { }; // Implementa o método _read (obrigatório)
+            readable.push(buffer); // Empurrar os dados binários para o stream
+            readable.push(null); // Indica o fim do fluxo de dados
+            res.setHeader('Content-Type', 'application/pdf');
+            readable.pipe(res);
+        } catch (e) {
+            next(e);
+        }
+
+    } catch (e) {
+        next(e);
+    }
+};
+
+/// ////// Relatório de Famílias e Gêneros //////////
+export const obtemDadosDoRelatorioDeFamiliasEGeneros = async (req, res, next) => {
+    const { paginacao } = req;
+    const { limite, pagina, offset } = paginacao;
+    const { familia } = req.query;
+
+    let where = {};
+    if (familia) {
+        where = {
+            nome: { [Op.like]: `%${familia}%` },
+        };
+    }
+
+    try {
+        const tombos = await Tombo.findAndCountAll({
+            attributes: ['hcf'],
+            include: [
+                {
+                    model: Especie,
+                    attributes: ['id', 'nome'],
+                    required: true,
+                    include: [
+                        {
+                            model: Genero,
+                            attributes: ['id', 'nome'],
+                        },
+                        {
+                            model: Familia,
+                            attributes: ['id', 'nome'],
+                            where,
+                            required: true,
+                        },
+                    ],
+                },
+            ],
+            offset,
+        });
+
+        const dadosPorFamilia1 = agruparPorFamilia2(tombos.rows.map(registro => registro.get({ plain: true })));
+        const dadosPorFamilia = agruparPorFamiliaGeneroEspecie(dadosPorFamilia1);
+        const dadosFormatados = agruparResultadoPorFamilia(dadosPorFamilia);
+
+        if (req.method === 'GET') {
+            res.json({
+                metadados: {
+                    total: tombos.count,
+                    pagina,
+                    limite,
+                },
+                resultado: dadosFormatados,
+            });
+            return;
+        }
+
+        try {
+            const buffer = await generateReport(
+                ReportFamiliasGeneros, {
+                    dados: dadosFormatados,
                 });
             const readable = new Readable();
             // eslint-disable-next-line no-underscore-dangle

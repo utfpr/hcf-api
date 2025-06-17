@@ -114,4 +114,26 @@ export default app => {
             listagensMiddleware,
             controller.obtemDadosDoRelatorioDeLocalDeColeta,
         ]);
+
+    app.route('/relatorio/familias-generos')
+        .get([
+            // tokensMiddleware([
+            //     TIPOS_USUARIOS.CURADOR,
+            //     TIPOS_USUARIOS.OPERADOR,
+            //     TIPOS_USUARIOS.IDENTIFICADOR,
+            // ]),
+            listagensMiddleware,
+            controller.obtemDadosDoRelatorioDeFamiliasEGeneros,
+        ]);
+
+    app.route('/relatorio/familias-generos')
+        .post([
+            // tokensMiddleware([
+            //     TIPOS_USUARIOS.CURADOR,
+            //     TIPOS_USUARIOS.OPERADOR,
+            //     TIPOS_USUARIOS.IDENTIFICADOR,
+            // ]),
+            listagensMiddleware,
+            controller.obtemDadosDoRelatorioDeFamiliasEGeneros,
+        ]);
 };

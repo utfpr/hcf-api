@@ -137,6 +137,88 @@ export const agruparPorFamilia = dados => dados.reduce((acc, obj) => {
     return acc;
 }, []);
 
+export const agruparPorFamilia2 = dados => dados.reduce((acc, obj) => {
+    const nomeFamilia = obj?.especy?.familia?.nome || 'Não Informada';
+    const grupoExistente = acc.find(item => item.familia === nomeFamilia);
+
+    if (grupoExistente) {
+        grupoExistente.itens.push(obj);
+        grupoExistente.count += 1;
+    } else {
+        acc.push({
+            familia: nomeFamilia,
+            codigo: obj?.especy?.familia?.id || 'Não Informado',
+            itens: [obj],
+            count: 1,
+        });
+    }
+
+    return acc;
+}, []);
+
+export function agruparResultadoPorFamilia(registros) {
+    const familias = {};
+
+    registros.forEach(({ familia, genero, especie, quantidade, totalFamilia, familiaCodigo }) => {
+        if (!familias[familia]) {
+            familias[familia] = {
+                familia,
+                familiaCodigo,
+                total: totalFamilia,
+                especies: [],
+            };
+        }
+
+        familias[familia].especies.push({
+            genero,
+            especie,
+            quantidade,
+        });
+    });
+
+    // Converte para array
+    return Object.values(familias);
+}
+
+export function agruparPorFamiliaGeneroEspecie(dados) {
+    const resultado = [];
+
+    dados.forEach(familiaObj => {
+        const nomeFamilia = familiaObj.familia;
+        const contagem = {};
+
+        // Contar combinações genero + especie
+        familiaObj.itens.forEach(item => {
+            const genero = item.especy.genero.nome;
+            const especie = item.especy.nome;
+            const chave = `${genero}||${especie}`;
+
+            if (!contagem[chave]) {
+                contagem[chave] = { genero, especie, quantidade: 0 };
+            }
+
+            contagem[chave].quantidade += 1;
+        });
+
+        // Total da família
+        const totalFamilia = Object.values(contagem).reduce((acc, curr) => acc + curr.quantidade, 0);
+
+        // Monta o resultado por espécie
+        Object.values(contagem).forEach(item => {
+            resultado.push({
+                familia: nomeFamilia,
+                familiaCodigo: familiaObj.codigo,
+                genero: item.genero,
+                especie: item.especie,
+                quantidade: item.quantidade,
+                totalFamilia,
+            });
+        });
+    });
+
+    return resultado;
+}
+
 function formatarCoordenadas(lat, lon) {
     const latDir = lat >= 0 ? 'N' : 'S';
     const lonDir = lon >= 0 ? 'E' : 'W';
