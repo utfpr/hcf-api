@@ -218,7 +218,7 @@ export const obtemDadosDoRelatorioDeColetaPorLocalEIntervaloDeData = async (req,
                     pagina,
                     limite,
                 },
-                resultado: formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData(tombos.rows),
+                resultado: formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData(tombos),
                 filtro: formataTextFilter(local, dataInicio, dataFim || new Date()),
             });
             return;
@@ -669,7 +669,7 @@ export const obtemDadosDoRelatorioDeFamiliasEGeneros = async (req, res, next) =>
 /// ////// Relatório de Código de Barras //////////
 export const obtemDadosDoRelatorioDeCodigoDeBarras = async (req, res, next) => {
     const { paginacao } = req;
-    const { limite, pagina, offset } = paginacao;
+    const { pagina } = paginacao;
     const { dataInicio, dataFim } = req.query;
 
     let whereData = {};
@@ -698,9 +698,7 @@ export const obtemDadosDoRelatorioDeCodigoDeBarras = async (req, res, next) => {
     };
 
     try {
-        const entidadeTombo = await Tombo.findAndCountAll({
-            limit: limite,
-            offset,
+        const entidadeTombo = await Tombo.findAll({
             attributes: ['hcf', 'numero_coleta', 'nome_cientifico', 'data_coleta_ano', 'data_coleta_mes', 'data_coleta_dia'],
 
             where: whereData,
@@ -711,7 +709,7 @@ export const obtemDadosDoRelatorioDeCodigoDeBarras = async (req, res, next) => {
             ],
         });
 
-        const paraRetornar = entidadeTombo.rows.map(tombo => ({
+        const paraRetornar = entidadeTombo.map(tombo => ({
             codigobarras: tombo?.tombos_fotos?.length > 0 ? tombo.tombos_fotos[0].codigo_barra : null,
             id: tombo?.tombos_fotos?.length > 0 ? tombo.tombos_fotos[0].id : null,
         }));
@@ -722,7 +720,7 @@ export const obtemDadosDoRelatorioDeCodigoDeBarras = async (req, res, next) => {
                 metadados: {
                     total: entidadeTombo.length,
                     pagina,
-                    limite,
+                    limite: 999999,
                 },
                 resultado: paraRetornar,
             });
