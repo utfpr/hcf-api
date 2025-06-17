@@ -271,3 +271,30 @@ export function agruparPorLocal(dados) {
         quantidadeTotal,
     };
 }
+
+export function agruparPorGenero(dados) {
+    return dados.map(familia => {
+        const generosMap = new Map();
+
+        familia.itens.forEach(item => {
+            const { genero } = item.especy;
+            const key = genero.id;
+
+            if (!generosMap.has(key)) {
+                generosMap.set(key, {
+                    id: genero.id,
+                    nome: genero.nome,
+                    quantidade: 0,
+                });
+            }
+
+            generosMap.get(key).quantidade += 1;
+        });
+
+        return {
+            familia: familia.familia,
+            codigo: familia.codigo,
+            generos: Array.from(generosMap.values()).sort((a, b) => b.quantidade - a.quantidade),
+        };
+    });
+}
