@@ -17,13 +17,11 @@ interface RelacaoTombosProps {
 }
 
 function RelacaoFamiliasGeneroQtd({ dados, textoFiltro }: RelacaoTombosProps) {
-  const renderItem = (item: Tombo, codigoFamilia: number) => {
+  const renderItem = (item: Tombo) => {
     return (
       <tr key={Math.random()}>
-        <td style={{ width: '10%' }}>{codigoFamilia}</td>
-        <td style={{ width: '10%' }}>{'-'}</td>
-        <td style={{ fontStyle: 'italic', width: '50%' }}>{item?.nome || '-'}</td>
-        <td style={{ textAlign: 'right', width: '30%' }}>{item.quantidade}</td>
+        <td style={{ fontStyle: 'italic' }}>{item?.nome || '-'}</td>
+        <td style={{ textAlign: 'right' }}>{item.quantidade}</td>
       </tr>
     )
   }
@@ -37,14 +35,12 @@ function RelacaoFamiliasGeneroQtd({ dados, textoFiltro }: RelacaoTombosProps) {
           <table>
             <thead>
               <tr>
-                <th style={{ width: '10%' }}>ID Família</th>
-                <th style={{ width: '10%' }}>-</th>
                 <th style={{ width: '50%' }}>Gênero</th>
                 <th style={{ textAlign: 'right', width: '30%' }}>Quantidade</th>
               </tr>
             </thead>
             <tbody>
-              {familia.generos.map(item => renderItem(item, familia.codigo))}
+              {familia.generos.map(item => renderItem(item))}
             </tbody>
           </table>
         </div>
