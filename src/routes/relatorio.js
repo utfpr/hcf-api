@@ -92,4 +92,26 @@ export default app => {
             listagensMiddleware,
             controller.obtemDadosDoRelatorioDeColetaPorColetorEIntervaloDeData,
         ]);
+
+    app.route('/relatorio/local-coleta')
+        .post([
+            // tokensMiddleware([
+            //     TIPOS_USUARIOS.CURADOR,
+            //     TIPOS_USUARIOS.OPERADOR,
+            //     TIPOS_USUARIOS.IDENTIFICADOR,
+            // ]),
+            listagensMiddleware,
+            controller.obtemDadosDoRelatorioDeLocalDeColeta,
+        ]);
+
+    app.route('/relatorio/local-coleta')
+        .get([
+            // tokensMiddleware([
+            //     TIPOS_USUARIOS.CURADOR,
+            //     TIPOS_USUARIOS.OPERADOR,
+            //     TIPOS_USUARIOS.IDENTIFICADOR,
+            // ]),
+            listagensMiddleware,
+            controller.obtemDadosDoRelatorioDeLocalDeColeta,
+        ]);
 };

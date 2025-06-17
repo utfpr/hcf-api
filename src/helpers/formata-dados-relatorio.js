@@ -136,3 +136,56 @@ export const agruparPorFamilia = dados => dados.reduce((acc, obj) => {
 
     return acc;
 }, []);
+
+function formatarCoordenadas(lat, lon) {
+    const latDir = lat >= 0 ? 'N' : 'S';
+    const lonDir = lon >= 0 ? 'E' : 'W';
+    return `${Math.abs(lat).toFixed(4)}° ${latDir}, ${Math.abs(lon).toFixed(4)}° ${lonDir}`;
+}
+
+export function agruparPorLocal(dados) {
+    const agrupado = {};
+    let quantidadeTotal = 0;
+
+    dados.forEach(entradaOriginal => {
+        const locaisColetum = entradaOriginal.locais_coletum;
+        const cidade = locaisColetum?.cidade;
+        const estado = cidade?.estado?.nome || 'Desconhecido';
+        const municipio = cidade?.nome || 'Desconhecido';
+        const local = locaisColetum?.descricao?.trim() || 'Local não informado';
+
+        const coordenadasFormatadas = cidade
+            ? formatarCoordenadas(cidade.latitude, cidade.longitude)
+            : 'Coordenadas indisponíveis';
+
+        const chave = `${estado} > ${municipio} > ${local}`;
+
+        const entrada = {
+            ...entradaOriginal,
+            coordenadasFormatadas,
+        };
+
+        if (!agrupado[chave]) {
+            agrupado[chave] = {
+                estado,
+                municipio,
+                local,
+                coordenadas: coordenadasFormatadas,
+                quantidadeRegistros: 0,
+                registros: [],
+            };
+        }
+
+        agrupado[chave].registros.push(entrada);
+        agrupado[chave].quantidadeRegistros += 1;
+        quantidadeTotal += 1;
+    });
+
+    // Transforma o objeto em um array
+    const locais = Object.values(agrupado);
+
+    return {
+        locais, // agora é um array
+        quantidadeTotal,
+    };
+}

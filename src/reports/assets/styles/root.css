@@ -6,16 +6,21 @@
   box-sizing: border-box;
 }
 
-html,
-body {
-  margin: 0px;
-  padding: 0px;
+html, body, table#tablePage {
+  width: 100%;
+  margin: 1.875rem 0;
+  padding: 0;
+}
+
+.content-container {
+  width: 100%;
+  padding: 0 2.5rem;
+  margin: 0;
 }
 
 body {
   font-family: 'Source Serif 4', Arial;
   font-size: 0.75rem;
-  margin: 1.875rem 2.5rem;
   color: #000;
 }
 
@@ -99,4 +104,21 @@ tfoot {
 #col2 {
   width: 70%;
   font-size: 14px;
+}
+
+#grupoLocalColeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#grupoLocalColeta div {
+  width: calc(33%); /* 33% menos 2.5rem de espaçamento das margens */
+}
+
+#grupoLocalColeta div h1 {
+  white-space: nowrap;         /* impede quebra de linha */
+  overflow: hidden;            /* esconde o que ultrapassa */
+  text-overflow: ellipsis;  
+  text-align: left;
 }
