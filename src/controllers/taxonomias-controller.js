@@ -376,7 +376,6 @@ export const buscarSubfamilia = async (req, res, next) => {
     } catch (err) {
         return next(err);
     }
-    return true;
 };
 
 export const excluirSubfamilia = (request, response, next) => {
