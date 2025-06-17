@@ -136,4 +136,15 @@ export default app => {
             listagensMiddleware,
             controller.obtemDadosDoRelatorioDeFamiliasEGeneros,
         ]);
+
+    app.route('/relatorio/codigo-barras')
+        .get([
+            tokensMiddleware([
+                TIPOS_USUARIOS.CURADOR,
+                TIPOS_USUARIOS.OPERADOR,
+                TIPOS_USUARIOS.IDENTIFICADOR,
+            ]),
+            listagensMiddleware,
+            controller.obtemDadosDoRelatorioDeCodigoDeBarras,
+        ]);
 };

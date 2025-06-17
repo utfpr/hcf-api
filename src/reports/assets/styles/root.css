@@ -122,3 +122,11 @@ tfoot {
   text-overflow: ellipsis;  
   text-align: left;
 }
+
+.grade-imagens {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 colunas */
+  grid-template-rows: repeat(6, auto);  /* 6 linhas */
+  gap: 10px;
+  padding: 20px;
+}

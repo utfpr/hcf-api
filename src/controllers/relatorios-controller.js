@@ -37,6 +37,7 @@ const {
     Cidade,
     Estado,
     Pais,
+    TomboFoto,
 } = models;
 
 /// ////// Relatório de Inventário de Espécies //////////
@@ -662,5 +663,72 @@ export const obtemDadosDoRelatorioDeFamiliasEGeneros = async (req, res, next) =>
 
     } catch (e) {
         next(e);
+    }
+};
+
+/// ////// Relatório de Código de Barras //////////
+export const obtemDadosDoRelatorioDeCodigoDeBarras = async (req, res, next) => {
+    const { paginacao } = req;
+    const { limite, pagina, offset } = paginacao;
+    const { dataInicio, dataFim } = req.query;
+
+    let whereData = {};
+    if (dataInicio) {
+        if (dataFim && isBefore(new Date(dataFim), new Date(dataInicio))) {
+            res.status(codigosHttp.BAD_REQUEST).json({
+                mensagem: 'A data de fim não pode ser anterior à data de início.',
+            });
+        }
+        if (isBefore(new Date(), new Date(dataInicio))) {
+            res.status(codigosHttp.BAD_REQUEST).json({
+                mensagem: 'A data de início não pode ser maior que a data atual.',
+            });
+        }
+    }
+    whereData = {
+        [Op.and]: [
+            // Transforma os valores em uma data e compara com o intervalo
+            Sequelize.where(
+                literal(
+                    "STR_TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes, 2, '0'), '-', LPAD(data_coleta_dia, 2, '0')), '%Y-%m-%d')"
+                ),
+                { [Op.between]: [dataInicio, dataFim || new Date()] }
+            ),
+        ],
+    };
+
+    try {
+        const entidadeTombo = await Tombo.findAndCountAll({
+            limit: limite,
+            offset,
+            attributes: ['hcf', 'numero_coleta', 'nome_cientifico', 'data_coleta_ano', 'data_coleta_mes', 'data_coleta_dia'],
+
+            where: whereData,
+            include: [
+                {
+                    model: TomboFoto,
+                },
+            ],
+        });
+
+        const paraRetornar = entidadeTombo.rows.map(tombo => ({
+            codigobarras: tombo?.tombos_fotos?.length > 0 ? tombo.tombos_fotos[0].codigo_barra : null,
+            id: tombo?.tombos_fotos?.length > 0 ? tombo.tombos_fotos[0].id : null,
+        }));
+
+        if (req.method === 'GET') {
+
+            res.status(codigosHttp.LISTAGEM).json({
+                metadados: {
+                    total: entidadeTombo.length,
+                    pagina,
+                    limite,
+                },
+                resultado: paraRetornar,
+            });
+
+        }
+    } catch (error) {
+        next(error);
     }
 };
