@@ -14,15 +14,21 @@ export default app => {
  *   get:
  *     summary: Obtém o modelo Darwin Core
  *     tags: [DarwinCore]
- *     description: Retorna o modelo Darwin Core utilizado pelo sistema.
+ *     description: Retorna o modelo Darwin Core utilizado pelo sistema em formato CSV.
  *     responses:
  *       200:
- *         description: Arquivo Darwin Core retornado com sucesso
+ *         description: Arquivo Darwin Core em formato CSV retornado com sucesso.
  *         content:
- *           application/octet-stream:
+ *           text/csv:
  *             schema:
  *               type: string
  *               format: binary
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  */
     app.route('/darwincore')
         .get([

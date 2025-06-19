@@ -109,7 +109,14 @@ export default app => {
  *                       sub_familia:
  *                         type: string
  *                         nullable: true
- *                       # Adicionar outros campos relevantes da taxonomia que são retornados
+ *       '400':
+ *         $ref: '#/components/responses/BadRequest'
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  */
     app.route('/taxonomias')
         .get([
@@ -146,8 +153,14 @@ export default app => {
  *               example:
  *                 id: 1
  *                 nome: "Plantae"
- *       400:
- *         description: Dados inválidos
+ *       '400':
+ *         $ref: '#/components/responses/BadRequest'
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  *   get:
  *     summary: Lista todos os reinos
  *     tags: [Taxonomias]
@@ -192,6 +205,14 @@ export default app => {
  *                         type: integer
  *                       nome:
  *                         type: string
+ *       '400':
+ *         $ref: '#/components/responses/BadRequest'
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  */
     app
         .route('/reinos')
@@ -243,10 +264,16 @@ export default app => {
  *               example:
  *                 id: 1
  *                 nome: "Novo nome do reino"
- *       400:
- *         description: Dados inválidos
- *       404:
- *         description: Reino não encontrado
+ *       '400':
+ *         $ref: '#/components/responses/BadRequest'
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ *       '404':
+ *         $ref: '#/components/responses/NotFound'
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  */
     app
         .route('/reinos/:reino_id')
@@ -287,8 +314,14 @@ export default app => {
  *               example:
  *                 id: 1
  *                 nome: "Fabaceae"
- *       400:
- *         description: Dados inválidos
+ *       '400':
+ *         $ref: '#/components/responses/BadRequest'
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  *   get:
  *     summary: Lista todas as famílias
  *     tags: [Taxonomias]
@@ -340,6 +373,14 @@ export default app => {
  *                             type: integer
  *                           nome:
  *                             type: string
+ *       '400':
+ *         $ref: '#/components/responses/BadRequest'
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  */
     app
         .route('/familias')
@@ -391,10 +432,16 @@ export default app => {
  *               example:
  *                 id: 1
  *                 nome: "Novo nome da família"
- *       400:
- *         description: Dados inválidos
- *       404:
- *         description: Família não encontrada
+ *       '400':
+ *         $ref: '#/components/responses/BadRequest'
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ *       '404':
+ *         $ref: '#/components/responses/NotFound'
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  *   delete:
  *     summary: Remove uma família
  *     tags: [Taxonomias]
@@ -408,8 +455,14 @@ export default app => {
  *     responses:
  *       204:
  *         description: Família removida com sucesso
- *       404:
- *         description: Família não encontrada
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ *       '404':
+ *         $ref: '#/components/responses/NotFound'
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  */
     app.route('/familias/:familia_id')
         .put([
@@ -456,28 +509,79 @@ export default app => {
  *               example:
  *                 id: 1
  *                 nome: "Myrtaceae"
- *       400:
- *         description: Dados inválidos
+ *       '400':
+ *         $ref: '#/components/responses/BadRequest'
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  *   get:
  *     summary: Lista todos os gêneros
  *     tags: [Taxonomias]
+ *     parameters:
+ *       - in: query
+ *         name: pagina
+ *         schema:
+ *           type: integer
+ *         description: Número da página para paginação
+ *       - in: query
+ *         name: limite
+ *         schema:
+ *           type: integer
+ *         description: Quantidade de itens por página
+ *       - in: query
+ *         name: genero
+ *         schema:
+ *           type: string
+ *         description: Filtrar por nome do gênero
+ *       - in: query
+ *         name: familia
+ *         schema:
+ *           type: string
+ *         description: Filtrar por nome da família
  *     responses:
  *       200:
  *         description: Lista de gêneros
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: integer
- *                   nome:
- *                     type: string
- *               example:
- *                 - id: 1
- *                   nome: "Myrtaceae"
+ *               type: object
+ *               properties:
+ *                 metadados:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                     pagina:
+ *                       type: integer
+ *                     limite:
+ *                       type: integer
+ *                 resultado:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       nome:
+ *                         type: string
+ *                       familia:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: integer
+ *                           nome:
+ *                             type: string
+ *       '400':
+ *         $ref: '#/components/responses/BadRequest'
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  */
     app.route('/generos')
         .post([
@@ -530,10 +634,16 @@ export default app => {
  *               example:
  *                 id: 1
  *                 nome: "Novo nome do gênero"
- *       400:
- *         description: Dados inválidos
- *       404:
- *         description: Gênero não encontrado
+ *       '400':
+ *         $ref: '#/components/responses/BadRequest'
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ *       '404':
+ *         $ref: '#/components/responses/NotFound'
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  *   delete:
  *     summary: Remove um gênero
  *     tags: [Taxonomias]
@@ -547,8 +657,14 @@ export default app => {
  *     responses:
  *       204:
  *         description: Gênero removido com sucesso
- *       404:
- *         description: Gênero não encontrado
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ *       '404':
+ *         $ref: '#/components/responses/NotFound'
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  */
     app.route('/generos/:genero_id')
         .put([
@@ -595,28 +711,87 @@ export default app => {
  *               example:
  *                 id: 1
  *                 nome: "Mimosoideae"
- *       400:
- *         description: Dados inválidos
+ *       '400':
+ *         $ref: '#/components/responses/BadRequest'
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  *   get:
  *     summary: Lista todas as subfamílias
  *     tags: [Taxonomias]
+ *     parameters:
+ *       - in: query
+ *         name: pagina
+ *         schema:
+ *           type: integer
+ *         description: Número da página para paginação
+ *       - in: query
+ *         name: limite
+ *         schema:
+ *           type: integer
+ *         description: Quantidade de itens por página
+ *       - in: query
+ *         name: subfamilia
+ *         schema:
+ *           type: string
+ *         description: Filtrar por nome da subfamília
+ *       - in: query
+ *         name: familia
+ *         schema:
+ *           type: string
+ *         description: Filtrar por nome da família
  *     responses:
  *       200:
  *         description: Lista de subfamílias
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: integer
- *                   nome:
- *                     type: string
- *               example:
- *                 - id: 1
- *                   nome: "Mimosoideae"
+ *               type: object
+ *               properties:
+ *                 metadados:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                     pagina:
+ *                       type: integer
+ *                     limite:
+ *                       type: integer
+ *                 resultado:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       nome:
+ *                         type: string
+ *                       familia:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: integer
+ *                           nome:
+ *                             type: string
+ *                       autor:
+ *                         type: object
+ *                         nullable: true
+ *                         properties:
+ *                           id:
+ *                             type: integer
+ *                           nome:
+ *                             type: string
+ *       '400':
+ *         $ref: '#/components/responses/BadRequest'
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  */
     app.route('/subfamilias')
         .post([
@@ -669,10 +844,16 @@ export default app => {
  *               example:
  *                 id: 1
  *                 nome: "Novo nome da subfamília"
- *       400:
- *         description: Dados inválidos
- *       404:
- *         description: Subfamília não encontrada
+ *       '400':
+ *         $ref: '#/components/responses/BadRequest'
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ *       '404':
+ *         $ref: '#/components/responses/NotFound'
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  *   delete:
  *     summary: Remove uma subfamília
  *     tags: [Taxonomias]
@@ -686,8 +867,14 @@ export default app => {
  *     responses:
  *       204:
  *         description: Subfamília removida com sucesso
- *       404:
- *         description: Subfamília não encontrada
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ *       '404':
+ *         $ref: '#/components/responses/NotFound'
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  */
     app.route('/subfamilias/:subfamilia_id')
         .put([
@@ -734,28 +921,99 @@ export default app => {
  *               example:
  *                 id: 1
  *                 nome: "Eucalyptus grandis"
- *       400:
- *         description: Dados inválidos
+ *       '400':
+ *         $ref: '#/components/responses/BadRequest'
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  *   get:
  *     summary: Lista todas as espécies
  *     tags: [Taxonomias]
+ *     parameters:
+ *       - in: query
+ *         name: pagina
+ *         schema:
+ *           type: integer
+ *         description: Número da página para paginação
+ *       - in: query
+ *         name: limite
+ *         schema:
+ *           type: integer
+ *         description: Quantidade de itens por página
+ *       - in: query
+ *         name: especie
+ *         schema:
+ *           type: string
+ *         description: Filtrar por nome da espécie
+ *       - in: query
+ *         name: genero
+ *         schema:
+ *           type: string
+ *         description: Filtrar por nome do gênero
+ *       - in: query
+ *         name: familia
+ *         schema:
+ *           type: string
+ *         description: Filtrar por nome da família
  *     responses:
  *       200:
  *         description: Lista de espécies
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: integer
- *                   nome:
- *                     type: string
- *               example:
- *                 - id: 1
- *                   nome: "Eucalyptus grandis"
+ *               type: object
+ *               properties:
+ *                 metadados:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                     pagina:
+ *                       type: integer
+ *                     limite:
+ *                       type: integer
+ *                 resultado:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       nome:
+ *                         type: string
+ *                       familia:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: integer
+ *                           nome:
+ *                             type: string
+ *                       genero:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: integer
+ *                           nome:
+ *                             type: string
+ *                       autor:
+ *                         type: object
+ *                         nullable: true
+ *                         properties:
+ *                           id:
+ *                             type: integer
+ *                           nome:
+ *                             type: string
+ *       '400':
+ *         $ref: '#/components/responses/BadRequest'
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  */
     app.route('/especies')
         .post([
@@ -808,10 +1066,16 @@ export default app => {
  *               example:
  *                 id: 1
  *                 nome: "Novo nome da espécie"
- *       400:
- *         description: Dados inválidos
- *       404:
- *         description: Espécie não encontrada
+ *       '400':
+ *         $ref: '#/components/responses/BadRequest'
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ *       '404':
+ *         $ref: '#/components/responses/NotFound'
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  *   delete:
  *     summary: Remove uma espécie
  *     tags: [Taxonomias]
@@ -825,8 +1089,14 @@ export default app => {
  *     responses:
  *       204:
  *         description: Espécie removida com sucesso
- *       404:
- *         description: Espécie não encontrada
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ *       '404':
+ *         $ref: '#/components/responses/NotFound'
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  */
     app.route('/especies/:especie_id')
         .put([
@@ -873,8 +1143,14 @@ export default app => {
  *               example:
  *                 id: 1
  *                 nome: "Eucalyptus grandis subsp. robusta"
- *       400:
- *         description: Dados inválidos
+ *       '400':
+ *         $ref: '#/components/responses/BadRequest'
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  *   get:
  *     summary: Lista todas as subespécies
  *     tags: [Taxonomias]
@@ -884,17 +1160,63 @@ export default app => {
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: integer
- *                   nome:
- *                     type: string
- *               example:
- *                 - id: 1
- *                   nome: "Eucalyptus grandis subsp. robusta"
+ *               type: object
+ *               properties:
+ *                 metadados:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                     pagina:
+ *                       type: integer
+ *                     limite:
+ *                       type: integer
+ *                 resultado:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       nome:
+ *                         type: string
+ *                       familia:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: integer
+ *                           nome:
+ *                             type: string
+ *                       genero:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: integer
+ *                           nome:
+ *                             type: string
+ *                       especie:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: integer
+ *                           nome:
+ *                             type: string
+ *                       autor:
+ *                         type: object
+ *                         nullable: true
+ *                         properties:
+ *                           id:
+ *                             type: integer
+ *                           nome:
+ *                             type: string
+ *       '400':
+ *         $ref: '#/components/responses/BadRequest'
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  */
     app.route('/subespecies')
         .post([
@@ -947,10 +1269,16 @@ export default app => {
  *               example:
  *                 id: 1
  *                 nome: "Novo nome da subespécie"
- *       400:
- *         description: Dados inválidos
- *       404:
- *         description: Subespécie não encontrada
+ *       '400':
+ *         $ref: '#/components/responses/BadRequest'
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ *       '404':
+ *         $ref: '#/components/responses/NotFound'
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  *   delete:
  *     summary: Remove uma subespécie
  *     tags: [Taxonomias]
@@ -964,8 +1292,14 @@ export default app => {
  *     responses:
  *       204:
  *         description: Subespécie removida com sucesso
- *       404:
- *         description: Subespécie não encontrada
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ *       '404':
+ *         $ref: '#/components/responses/NotFound'
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  */
     app.route('/subespecies/:subespecie_id')
         .put([
@@ -1011,8 +1345,14 @@ export default app => {
  *               example:
  *                 id: 1
  *                 nome: "Eucalyptus grandis var. robusta"
- *       400:
- *         description: Dados inválidos
+ *       '400':
+ *         $ref: '#/components/responses/BadRequest'
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  *   get:
  *     summary: Lista todas as variedades
  *     tags: [Taxonomias]
@@ -1022,17 +1362,63 @@ export default app => {
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: integer
- *                   nome:
- *                     type: string
- *               example:
- *                 - id: 1
- *                   nome: "Eucalyptus grandis var. robusta"
+ *               type: object
+ *               properties:
+ *                 metadados:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                     pagina:
+ *                       type: integer
+ *                     limite:
+ *                       type: integer
+ *                 resultado:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       nome:
+ *                         type: string
+ *                       familia:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: integer
+ *                           nome:
+ *                             type: string
+ *                       genero:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: integer
+ *                           nome:
+ *                             type: string
+ *                       especie:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: integer
+ *                           nome:
+ *                             type: string
+ *                       autor:
+ *                         type: object
+ *                         nullable: true
+ *                         properties:
+ *                           id:
+ *                             type: integer
+ *                           nome:
+ *                             type: string
+ *       '400':
+ *         $ref: '#/components/responses/BadRequest'
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  */
     app.route('/variedades')
         .post([
@@ -1085,10 +1471,16 @@ export default app => {
  *               example:
  *                 id: 1
  *                 nome: "Novo nome da variedade"
- *       400:
- *         description: Dados inválidos
- *       404:
- *         description: Variedade não encontrada
+ *       '400':
+ *         $ref: '#/components/responses/BadRequest'
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ *       '404':
+ *         $ref: '#/components/responses/NotFound'
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  *   delete:
  *     summary: Remove uma variedade
  *     tags: [Taxonomias]
@@ -1102,8 +1494,14 @@ export default app => {
  *     responses:
  *       204:
  *         description: Variedade removida com sucesso
- *       404:
- *         description: Variedade não encontrada
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ *       '404':
+ *         $ref: '#/components/responses/NotFound'
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  */
     app.route('/variedades/:variedade_id')
         .put([
@@ -1150,8 +1548,14 @@ export default app => {
  *               example:
  *                 id: 1
  *                 nome: "A. Author"
- *       400:
- *         description: Dados inválidos
+ *       '400':
+ *         $ref: '#/components/responses/BadRequest'
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  *   get:
  *     summary: Lista todos os autores
  *     tags: [Taxonomias]
@@ -1199,6 +1603,14 @@ export default app => {
  *                       iniciais:
  *                         type: string
  *                         nullable: true
+ *       '400':
+ *         $ref: '#/components/responses/BadRequest'
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  */
     app.route('/autores')
         .post([
@@ -1250,10 +1662,16 @@ export default app => {
  *               example:
  *                 id: 1
  *                 nome: "Novo nome do autor"
- *       400:
- *         description: Dados inválidos
- *       404:
- *         description: Autor não encontrado
+ *       '400':
+ *         $ref: '#/components/responses/BadRequest'
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ *       '404':
+ *         $ref: '#/components/responses/NotFound'
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  *   delete:
  *     summary: Remove um autor
  *     tags: [Taxonomias]
@@ -1267,8 +1685,14 @@ export default app => {
  *     responses:
  *       204:
  *         description: Autor removido com sucesso
- *       404:
- *         description: Autor não encontrado
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ *       '404':
+ *         $ref: '#/components/responses/NotFound'
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  */
     app.route('/autores/:autor_id')
         .put([

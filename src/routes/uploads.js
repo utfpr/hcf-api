@@ -41,6 +41,12 @@ export default app => {
      *                 url: "/uploads/123456789.jpg"
      *       400:
      *         description: Erro no upload
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/uploads')
         .post([
@@ -79,6 +85,12 @@ export default app => {
      *                 url: "/uploads/123456789.jpg"
      *       400:
      *         description: Erro ao atualizar imagem
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/uploads/atualizaImagem')
         .post([
@@ -118,6 +130,12 @@ export default app => {
      *                 url: "/uploads/semfoto.jpg"
      *       400:
      *         description: Erro ao criar código
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/uploads/criaCodigoSemFoto')
         .post([

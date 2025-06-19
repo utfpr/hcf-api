@@ -34,6 +34,12 @@ export default app => {
      *                     nullable: true
      *                   pais_id:
      *                     type: integer
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/estados')
         .get([

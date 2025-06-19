@@ -52,8 +52,14 @@ export default app => {
      *                 created_at:
      *                   type: string
      *                   format: date-time
-     *       400:
-     *         description: Dados inválidos
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/identificadores').post([
         tokensMiddleware(['CURADOR']),
@@ -87,8 +93,14 @@ export default app => {
      *                   type: integer
      *                 nome:
      *                   type: string
-     *       404:
-     *         description: Identificador não encontrado
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '404':
+     *         $ref: '#/components/responses/NotFound'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/identificadores/:id').get([
         tokensMiddleware(['CURADOR']),
@@ -145,6 +157,14 @@ export default app => {
      *                         type: integer
      *                       nome:
      *                         type: string
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/identificadores').get([
         tokensMiddleware(['CURADOR']),
@@ -193,10 +213,16 @@ export default app => {
      *                         type: integer
      *                       nome:
      *                         type: string
-     *       400:
-     *         description: Dados inválidos
-     *       404:
-     *         description: Identificador não encontrado
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '404':
+     *         $ref: '#/components/responses/NotFound'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/identificadores/:id').put([
         tokensMiddleware(['CURADOR']),

@@ -47,10 +47,26 @@ export default app => {
      *           application/json:
      *             schema:
      *               type: object
-     *               example:
-     *                 token: "jwt.token.aqui"
-     *       401:
-     *         description: Credenciais inválidas
+     *               properties:
+     *                 token:
+     *                   type: string
+     *                 usuario:
+     *                   type: object
+     *                   properties:
+     *                     id:
+     *                       type: integer
+     *                     nome:
+     *                       type: string
+     *                     email:
+     *                       type: string
+     *                     tipo_usuario_id:
+     *                       type: integer
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/login')
         .post([
@@ -80,6 +96,12 @@ export default app => {
      *                   nome:
      *                     type: string
      *                     description: Nome do coletor
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/coletores-predicao')
         .get([
@@ -112,6 +134,12 @@ export default app => {
      *                   nome:
      *                     type: string
      *                     description: Nome do identificador
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/identificadores-predicao')
         .get([
@@ -134,16 +162,49 @@ export default app => {
      *         content:
      *           application/json:
      *             schema:
-     *               type: array
-     *               items:
-     *                 type: object
-     *                 properties:
-     *                   id:
-     *                     type: integer
-     *                   nome:
-     *                     type: string
-     *                   email:
-     *                     type: string
+     *               type: object
+     *               properties:
+     *                 metadados:
+     *                   type: object
+     *                   properties:
+     *                     total:
+     *                       type: integer
+     *                     pagina:
+     *                       type: integer
+     *                     limite:
+     *                       type: integer
+     *                 usuarios:
+     *                   type: array
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       id:
+     *                         type: integer
+     *                       nome:
+     *                         type: string
+     *                       telefone:
+     *                         type: string
+     *                       ra:
+     *                         type: string
+     *                         nullable: true
+     *                       email:
+     *                         type: string
+     *                       tipos_usuario:
+     *                         type: object
+     *                         properties:
+     *                           id:
+     *                             type: integer
+     *                           tipo:
+     *                             type: string
+     *                           created_at:
+     *                             type: string
+     *                             format: date-time
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      *   post:
      *     summary: Cadastra um novo usuário
      *     tags: [Usuários]
@@ -179,8 +240,14 @@ export default app => {
      *                 id: 2
      *                 nome: "Novo Usuário"
      *                 email: "novo@email.com"
-     *       400:
-     *         description: Dados inválidos
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/usuarios')
         .get([
@@ -240,10 +307,16 @@ export default app => {
      *                 id: 1
      *                 nome: "Usuário Editado"
      *                 email: "editado@email.com"
-     *       400:
-     *         description: Dados inválidos
-     *       404:
-     *         description: Usuário não encontrado
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '404':
+     *         $ref: '#/components/responses/NotFound'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      *   get:
      *     summary: Busca um usuário pelo ID
      *     tags: [Usuários]
@@ -261,12 +334,35 @@ export default app => {
      *           application/json:
      *             schema:
      *               type: object
-     *               example:
-     *                 id: 1
-     *                 nome: "Usuário 1"
-     *                 email: "usuario1@email.com"
-     *       404:
-     *         description: Usuário não encontrado
+     *               properties:
+     *                 id:
+     *                   type: integer
+     *                 nome:
+     *                   type: string
+     *                 telefone:
+     *                   type: string
+     *                 ra:
+     *                   type: string
+     *                   nullable: true
+     *                 email:
+     *                   type: string
+     *                 herbario_id:
+     *                   type: integer
+     *                 tipos_usuario:
+     *                   type: object
+     *                   properties:
+     *                     id:
+     *                       type: integer
+     *                     tipo:
+     *                       type: string
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '404':
+     *         $ref: '#/components/responses/NotFound'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      *   delete:
      *     summary: Remove um usuário
      *     tags: [Usuários]
@@ -280,8 +376,14 @@ export default app => {
      *     responses:
      *       204:
      *         description: Usuário removido com sucesso
-     *       404:
-     *         description: Usuário não encontrado
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '404':
+     *         $ref: '#/components/responses/NotFound'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/usuarios/:usuario_id')
         .put([
@@ -344,10 +446,16 @@ export default app => {
      *               type: object
      *               example:
      *                 sucesso: true
-     *       400:
-     *         description: Dados inválidos
-     *       404:
-     *         description: Usuário não encontrado
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '404':
+     *         $ref: '#/components/responses/NotFound'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/usuarios/:usuarioId/senha')
         .put([

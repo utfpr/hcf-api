@@ -33,6 +33,12 @@ export default app => {
      *               example:
      *                 sucesso: true
      *                 mensagem: "Requisição preparada"
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/specieslink').get([
         tokensMiddleware([
@@ -58,6 +64,12 @@ export default app => {
      *               type: object
      *               example:
      *                 executando: true
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/specieslink-executando').get([
         tokensMiddleware([
@@ -91,6 +103,12 @@ export default app => {
      *               example:
      *                 - data: "2025-06-05T12:00:00Z"
      *                   mensagem: "Log de execução"
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/specieslink-todoslogs').get([
         tokensMiddleware([
@@ -119,6 +137,12 @@ export default app => {
      *                   type: string
      *               example:
      *                 log: "Processo finalizado com sucesso"
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/specieslink-log').get([
         tokensMiddleware([

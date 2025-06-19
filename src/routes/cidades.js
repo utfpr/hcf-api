@@ -33,6 +33,12 @@ const controller = require('../controllers/cidades-controller');
  *                     type: number
  *                   longitude:
  *                     type: number
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  */
 export default app => {
     app.route('/cidades').get(controller.listagem);

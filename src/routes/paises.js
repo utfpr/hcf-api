@@ -31,6 +31,12 @@ export default app => {
      *                     type: string
      *                   sigla:
      *                     type: string
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/paises')
         .get([
@@ -67,6 +73,14 @@ export default app => {
      *                     type: string
      *                   sigla:
      *                     type: string
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '404':
+     *         $ref: '#/components/responses/NotFound'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/paises/:pais_sigla/estados')
         .get([

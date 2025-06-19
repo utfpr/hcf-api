@@ -42,8 +42,14 @@ export default app => {
      *                     type: integer
      *                   nome:
      *                     type: string
-     *       400:
-     *         description: Dados inválidos
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      *   get:
      *     summary: Lista todos os solos
      *     tags: [Locais]
@@ -61,6 +67,12 @@ export default app => {
      *                     type: integer
      *                   nome:
      *                     type: string
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/solos')
         .post([
@@ -104,8 +116,14 @@ export default app => {
      *                     type: integer
      *                   nome:
      *                     type: string
-     *       400:
-     *         description: Dados inválidos
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      *   get:
      *     summary: Lista todos os relevos
      *     tags: [Locais]
@@ -123,6 +141,12 @@ export default app => {
      *                     type: integer
      *                   nome:
      *                     type: string
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/relevos')
         .post([
@@ -166,8 +190,14 @@ export default app => {
      *                     type: integer
      *                   nome:
      *                     type: string
-     *       400:
-     *         description: Dados inválidos
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      *   get:
      *     summary: Lista todas as vegetações
      *     tags: [Locais]
@@ -185,6 +215,12 @@ export default app => {
      *                     type: integer
      *                   nome:
      *                     type: string
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/vegetacoes')
         .post([

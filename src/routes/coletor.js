@@ -65,8 +65,14 @@ export default app => {
      *                 created_at:
      *                   type: string
      *                   format: date-time
-     *       400:
-     *         description: Dados inválidos
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/coletores').post([
         tokensMiddleware(['CURADOR']),
@@ -105,8 +111,14 @@ export default app => {
      *                   nullable: true
      *                 numero:
      *                   type: integer
-     *       404:
-     *         description: Coletor não encontrado
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '404':
+     *         $ref: '#/components/responses/NotFound'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/coletores/:id').get([
         tokensMiddleware(['CURADOR']),
@@ -177,6 +189,14 @@ export default app => {
      *                         nullable: true
      *                       numero:
      *                         type: integer
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/coletores').get([
         tokensMiddleware(['CURADOR']),
@@ -235,10 +255,16 @@ export default app => {
      *                   type: string
      *                 numero:
      *                   type: integer
-     *       400:
-     *         description: Dados inválidos
-     *       404:
-     *         description: Coletor não encontrado
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '404':
+     *         $ref: '#/components/responses/NotFound'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/coletores/:id').put([
         tokensMiddleware(['CURADOR']),
@@ -263,8 +289,14 @@ export default app => {
      *     responses:
      *       204:
      *         description: Coletor desativado com sucesso
-     *       404:
-     *         description: Coletor não encontrado
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '404':
+     *         $ref: '#/components/responses/NotFound'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/coletores/:id').delete([
         tokensMiddleware(['CURADOR']),

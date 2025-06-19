@@ -52,6 +52,14 @@ export default app => {
      *                               type: string
      *                             quantidadeDeTombos:
      *                               type: integer
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/relatorio/inventario-especies')
         .get([
@@ -67,7 +75,7 @@ export default app => {
          * @swagger
          * /relatorio/inventario-especies:
          *   post:
-         *     summary: Obtém o relatório de inventário de espécies (com filtros)
+         *     summary: Gera o relatório de inventário de espécies em PDF
          *     tags: [Relatórios]
          *     requestBody:
          *       required: false
@@ -83,21 +91,20 @@ export default app => {
          *             filtro: "Fabaceae"
          *     responses:
          *       200:
-         *         description: Relatório retornado com sucesso
+         *         description: Relatório em PDF gerado com sucesso.
          *         content:
-         *           application/json:
+         *           application/pdf:
          *             schema:
-         *               type: array
-         *               items:
-         *                 type: object
-         *                 properties:
-         *                   especie:
-         *                     type: string
-         *                   quantidade:
-         *                     type: integer
-         *               example:
-         *                 - especie: "Fabaceae sp."
-         *                   quantidade: 8
+         *               type: string
+         *               format: binary
+         *       '400':
+         *         $ref: '#/components/responses/BadRequest'
+         *       '401':
+         *         $ref: '#/components/responses/Unauthorized'
+         *       '403':
+         *         $ref: '#/components/responses/Forbidden'
+         *       '500':
+         *         $ref: '#/components/responses/InternalServerError'
          */
         .post([
             tokensMiddleware([
@@ -132,6 +139,14 @@ export default app => {
      *               example:
      *                 - local: "Parque Estadual"
      *                   quantidade: 5
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/relatorio/coleta-por-local-intervalo-de-data')
         .get([
@@ -147,7 +162,7 @@ export default app => {
          * @swagger
          * /relatorio/coleta-por-local-intervalo-de-data:
          *   post:
-         *     summary: Obtém relatório de coletas por local e intervalo de data (com filtros)
+         *     summary: Gera o relatório de coletas por local e data em PDF
          *     tags: [Relatórios]
          *     requestBody:
          *       required: false
@@ -167,21 +182,20 @@ export default app => {
          *             data_fim: "2025-06-01"
          *     responses:
          *       200:
-         *         description: Relatório retornado com sucesso
+         *         description: Relatório em PDF gerado com sucesso.
          *         content:
-         *           application/json:
+         *           application/pdf:
          *             schema:
-         *               type: array
-         *               items:
-         *                 type: object
-         *                 properties:
-         *                   local:
-         *                     type: string
-         *                   quantidade:
-         *                     type: integer
-         *               example:
-         *                 - local: "Parque Estadual"
-         *                   quantidade: 5
+         *               type: string
+         *               format: binary
+         *       '400':
+         *         $ref: '#/components/responses/BadRequest'
+         *       '401':
+         *         $ref: '#/components/responses/Unauthorized'
+         *       '403':
+         *         $ref: '#/components/responses/Forbidden'
+         *       '500':
+         *         $ref: '#/components/responses/InternalServerError'
          */
         .post([
             listagensMiddleware,
@@ -212,6 +226,14 @@ export default app => {
      *               example:
      *                 - data: "2025-06-01"
      *                   quantidade: 2
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/relatorio/coleta-por-intervalo-de-data')
         .get([
@@ -222,7 +244,7 @@ export default app => {
          * @swagger
          * /relatorio/coleta-por-intervalo-de-data:
          *   post:
-         *     summary: Obtém relatório de coletas por intervalo de data (com filtros)
+         *     summary: Gera o relatório de coletas por intervalo de data em PDF
          *     tags: [Relatórios]
          *     requestBody:
          *       required: false
@@ -242,22 +264,20 @@ export default app => {
          *             data_fim: "2025-06-01"
          *     responses:
          *       200:
-         *         description: Relatório retornado com sucesso
+         *         description: Relatório em PDF gerado com sucesso.
          *         content:
-         *           application/json:
+         *           application/pdf:
          *             schema:
-         *               type: array
-         *               items:
-         *                 type: object
-         *                 properties:
-         *                   data:
-         *                     type: string
-         *                     format: date
-         *                   quantidade:
-         *                     type: integer
-         *               example:
-         *                 - data: "2025-06-01"
-         *                   quantidade: 2
+         *               type: string
+         *               format: binary
+         *       '400':
+         *         $ref: '#/components/responses/BadRequest'
+         *       '401':
+         *         $ref: '#/components/responses/Unauthorized'
+         *       '403':
+         *         $ref: '#/components/responses/Forbidden'
+         *       '500':
+         *         $ref: '#/components/responses/InternalServerError'
          */
         .post([
             listagensMiddleware,

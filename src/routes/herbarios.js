@@ -92,8 +92,14 @@ export default app => {
      *                     complemento:
      *                       type: string
      *                       nullable: true
-     *       400:
-     *         description: Dados inválidos
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/herbarios')
         .post([
@@ -198,6 +204,14 @@ export default app => {
          *                                         type: string
          *                                       sigla:
          *                                         type: string
+         *       '400':
+         *         $ref: '#/components/responses/BadRequest'
+         *       '401':
+         *         $ref: '#/components/responses/Unauthorized'
+         *       '403':
+         *         $ref: '#/components/responses/Forbidden'
+         *       '500':
+         *         $ref: '#/components/responses/InternalServerError'
          */
         .get([
             tokensMiddleware([
@@ -284,10 +298,16 @@ export default app => {
      *                     complemento:
      *                       type: string
      *                       nullable: true
-     *       400:
-     *         description: Dados inválidos
-     *       404:
-     *         description: Herbário não encontrado
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '404':
+     *         $ref: '#/components/responses/NotFound'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/herbarios/:herbario_id')
         .put([
@@ -314,8 +334,14 @@ export default app => {
          *     responses:
          *       204:
          *         description: Herbário desativado com sucesso
-         *       404:
-         *         description: Herbário não encontrado
+         *       '401':
+         *         $ref: '#/components/responses/Unauthorized'
+         *       '403':
+         *         $ref: '#/components/responses/Forbidden'
+         *       '404':
+         *         $ref: '#/components/responses/NotFound'
+         *       '500':
+         *         $ref: '#/components/responses/InternalServerError'
          */
         .delete([
             tokensMiddleware([
@@ -393,8 +419,14 @@ export default app => {
          *                         type: integer
          *                       nome:
          *                         type: string
-         *       404:
-         *         description: Herbário não encontrado
+         *       '401':
+         *         $ref: '#/components/responses/Unauthorized'
+         *       '403':
+         *         $ref: '#/components/responses/Forbidden'
+         *       '404':
+         *         $ref: '#/components/responses/NotFound'
+         *       '500':
+         *         $ref: '#/components/responses/InternalServerError'
          */
         .get([
             tokensMiddleware([

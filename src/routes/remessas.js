@@ -66,8 +66,14 @@ export default app => {
      *     responses:
      *       201:
      *         description: Remessa cadastrada com sucesso (sem corpo de resposta)
-     *       400:
-     *         description: Dados inválidos
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      *   get:
      *     summary: Lista todas as remessas
      *     tags: [Remessas]
@@ -151,6 +157,14 @@ export default app => {
      *                             type: string
      *                           sigla:
      *                             type: string
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/remessas')
         .post([
@@ -236,10 +250,16 @@ export default app => {
      *     responses:
      *       204:
      *         description: Remessa alterada com sucesso
-     *       400:
-     *         description: Dados inválidos
-     *       404:
-     *         description: Remessa não encontrada
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '404':
+     *         $ref: '#/components/responses/NotFound'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      *   delete:
      *     summary: Remove uma remessa
      *     tags: [Remessas]
@@ -253,8 +273,14 @@ export default app => {
      *     responses:
      *       204:
      *         description: Remessa removida com sucesso
-     *       404:
-     *         description: Remessa não encontrada
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '404':
+     *         $ref: '#/components/responses/NotFound'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      *   get:
      *     summary: Busca uma remessa pelo ID
      *     tags: [Remessas]
@@ -306,8 +332,14 @@ export default app => {
      *                   Tombos:
      *                     - hcf: "HCF123"
      *                     - hcf: "HCF456"
-     *       404:
-     *         description: Remessa não encontrada      
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '404':
+     *         $ref: '#/components/responses/NotFound'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/remessas/:remessa_id')
         .put([
@@ -346,14 +378,18 @@ export default app => {
      *                 mensagem:
      *                   type: string
      *                 tombosDevolvidos:
-     *                   type: integer 
+     *                   type: integer
      *                   description: Número de tombos que foram efetivamente devolvidos nesta operação.
      *               example:
      *                 sucesso: true
      *                 mensagem: "Processo de devolução concluído."
      *                 tombosDevolvidos: 5
-     *       500:
-     *         description: Erro interno no servidor durante o processo de devolução.
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/remessas-devolver')
         .get([

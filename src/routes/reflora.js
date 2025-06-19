@@ -3,7 +3,6 @@ import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middlewa
 const controllerComum = require('../controllers/herbariovirtual-controller');
 const controller = require('../controllers/reflora-controller');
 
-
 /**
  * Essa variável app, está relacionada as rotas que vem do front end. Então se no front end
  * é feito uma requisição que ao backend que é uma dessas requisições: /reflora,
@@ -34,6 +33,12 @@ export default app => {
      *               example:
      *                 sucesso: true
      *                 mensagem: "Requisição preparada"
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/reflora').get([
         tokensMiddleware([
@@ -59,6 +64,12 @@ export default app => {
      *               type: object
      *               example:
      *                 executando: true
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/reflora-executando').get([
         tokensMiddleware([
@@ -92,6 +103,12 @@ export default app => {
      *               example:
      *                 - data: "2025-06-05T12:00:00Z"
      *                   mensagem: "Log de execução"
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/reflora-todoslogs').get([
         tokensMiddleware([
@@ -120,6 +137,12 @@ export default app => {
      *                   type: string
      *               example:
      *                 log: "Processo finalizado com sucesso"
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/reflora-log').get([
         tokensMiddleware([

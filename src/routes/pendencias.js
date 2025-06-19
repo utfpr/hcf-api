@@ -33,8 +33,14 @@ export default app => {
      *               example:
      *                 pendente: true
      *                 pendencia_id: 123
-     *       404:
-     *         description: Não encontrada
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '404':
+     *         $ref: '#/components/responses/NotFound'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/pendencias/TomboId/:tombo_id')
         .get([
@@ -70,6 +76,14 @@ export default app => {
      *                 - id: 1
      *                   descricao: "Pendência de atualização"
      *                   status: "pendente"
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/pendencias')
         .get([
@@ -96,8 +110,14 @@ export default app => {
      *     responses:
      *       204:
      *         description: Pendência removida com sucesso
-     *       404:
-     *         description: Pendência não encontrada
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '404':
+     *         $ref: '#/components/responses/NotFound'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      *   get:
      *     summary: Visualiza uma pendência
      *     tags: [Pendências]
@@ -119,8 +139,14 @@ export default app => {
      *                 id: 1
      *                 descricao: "Pendência de atualização"
      *                 status: "pendente"
-     *       404:
-     *         description: Pendência não encontrada
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '404':
+     *         $ref: '#/components/responses/NotFound'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      *   post:
      *     summary: Aceita uma pendência
      *     tags: [Pendências]
@@ -140,6 +166,14 @@ export default app => {
      *               type: object
      *               example:
      *                 sucesso: true
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '404':
+     *         $ref: '#/components/responses/NotFound'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      *   put:
      *     summary: Avalia uma pendência
      *     tags: [Pendências]
@@ -173,6 +207,16 @@ export default app => {
      *               type: object
      *               example:
      *                 sucesso: true
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '404':
+     *         $ref: '#/components/responses/NotFound'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/pendencias/:pendencia_id')
         .delete([
