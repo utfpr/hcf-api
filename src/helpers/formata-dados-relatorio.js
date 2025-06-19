@@ -76,6 +76,29 @@ export const formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData = dados 
     return dadosFormatados;
 };
 
+export const formatarDadosParaRelatorioDeColetaPorColetorEIntervaloDeData = dados => {
+    const romanos = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+    const dadosFormatados = dados.map(dado => {
+        if (dado?.numero_coleta && dado?.numero_coleta !== null) {
+            return {
+                data: `${String(dado.data_coleta_dia).padStart(2, '0')}/${romanos[dado.data_coleta_mes - 1]}/${dado.data_coleta_ano}`,
+                tombo: dado?.hcf,
+                numeroColeta: dado.numero_coleta || '-',
+                especie: defineNomeCientifico(dado),
+                familia: dado.especy.familia.nome,
+                autor: dado.especy?.autor?.nome || 'Não Informado',
+            };
+        }
+
+        return null;
+    }).filter(dado => dado !== null);
+
+    // Ordena os dados formatados por ordem alfabética
+    dadosFormatados.sort((a, b) => a.familia.localeCompare(b.familia));
+
+    return dadosFormatados;
+};
+
 export const formataTextFilter = (local, inicio, fim) => {
     let filtro = 'Coletados';
     if (inicio && fim) {
@@ -83,6 +106,17 @@ export const formataTextFilter = (local, inicio, fim) => {
     }
     if (local) {
         filtro += ` no local ${local}`;
+    }
+    return filtro;
+};
+
+export const formataTextFilterColetor = (coletor, inicio, fim) => {
+    let filtro = 'Coletados';
+    if (inicio && fim) {
+        filtro += ` no período ${format(new Date(inicio), 'dd/MM/yyyy')} à ${format(new Date(fim), 'dd/MM/yyyy')}`;
+    }
+    if (coletor) {
+        filtro += ` por ${coletor}`;
     }
     return filtro;
 };
