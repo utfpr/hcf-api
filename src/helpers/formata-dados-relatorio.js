@@ -136,3 +136,138 @@ export const agruparPorFamilia = dados => dados.reduce((acc, obj) => {
 
     return acc;
 }, []);
+
+export const agruparPorFamilia2 = dados => dados.reduce((acc, obj) => {
+    const nomeFamilia = obj?.especy?.familia?.nome || 'Não Informada';
+    const grupoExistente = acc.find(item => item.familia === nomeFamilia);
+
+    if (grupoExistente) {
+        grupoExistente.itens.push(obj);
+        grupoExistente.count += 1;
+    } else {
+        acc.push({
+            familia: nomeFamilia,
+            codigo: obj?.especy?.familia?.id || 'Não Informado',
+            itens: [obj],
+            count: 1,
+        });
+    }
+
+    return acc;
+}, []);
+
+export function agruparResultadoPorFamilia(registros) {
+    const familias = {};
+
+    registros.forEach(({ familia, genero, especie, quantidade, totalFamilia, familiaCodigo }) => {
+        if (!familias[familia]) {
+            familias[familia] = {
+                familia,
+                familiaCodigo,
+                total: totalFamilia,
+                especies: [],
+            };
+        }
+
+        familias[familia].especies.push({
+            genero,
+            especie,
+            quantidade,
+        });
+    });
+
+    // Converte para array
+    return Object.values(familias);
+}
+
+export function agruparPorFamiliaGeneroEspecie(dados) {
+    const resultado = [];
+
+    dados.forEach(familiaObj => {
+        const nomeFamilia = familiaObj.familia;
+        const contagem = {};
+
+        // Contar combinações genero + especie
+        familiaObj.itens.forEach(item => {
+            const genero = item.especy.genero.nome;
+            const especie = item.especy.nome;
+            const chave = `${genero}||${especie}`;
+
+            if (!contagem[chave]) {
+                contagem[chave] = { genero, especie, quantidade: 0 };
+            }
+
+            contagem[chave].quantidade += 1;
+        });
+
+        // Total da família
+        const totalFamilia = Object.values(contagem).reduce((acc, curr) => acc + curr.quantidade, 0);
+
+        // Monta o resultado por espécie
+        Object.values(contagem).forEach(item => {
+            resultado.push({
+                familia: nomeFamilia,
+                familiaCodigo: familiaObj.codigo,
+                genero: item.genero,
+                especie: item.especie,
+                quantidade: item.quantidade,
+                totalFamilia,
+            });
+        });
+    });
+
+    return resultado;
+}
+
+function formatarCoordenadas(lat, lon) {
+    const latDir = lat >= 0 ? 'N' : 'S';
+    const lonDir = lon >= 0 ? 'E' : 'W';
+    return `${Math.abs(lat).toFixed(4)}° ${latDir}, ${Math.abs(lon).toFixed(4)}° ${lonDir}`;
+}
+
+export function agruparPorLocal(dados) {
+    const agrupado = {};
+    let quantidadeTotal = 0;
+
+    dados.forEach(entradaOriginal => {
+        const locaisColetum = entradaOriginal.locais_coletum;
+        const cidade = locaisColetum?.cidade;
+        const estado = cidade?.estado?.nome || 'Desconhecido';
+        const municipio = cidade?.nome || 'Desconhecido';
+        const local = locaisColetum?.descricao?.trim() || 'Local não informado';
+
+        const coordenadasFormatadas = cidade
+            ? formatarCoordenadas(cidade.latitude, cidade.longitude)
+            : 'Coordenadas indisponíveis';
+
+        const chave = `${estado} > ${municipio} > ${local}`;
+
+        const entrada = {
+            ...entradaOriginal,
+            coordenadasFormatadas,
+        };
+
+        if (!agrupado[chave]) {
+            agrupado[chave] = {
+                estado,
+                municipio,
+                local,
+                coordenadas: coordenadasFormatadas,
+                quantidadeRegistros: 0,
+                registros: [],
+            };
+        }
+
+        agrupado[chave].registros.push(entrada);
+        agrupado[chave].quantidadeRegistros += 1;
+        quantidadeTotal += 1;
+    });
+
+    // Transforma o objeto em um array
+    const locais = Object.values(agrupado);
+
+    return {
+        locais, // agora é um array
+        quantidadeTotal,
+    };
+}
