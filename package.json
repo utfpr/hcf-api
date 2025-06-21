@@ -74,8 +74,11 @@
 		"react-dom": "19.1.0",
 		"request": "^2.88.0",
 		"sequelize": "^4.38.0",
+		"swagger-jsdoc": "^6.2.8",
+		"swagger-ui-express": "^5.0.1",
 		"throttled-queue": "^1.0.5",
 		"uuid": "9.0.0",
 		"wkhtmltopdf": "^0.4.0"
-	}
+	},
+	"packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
