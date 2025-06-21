@@ -13,6 +13,10 @@ const options = {
                 url: 'http://localhost:3000/api',
                 description: 'Servidor local',
             },
+            {
+                url: 'https://api.hcf.cm.utfpr.edu.br',
+                description: 'Servidor de Desenvolvimento',
+            },
         ],
         components: {
             schemas: {
