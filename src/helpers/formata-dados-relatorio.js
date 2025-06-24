@@ -233,6 +233,7 @@ export function agruparPorLocal(dados) {
         const locaisColetum = entradaOriginal.locais_coletum;
         const cidade = locaisColetum?.cidade;
         const estado = cidade?.estado?.nome || 'Desconhecido';
+        const estadoSigla = cidade?.estado?.sigla || '-';
         const municipio = cidade?.nome || 'Desconhecido';
         const local = locaisColetum?.descricao?.trim() || 'Local não informado';
 
@@ -250,6 +251,7 @@ export function agruparPorLocal(dados) {
         if (!agrupado[chave]) {
             agrupado[chave] = {
                 estado,
+                estadoSigla,
                 municipio,
                 local,
                 coordenadas: coordenadasFormatadas,

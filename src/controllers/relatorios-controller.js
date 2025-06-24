@@ -532,6 +532,7 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
                         include: [
                             {
                                 model: Estado,
+                                attributes: ['id', 'nome', 'sigla'],
                                 include: [
                                     {
                                         model: Pais,
