@@ -14,7 +14,7 @@ const options = {
                 description: 'Servidor local',
             },
             {
-                url: 'https://api.hcf.cm.utfpr.edu.br',
+                url: 'https://api.dev.hcf.cm.utfpr.edu.br',
                 description: 'Servidor de Desenvolvimento',
             },
         ],

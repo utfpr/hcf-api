@@ -19,7 +19,6 @@ import cadastrarTipoEsquema from '../validators/tipo-cadastro';
 import cadastrarTomboEsquema from '../validators/tombo-cadastro';
 import listagemTombo from '../validators/tombo-listagem';
 
-
 /**
  * @swagger
  * tags:

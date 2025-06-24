@@ -3,9 +3,9 @@ import cors from 'cors';
 import express from 'express';
 import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
-import swaggerSpec from './config/swagger';
 
 import { assets, upload } from './config/directory';
+import swaggerSpec from './config/swagger';
 import errors from './middlewares/erros-middleware';
 import { generatePreview, reportPreview } from './reports/controller';
 import routes from './routes';
