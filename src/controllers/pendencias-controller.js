@@ -1989,55 +1989,25 @@ export function visualizar(request, response, next) {
                     }
                 })
                 .then(() => {
-                    if (objetoAlterado.familia_id) {
-                        Familia.findOne({
-                            where: {
-                                id: objetoAlterado.familia_id,
-                            },
-                        }).then(familia => {
-                            if (familia) {
-                                parametros.familia = familia;
-                            }
-                        });
+                    if (objetoAlterado.familia_nome) {
+                        parametros.familia = objetoAlterado.familia_nome;
                     }
                 })
                 .then(() => {
-                    if (objetoAlterado.sub_familia_id) {
-                        Subfamilia.findOne({
-                            where: {
-                                id: objetoAlterado.sub_familia_id,
-                            },
-                        }).then(subfamilia => {
-                            if (subfamilia) {
-                                parametros.subfamilia = subfamilia;
-                            }
-                        });
+                    if (objetoAlterado.sub_familia_nome) {
+                        parametros.subfamilia = objetoAlterado.sub_familia_nome;
+
                     }
                 })
                 .then(() => {
-                    if (objetoAlterado.genero_id) {
-                        Genero.findOne({
-                            where: {
-                                id: objetoAlterado.genero_id,
-                            },
-                        }).then(genero => {
-                            if (genero) {
-                                parametros.genero = genero;
-                            }
-                        });
+                    if (objetoAlterado.genero_nome) {
+                        parametros.genero = objetoAlterado.genero_nome;
+
                     }
                 })
                 .then(() => {
-                    if (objetoAlterado.especie_id) {
-                        Especie.findOne({
-                            where: {
-                                id: objetoAlterado.especie_id,
-                            },
-                        }).then(especie => {
-                            if (especie) {
-                                parametros.especie = especie;
-                            }
-                        });
+                    if (objetoAlterado.especie_nome) {
+                        parametros.especie = objetoAlterado.especie_nome;
                     }
                 })
                 .then(() => {
@@ -2114,15 +2084,6 @@ export function visualizar(request, response, next) {
                                 include: [
                                     {
                                         model: Cidade,
-                                    },
-                                    {
-                                        model: Solo,
-                                    },
-                                    {
-                                        model: Relevo,
-                                    },
-                                    {
-                                        model: Vegetacao,
                                     },
                                     {
                                         model: FaseSucessional,
@@ -2231,14 +2192,14 @@ export function visualizar(request, response, next) {
                                                 key: '9',
                                                 campo: 'Familia',
                                                 antigo: ' ',
-                                                novo: parametros.familia.nome,
+                                                novo: parametros.familia,
                                             });
-                                        } else if (tombos.familia.id !== parametros.familia.id) {
+                                        } else if (tombos.familia.nome !== parametros.familia) {
                                             jsonRetorno.push({
                                                 key: '9',
                                                 campo: 'Familia',
                                                 antigo: tombos.familia.nome,
-                                                novo: parametros.familia.nome,
+                                                novo: parametros.familia,
                                             });
                                         }
                                     }
@@ -2249,14 +2210,14 @@ export function visualizar(request, response, next) {
                                                 key: '10',
                                                 campo: 'Gênero',
                                                 antigo: ' ',
-                                                novo: parametros.genero.nome,
+                                                novo: parametros.genero,
                                             });
-                                        } else if (tombos.genero.id !== parametros.genero.id) {
+                                        } else if (tombos.genero.nome !== parametros.genero) {
                                             jsonRetorno.push({
                                                 key: '10',
                                                 campo: 'Gênero',
                                                 antigo: tombos.genero.nome,
-                                                novo: parametros.genero.nome,
+                                                novo: parametros.genero,
                                             });
                                         }
                                     }
@@ -2267,14 +2228,14 @@ export function visualizar(request, response, next) {
                                                 key: '11',
                                                 campo: 'Subfamilia',
                                                 antigo: ' ',
-                                                novo: parametros.subfamilia.nome,
+                                                novo: parametros.subfamilia,
                                             });
-                                        } else if (tombos.sub_familia.id !== parametros.subfamilia.id) {
+                                        } else if (tombos.sub_familia.nome !== parametros.subfamilia) {
                                             jsonRetorno.push({
                                                 key: '11',
                                                 campo: 'Subfamilia',
                                                 antigo: tombos.sub_familia.nome,
-                                                novo: parametros.subfamilia.nome,
+                                                novo: parametros.subfamilia,
                                             });
                                         }
                                     }
@@ -2285,14 +2246,14 @@ export function visualizar(request, response, next) {
                                                 key: '12',
                                                 campo: 'Especie',
                                                 antigo: ' ',
-                                                novo: parametros.especie.nome,
+                                                novo: parametros.especie,
                                             });
-                                        } else if (tombos.especy.id !== parametros.especie.id) {
+                                        } else if (tombos.especy.nome !== parametros.especie) {
                                             jsonRetorno.push({
                                                 key: '12',
                                                 campo: 'Especie',
                                                 antigo: tombos.especy.nome,
-                                                novo: parametros.especie.nome,
+                                                novo: parametros.especie,
                                             });
                                         }
                                     }
@@ -2469,24 +2430,40 @@ export function visualizar(request, response, next) {
 }
 
 export function aceitarPendencia(request, response, next) {
-    const { pendencia_id: pendenciaId } = request.params;
-    return Promise.resolve()
+    const id = request.params.pendencia_id;
+    const { observacao, status } = request.body;
+    let retorno = {};
+    const callback = transaction => Promise.resolve()
+        .then(() => Alteracao.update({
+            observacao,
+            status,
+        }, {
+            where: {
+                ativo: true,
+                id,
+            },
+            transaction,
+        }))
         .then(() => Alteracao.findOne({
             where: {
                 ativo: true,
-                id: pendenciaId,
+                id,
             },
+            transaction,
         }))
-        .then(alteracao => {
-            if (alteracao.dataValues.status === 'APROVADO') {
-                const json = JSON.parse(alteracao.dataValues.tombo_json);
-                aprovarComJson(json, alteracao.dataValues.tombo_hcf, response, next);
-            } else if (alteracao.dataValues.status === 'ESPERANDO' || alteracao.dataValues.status === 'REPROVADO') {
-                response.status(codigos.BUSCAR_UM_ITEM)
-                    .json(alteracao);
+        .then(alt => {
+            if (status === 'APROVADO') {
+                const objetoAlterado = JSON.parse(alt.tombo_json);
+                retorno = aprovarComJsonId(objetoAlterado, alt.tombo_hcf, transaction);
             }
-
+            return retorno;
         });
+    sequelize.transaction(callback)
+        .then(() => {
+            // eslint-disable-next-line no-underscore-dangle
+            response.status(codigos.CADASTRO_SEM_RETORNO).send();
+        })
+        .catch(next);
 
 }
 
