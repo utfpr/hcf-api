@@ -1,0 +1,14 @@
+language: en,pt-BR
+words:
+  - distro
+  - caprover
+  - certbot
+  - lineinfile
+  - blockinfile
+  - familias
+  - subfamilia
+  - subfamilias
+  - genero
+  - generos
+  - subespecie
+  - subespecies
