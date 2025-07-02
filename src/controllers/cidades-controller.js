@@ -1,8 +1,30 @@
+import axios from 'axios';
+
+import BadRequestExeption from '../errors/bad-request-exception';
 import models from '../models';
 
 const { Op } = require('sequelize');
 
 const { Cidade, LocalColeta, Tombo, Reino, Familia, Subfamilia, Genero, Especie, Subespecie, Variedade } = models;
+
+const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET_KEY;
+
+async function verifyRecaptcha(request) {
+    const token = request.query.recaptchaToken;
+    if (!token) {
+        throw new BadRequestExeption(400, 'reCAPTCHA token ausente');
+    }
+
+    const { data } = await axios.post(
+        'https://www.google.com/recaptcha/api/siteverify',
+        null,
+        { params: { secret: RECAPTCHA_SECRET, response: token } }
+    );
+
+    if (!data.success || (data.score !== undefined && data.score < 0.5)) {
+        throw new BadRequestExeption(400, 'Falha na verificação do reCAPTCHA');
+    }
+}
 
 export const listaTodosCidades = where =>
     Cidade.findAndCountAll({
@@ -30,6 +52,10 @@ export const listagem = (request, response, next) => {
 
 export const ListaTodosOsTombosComLocalizacao = async (req, res, next) => {
     try {
+        if (req.query.recaptchaToken) {
+            verifyRecaptcha(req);
+        }
+
         const { cidade, search } = req.query;
         const { limite: limit, pagina: pageInt, offset } = req.paginacao;
 
