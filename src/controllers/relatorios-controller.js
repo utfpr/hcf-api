@@ -8,9 +8,15 @@ import {
     formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData,
     formatarDadosParaRelatorioDeColetaPorColetorEIntervaloDeData,
     formataTextFilterColetor,
+    agruparPorLocal,
+    agruparPorFamiliaGeneroEspecie,
+    agruparPorFamilia2,
+    agruparResultadoPorFamilia,
 } from '~/helpers/formata-dados-relatorio';
 import { generateReport } from '~/reports/reports';
 import ReportInventario from '~/reports/templates/InventarioEspecies';
+import ReportLocalColeta from '~/reports/templates/LocaisColeta';
+import ReportFamiliasGeneros from '~/reports/templates/RelacaoFamiliasGenero';
 import ReportColetaModelo1 from '~/reports/templates/RelacaoTombos';
 import ReportColetaModelo2 from '~/reports/templates/RelacaoTombosComColeta';
 import codigosHttp from '~/resources/codigos-http';
@@ -18,7 +24,20 @@ import codigosHttp from '~/resources/codigos-http';
 import models from '../models';
 
 const {
-    Sequelize: { Op, literal }, Familia, Especie, Genero, Tombo, LocalColeta, Autor, Sequelize, sequelize, Coletor,
+    Sequelize: { Op, literal },
+    Familia,
+    Especie,
+    Genero,
+    Tombo,
+    LocalColeta,
+    Autor,
+    Sequelize,
+    sequelize,
+    Coletor,
+    Cidade,
+    Estado,
+    Pais,
+    TomboFoto,
 } = models;
 
 /// ////// Relatório de Inventário de Espécies //////////
@@ -107,13 +126,13 @@ export const obtemDadosDoRelatorioDeInventarioDeEspecies = async (req, res, next
         readable.push(null); // Indica o fim do fluxo de dados
         res.setHeader('Content-Type', 'application/pdf');
         readable.pipe(res);
-        // gerarRelatorioPDF(res, {
-        //     tipoDoRelatorio: 'Inventário de Espécies',
-        //     textoFiltro: familia ? `Espécies da Família ${familia}` : 'Todos os dados',
-        //     data: format(new Date(), 'dd/MM/yyyy'),
-        //     dados,
-        //     tableFormato: 2,
-        // });
+    // gerarRelatorioPDF(res, {
+    //     tipoDoRelatorio: 'Inventário de Espécies',
+    //     textoFiltro: familia ? `Espécies da Família ${familia}` : 'Todos os dados',
+    //     data: format(new Date(), 'dd/MM/yyyy'),
+    //     dados,
+    //     tableFormato: 2,
+    // });
     } catch (e) {
         next(e);
     }
@@ -199,7 +218,7 @@ export const obtemDadosDoRelatorioDeColetaPorLocalEIntervaloDeData = async (req,
                     pagina,
                     limite,
                 },
-                resultado: formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData(tombos.rows),
+                resultado: formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData(tombos),
                 filtro: formataTextFilter(local, dataInicio, dataFim || new Date()),
             });
             return;
@@ -215,7 +234,7 @@ export const obtemDadosDoRelatorioDeColetaPorLocalEIntervaloDeData = async (req,
                 });
             const readable = new Readable();
             // eslint-disable-next-line no-underscore-dangle
-            readable._read = () => {}; // Implementa o método _read (obrigatório)
+            readable._read = () => { }; // Implementa o método _read (obrigatório)
             readable.push(buffer); // Empurrar os dados binários para o stream
             readable.push(null); // Indica o fim do fluxo de dados
             res.setHeader('Content-Type', 'application/pdf');
@@ -428,7 +447,7 @@ export const obtemDadosDoRelatorioDeColetaPorColetorEIntervaloDeData = async (re
                 });
             const readable = new Readable();
             // eslint-disable-next-line no-underscore-dangle
-            readable._read = () => {}; // Implementa o método _read (obrigatório)
+            readable._read = () => { }; // Implementa o método _read (obrigatório)
             readable.push(buffer); // Empurrar os dados binários para o stream
             readable.push(null); // Indica o fim do fluxo de dados
             res.setHeader('Content-Type', 'application/pdf');
@@ -439,5 +458,275 @@ export const obtemDadosDoRelatorioDeColetaPorColetorEIntervaloDeData = async (re
 
     } catch (e) {
         next(e);
+    }
+};
+
+/// ////// Relatório de Locais de Coleta //////////
+export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
+    const { paginacao } = req;
+    const { limite, pagina, offset } = paginacao;
+    const { local, dataInicio, dataFim } = req.query;
+
+    let whereLocal = {};
+    let whereData = {};
+    if (local) {
+        whereLocal = {
+            descricao: { [Op.like]: `%${local}%` },
+        };
+    }
+    if (dataInicio) {
+        if (dataFim && isBefore(new Date(dataFim), new Date(dataInicio))) {
+            res.status(codigosHttp.BAD_REQUEST).json({
+                mensagem: 'A data de fim não pode ser anterior à data de início.',
+            });
+        }
+        if (isBefore(new Date(), new Date(dataInicio))) {
+            res.status(codigosHttp.BAD_REQUEST).json({
+                mensagem: 'A data de início não pode ser maior que a data atual.',
+            });
+        }
+        whereData = {
+            [Op.and]: [
+                // Transforma os valores em uma data e compara com o intervalo
+                Sequelize.where(
+                    literal(
+                        "STR_TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes, 2, '0'), '-', LPAD(data_coleta_dia, 2, '0')), '%Y-%m-%d')"
+                    ),
+                    { [Op.between]: [dataInicio, dataFim || new Date()] }
+                ),
+            ],
+        };
+    }
+
+    try {
+        const tombos = await Tombo.findAndCountAll({
+            attributes: ['hcf', 'numero_coleta', 'nome_cientifico', 'data_coleta_ano', 'data_coleta_mes', 'data_coleta_dia'],
+            where: whereData,
+            include: [
+                {
+                    model: Especie,
+                    attributes: ['id', 'nome'],
+                    required: true,
+                    include: [
+                        {
+                            model: Genero,
+                            attributes: ['id', 'nome'],
+                        },
+                        {
+                            model: Familia,
+                            attributes: ['id', 'nome'],
+                            required: true,
+                        },
+                    ],
+                },
+                {
+                    model: LocalColeta,
+                    attributes: ['id', 'descricao', 'complemento'],
+                    where: whereLocal,
+                    required: true,
+                    include: {
+                        model: Cidade,
+                        attributes: ['nome', 'latitude', 'longitude'],
+                        include: [
+                            {
+                                model: Estado,
+                                include: [
+                                    {
+                                        model: Pais,
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                },
+            ],
+            offset,
+        });
+
+        const dadosPuros = tombos.rows.map(registro => registro.get({ plain: true }));
+        const dadosFormatados = agruparPorLocal(dadosPuros);
+
+        if (req.method === 'GET') {
+            res.json({
+                metadados: {
+                    total: tombos.count,
+                    pagina,
+                    limite,
+                },
+                resultado: dadosFormatados,
+                filtro: formataTextFilter(local, dataInicio, dataFim || new Date()),
+            });
+            return;
+        }
+
+        try {
+            // res.json({
+            //   metadados: {
+            //     total: tombos.count,
+            //     pagina,
+            //     limite,
+            //   },
+            //   resultado: dadosFormatados,
+            //   filtro: formataTextFilter(local, dataInicio, dataFim || new Date()),
+            // });
+            const buffer = await generateReport(
+                ReportLocalColeta, {
+                    dados: dadosFormatados.locais,
+                    total: dadosFormatados?.quantidadeTotal || 0,
+                    textoFiltro: formataTextFilter(local, dataInicio, dataFim || new Date()),
+                });
+            const readable = new Readable();
+            // eslint-disable-next-line no-underscore-dangle
+            readable._read = () => { }; // Implementa o método _read (obrigatório)
+            readable.push(buffer); // Empurrar os dados binários para o stream
+            readable.push(null); // Indica o fim do fluxo de dados
+            res.setHeader('Content-Type', 'application/pdf');
+            readable.pipe(res);
+        } catch (e) {
+            next(e);
+        }
+
+    } catch (e) {
+        next(e);
+    }
+};
+
+/// ////// Relatório de Famílias e Gêneros //////////
+export const obtemDadosDoRelatorioDeFamiliasEGeneros = async (req, res, next) => {
+    const { paginacao } = req;
+    const { limite, pagina, offset } = paginacao;
+    const { familia } = req.query;
+
+    let where = {};
+    if (familia) {
+        where = {
+            nome: { [Op.like]: `%${familia}%` },
+        };
+    }
+
+    try {
+        const tombos = await Tombo.findAndCountAll({
+            attributes: ['hcf'],
+            include: [
+                {
+                    model: Especie,
+                    attributes: ['id', 'nome'],
+                    required: true,
+                    include: [
+                        {
+                            model: Genero,
+                            attributes: ['id', 'nome'],
+                        },
+                        {
+                            model: Familia,
+                            attributes: ['id', 'nome'],
+                            where,
+                            required: true,
+                        },
+                    ],
+                },
+            ],
+            offset,
+        });
+
+        const dadosPorFamilia1 = agruparPorFamilia2(tombos.rows.map(registro => registro.get({ plain: true })));
+        const dadosPorFamilia = agruparPorFamiliaGeneroEspecie(dadosPorFamilia1);
+        const dadosFormatados = agruparResultadoPorFamilia(dadosPorFamilia);
+
+        if (req.method === 'GET') {
+            res.json({
+                metadados: {
+                    total: tombos.count,
+                    pagina,
+                    limite,
+                },
+                resultado: dadosFormatados,
+            });
+            return;
+        }
+
+        try {
+            const buffer = await generateReport(
+                ReportFamiliasGeneros, {
+                    dados: dadosFormatados,
+                });
+            const readable = new Readable();
+            // eslint-disable-next-line no-underscore-dangle
+            readable._read = () => { }; // Implementa o método _read (obrigatório)
+            readable.push(buffer); // Empurrar os dados binários para o stream
+            readable.push(null); // Indica o fim do fluxo de dados
+            res.setHeader('Content-Type', 'application/pdf');
+            readable.pipe(res);
+        } catch (e) {
+            next(e);
+        }
+
+    } catch (e) {
+        next(e);
+    }
+};
+
+/// ////// Relatório de Código de Barras //////////
+export const obtemDadosDoRelatorioDeCodigoDeBarras = async (req, res, next) => {
+    const { paginacao } = req;
+    const { pagina } = paginacao;
+    const { dataInicio, dataFim } = req.query;
+
+    let whereData = {};
+    if (dataInicio) {
+        if (dataFim && isBefore(new Date(dataFim), new Date(dataInicio))) {
+            res.status(codigosHttp.BAD_REQUEST).json({
+                mensagem: 'A data de fim não pode ser anterior à data de início.',
+            });
+        }
+        if (isBefore(new Date(), new Date(dataInicio))) {
+            res.status(codigosHttp.BAD_REQUEST).json({
+                mensagem: 'A data de início não pode ser maior que a data atual.',
+            });
+        }
+    }
+    whereData = {
+        [Op.and]: [
+            // Transforma os valores em uma data e compara com o intervalo
+            Sequelize.where(
+                literal(
+                    "STR_TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes, 2, '0'), '-', LPAD(data_coleta_dia, 2, '0')), '%Y-%m-%d')"
+                ),
+                { [Op.between]: [dataInicio, dataFim || new Date()] }
+            ),
+        ],
+    };
+
+    try {
+        const entidadeTombo = await Tombo.findAll({
+            attributes: ['hcf', 'numero_coleta', 'nome_cientifico', 'data_coleta_ano', 'data_coleta_mes', 'data_coleta_dia'],
+
+            where: whereData,
+            include: [
+                {
+                    model: TomboFoto,
+                },
+            ],
+        });
+
+        const paraRetornar = entidadeTombo.map(tombo => ({
+            codigobarras: tombo?.tombos_fotos?.length > 0 ? tombo.tombos_fotos[0].codigo_barra : null,
+            id: tombo?.tombos_fotos?.length > 0 ? tombo.tombos_fotos[0].id : null,
+        }));
+
+        if (req.method === 'GET') {
+
+            res.status(codigosHttp.LISTAGEM).json({
+                metadados: {
+                    total: entidadeTombo.length,
+                    pagina,
+                    limite: 999999,
+                },
+                resultado: paraRetornar,
+            });
+
+        }
+    } catch (error) {
+        next(error);
     }
 };

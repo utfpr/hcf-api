@@ -12,7 +12,7 @@ export function Page({
   children
 }: PageProps) {
   return (
-    <table>
+    <table id='tablePage'>
       <thead>
         <tr>
           <th>
@@ -21,7 +21,7 @@ export function Page({
               Herbário da Universidade Tecnológica Federal do Paraná - Campus Campo Mourão
             </h1>
             <h2>{title}</h2>
-            <div style={{ textAlign: 'right', display: 'flex' }}>
+            <div style={{ textAlign: 'right', display: 'flex', paddingLeft: '2.5rem', paddingRight: '2.5rem' }}>
               {textoFiltro && <span>{textoFiltro}</span>}
             </div>
           </th>
