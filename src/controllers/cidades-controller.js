@@ -1,4 +1,5 @@
 import models from '../models';
+import verifyRecaptcha from '../utils/verify-recaptcha';
 
 const { Op } = require('sequelize');
 
@@ -30,6 +31,10 @@ export const listagem = (request, response, next) => {
 
 export const ListaTodosOsTombosComLocalizacao = async (req, res, next) => {
     try {
+        if (req.query.recaptchaToken) {
+            await verifyRecaptcha(req);
+        }
+
         const { cidade, search } = req.query;
         const { limite: limit, pagina: pageInt, offset } = req.paginacao;
 
