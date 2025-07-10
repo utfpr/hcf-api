@@ -99,7 +99,7 @@ export const editarReino = (request, response, next) => {
 export const buscarReinos = async (request, response, next) => {
     try {
         if (request.query.recaptchaToken) {
-            verifyRecaptcha(request);
+            await verifyRecaptcha(request);
         }
 
         const { limite, pagina, offset } = request.paginacao;
@@ -139,7 +139,7 @@ export const buscarReinos = async (request, response, next) => {
 export const buscarFamilias = async (request, response, next) => {
     try {
         if (request.query.recaptchaToken) {
-            verifyRecaptcha(request);
+            await verifyRecaptcha(request);
         }
 
         const { limite, pagina, offset } = request.paginacao;
@@ -303,7 +303,7 @@ export const cadastrarSubfamilia = (request, response, next) => {
 export const buscarSubfamilia = async (req, res, next) => {
     try {
         if (req.query.recaptchaToken) {
-            verifyRecaptcha(req);
+            await verifyRecaptcha(req);
         }
 
         const { limite, pagina, offset } = req.paginacao;
@@ -493,7 +493,7 @@ export const cadastrarGenero = (request, response, next) => {
 export const buscarGeneros = async (request, response, next) => {
     try {
         if (request.query.recaptchaToken) {
-            verifyRecaptcha(request);
+            await verifyRecaptcha(request);
         }
 
         const { limite, pagina, offset } = request.paginacao;
@@ -694,7 +694,7 @@ export const cadastrarEspecie = (request, response, next) => {
 export const buscarEspecies = async (request, response, next) => {
     try {
         if (request.query.recaptchaToken) {
-            verifyRecaptcha(request);
+            await verifyRecaptcha(request);
         }
 
         const { limite, pagina, offset } = request.paginacao;
@@ -921,7 +921,7 @@ export const cadastrarSubespecie = (request, response, next) => {
 export const buscarSubespecies = async (request, response, next) => {
     try {
         if (request.query.recaptchaToken) {
-            verifyRecaptcha(request);
+            await verifyRecaptcha(request);
         }
 
         const { limite, pagina, offset } = request.paginacao;
@@ -1161,7 +1161,7 @@ export const cadastrarVariedade = (request, response, next) => {
 export const buscarVariedades = async (request, response, next) => {
     try {
         if (request.query.recaptchaToken) {
-            verifyRecaptcha(request);
+            await verifyRecaptcha(request);
         }
 
         const { limite, pagina, offset } = request.paginacao;
@@ -1340,7 +1340,7 @@ export const cadastrarAutores = (request, response, next) => {
 export const buscarAutores = async (request, response, next) => {
     try {
         if (request.query.recaptchaToken) {
-            verifyRecaptcha(request);
+            await verifyRecaptcha(request);
         }
 
         const { limite, pagina, offset } = request.paginacao;

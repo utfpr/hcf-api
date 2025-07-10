@@ -1083,7 +1083,7 @@ export const buscarProximoNumeroColetor = (request, response, next) => {
 export const obterTombo = (request, response, next) => {
     try {
         if (request.query.recaptchaToken) {
-            verifyRecaptcha(request);
+            await verifyRecaptcha(request);
         }
         const id = request.params.tombo_id;
 

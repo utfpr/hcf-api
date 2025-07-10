@@ -32,7 +32,7 @@ export const listagem = (request, response, next) => {
 export const ListaTodosOsTombosComLocalizacao = async (req, res, next) => {
     try {
         if (req.query.recaptchaToken) {
-            verifyRecaptcha(req);
+            await verifyRecaptcha(req);
         }
 
         const { cidade, search } = req.query;
