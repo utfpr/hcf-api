@@ -1080,7 +1080,7 @@ export const buscarProximoNumeroColetor = (request, response, next) => {
         .catch(next);
 };
 
-export const obterTombo = (request, response, next) => {
+export const obterTombo = async (request, response, next) => {
     try {
         if (request.query.recaptchaToken) {
             await verifyRecaptcha(request);
