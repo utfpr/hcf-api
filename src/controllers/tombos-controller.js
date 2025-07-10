@@ -1,7 +1,5 @@
 /* eslint-disable quotes */
 // @ts-nocheck
-import axios from 'axios';
-
 import { padronizarNomeDarwincore } from '~/helpers/padroniza-nome-darwincore';
 
 import BadRequestExeption from '../errors/bad-request-exception';
@@ -13,25 +11,7 @@ import pick from '../helpers/pick';
 import { converteInteiroParaRomano } from '../helpers/tombo';
 import models from '../models';
 import codigos from '../resources/codigos-http';
-
-const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET_KEY;
-
-async function verifyRecaptcha(request) {
-    const token = request.query.recaptchaToken;
-    if (!token) {
-        throw new BadRequestExeption(400, 'reCAPTCHA token ausente');
-    }
-
-    const { data } = await axios.post(
-        'https://www.google.com/recaptcha/api/siteverify',
-        null,
-        { params: { secret: RECAPTCHA_SECRET, response: token } }
-    );
-
-    if (!data.success || (data.score !== undefined && data.score < 0.5)) {
-        throw new BadRequestExeption(400, 'Falha na verificação do reCAPTCHA');
-    }
-}
+import verifyRecaptcha from '../utils/verify-recaptcha';
 
 const {
     Solo, Relevo, Cidade, Estado, Vegetacao, FaseSucessional, Pais, Tipo, LocalColeta, Familia, sequelize,
