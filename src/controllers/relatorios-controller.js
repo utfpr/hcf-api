@@ -10,7 +10,7 @@ import {
     formataTextFilterColetor,
     agruparPorLocal,
     agruparPorFamiliaGeneroEspecie,
-    agruparPorFamilia2,
+    agruparPorFamiliaComContadorECodigo,
     agruparResultadoPorFamilia,
     agruparPorGenero,
 } from '~/helpers/formata-dados-relatorio';
@@ -563,15 +563,6 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
         }
 
         try {
-            // res.json({
-            //   metadados: {
-            //     total: tombos.count,
-            //     pagina,
-            //     limite,
-            //   },
-            //   resultado: dadosFormatados,
-            //   filtro: formataTextFilter(local, dataInicio, dataFim || new Date()),
-            // });
             const buffer = await generateReport(
                 ReportLocalColeta, {
                     dados: dadosFormatados.locais,
@@ -632,7 +623,7 @@ export const obtemDadosDoRelatorioDeFamiliasEGeneros = async (req, res, next) =>
             offset,
         });
 
-        const dadosPorFamilia1 = agruparPorFamilia2(tombos.rows.map(registro => registro.get({ plain: true })));
+        const dadosPorFamilia1 = agruparPorFamiliaComContadorECodigo(tombos.rows.map(registro => registro.get({ plain: true })));
         const dadosPorFamilia = agruparPorFamiliaGeneroEspecie(dadosPorFamilia1);
         const dadosFormatados = agruparResultadoPorFamilia(dadosPorFamilia);
 
@@ -717,18 +708,14 @@ export const obtemDadosDoRelatorioDeCodigoDeBarras = async (req, res, next) => {
             id: tombo?.tombos_fotos?.length > 0 ? tombo.tombos_fotos[0].id : null,
         }));
 
-        if (req.method === 'GET') {
-
-            res.status(codigosHttp.LISTAGEM).json({
-                metadados: {
-                    total: entidadeTombo.length,
-                    pagina,
-                    limite: 999999,
-                },
-                resultado: paraRetornar,
-            });
-
-        }
+        res.status(codigosHttp.LISTAGEM).json({
+            metadados: {
+                total: entidadeTombo.length,
+                pagina,
+                limite: 999999,
+            },
+            resultado: paraRetornar,
+        });
     } catch (error) {
         next(error);
     }
@@ -789,7 +776,7 @@ export const obtemDadosDoRelatorioDeQuantidade = async (req, res, next) => {
             offset,
         });
 
-        const dadosPorFamilia1 = agruparPorFamilia2(entidades.rows.map(registro => registro.get({ plain: true })));
+        const dadosPorFamilia1 = agruparPorFamiliaComContadorECodigo(entidades.rows.map(registro => registro.get({ plain: true })));
         const dadosPorFamilia = agruparPorGenero(dadosPorFamilia1);
 
         if (req.method === 'GET') {
