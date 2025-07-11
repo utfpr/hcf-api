@@ -375,4 +375,26 @@ export default app => {
             listagensMiddleware,
             controller.obtemDadosDoRelatorioDeCodigoDeBarras,
         ]);
+
+    app.route('/relatorio/quantidade-por-familia')
+        .get([
+            tokensMiddleware([
+                TIPOS_USUARIOS.CURADOR,
+                TIPOS_USUARIOS.OPERADOR,
+                TIPOS_USUARIOS.IDENTIFICADOR,
+            ]),
+            listagensMiddleware,
+            controller.obtemDadosDoRelatorioDeQuantidade,
+        ]);
+
+    app.route('/relatorio/quantidade-por-familia')
+        .post([
+            tokensMiddleware([
+                TIPOS_USUARIOS.CURADOR,
+                TIPOS_USUARIOS.OPERADOR,
+                TIPOS_USUARIOS.IDENTIFICADOR,
+            ]),
+            listagensMiddleware,
+            controller.obtemDadosDoRelatorioDeQuantidade,
+        ]);
 };
