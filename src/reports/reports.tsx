@@ -15,13 +15,10 @@ const generateFullHtmlOutput = (content: string, title: string = 'HCF') => `<!DO
 </body>
 </html>`
 
-export async function generateReport<P extends React.Attributes>(Component: ComponentType<P>, props: P, opcoes?: { dinamico?: boolean; titulo?: string }) {
-  const { dinamico = false, titulo = 'HCF' } = opcoes || {}
+export async function generateReport<P extends React.Attributes>(Component: ComponentType<P>, props: P, opcoes?: { titulo?: string }) {
+  const { titulo = 'HCF' } = opcoes || {}
 
-  const htmlContent = generateFullHtmlOutput(
-    dinamico
-      ? renderToString(<Component {...props} />)
-      : renderToStaticMarkup(<Component {...props} />),
+  const htmlContent = generateFullHtmlOutput(renderToStaticMarkup(<Component {...props} />),
     titulo
   )
   
