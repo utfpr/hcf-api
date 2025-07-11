@@ -69,6 +69,8 @@ export async function generateReport<P extends React.Attributes>(Component: Comp
     })
   ])
 
+  const date = new Date().toLocaleDateString('pt-BR')
+
   const buffer = await page.pdf({
     format: 'A4',
     printBackground: true,
@@ -76,9 +78,19 @@ export async function generateReport<P extends React.Attributes>(Component: Comp
     margin: {
       top: '0',
       right: '0',
-      bottom: '0',
+      bottom: '50px',
       left: '0'
-    }
+    },
+    displayHeaderFooter: true,
+    footerTemplate: `
+      <div style="width: 100%; font-size: 10px; padding: 0 20px; color: #555; display: flex; justify-content: space-between; align-items: center;">
+        <span>${date}</span>
+        <div>
+          <span class="pageNumber"></span>/<span class="totalPages"></span>
+        </div>
+      </div>
+    `,
+    headerTemplate: `<div></div>`
   })
 
   await browser.close()
