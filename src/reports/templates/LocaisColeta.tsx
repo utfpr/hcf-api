@@ -1,53 +1,6 @@
 import React from "react";
 import { Page } from "../components/Page";
 
-function obterSiglaDoEstado(estado: string) {
-  if (!estado) return '';
-
-  switch (estado.trim().toLowerCase()) {
-    case 'acre': return 'AC';
-    case 'alagoas': return 'AL';
-    case 'amapá':
-    case 'amapa': return 'AP';
-    case 'amazonas': return 'AM';
-    case 'bahia': return 'BA';
-    case 'ceará':
-    case 'ceara': return 'CE';
-    case 'distrito federal': return 'DF';
-    case 'espírito santo':
-    case 'espirito santo': return 'ES';
-    case 'goiás':
-    case 'goias': return 'GO';
-    case 'maranhão':
-    case 'maranhao': return 'MA';
-    case 'mato grosso': return 'MT';
-    case 'mato grosso do sul': return 'MS';
-    case 'minas gerais': return 'MG';
-    case 'pará':
-    case 'para': return 'PA';
-    case 'paraíba':
-    case 'paraiba': return 'PB';
-    case 'paraná':
-    case 'parana': return 'PR';
-    case 'pernambuco': return 'PE';
-    case 'piauí':
-    case 'piaui': return 'PI';
-    case 'rio de janeiro': return 'RJ';
-    case 'rio grande do norte': return 'RN';
-    case 'rio grande do sul': return 'RS';
-    case 'rondônia':
-    case 'rondonia': return 'RO';
-    case 'roraima': return 'RR';
-    case 'santa catarina': return 'SC';
-    case 'são paulo':
-    case 'sao paulo': return 'SP';
-    case 'sergipe': return 'SE';
-    case 'tocantins': return 'TO';
-
-    default: return estado;
-  }
-}
-
 interface Registro {
   hcf: number;
   data_coleta_ano: number;
@@ -67,6 +20,7 @@ interface Registro {
 
 interface LocaisColeta {
   estado: string;
+  estadoSigla: string;
   municipio: string;
   local: string;
   registros: Registro[];
@@ -145,7 +99,7 @@ function RelacaoLocaisColeta({ dados, total, textoFiltro }: RelacaoLocaisColetaP
       <div>
         <div key={item.local} id="grupoLocalColeta">
           <div>
-            <h1>UF.: {obterSiglaDoEstado(item.estado)}</h1>
+            <h1>UF.: {item.estadoSigla}</h1>
           </div>
           <div>
             <h1>Município: {item.municipio}</h1>
