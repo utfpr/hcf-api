@@ -137,7 +137,7 @@ export const agruparPorFamilia = dados => dados.reduce((acc, obj) => {
     return acc;
 }, []);
 
-export const agruparPorFamilia2 = dados => dados.reduce((acc, obj) => {
+export const agruparPorFamiliaComContadorECodigo = dados => dados.reduce((acc, obj) => {
     const nomeFamilia = obj?.especy?.familia?.nome || 'Não Informada';
     const grupoExistente = acc.find(item => item.familia === nomeFamilia);
 
