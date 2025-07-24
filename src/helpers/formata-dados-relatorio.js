@@ -137,7 +137,7 @@ export const agruparPorFamilia = dados => dados.reduce((acc, obj) => {
     return acc;
 }, []);
 
-export const agruparPorFamilia2 = dados => dados.reduce((acc, obj) => {
+export const agruparPorFamiliaComContadorECodigo = dados => dados.reduce((acc, obj) => {
     const nomeFamilia = obj?.especy?.familia?.nome || 'Não Informada';
     const grupoExistente = acc.find(item => item.familia === nomeFamilia);
 
@@ -233,6 +233,7 @@ export function agruparPorLocal(dados) {
         const locaisColetum = entradaOriginal.locais_coletum;
         const cidade = locaisColetum?.cidade;
         const estado = cidade?.estado?.nome || 'Desconhecido';
+        const estadoSigla = cidade?.estado?.sigla || '-';
         const municipio = cidade?.nome || 'Desconhecido';
         const local = locaisColetum?.descricao?.trim() || 'Local não informado';
 
@@ -250,6 +251,7 @@ export function agruparPorLocal(dados) {
         if (!agrupado[chave]) {
             agrupado[chave] = {
                 estado,
+                estadoSigla,
                 municipio,
                 local,
                 coordenadas: coordenadasFormatadas,
@@ -270,4 +272,31 @@ export function agruparPorLocal(dados) {
         locais, // agora é um array
         quantidadeTotal,
     };
+}
+
+export function agruparPorGenero(dados) {
+    return dados.map(familia => {
+        const generosMap = new Map();
+
+        familia.itens.forEach(item => {
+            const { genero } = item.especy;
+            const key = genero.id;
+
+            if (!generosMap.has(key)) {
+                generosMap.set(key, {
+                    id: genero.id,
+                    nome: genero.nome,
+                    quantidade: 0,
+                });
+            }
+
+            generosMap.get(key).quantidade += 1;
+        });
+
+        return {
+            familia: familia.familia,
+            codigo: familia.codigo,
+            generos: Array.from(generosMap.values()).sort((a, b) => b.quantidade - a.quantidade),
+        };
+    });
 }

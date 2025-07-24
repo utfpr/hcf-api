@@ -10,13 +10,15 @@ import {
     formataTextFilterColetor,
     agruparPorLocal,
     agruparPorFamiliaGeneroEspecie,
-    agruparPorFamilia2,
+    agruparPorFamiliaComContadorECodigo,
     agruparResultadoPorFamilia,
+    agruparPorGenero,
 } from '~/helpers/formata-dados-relatorio';
 import { generateReport } from '~/reports/reports';
 import ReportInventario from '~/reports/templates/InventarioEspecies';
 import ReportLocalColeta from '~/reports/templates/LocaisColeta';
 import ReportFamiliasGeneros from '~/reports/templates/RelacaoFamiliasGenero';
+import ReportQtd from '~/reports/templates/RelacaoFamiliasGeneroQtd';
 import ReportColetaModelo1 from '~/reports/templates/RelacaoTombos';
 import ReportColetaModelo2 from '~/reports/templates/RelacaoTombosComColeta';
 import codigosHttp from '~/resources/codigos-http';
@@ -530,6 +532,7 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
                         include: [
                             {
                                 model: Estado,
+                                attributes: ['id', 'nome', 'sigla'],
                                 include: [
                                     {
                                         model: Pais,
@@ -560,15 +563,6 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
         }
 
         try {
-            // res.json({
-            //   metadados: {
-            //     total: tombos.count,
-            //     pagina,
-            //     limite,
-            //   },
-            //   resultado: dadosFormatados,
-            //   filtro: formataTextFilter(local, dataInicio, dataFim || new Date()),
-            // });
             const buffer = await generateReport(
                 ReportLocalColeta, {
                     dados: dadosFormatados.locais,
@@ -629,7 +623,7 @@ export const obtemDadosDoRelatorioDeFamiliasEGeneros = async (req, res, next) =>
             offset,
         });
 
-        const dadosPorFamilia1 = agruparPorFamilia2(tombos.rows.map(registro => registro.get({ plain: true })));
+        const dadosPorFamilia1 = agruparPorFamiliaComContadorECodigo(tombos.rows.map(registro => registro.get({ plain: true })));
         const dadosPorFamilia = agruparPorFamiliaGeneroEspecie(dadosPorFamilia1);
         const dadosFormatados = agruparResultadoPorFamilia(dadosPorFamilia);
 
@@ -714,17 +708,106 @@ export const obtemDadosDoRelatorioDeCodigoDeBarras = async (req, res, next) => {
             id: tombo?.tombos_fotos?.length > 0 ? tombo.tombos_fotos[0].id : null,
         }));
 
-        if (req.method === 'GET') {
+        res.status(codigosHttp.LISTAGEM).json({
+            metadados: {
+                total: entidadeTombo.length,
+                pagina,
+                limite: 999999,
+            },
+            resultado: paraRetornar,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
 
-            res.status(codigosHttp.LISTAGEM).json({
-                metadados: {
-                    total: entidadeTombo.length,
-                    pagina,
-                    limite: 999999,
-                },
-                resultado: paraRetornar,
+/// // Relatório de Quantidade //////////
+export const obtemDadosDoRelatorioDeQuantidade = async (req, res, next) => {
+    const { paginacao } = req;
+    const { limite, pagina, offset } = paginacao;
+    const { dataInicio, dataFim } = req.query;
+    let whereData = {};
+    if (dataInicio) {
+        if (dataFim && isBefore(new Date(dataFim), new Date(dataInicio))) {
+            res.status(codigosHttp.BAD_REQUEST).json({
+                mensagem: 'A data de fim não pode ser anterior à data de início.',
             });
+        }
+        if (isBefore(new Date(), new Date(dataInicio))) {
+            res.status(codigosHttp.BAD_REQUEST).json({
+                mensagem: 'A data de início não pode ser maior que a data atual.',
+            });
+        }
+        whereData = {
+            [Op.and]: [
+                // Transforma os valores em uma data e compara com o intervalo
+                Sequelize.where(
+                    literal(
+                        "STR_TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes, 2, '0'), '-', LPAD(data_coleta_dia, 2, '0')), '%Y-%m-%d')"
+                    ),
+                    { [Op.between]: [dataInicio, dataFim || new Date()] }
+                ),
+            ],
+        };
+    }
 
+    try {
+        const entidades = await Tombo.findAndCountAll({
+            attributes: ['hcf', 'numero_coleta', 'nome_cientifico', 'data_coleta_ano', 'data_coleta_mes', 'data_coleta_dia'],
+            where: whereData,
+            include: [
+                {
+                    model: Especie,
+                    attributes: ['id', 'nome'],
+                    required: true,
+                    include: [
+                        {
+                            model: Genero,
+                            attributes: ['id', 'nome'],
+                        },
+                        {
+                            model: Familia,
+                            attributes: ['id', 'nome'],
+                            required: true,
+                        },
+                    ],
+                },
+            ],
+            offset,
+        });
+
+        const dadosPorFamilia1 = agruparPorFamiliaComContadorECodigo(entidades.rows.map(registro => registro.get({ plain: true })));
+        const dadosPorFamilia = agruparPorGenero(dadosPorFamilia1);
+
+        if (req.method === 'GET') {
+            res.json({
+                metadados: {
+                    total: entidades.count,
+                    pagina,
+                    limite,
+                },
+                resultado: dadosPorFamilia,
+            });
+            return;
+        }
+
+        // Implementar lógica para gerar relatório em PDF se necessário
+        try {
+            const buffer = await generateReport(
+                ReportQtd, {
+                    dados: dadosPorFamilia,
+                    total: entidades.count,
+                    textoFiltro: formataTextFilter(null, dataInicio, dataFim || new Date()),
+                });
+            const readable = new Readable();
+            // eslint-disable-next-line no-underscore-dangle
+            readable._read = () => { }; // Implementa o método _read (obrigatório)
+            readable.push(buffer); // Empurrar os dados binários para o stream
+            readable.push(null); // Indica o fim do fluxo de dados
+            res.setHeader('Content-Type', 'application/pdf');
+            readable.pipe(res);
+        } catch (error) {
+            next(error);
         }
     } catch (error) {
         next(error);
