@@ -13,7 +13,7 @@ import routes from './routes';
 const app = express();
 app.use(cors());
 
-app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(parser.json());
 app.use(morgan('dev'));
 
