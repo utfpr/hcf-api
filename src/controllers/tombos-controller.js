@@ -321,7 +321,7 @@ export const cadastro = (request, response, next) => {
                     jsonTombo = {
                         ...jsonTombo,
                         // eslint-disable-next-line max-len
-                        ...pick(taxonomia, ['nome_cientifico', 'variedade_id', 'especie_id', 'genero_id', 'familia_id', 'reino_id', 'sub_familia_id', 'sub_especie_id']),
+                        ...pick(taxonomia, ['nome_cientifico', 'variedade_id', 'especie_id', 'genero_id', 'familia_id', 'sub_familia_id', 'sub_especie_id']),
                     };
                 }
                 if (colecoesAnexas && colecoesAnexas.id) {
@@ -1399,7 +1399,6 @@ export const obterTombo = async (request, response, next) => {
                 Familia.findAll({
                     where: {
                         id: dadosTombo.familia?.id,
-                        reino_id: dadosTombo.reino?.id,
                     },
                 })
             )
