@@ -23,7 +23,7 @@
         ],
         "@babel/plugin-proposal-class-properties"
     ],
-    "comments": false,
+    "comments": true,
     "sourceMaps": "inline",
     "ignore": [
       "**/*.d.ts"
