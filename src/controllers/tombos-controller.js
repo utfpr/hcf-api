@@ -33,12 +33,6 @@ export const cadastro = (request, response, next) => {
         observacoes,
     } = request.body.json;
     let tomboCriado = null;
-    let nomeFamilia = '';
-    let nomeGenero = '';
-    let nomeSubfamilia = '';
-    let nomeEspecie = '';
-    let nomeSubespecie = '';
-    let nomeVariedade = '';
 
     const callback = transaction =>
         Promise.resolve()
@@ -162,7 +156,6 @@ export const cadastro = (request, response, next) => {
                         throw new BadRequestExeption(402);
                     }
                     taxonomia.nome_cientifico = familia.nome;
-                    nomeFamilia = familia.nome;
                 }
                 return undefined;
             })
@@ -184,7 +177,6 @@ export const cadastro = (request, response, next) => {
                         throw new BadRequestExeption(403);
                     }
                     taxonomia.nome_cientifico += ` ${subfamilia.nome}`;
-                    nomeSubfamilia = subfamilia.nome;
                 }
                 return undefined;
             })
@@ -206,7 +198,6 @@ export const cadastro = (request, response, next) => {
                         throw new BadRequestExeption(404);
                     }
                     taxonomia.nome_cientifico += ` ${genero.nome}`;
-                    nomeGenero = genero.nome;
                 }
                 return undefined;
             })
@@ -228,7 +219,6 @@ export const cadastro = (request, response, next) => {
                         throw new BadRequestExeption(405);
                     }
                     taxonomia.nome_cientifico += ` ${especie.nome}`;
-                    nomeEspecie = especie.nome;
                 }
                 return undefined;
             })
@@ -250,7 +240,6 @@ export const cadastro = (request, response, next) => {
                         throw new BadRequestExeption(406);
                     }
                     taxonomia.nome_cientifico += ` ${subespecie.nome}`;
-                    nomeSubespecie = subespecie.nome;
                 }
                 return undefined;
             })
@@ -272,7 +261,6 @@ export const cadastro = (request, response, next) => {
                         throw new BadRequestExeption(407);
                     }
                     taxonomia.nome_cientifico += ` ${variedade.nome}`;
-                    nomeVariedade = variedade.nome;
                 }
                 return undefined;
             })
@@ -384,8 +372,7 @@ export const cadastro = (request, response, next) => {
                 }
                 if (tomboCriado !== null) {
                     if (identificacao && identificacao.identificadores && identificacao.identificadores.length > 0) {
-                        const promises = [];
-                        identificacao.identificadores.forEach((identificador_id, index) => {
+                        const promises = identificacao.identificadores.map((identificador_id, index) => {
                             const isPrincipal = index === 0;
                             const dadosIdentificadores = {
                                 identificador_id,
@@ -393,59 +380,11 @@ export const cadastro = (request, response, next) => {
                                 ordem: index + 1,
                                 principal: isPrincipal,
                             };
-                            promises.push(
-                                TomboIdentificador.create(dadosIdentificadores, {
-                                    transaction,
-                                })
-                            );
+                            return TomboIdentificador.create(dadosIdentificadores, {
+                                transaction,
+                            });
                         });
-                        let status = 'ESPERANDO';
-                        const jsonTaxonomia = {};
-                        const dados = {
-                            tombo_hcf: tomboCriado.hcf,
-                            usuario_id: identificacao.identificadores[0],
-                            status,
-                            ativo: true,
-                            identificacao: 1,
-                        };
-
-                        principal.hcf = tomboCriado.hcf;
-                        if (request.usuario.tipo_usuario_id === 1) {
-                            status = 'APROVADO';
-                        }
-                        dados.status = status;
-                        if (nomeFamilia !== '') {
-                            jsonTaxonomia.familia_nome = nomeFamilia;
-                        }
-                        if (nomeSubfamilia !== '') {
-                            jsonTaxonomia.subfamilia_nome = nomeSubfamilia;
-                        }
-                        if (nomeGenero !== '') {
-                            jsonTaxonomia.genero_nome = nomeGenero;
-                        }
-                        if (nomeEspecie !== '') {
-                            jsonTaxonomia.especie_nome = nomeEspecie;
-                        }
-                        if (nomeSubespecie !== '') {
-                            jsonTaxonomia.subespecie_nome = nomeSubespecie;
-                        }
-                        if (nomeVariedade !== '') {
-                            jsonTaxonomia.variedade_nome = nomeVariedade;
-                        }
-                        dados.tombo_json = JSON.stringify(jsonTaxonomia);
-
-                        if (identificacao && identificacao.data_identificacao) {
-                            if (identificacao.data_identificacao.dia) {
-                                dados.data_identificacao_dia = identificacao.data_identificacao.dia;
-                            }
-                            if (identificacao.data_identificacao.mes) {
-                                dados.data_identificacao_mes = identificacao.data_identificacao.mes;
-                            }
-                            if (identificacao.data_identificacao.ano) {
-                                dados.data_identificacao_ano = identificacao.data_identificacao.ano;
-                            }
-                        }
-                        return Alteracao.create(dados, { transaction });
+                        return Promise.all(promises);
                     }
                 }
                 return undefined;
