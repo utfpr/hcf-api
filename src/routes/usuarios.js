@@ -146,6 +146,7 @@ export default app => {
             tokensMiddleware([
                 TIPOS_USUARIOS.CURADOR,
                 TIPOS_USUARIOS.OPERADOR,
+                TIPOS_USUARIOS.IDENTIFICADOR,
             ]),
             controller.obtemIdentificadores,
         ]);
