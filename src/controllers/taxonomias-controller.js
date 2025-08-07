@@ -286,7 +286,7 @@ export const cadastrarSubfamilia = (request, response, next) => {
 
             return familiaEncontrada;
         })
-        .then(Subfamilia.create({ nome,
+        .then(() => Subfamilia.create({ nome,
             familia_id: familiaId,
         }, transaction));
     sequelize.transaction(callback)
@@ -475,7 +475,7 @@ export const cadastrarGenero = (request, response, next) => {
 
             return familiaEncontrada;
         })
-        .then(Genero.create({ nome,
+        .then(() => Genero.create({ nome,
             familia_id: familiaId,
         }, transaction));
     sequelize.transaction(callback)
