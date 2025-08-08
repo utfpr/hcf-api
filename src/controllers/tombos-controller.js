@@ -477,7 +477,7 @@ function alteracaoCuradorouOperador(request, response, next) {
     const dataIdentificacao = body?.identificacao?.data_identificacao;
 
     const { coletores } = body || null;
-    const { complementares } = body?.coletor_complementar?.complementares || null;
+    const complementares = body?.coletor_complementar?.complementares || null;
     const colecoesAnexasTipo = body?.colecoes_anexas?.tipo;
     const colecoesAnexasObservacoes = body?.colecoes_anexas?.observacoes;
 
@@ -628,13 +628,6 @@ function alteracaoCuradorouOperador(request, response, next) {
                     .catch(next);
             }
         });
-    // .then(alteracaoIdent => {
-    //     if (request.usuario.tipo_usuario_id === 3) {
-    //         if (!alteracaoIdent) {
-    //             throw new BadRequestExeption(421);
-    //         }
-    //     }
-    // });
 }
 
 export function alteracao(request, response, next) {
@@ -648,10 +641,11 @@ export function alteracao(request, response, next) {
     };
     sequelize.transaction(callback)
         .then(() => {
-            response.status(codigos.LISTAGEM).send();
+            if (request.usuario.tipo_usuario_id === 3) {
+                response.status(codigos.EDITAR_SEM_RETORNO).send();
+            }
         })
         .catch(next);
-
 }
 
 export const desativar = (request, response, next) => {
