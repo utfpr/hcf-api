@@ -1,4 +1,16 @@
-function associate() {}
+function associate(modelos) {
+    const { TomboIdentificador, Tombo, Identificador } = modelos;
+
+    TomboIdentificador.belongsTo(Tombo, {
+        foreignKey: 'tombo_hcf',
+        targetKey: 'hcf',
+    });
+
+    TomboIdentificador.belongsTo(Identificador, {
+        foreignKey: 'identificador_id',
+        targetKey: 'id',
+    });
+}
 
 export const defaultScope = {
     attributes: {
