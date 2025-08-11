@@ -13,9 +13,10 @@
 
         html,
         body {
-          font-size: 11px;
+          font-size: 12px;
           font-family: Arial, Helvetica, sans-serif;
-          padding: 10px;
+          padding-top: 8px;
+          padding-left: 8px;
         }
 
         body {
@@ -40,7 +41,7 @@
           border: 1px solid #333;
           width: 14cm;
           min-height: 9cm;
-          margin-bottom: 20px;
+          margin-bottom: 5px;
         }
 
         .tabela-principal td {
@@ -70,38 +71,41 @@
     <% if ( imprimir === '0') { %>
         <% fotos.length = 1%>
     <% } %>
-    <% for (let i = 0; i < fotos.length; i++) { %>
-    <% if (i !== 0 && i % 3 === 0) { %>
-    <div class="break-line-before" style="height: 20px"></div>
+    <% const copias = parseInt(numero_copias || 1); %>
+    <% let fichaIndex = 0; %>
+    <% for (let i = 0; i < fotos.length; i++) { 
+      for (let j = 0; j < copias; j++) { %>
+    <% if (fichaIndex !== 0 && fichaIndex % 3 === 0) { %>
+      
     <% } %>
     <table class="tabela-principal">
         <tr>
             <td rowspan="2" width="100" class="celular-imagem text-center">
                 <img width="100" src="/assets/logotipo_HCF.png" alt="Logo UTFPR">
-                <div style="font-size: .6em;"><b>CAMPUS CAMPO MOURÃO</b></div>
+                <div style="font-size: .5em;"><b>CAMPUS CAMPO MOURÃO</b></div>
             </td>
             <td colspan="3" class="text-center">
-                <b>Herbário da Universidade Tecnológica Federal do Paraná - Campus Campo Mourão</b>
+                <b style="font-size: 14px;">Herbário da Universidade Tecnológica Federal do Paraná - <br/>Campus Campo Mourão</b>
             </td>
         </tr>
         <tr class="border-bottom">
             <td colspan="2" style="border: none;">
-                <b>HCF:</b> <%- tombo.hcf %>
+                <b style="font-size: 14px;">HCF <%- tombo.hcf %></b>
             </td>
-            <td colspan="2">
-                <b>Data:</b> <%- romano_data_tombo %>
+            <td colspan="2" style="font-size: 14px;">
+                <div style="display: flex;"><b>Data:</b> <%- romano_data_tombo %></div>
             </td>
         </tr>
         <% if (familia && familia.nome) { %>
         <tr>
             <td colspan="4">
-                <b>Família: </b> <%- tombo.familia.nome %>
+                <b style="font-size: 14px;">Família: </b> <%- tombo.familia.nome %>
             </td>
         </tr>
         <% } %>
         <tr>
             <td colspan="4">
-                <b>Espécie:</b>
+                <b style="font-size: 14px;">Espécie:</b>
                 <% if (genero && genero.nome) { %>
                     <i><%- genero.nome %></i>
                 <% } %>
@@ -130,22 +134,22 @@
         </tr>
         <tr>
             <td colspan="4">
-                <b>Nome Vulgar:</b> <%- tombo.nomes_populares %>
+                <b style="font-size: 14px;">Nome Vulgar:</b> <%- tombo.nomes_populares %>
             </td>
         </tr>
         <% if (identificacao && identificacao.usuario) { %>
         <tr>
             <td colspan="3">
-                <b>Identificador:</b> <%- identificacao.usuario.nome %>
+                <b style="font-size: 14px;">Identificador:</b> <%- identificacao.usuario.nome %>
             </td>
             <td>
-                <b>Data:</b> <%- romano_data_identificacao %>
+                <b style="font-size: 14px;">Data:</b> <%- romano_data_identificacao %>
             </td>
         </tr>
         <% } %>
         <tr>
             <td colspan="4">
-                <b>Local de coleta:</b>
+                <b style="font-size: 14px;">Local de coleta:</b>
                 <% if (localColeta && localColeta.complemento) { %>
                     <%- localColeta.complemento %>
                 <% } %>
@@ -168,7 +172,7 @@
         </tr>
         <tr>
             <td colspan="4">
-                <b>Observações:</b> 
+                <b style="font-size: 14px;">Observações:</b> 
                 <% if (tombo && tombo.observacao) { %>
                     <%- tombo.observacao %>
                 <% } %>
@@ -203,7 +207,7 @@
         </tr>
         <tr>
             <td colspan="2">
-                <b><%- tombo.coletores.length == 1 ? 'Coletor' : 'Coletores' %>:</b> <%- tombo.coletores %>
+                <b style="font-size: 14px;"><%- tombo.coletores.length == 1 ? 'Coletor' : 'Coletores' %>:</b> <%- tombo.coletores %>
             </td>
             <td width="20%" class="text-right">
                 <b>nº:</b> <%- tombo.numero_coleta %>
@@ -228,6 +232,8 @@
             JsBarcode(id, cbarra, { margin: 0, width: 1.4, height: 40, fontSize: 10 });
         });
     </script>
+    <% } %>
+    <% fichaIndex++; %>
     <% } %>
     <% } %>
     <script src="/assets/js/jsbarcode.code128.min.js"></script>

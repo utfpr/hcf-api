@@ -105,6 +105,7 @@ const options = {
     },
     apis: [
         './src/routes/*.js',
+        './dist/routes/*.js',
     ],
 };
 

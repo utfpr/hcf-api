@@ -1,6 +1,6 @@
 import * as coletoresController from '../controllers/coletor-controller';
 import listagensMiddleware from '../middlewares/listagens-middleware';
-import tokensMiddleware from '../middlewares/tokens-middleware';
+import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middleware';
 import validacoesMiddleware from '../middlewares/validacoes-middleware';
 import atualizarColetorEsquema from '../validators/coletor-atualiza';
 import cadastrarColetorEsquema from '../validators/coletor-cadastro';
@@ -75,7 +75,7 @@ export default app => {
      *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/coletores').post([
-        tokensMiddleware(['CURADOR']),
+        tokensMiddleware([TIPOS_USUARIOS.CURADOR]),
         validacoesMiddleware(cadastrarColetorEsquema),
         coletoresController.cadastraColetor,
     ]);
@@ -121,7 +121,7 @@ export default app => {
      *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/coletores/:id').get([
-        tokensMiddleware(['CURADOR']),
+        tokensMiddleware([TIPOS_USUARIOS.CURADOR]),
         coletoresController.encontraColetor,
     ]);
 
@@ -199,7 +199,7 @@ export default app => {
      *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/coletores').get([
-        tokensMiddleware(['CURADOR']),
+        tokensMiddleware([TIPOS_USUARIOS.CURADOR]),
         validacoesMiddleware(listarColetoresEsquema),
         listagensMiddleware,
         coletoresController.listaColetores,
@@ -267,7 +267,7 @@ export default app => {
      *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/coletores/:id').put([
-        tokensMiddleware(['CURADOR']),
+        tokensMiddleware([TIPOS_USUARIOS.CURADOR]),
         validacoesMiddleware(atualizarColetorEsquema),
         coletoresController.atualizaColetor,
     ]);
@@ -299,7 +299,7 @@ export default app => {
      *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/coletores/:id').delete([
-        tokensMiddleware(['CURADOR']),
+        tokensMiddleware([TIPOS_USUARIOS.CURADOR]),
         validacoesMiddleware(desativarColetorEsquema),
         coletoresController.desativaColetor,
     ]);

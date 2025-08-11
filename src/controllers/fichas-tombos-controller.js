@@ -41,6 +41,7 @@ function formataDataSaida(data) {
 
 export default function fichaTomboController(request, response, next) {
     const { tombo_id: tomboId } = request.params;
+    const { qtd } = request.query;
 
     Promise.resolve()
         .then(() => {
@@ -250,6 +251,7 @@ export default function fichaTomboController(request, response, next) {
                 romano_data_tombo: romanoDataTombo,
                 romano_data_identificacao: romanoDataIdentificacao,
                 romano_data_coleta: romanoDataColeta,
+                numero_copias: qtd || 1,
             };
 
             const caminhoArquivoHtml = path.resolve(__dirname, '../views/ficha-tombo.ejs');
