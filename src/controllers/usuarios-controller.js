@@ -6,7 +6,7 @@ import models from '../models';
 import codigos from '../resources/codigos-http';
 
 const {
-    Sequelize: { Op }, Usuario, TipoUsuario, Coletor,
+    Sequelize: { Op }, Usuario, TipoUsuario, Coletor, Identificador,
 } = models;
 
 export const encontraUsuarioAtivoPorEmail = email => {
@@ -262,11 +262,10 @@ export const obtemIdentificadores = (request, response, next) => {
     const { nome } = request.query;
 
     Promise.resolve()
-        .then(() => Usuario.findAll({
+        .then(() => Identificador.findAll({
             attributes: ['id', 'nome'],
             order: [['nome', 'ASC']],
             where: {
-                ativo: true,
                 nome: { [Op.like]: `%${nome}%` },
             },
             limit: 10,
