@@ -1,4 +1,4 @@
-import { checkSchema, validationResult } from 'express-validator/check';
+import { checkSchema, validationResult } from 'express-validator';
 
 import UnprocessableEntityException from '../errors/unprocessable-entity-exception';
 

@@ -2,7 +2,7 @@
 
 ## Pré-requisitos
 
-- [NodeJS >= 18.16](https://nodejs.org/en)
+- [NodeJS >= 22](https://nodejs.org/en)
 - [Yarn](https://yarnpkg.com)
 - [Docker](https://www.docker.com)
 - [Docker Compose](https://docs.docker.com/compose)

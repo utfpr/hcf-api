@@ -1,6 +1,6 @@
 import * as identificadoresController from '../controllers/identificador-controller';
 import listagensMiddleware from '../middlewares/listagens-middleware';
-import tokensMiddleware from '../middlewares/tokens-middleware';
+import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middleware';
 import validacoesMiddleware from '../middlewares/validacoes-middleware';
 import atualizarIdentificadorEsquema from '../validators/identificador-atualiza';
 import cadastrarIdentificadorEsquema from '../validators/identificador-cadastro';
@@ -62,7 +62,7 @@ export default app => {
      *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/identificadores').post([
-        tokensMiddleware(['CURADOR']),
+        tokensMiddleware([TIPOS_USUARIOS.CURADOR]),
         validacoesMiddleware(cadastrarIdentificadorEsquema),
         identificadoresController.cadastraIdentificador,
     ]);
@@ -103,7 +103,7 @@ export default app => {
      *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/identificadores/:id').get([
-        tokensMiddleware(['CURADOR']),
+        tokensMiddleware([TIPOS_USUARIOS.CURADOR]),
         listagensMiddleware,
         identificadoresController.encontradaIdentificador,
     ]);
@@ -167,7 +167,7 @@ export default app => {
      *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/identificadores').get([
-        tokensMiddleware(['CURADOR']),
+        tokensMiddleware([TIPOS_USUARIOS.CURADOR]),
         validacoesMiddleware(listarIdentificadoresEsquema),
         listagensMiddleware,
         identificadoresController.listaIdentificadores,
@@ -225,7 +225,7 @@ export default app => {
      *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/identificadores/:id').put([
-        tokensMiddleware(['CURADOR']),
+        tokensMiddleware([TIPOS_USUARIOS.CURADOR]),
         validacoesMiddleware(atualizarIdentificadorEsquema),
         identificadoresController.atualizaIdentificador,
     ]);

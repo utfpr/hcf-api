@@ -47,31 +47,20 @@ export function selectCodBarra() {
 }
 
 /**
- * A função criaTabelaReflora, cria uma tabela chamada reflora,
- * com base no modelo que foi chamado e dentro desse modelo,
- * existe nome das colunas que estarão presentes nessa tabela.
- * Nessa tabela é guardado os códigos de barras, e as respostas das requisições.
- * Detalhe force: true é igual ao drop table.
- * @return tabelaReflora, que é a tabela que foi criada.
+ * A função pegaTabelaReflora retorna o modelo da tabela specieslink existente no banco de dados.
+ * @return TabelaReflora, que é o modelo da tabela existente.
  */
-export function criaTabelaReflora() {
+export function pegaTabelaReflora() {
     const tabelaReflora = modeloReflora(conexao, Sequelize);
-    tabelaReflora.sync({ force: true });
-    // tabelaReflora.removeAttribute('id');
     return tabelaReflora;
 }
 
 /**
- * A função criaTabelaSpecieslink, cria uma tabela chamada reflora,
- * com base no modelo que foi chamado e dentro desse modelo,
- * existe nome das colunas que estarão presentes nessa tabela.
- * Nessa tabela é guardado os códigos de barras, e as respostas das requisições.
- * Detalhe force: true é igual ao drop table.
- * @return tabelaSpecieslink, que é a tabela que foi criada.
+ * A função pegaTabelaSpecieslink retorna o modelo da tabela specieslink existente no banco de dados.
+ * @return tabelaSpecieslink, que é o modelo da tabela existente.
  */
-export function criaTabelaSpecieslink() {
+export function pegaTabelaSpecieslink() {
     const tabelaSpecieslink = modeloSpecieslink(conexao, Sequelize);
-    tabelaSpecieslink.sync({ force: true });
     return tabelaSpecieslink;
 }
 
@@ -797,68 +786,92 @@ export function insereAlteracaoSugerida(idUsuario, statusAlteracao, idTombo, tom
 }
 
 /**
- * A função existeTabelaReflora, executa um SHOW TABLES verificando
- * se existe a tabela do reflora ou não. Se existir a tabela do reflora
- * retorna true, e caso não exista false.
+ * A função verificaSeTemDadosReflora verifica se a tabela Reflora possui algum dado.
+ * Retorna true se houver registros e false caso contrário.
  * @return promessa.promise, como é assíncrono ele só retorna quando resolver, ou seja,
- * quando terminar de realizar a consulta de verificar se existe ou não a tabela.
+ * quando terminar de realizar a consulta.
  */
-export function existeTabelaReflora() {
-    const promessa = Q.defer();
-    conexao.query('SHOW TABLES', { type: Sequelize.QueryTypes.SHOWTABLES }).then(listaTabelas => {
-        listaTabelas.forEach(tabelas => {
-            if (tabelas === 'reflora') {
-                promessa.resolve(true);
-            }
-        });
-        promessa.resolve(false);
-    });
-    return promessa.promise;
-}
-
-/**
- * A função existeTabelaReflora, executa um SHOW TABLES verificando
- * se existe a tabela do reflora ou não. Se existir a tabela do reflora
- * retorna true, e caso não exista false.
- * @return promessa.promise, como é assíncrono ele só retorna quando resolver, ou seja,
- * quando terminar de realizar a consulta de verificar se existe ou não a tabela.
- */
-export function existeTabelaSpecieslink() {
-    const promessa = Q.defer();
-    conexao.query('SHOW TABLES', { type: Sequelize.QueryTypes.SHOWTABLES }).then(listaTabelas => {
-        listaTabelas.forEach(tabelas => {
-            if (tabelas === 'specieslink') {
-                promessa.resolve(true);
-            }
-        });
-        promessa.resolve(false);
-    });
-    return promessa.promise;
-}
-
-/**
- * A função apagaTabelaReflora, executa um DROP TABLE, ou seja,
- * apagar uma tabela que no caso é a tabela do reflora.
- * @return promessa.promise, como é assíncrono ele só retorna quando resolver, ou seja,
- * quando terminar de apagar a tabela.
- */
-export function apagaTabelaReflora() {
+export function verificaSeTemDadosReflora() {
     const promessa = Q.defer();
     const tabelaReflora = modeloReflora(conexao, Sequelize);
-    promessa.resolve(tabelaReflora.drop());
+
+    tabelaReflora.count()
+        .then(count => {
+            if (count > 0) {
+                promessa.resolve(true);
+            } else {
+                promessa.resolve(false);
+            }
+        })
+        .catch(error => {
+            promessa.reject(error);
+        });
+
     return promessa.promise;
 }
 
 /**
- * A função apagaTabelaSpecieslink, executa um DROP TABLE, ou seja,
- * apagar uma tabela que no caso é a tabela do specieslink.
+ * A função verificaSeTemDadosSpecieslink verifica se a tabela specieslink possui algum dado.
+ * Retorna true se houver registros e false caso contrário.
  * @return promessa.promise, como é assíncrono ele só retorna quando resolver, ou seja,
- * quando terminar de apagar a tabela.
+ * quando terminar de realizar a consulta.
  */
-export function apagaTabelaSpecieslink() {
+export function verificaSeTemDadosSpecieslink() {
     const promessa = Q.defer();
     const tabelaSpecieslink = modeloSpecieslink(conexao, Sequelize);
-    promessa.resolve(tabelaSpecieslink.drop());
+
+    tabelaSpecieslink.count()
+        .then(count => {
+            if (count > 0) {
+                promessa.resolve(true);
+            } else {
+                promessa.resolve(false);
+            }
+        })
+        .catch(error => {
+            promessa.reject(error);
+        });
+
+    return promessa.promise;
+}
+
+/**
+ * A função limpaTabelaReflora remove todos os dados da tabela reflora sem apagar sua estrutura.
+ * @return promessa.promise, como é assíncrono ele só retorna quando resolver, ou seja,
+ * quando terminar de limpar a tabela.
+ */
+export function limpaTabelaReflora() {
+    const promessa = Q.defer();
+    const tabelaReflora = modeloReflora(conexao, Sequelize);
+
+    tabelaReflora.truncate()
+        .then(() => {
+            promessa.resolve();
+        })
+        .catch(error => {
+            promessa.reject(error);
+        });
+
+    return promessa.promise;
+}
+
+/**
+ * A função limpaTabelaSpecieslink remove todos os dados da tabela Specieslink sem apagar sua estrutura.
+ * @return promessa.promise, como é assíncrono ele só retorna quando resolver, ou seja,
+ * quando terminar de limpar a tabela.
+ */
+export function limpaTabelaSpecieslink() {
+    const promessa = Q.defer();
+    const TabelaSpecieslink = modeloSpecieslink(conexao, Sequelize);
+
+    TabelaSpecieslink.truncate()
+        .then(() => {
+            promessa.resolve();
+        })
+        .catch(error => {
+            promessa.reject(error);
+        });
+
     return promessa.promise;
 }
 
