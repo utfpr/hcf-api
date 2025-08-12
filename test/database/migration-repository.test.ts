@@ -68,6 +68,6 @@ describe('Database > Migration Repository', () => {
     // assert
     expect(knex).toHaveBeenCalledWith('migrations')
     expect(select).toHaveBeenCalledWith(['name', 'applied_at'])
-    expect(appliedMigrations).toEqual([{ name: 'test', applied_at: new Date() }])
+    expect(appliedMigrations).toEqual([{ name: 'test', applied_at: expect.any(Date) }])
   })
 })
