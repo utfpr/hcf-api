@@ -1945,7 +1945,6 @@ export async function visualizar(request, response, next) {
                 nest: true,
             });
 
-
             if (identificadores?.length) {
                 const identificadorAntigo = identificadores.find(i => i.ordem === 1)?.identificadore;
                 if (identificadorAntigo && identificadorAntigo.identificador_id !== parametros.identificador.id) {
