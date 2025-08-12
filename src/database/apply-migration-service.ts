@@ -21,18 +21,18 @@ export class ApplyMigrationService {
 
   async execute() {
     const migrationFilePaths = await this.migrationFileSystem.listMigrationFiles()
-    const migrationFileNames = migrationFilePaths.map(file => path.basename(file, '.sql'))
+    const migrationNames = migrationFilePaths.map(file => path.basename(file, path.extname(file)))
 
     await this.migrationRepository.ensureMigrationTableExists()
     const appliedMigrations = await this.migrationRepository.getAppliedMigrations()
 
-    const missingMigrations = appliedMigrations.filter(appliedMigration => !migrationFileNames.includes(appliedMigration.name))
+    const missingMigrations = appliedMigrations.filter(appliedMigration => !migrationNames.includes(appliedMigration.name))
     if (missingMigrations.length) {
       const missingMigrationsNames = missingMigrations.map(migration => migration.name)
       throw new CorruptedDirectoryError('The migration directory is missing some files', missingMigrationsNames)
     }
 
-    const unappliedMigrations = migrationFileNames
+    const unappliedMigrations = migrationNames
       .filter(migrationFileName => !appliedMigrations.some(appliedMigration => appliedMigration.name === migrationFileName))
 
     if (!unappliedMigrations.length) {
@@ -41,9 +41,15 @@ export class ApplyMigrationService {
     }
 
     /* eslint-disable no-restricted-syntax, no-await-in-loop */
-    for (const migrationFileName of unappliedMigrations) {
-      const migrationFileContent = await this.migrationFileSystem.getMigrationFileContent(migrationFileName)
-      await this.migrationRepository.applyMigration(migrationFileName, migrationFileContent)
+    for (const migrationName of unappliedMigrations) {
+      try {
+        await this.migrationFileSystem.runMigrationFile(migrationName)
+        await this.migrationRepository.applyMigration(migrationName)
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error(`Error applying migration ${migrationName}`, error)
+        throw error
+      }
     }
     /* eslint-enable no-restricted-syntax */
   }

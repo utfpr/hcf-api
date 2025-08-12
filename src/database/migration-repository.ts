@@ -30,12 +30,9 @@ export class MigrationRepository {
     return this.knex(this.tableName).select(['name', 'applied_at'])
   }
 
-  async applyMigration(name: string, content: string): Promise<void> {
+  async applyMigration(name: string): Promise<void> {
     console.info(`Applying migration ${name}`) // eslint-disable-line no-console
-    await this.knex.transaction(async trx => {
-      await trx.raw(content)
-      await trx(this.tableName).insert({ name, applied_at: new Date() })
-    })
+    await this.knex(this.tableName).insert({ name, applied_at: new Date() })
   }
 
 }

@@ -27,7 +27,7 @@ const migrationKnex = createKnex({
   }
 })
 
-const migrationFileSystem = new MigrationFileSystem({ migrationsPath: path.join(__dirname, 'migrations') })
+const migrationFileSystem = new MigrationFileSystem({ knex: migrationKnex, migrationsPath: path.join(__dirname, 'migrations') })
 const migrationDataSource = new MigrationRepository({ knex: migrationKnex, tableName: 'migrations' })
 
 async function createMigration(name: string) {
