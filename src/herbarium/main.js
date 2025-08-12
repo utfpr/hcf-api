@@ -1,13 +1,13 @@
 import Q from 'q';
 
 import {
-    existeTabelaReflora,
-    existeTabelaSpecieslink,
+    verificaSeTemDadosReflora,
+    verificaSeTemDadosSpecieslink,
     atualizaFimTabelaConfiguracao,
-    criaTabelaSpecieslink,
-    criaTabelaReflora,
-    apagaTabelaReflora,
-    apagaTabelaSpecieslink,
+    pegaTabelaSpecieslink,
+    pegaTabelaReflora,
+    limpaTabelaReflora,
+    limpaTabelaSpecieslink,
     insereTabelaReflora,
     insereTabelaSpecieslink,
     selectCodBarra,
@@ -40,7 +40,7 @@ function comecaAtualizacao(nomeArquivo, idServico) {
     const promessa = Q.defer();
     if (idServico === 1) {
         escreveLOG(`reflora/${nomeArquivo}`, 'Inicializando a aplicação do Reflora.');
-        const tabelaReflora = criaTabelaReflora();
+        const tabelaReflora = pegaTabelaReflora();
         selectCodBarra().then(listaCodBarra => {
             // insereTabelaReflora(tabelaReflora, listaCodBarra.slice(0, 1)).then(() => {
             insereTabelaReflora(tabelaReflora, geraListaAleatorio(listaCodBarra, 0)).then(() => {
@@ -49,7 +49,7 @@ function comecaAtualizacao(nomeArquivo, idServico) {
                         fazComparacaoTomboReflora().then(resultadoComparacao => {
                             if (resultadoComparacao) {
                                 escreveLOG(`reflora/${nomeArquivo}`, 'O processo de comparação do Reflora acabou.');
-                                apagaTabelaReflora().then(() => {
+                                limpaTabelaReflora().then(() => {
                                     promessa.resolve();
                                 });
                             }
@@ -60,7 +60,7 @@ function comecaAtualizacao(nomeArquivo, idServico) {
         });
     } else if (idServico === 2) {
         escreveLOG(`specieslink/${nomeArquivo}`, 'Inicializando a aplicação do Specieslink.');
-        const tabelaSpecieslink = criaTabelaSpecieslink();
+        const tabelaSpecieslink = pegaTabelaSpecieslink();
         selectCodBarra().then(listaCodBarra => {
             // insereTabelaSpecieslink(tabelaSpecieslink, listaCodBarra.slice(0, 1)).then(() => {
             insereTabelaSpecieslink(tabelaSpecieslink, geraListaAleatorio(listaCodBarra, 0)).then(() => {
@@ -69,7 +69,7 @@ function comecaAtualizacao(nomeArquivo, idServico) {
                         fazComparacaoTomboSpecieslink().then(resultadoComparacao => {
                             if (resultadoComparacao) {
                                 escreveLOG(`specieslink/${nomeArquivo}`, 'O processo de comparação do SpeciesLink acabou.');
-                                apagaTabelaSpecieslink().then(() => {
+                                limpaTabelaSpecieslink().then(() => {
                                     promessa.resolve();
                                 });
                             }
@@ -97,7 +97,7 @@ function comecaAtualizacao(nomeArquivo, idServico) {
 function ehPossivelFazerComparacao(nomeArquivo, idServico) {
     const promessa = Q.defer();
     if (idServico === 1) {
-        existeTabelaReflora().then(existe => {
+        verificaSeTemDadosReflora().then(existe => {
             if (existe) {
                 promessa.resolve();
             } else {
@@ -107,7 +107,7 @@ function ehPossivelFazerComparacao(nomeArquivo, idServico) {
             }
         });
     } else if (idServico === 2) {
-        existeTabelaSpecieslink().then(existe => {
+        verificaSeTemDadosSpecieslink().then(existe => {
             if (existe) {
                 promessa.resolve();
             } else {
