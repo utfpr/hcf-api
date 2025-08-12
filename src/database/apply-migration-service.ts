@@ -1,6 +1,6 @@
 import path from 'node:path'
 
-import { CorruptedDirectoryError } from './errors/corrupted-directory-error'
+import { CorruptedDirectoryError } from './error/corrupted-directory-error'
 import { MigrationFileSystem } from './migration-file-system'
 import { MigrationRepository } from './migration-repository'
 
