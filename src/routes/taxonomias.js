@@ -39,6 +39,7 @@ const generosOrdenacaoMiddleware = criaOrdenacaoMiddleware(['genero', 'familia',
 const especiesOrdenacaoMiddleware = criaOrdenacaoMiddleware(['especie', 'reino', 'familia', 'genero', 'familia'], 'nome', 'asc');
 const subEspeciesOrdenacaoMiddleware = criaOrdenacaoMiddleware(['subespecie', 'reino', 'familia', 'genero', 'especie', 'autor'], 'nome', 'asc');
 const variedadesOrdenacaoMiddleware = criaOrdenacaoMiddleware(['variedade', 'reino', 'familia', 'genero', 'especie', 'autor'], 'nome', 'asc');
+const autorOrdenacaoMiddleware = criaOrdenacaoMiddleware(['autor', 'iniciais'], 'nome', 'asc');
 
 /**
  * @swagger
@@ -1622,6 +1623,7 @@ export default app => {
         ])
         .get([
             listagensMiddleware,
+            autorOrdenacaoMiddleware,
             validacoesMiddleware(autorListagemEsquema),
             controller.buscarAutores,
         ]);
