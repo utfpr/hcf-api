@@ -1,9 +1,11 @@
+import { pick } from 'lodash';
+
 import BadRequestExeption from '../errors/bad-request-exception';
 import models from '../models';
 import codigos from '../resources/codigos-http';
 
 const {
-    Relevo, Solo, Vegetacao, sequelize,
+    Relevo, Solo, Vegetacao, LocalColeta, Cidade, FaseSucessional, sequelize,
 } = models;
 
 export const cadastrarSolo = (request, response, next) => {
@@ -118,6 +120,50 @@ export const buscarVegetacoes = (request, response, next) => {
             response.status(codigos.LISTAGEM).json(vegetacoes.rows);
         })
         .catch(next);
+};
+
+export const cadastrarLocalColeta = async (request, response, next) => {
+    try {
+        const dados = pick(request.body, ['descricao', 'complemento', 'cidade_id', 'fase_sucessional_id']);
+        const localColeta = await LocalColeta.create(dados);
+        response.status(201).json(localColeta);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const buscarLocaisColeta = async (request, response, next) => {
+    try {
+        const { cidadeId } = request.query;
+        const { limite, pagina } = request.paginacao;
+        const offset = (pagina - 1) * limite;
+
+        const where = {};
+        if (cidadeId) {
+            where.cidade_id = cidadeId;
+        }
+
+        const { count, rows } = await LocalColeta.findAndCountAll({
+            where,
+            include: [
+                { model: Cidade },
+                { model: FaseSucessional },
+            ],
+            limit: limite,
+            offset,
+        });
+
+        response.status(200).json({
+            metadados: {
+                total: count,
+                pagina,
+                limite,
+            },
+            locaisColeta: rows,
+        });
+    } catch (error) {
+        next(error);
+    }
 };
 
 export default {};
