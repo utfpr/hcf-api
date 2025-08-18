@@ -261,6 +261,10 @@ export default (Sequelize, DataTypes) => {
             type: DataTypes.INTEGER,
             allowNull: true,
         },
+        descricao_local_coleta: {
+            type: DataTypes.TEXT,
+            allowNull: true,
+        },
     };
 
     const options = {
