@@ -261,6 +261,11 @@ export default (Sequelize, DataTypes) => {
             type: DataTypes.INTEGER,
             allowNull: true,
         },
+        exsicata_tipo: {
+            type: DataTypes.ENUM('UNICATA', 'DUPLICATA'),
+            allowNull: true,
+        },
+
     };
 
     const options = {

@@ -31,6 +31,7 @@ export const cadastro = (request, response, next) => {
         coletor_complementar,
         colecoes_anexas: colecoesAnexas,
         observacoes,
+        exsicataTipo,
     } = request.body.json;
     let tomboCriado = null;
 
@@ -255,6 +256,13 @@ export const cadastro = (request, response, next) => {
                 }
                 return undefined;
             })
+            .then(() => {
+                const exsicataTipoENUM = ['UNICATA', 'DUPLICATA'];
+
+                if (exsicataTipo && !exsicataTipoENUM.includes(exsicataTipo)) {
+                    throw new BadRequestExeption(410);
+                }
+            })
             .then(variedade => {
                 if (taxonomia && taxonomia.variedade_id) {
                     if (!variedade) {
@@ -300,6 +308,9 @@ export const cadastro = (request, response, next) => {
                     jsonTombo.solo_id = paisagem.solo_id;
                     jsonTombo.relevo_id = paisagem.relevo_id;
                     jsonTombo.vegetacao_id = paisagem.vegetacao_id;
+                }
+                if (exsicataTipo) {
+                    jsonTombo.exsicata_tipo = exsicataTipo;
                 }
                 jsonTombo = {
                     ...jsonTombo,
@@ -481,6 +492,8 @@ function alteracaoCuradorouOperador(request, response, next) {
     const colecoesAnexasTipo = body?.colecoes_anexas?.tipo;
     const colecoesAnexasObservacoes = body?.colecoes_anexas?.observacoes;
 
+    const exsicataTipo = body?.exsicataTipo || null;
+
     const { observacoes } = body || null;
 
     const { tombo_id: tomboId } = request.params;
@@ -488,6 +501,10 @@ function alteracaoCuradorouOperador(request, response, next) {
 
     if (nomePopular) {
         update.nomes_populares = nomePopular;
+    }
+
+    if (exsicataTipo) {
+        update.exsicata_tipo = exsicataTipo;
     }
 
     if (entidadeId) {
@@ -1052,6 +1069,7 @@ export const obterTombo = async (request, response, next) => {
                         'data_identificacao_dia',
                         'data_identificacao_mes',
                         'data_identificacao_ano',
+                        'exsicata_tipo',
                     ],
                     include: [
                         {
@@ -1185,6 +1203,7 @@ export const obterTombo = async (request, response, next) => {
                     soloInicial: tombo.solo !== null ? tombo.solo?.nome : '',
                     relevoInicial: tombo.relevo !== null ? tombo.relevo?.nome : '',
                     vegetacaoInicial: tombo.vegetaco !== null ? tombo.vegetaco?.nome : '',
+                    exsicataTipo: tombo.exsicata_tipo !== null ? tombo.exsicata_tipo : '',
                     faseInicial:
             tombo.locais_coletum !== null && tombo.locais_coletum?.fase_sucessional !== null ? tombo.locais_coletum?.fase_sucessional?.numero : '',
                     //   coletoresInicial: tombo.coletores.map((coletor) => ({
