@@ -105,7 +105,7 @@ export const cadastro = (request, response, next) => {
                 return undefined;
             })
             .then(() => {
-                if (!localidade || !localidade.complemento) {
+                if(!localidade?.complemento){
                     throw new BadRequestExeption(400);
                 }
                 return LocalColeta.findOne({

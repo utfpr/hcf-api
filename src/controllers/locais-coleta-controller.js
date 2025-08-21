@@ -134,8 +134,7 @@ export const cadastrarLocalColeta = async (request, response, next) => {
 export const buscarLocaisColeta = async (request, response, next) => {
     try {
         const { cidadeId } = request.query;
-        const { limite, pagina } = request.paginacao;
-        const offset = (pagina - 1) * limite;
+        const { limite, pagina, offset } = request.paginacao;
 
         const where = {};
         if (cidadeId) {
@@ -158,7 +157,7 @@ export const buscarLocaisColeta = async (request, response, next) => {
                 pagina,
                 limite,
             },
-            locaisColeta: rows,
+            resultado: rows,
         });
     } catch (error) {
         next(error);
