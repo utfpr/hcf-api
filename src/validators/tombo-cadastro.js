@@ -108,11 +108,8 @@ export default {
     },
     'json.localidade.complemento': {
         in: 'body',
-        isString: true,
-        optional: true,
-        isLength: {
-            options: [{ min: 3 }],
-        },
+        isInt: true,
+        isEmpty: false,
     },
     'json.paisagem.solo_id': {
         in: 'body',
