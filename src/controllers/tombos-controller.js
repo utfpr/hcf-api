@@ -277,7 +277,7 @@ export const cadastro = (request, response, next) => {
                 };
 
                 if (paisagem.descricao) {
-                    jsonTombo.descricao_local_coleta = paisagem.descricao;
+                    jsonTombo.descricao = paisagem.descricao;
                 }
 
                 if (observacoes) {
@@ -489,14 +489,35 @@ function alteracaoCuradorouOperador(request, response, transaction) {
     const complemento = body?.localidade?.complemento;
     if (complemento) update.local_coleta_id = complemento;
 
-    const soloId = body?.paisagem?.solo_id;
-    if (soloId) update.solo_id = soloId;
+    const soloIdRaw = body?.paisagem?.solo_id;
+    if (soloIdRaw !== undefined) {
+        if (soloIdRaw) {
+            const soloId = typeof soloIdRaw === 'object' ? soloIdRaw.key : soloIdRaw;
+            update.solo_id = soloId;
+        } else {
+            update.solo_id = null;
+        }
+    }
+    const relevoIdRaw = body?.paisagem?.relevo_id;
+    if (relevoIdRaw !== undefined) {
+        if (relevoIdRaw) {
+            const relevoId = typeof relevoIdRaw === 'object' ? relevoIdRaw.key : relevoIdRaw;
+            update.relevo_id = relevoId;
+        } else {
+            update.relevo_id = null;
+        }
+    }
+    const vegetacaoIdRaw = body?.paisagem?.vegetacao_id;
+    if (vegetacaoIdRaw !== undefined) {
+        if (vegetacaoIdRaw) {
+            const vegetacaoId = typeof vegetacaoIdRaw === 'object' ? vegetacaoIdRaw.key : vegetacaoIdRaw;
+            update.vegetacao_id = vegetacaoId;
+        } else {
+            update.vegetacao_id = null;
+        }
+    }
     const descricao = body?.paisagem?.descricao;
-    if (descricao) update.descricao_local_coleta = descricao;
-    const relevoId = body?.paisagem?.relevo_id;
-    if (relevoId) update.relevo_id = relevoId;
-    const vegetacaoId = body?.paisagem?.vegetacao_id;
-    if (vegetacaoId) update.vegetacao_id = vegetacaoId;
+    if (descricao) update.descricao = descricao;
     const faseSucessionalId = body?.paisagem?.fase_sucessional_id;
     if (faseSucessionalId) update.fase_sucessional_id = faseSucessionalId;
 
@@ -558,9 +579,7 @@ export function alteracao(request, response, next) {
                 response.status(codigos.EDITAR_SEM_RETORNO).send();
             }
         })
-        .catch(err => {
-            next(err);
-        });
+        .catch(next);
 }
 
 export const desativar = (request, response, next) => {
@@ -965,7 +984,7 @@ export const obterTombo = async (request, response, next) => {
                         'data_identificacao_dia',
                         'data_identificacao_mes',
                         'data_identificacao_ano',
-                        'descricao_local_coleta',
+                        'descricao',
                     ],
                     include: [
                         {
@@ -1118,7 +1137,7 @@ export const obterTombo = async (request, response, next) => {
                     observacao: tombo.observacao !== null ? tombo.observacao : '',
                     tipo: tombo.tipo !== null ? tombo.tipo?.nome : '',
                     numero_coleta: tombo.numero_coleta,
-                    descricao_local_coleta: tombo.descricao_local_coleta !== null ? tombo.descricao_local_coleta : '',
+                    descricao: tombo.descricao !== null ? tombo.descricao : '',
                     herbario: tombo.herbario !== null ? `${tombo.herbario?.sigla} - ${tombo.herbario?.nome}` : '',
                     localizacao: {
                         latitude: tombo.latitude !== null ? tombo.latitude : '',

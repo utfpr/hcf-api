@@ -1733,13 +1733,13 @@ export const aprovarPendencia = async (alteracao, hcf, transaction) => {
         updateTombo.local_coleta_id = alteracao.local_coleta_id;
     }
 
-    if (alteracao.descricao_local_coleta !== undefined) {
-        updateTombo.descricao_local_coleta = alteracao.descricao_local_coleta;
+    if (alteracao.descricao !== undefined) {
+        updateTombo.descricao = alteracao.descricao;
     }
 
     if (alteracao.solo_id !== undefined) {
         if (alteracao.solo_id) {
-            const soloId = typeof alteracao.solo_id === 'object' ? alteracao.solo_id.key : alteracao.solo_id;
+            const soloId = alteracao.solo_id;
             const solo = await Solo.findOne({
                 where: { id: soloId },
                 transaction,
@@ -1759,7 +1759,7 @@ export const aprovarPendencia = async (alteracao, hcf, transaction) => {
 
     if (alteracao.relevo_id !== undefined) {
         if (alteracao.relevo_id) {
-            const relevoId = typeof alteracao.relevo_id === 'object' ? alteracao.relevo_id.key : alteracao.relevo_id;
+            const relevoId = alteracao.relevo_id;
             const relevo = await Relevo.findOne({
                 where: { id: relevoId },
                 transaction,
@@ -1779,7 +1779,7 @@ export const aprovarPendencia = async (alteracao, hcf, transaction) => {
 
     if (alteracao.vegetacao_id !== undefined) {
         if (alteracao.vegetacao_id) {
-            const vegetacaoId = typeof alteracao.vegetacao_id === 'object' ? alteracao.vegetacao_id.key : alteracao.vegetacao_id;
+            const vegetacaoId = alteracao.vegetacao_id;
             const vegetacao = await Vegetacao.findOne({
                 where: { id: vegetacaoId },
                 transaction,
