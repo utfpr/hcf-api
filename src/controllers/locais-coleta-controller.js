@@ -1,4 +1,5 @@
 import pick from '~/helpers/pick';
+
 import BadRequestExeption from '../errors/bad-request-exception';
 import models from '../models';
 import codigos from '../resources/codigos-http';
@@ -159,6 +160,61 @@ export const buscarLocaisColeta = async (request, response, next) => {
             },
             resultado: rows,
         });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const buscarLocalColetaPorId = async (request, response, next) => {
+    try {
+        const { id } = request.params;
+
+        const localColeta = await LocalColeta.findOne({
+            where: { id },
+            include: [
+                { model: Cidade },
+                { model: FaseSucessional },
+            ],
+        });
+
+        if (!localColeta) {
+            response.status(404).json({
+                mensagem: 'Local de coleta não encontrado.',
+            });
+            return;
+        }
+
+        response.status(200).json(localColeta);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const atualizarLocalColeta = async (request, response, next) => {
+    try {
+        const { id } = request.params;
+        const dados = pick(request.body, ['descricao', 'complemento', 'cidade_id', 'fase_sucessional_id']);
+
+        const [updated] = await LocalColeta.update(dados, {
+            where: { id },
+        });
+
+        if (updated === 0) {
+            response.status(404).json({
+                mensagem: 'Local de coleta não encontrado.',
+            });
+            return;
+        }
+
+        const localColetaAtualizado = await LocalColeta.findOne({
+            where: { id },
+            include: [
+                { model: Cidade },
+                { model: FaseSucessional },
+            ],
+        });
+
+        response.status(200).json(localColetaAtualizado);
     } catch (error) {
         next(error);
     }
