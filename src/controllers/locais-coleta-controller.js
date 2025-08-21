@@ -1,5 +1,4 @@
-import { pick } from 'lodash';
-
+import pick from '~/helpers/pick';
 import BadRequestExeption from '../errors/bad-request-exception';
 import models from '../models';
 import codigos from '../resources/codigos-http';
@@ -135,8 +134,7 @@ export const cadastrarLocalColeta = async (request, response, next) => {
 export const buscarLocaisColeta = async (request, response, next) => {
     try {
         const { cidadeId } = request.query;
-        const { limite, pagina } = request.paginacao;
-        const offset = (pagina - 1) * limite;
+        const { limite, pagina, offset } = request.paginacao;
 
         const where = {};
         if (cidadeId) {
@@ -159,7 +157,7 @@ export const buscarLocaisColeta = async (request, response, next) => {
                 pagina,
                 limite,
             },
-            locaisColeta: rows,
+            resultado: rows,
         });
     } catch (error) {
         next(error);

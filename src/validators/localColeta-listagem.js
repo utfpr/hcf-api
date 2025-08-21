@@ -1,5 +1,5 @@
 export default {
-    cidadeId: {
+    cidade_id: {
         in: ['query'],
         isInt: true,
         optional: true,

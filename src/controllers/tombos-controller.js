@@ -104,7 +104,7 @@ export const cadastro = (request, response, next) => {
                 return undefined;
             })
             .then(() => {
-                if(!localidade || !localidade.complemento){
+                if(!localidade?.complemento){
                     throw new BadRequestExeption(400);
                 }
                 return LocalColeta.findOne({
@@ -276,7 +276,7 @@ export const cadastro = (request, response, next) => {
                 };
 
                 if(paisagem.descricao) {
-                    jsonTombo.descricao_local_coleta = paisagem.descricao;
+                    jsonTombo.descricao = paisagem.descricao;
                 }
 
                 if (observacoes) {
@@ -1053,7 +1053,7 @@ export const obterTombo = async (request, response, next) => {
                         'data_identificacao_dia',
                         'data_identificacao_mes',
                         'data_identificacao_ano',
-                        'descricao_local_coleta',
+                        'descricao',
                     ],
                     include: [
                         {
@@ -1203,7 +1203,7 @@ export const obterTombo = async (request, response, next) => {
                     observacao: tombo.observacao !== null ? tombo.observacao : '',
                     tipo: tombo.tipo !== null ? tombo.tipo?.nome : '',
                     numero_coleta: tombo.numero_coleta,
-                    descricao_local_coleta: tombo.descricao_local_coleta !== null ? tombo.descricao_local_coleta : '',
+                    descricao: tombo.descricao !== null ? tombo.descricao : '',
                     herbario: tombo.herbario !== null ? `${tombo.herbario?.sigla} - ${tombo.herbario?.nome}` : '',
                     localizacao: {
                         latitude: tombo.latitude !== null ? tombo.latitude : '',
