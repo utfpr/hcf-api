@@ -1,4 +1,5 @@
 import pick from '~/helpers/pick';
+
 import BadRequestExeption from '../errors/bad-request-exception';
 import models from '../models';
 import codigos from '../resources/codigos-http';
