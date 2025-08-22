@@ -1,6 +1,5 @@
 import { parseFile } from 'fast-csv'
 import { Knex } from 'knex'
-import path from 'node:path'
 
 export async function run(knex: Knex): Promise<void> {
 
