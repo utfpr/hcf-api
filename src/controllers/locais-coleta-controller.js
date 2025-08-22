@@ -5,7 +5,7 @@ import models from '../models';
 import codigos from '../resources/codigos-http';
 
 const {
-    Relevo, Solo, Vegetacao, LocalColeta, Cidade, FaseSucessional, sequelize,
+    Relevo, Solo, Vegetacao, LocalColeta, Cidade, FaseSucessional, Estado, Pais, sequelize,
 } = models;
 
 export const cadastrarSolo = (request, response, next) => {
@@ -134,7 +134,7 @@ export const cadastrarLocalColeta = async (request, response, next) => {
 
 export const buscarLocaisColeta = async (request, response, next) => {
     try {
-        const { cidadeId } = request.query;
+        const { cidade_id: cidadeId } = request.query;
         const { limite, pagina, offset } = request.paginacao;
 
         const where = {};
@@ -145,7 +145,15 @@ export const buscarLocaisColeta = async (request, response, next) => {
         const { count, rows } = await LocalColeta.findAndCountAll({
             where,
             include: [
-                { model: Cidade },
+                { model: Cidade,
+                    include: [
+                        { model: Estado,
+                            include: [
+                                Pais,
+                            ],
+                        },
+                    ],
+                },
                 { model: FaseSucessional },
             ],
             limit: limite,
@@ -172,7 +180,15 @@ export const buscarLocalColetaPorId = async (request, response, next) => {
         const localColeta = await LocalColeta.findOne({
             where: { id },
             include: [
-                { model: Cidade },
+                { model: Cidade,
+                    include: [
+                        { model: Estado,
+                            include: [
+                                Pais,
+                            ],
+                        },
+                    ],
+                },
                 { model: FaseSucessional },
             ],
         });
@@ -215,6 +231,47 @@ export const atualizarLocalColeta = async (request, response, next) => {
         });
 
         response.status(200).json(localColetaAtualizado);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const deletarLocalColeta = async (request, response, next) => {
+    try {
+        const { id } = request.params;
+
+        const localColeta = await LocalColeta.findOne({
+            where: { id },
+        });
+
+        if (!localColeta) {
+            response.status(404).json({
+                mensagem: 'Local de coleta não encontrado.',
+            });
+            return;
+        }
+
+        const { Tombo } = models;
+        const tombosAssociados = await Tombo.count({
+            where: {
+                local_coleta_id: id,
+                ativo: true,
+            },
+        });
+
+        if (tombosAssociados > 0) {
+            response.status(400).json({
+                mensagem: `Não é possível excluir o local de coleta. Existem ${tombosAssociados} tombo(s) associado(s) a este local.`,
+            });
+            return;
+        }
+
+        await LocalColeta.destroy({
+            where: { id },
+        });
+
+        response.status(204).send();
+
     } catch (error) {
         next(error);
     }

@@ -477,5 +477,49 @@ export default app => {
             ]),
             validacoesMiddleware(localColetaCadastroEsquema),
             controller.atualizarLocalColeta,
+        ])
+        /**
+         * @swagger
+         * /locais-coleta/{id}:
+         *   delete:
+         *     summary: Remove um local de coleta
+         *     tags: [Locais]
+         *     description: Remove um local de coleta pelo ID. Verifica se não há tombos associados antes de remover.
+         *     parameters:
+         *       - in: path
+         *         name: id
+         *         required: true
+         *         schema:
+         *           type: integer
+         *         description: ID do local de coleta
+         *     responses:
+         *       204:
+         *         description: Local de coleta removido com sucesso
+         *       '400':
+         *         description: Não é possível excluir - existem tombos associados
+         *         content:
+         *           application/json:
+         *             schema:
+         *               type: object
+         *               properties:
+         *                 mensagem:
+         *                   type: string
+         *               example:
+         *                 mensagem: "Não é possível excluir o local de coleta. Existem 5 tombo(s) associado(s) a este local."
+         *       '401':
+         *         $ref: '#/components/responses/Unauthorized'
+         *       '403':
+         *         $ref: '#/components/responses/Forbidden'
+         *       '404':
+         *         $ref: '#/components/responses/NotFound'
+         *       '500':
+         *         $ref: '#/components/responses/InternalServerError'
+         */
+        .delete([
+            tokensMiddleware([
+                TIPOS_USUARIOS.CURADOR,
+                TIPOS_USUARIOS.OPERADOR,
+            ]),
+            controller.deletarLocalColeta,
         ]);
 };
