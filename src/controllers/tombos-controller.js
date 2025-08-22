@@ -105,22 +105,21 @@ export const cadastro = (request, response, next) => {
                 return undefined;
             })
             .then(() => {
-                let json = {};
-                // /////////CRIA LOCAL DE COLETA////////////
-                if (paisagem) {
-                    json = pick(paisagem, ['descricao', 'solo_id', 'relevo_id', 'vegetacao_id', 'fase_sucessional_id']);
+                if (!localidade?.complemento) {
+                    throw new BadRequestExeption(400);
                 }
-                if (localidade.complemento) {
-                    json.complemento = localidade.complemento;
-                }
-                json.cidade_id = localidade.cidade_id;
-                return LocalColeta.create(json, { transaction });
+                return LocalColeta.findOne({
+                    where: {
+                        id: localidade.complemento,
+                    },
+                    transaction,
+                });
             })
             .then(localColeta => {
                 if (!localColeta) {
-                    throw new BadRequestExeption(400);
+                    throw new BadRequestExeption(533);
                 }
-                principal.local_coleta_id = localColeta.id;
+                return undefined;
             })
         // //////////////CRIA COLECOES ANEXAS///////////
             .then(() => {
@@ -279,10 +278,14 @@ export const cadastro = (request, response, next) => {
                     data_coleta_mes: principal.data_coleta.mes,
                     data_coleta_ano: principal.data_coleta.ano,
                     numero_coleta: principal.numero_coleta,
-                    local_coleta_id: principal.local_coleta_id,
+                    local_coleta_id: localidade.complemento,
                     cor: principal.cor,
                     coletor_id: coletor,
                 };
+
+                if (paisagem.descricao) {
+                    jsonTombo.descricao = paisagem.descricao;
+                }
 
                 if (observacoes) {
                     jsonTombo.observacao = observacoes;
@@ -1039,8 +1042,6 @@ export const obterTombo = async (request, response, next) => {
 
         let resposta = {};
         let dadosTombo = {};
-        // eslint-disable-next-line
-        // console.error(id);
         Promise.resolve()
             .then(() =>
                 Tombo.findOne({
@@ -1070,6 +1071,7 @@ export const obterTombo = async (request, response, next) => {
                         'data_identificacao_mes',
                         'data_identificacao_ano',
                         'exsicata_tipo',
+                        'descricao',
                     ],
                     include: [
                         {
@@ -1206,22 +1208,12 @@ export const obterTombo = async (request, response, next) => {
                     exsicataTipo: tombo.exsicata_tipo !== null ? tombo.exsicata_tipo : '',
                     faseInicial:
             tombo.locais_coletum !== null && tombo.locais_coletum?.fase_sucessional !== null ? tombo.locais_coletum?.fase_sucessional?.numero : '',
-                    //   coletoresInicial: tombo.coletores.map((coletor) => ({
-                    //     key: `${coletor.id}`,
-                    //     label: coletor.nome,
-                    //   })),
                     coletor: tombo.coletore
                         ? {
                             id: tombo.coletore?.id,
                             nome: tombo.coletore?.nome,
                         }
                         : null,
-                    // coletorComplementar: tombo.coletorComplementar
-                    //     ? {
-                    //         hcf: tombo.coletorComplementar.hcf,
-                    //         complementares: tombo.coletorComplementar.complementares,
-                    //     }
-                    //     : '',
                     colecaoInicial: tombo.colecoes_anexa !== null ? tombo.colecoes_anexa?.tipo : '',
                     complementoInicial: tombo.localizacao !== null && tombo.localizacao !== undefined ? tombo.localizacao?.complemento : '',
                     hcf: tombo.hcf,
@@ -1230,6 +1222,7 @@ export const obterTombo = async (request, response, next) => {
                     observacao: tombo.observacao !== null ? tombo.observacao : '',
                     tipo: tombo.tipo !== null ? tombo.tipo?.nome : '',
                     numero_coleta: tombo.numero_coleta,
+                    descricao: tombo.descricao !== null ? tombo.descricao : '',
                     herbario: tombo.herbario !== null ? `${tombo.herbario?.sigla} - ${tombo.herbario?.nome}` : '',
                     localizacao: {
                         latitude: tombo.latitude !== null ? tombo.latitude : '',
@@ -1250,6 +1243,7 @@ export const obterTombo = async (request, response, next) => {
                         complemento: tombo.locais_coletum?.complemento !== null ? tombo.locais_coletum?.complemento : '',
                     },
                     local_coleta: {
+                        id: tombo.locais_coletum !== null ? tombo.locais_coletum?.id : '',
                         descricao: tombo.locais_coletum !== null && tombo.locais_coletum?.descricao !== null ? tombo.locais_coletum.descricao : '',
                         solo: tombo.solo !== null ? tombo.solo?.nome : '',
                         relevo: tombo.relevo !== null ? tombo.relevo?.nome : '',

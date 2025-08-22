@@ -1,5 +1,8 @@
+import listagensMiddleware from '../middlewares/listagens-middleware';
 import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middleware';
 import validacoesMiddleware from '../middlewares/validacoes-middleware';
+import localColetaCadastroEsquema from '../validators/localColeta-cadastro';
+import localColetaListagemEsquema from '../validators/localColeta-listagem';
 import nomeEsquema from '../validators/nome-obrigatorio';
 
 const controller = require('../controllers/locais-coleta-controller');
@@ -232,5 +235,105 @@ export default app => {
         ])
         .get([
             controller.buscarVegetacoes,
+        ]);
+
+    /**
+     * @swagger
+     * /locais-coleta:
+     *   post:
+     *     summary: Cadastra um novo local de coleta
+     *     tags: [Locais]
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               descricao:
+     *                 type: string
+     *               complemento:
+     *                 type: string
+     *               cidade_id:
+     *                 type: integer
+     *               fase_sucessional_id:
+     *                 type: integer
+     *             required:
+     *               - descricao
+     *               - cidade_id
+     *           example:
+     *             descricao: "Próximo ao rio"
+     *             complemento: "Entrada pela fazenda"
+     *             cidade_id: 1
+     *             fase_sucessional_id: 2
+     *     responses:
+     *       201:
+     *         description: Local de coleta cadastrado com sucesso
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     */
+    app.route('/locais-coleta')
+        .post([
+            tokensMiddleware([
+                TIPOS_USUARIOS.CURADOR,
+                TIPOS_USUARIOS.OPERADOR,
+            ]),
+            validacoesMiddleware(localColetaCadastroEsquema),
+            controller.cadastrarLocalColeta,
+        ])
+        /**
+         * @swagger
+         * /locais-coleta:
+         *   get:
+         *     summary: Lista os locais de coleta
+         *     tags: [Locais]
+         *     parameters:
+         *       - in: query
+         *         name: cidadeId
+         *         schema:
+         *           type: integer
+         *         description: Filtrar por ID da cidade
+         *       - in: query
+         *         name: pagina
+         *         schema:
+         *           type: integer
+         *         description: Número da página
+         *       - in: query
+         *         name: limite
+         *         schema:
+         *           type: integer
+         *         description: Quantidade de resultados por página
+         *     responses:
+         *       200:
+         *         description: Lista de locais de coleta
+         *         content:
+         *           application/json:
+         *             schema:
+         *               type: object
+         *               properties:
+         *                 metadados:
+         *                   type: object
+         *                 locaisColeta:
+         *                   type: array
+         *                   items:
+         *                     type: object
+         *       '401':
+         *         $ref: '#/components/responses/Unauthorized'
+         *       '403':
+         *         $ref: '#/components/responses/Forbidden'
+         */
+        .get([
+            tokensMiddleware([
+                TIPOS_USUARIOS.CURADOR,
+                TIPOS_USUARIOS.OPERADOR,
+                TIPOS_USUARIOS.IDENTIFICADOR,
+            ]),
+            listagensMiddleware,
+            validacoesMiddleware(localColetaListagemEsquema),
+            controller.buscarLocaisColeta,
         ]);
 };

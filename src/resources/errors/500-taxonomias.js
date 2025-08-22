@@ -31,4 +31,5 @@ export default {
     530: 'Vegetação não encontrada.',
     531: 'Fase sucessional não encontrada.',
     532: 'Autor não encontrado.',
+    533: 'Local de coleta não encontrado.',
 };

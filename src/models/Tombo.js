@@ -265,7 +265,10 @@ export default (Sequelize, DataTypes) => {
             type: DataTypes.ENUM('UNICATA', 'DUPLICATA'),
             allowNull: true,
         },
-
+        descricao: {
+            type: DataTypes.TEXT,
+            allowNull: true,
+        },
     };
 
     const options = {
