@@ -181,4 +181,8 @@ export default {
             options: [{ min: 3 }],
         },
     },
+    'json.exsicata_tipo': {
+        in: 'body',
+        isString: true,
+    },
 };
