@@ -1,23 +1,22 @@
 import { parseFile } from 'fast-csv'
 import { Knex } from 'knex'
+import path from 'node:path'
 
 export async function run(knex: Knex): Promise<void> {
-  await knex.transaction(async trx => {
-    await trx.raw(`
-      ALTER TABLE tombos 
-      ADD COLUMN exsicata_tipo ENUM('UNICATA', 'DUPLICATA') NULL;
-    `)
 
+  knex.schema.alterTable('tombos', table => {
+    table.enu('exsicata_tipo', ['UNICATA', 'DUPLICATA']).nullable()
+  })
+
+  await knex.transaction(async trx => {
     const rows = parseFile(
-      'src/database/20250816024121_add_exsicata_tipo/tombo_exsicata_tipo.csv',
+      `${__dirname}/tombo/exsicata_tipo.csv`,
       { headers: true }
     )
 
     /* eslint-disable no-restricted-syntax */
     for await (const row of rows) {
       const { id, tombo_tipo: tomboTipo } = row
-
-      if (!tomboTipo) return
 
       await trx('tombos')
         .where({ hcf: id })

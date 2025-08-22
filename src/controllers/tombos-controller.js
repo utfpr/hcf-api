@@ -31,7 +31,7 @@ export const cadastro = (request, response, next) => {
         coletor_complementar,
         colecoes_anexas: colecoesAnexas,
         observacoes,
-        exsicataTipo,
+        exsicata_tipo: exsicataTipo,
     } = request.body.json;
     let tomboCriado = null;
 
