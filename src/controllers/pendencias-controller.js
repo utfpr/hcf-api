@@ -1171,7 +1171,7 @@ export const aprovarPendencia = async (alteracao, hcf, transaction) => {
         updateTombo.altitude = alteracao.altitude;
     }
 
-    if (alteracao.entidade_id !== undefined) {
+    if (alteracao.entidade_id) {
         const herbario = await Herbario.findOne({
             where: { id: alteracao.entidade_id },
             transaction,
@@ -1185,7 +1185,7 @@ export const aprovarPendencia = async (alteracao, hcf, transaction) => {
         updateTombo.entidade_id = alteracao.entidade_id;
     }
 
-    if (alteracao.tipo_id !== undefined) {
+    if (alteracao.tipo_id) {
         const tipo = await Tipo.findOne({
             where: { id: alteracao.tipo_id },
             transaction,
@@ -1199,24 +1199,20 @@ export const aprovarPendencia = async (alteracao, hcf, transaction) => {
         updateTombo.tipo_id = alteracao.tipo_id;
     }
 
-    if (alteracao.familia_id !== undefined) {
-        if (alteracao.familia_id) {
-            const familia = await Familia.findOne({
-                where: { id: alteracao.familia_id },
-                transaction,
-                raw: true,
-                nest: true,
-            });
+    if (alteracao.familia_id) {
+        const familia = await Familia.findOne({
+            where: { id: alteracao.familia_id },
+            transaction,
+            raw: true,
+            nest: true,
+        });
 
-            if (!familia) {
-                throw new BadRequestExeption(404);
-            }
-
-            updateTombo.familia_id = alteracao.familia_id;
-            nomesCientificosPartes.push(familia.nome);
-        } else {
-            updateTombo.familia_id = null;
+        if (!familia) {
+            throw new BadRequestExeption(404);
         }
+
+        updateTombo.familia_id = alteracao.familia_id;
+        nomesCientificosPartes.push(familia.nome);
 
         updateTombo.sub_familia_id = null;
         updateTombo.genero_id = null;
@@ -1225,27 +1221,23 @@ export const aprovarPendencia = async (alteracao, hcf, transaction) => {
         updateTombo.variedade_id = null;
     }
 
-    if (alteracao.sub_familia_id !== undefined) {
-        if (alteracao.sub_familia_id) {
-            const subfamilia = await Subfamilia.findOne({
-                where: {
-                    id: alteracao.sub_familia_id,
-                    familia_id: updateTombo.familia_id || tomboAtual.familia_id,
-                },
-                transaction,
-                raw: true,
-                nest: true,
-            });
+    if (alteracao.sub_familia_id) {
+        const subfamilia = await Subfamilia.findOne({
+            where: {
+                id: alteracao.sub_familia_id,
+                familia_id: updateTombo.familia_id || tomboAtual.familia_id,
+            },
+            transaction,
+            raw: true,
+            nest: true,
+        });
 
-            if (!subfamilia) {
-                throw new BadRequestExeption(404);
-            }
-
-            updateTombo.sub_familia_id = alteracao.sub_familia_id;
-            nomesCientificosPartes.push(subfamilia.nome);
-        } else {
-            updateTombo.sub_familia_id = null;
+        if (!subfamilia) {
+            throw new BadRequestExeption(404);
         }
+
+        updateTombo.sub_familia_id = alteracao.sub_familia_id;
+        nomesCientificosPartes.push(subfamilia.nome);
 
         updateTombo.genero_id = null;
         updateTombo.especie_id = null;
@@ -1253,112 +1245,96 @@ export const aprovarPendencia = async (alteracao, hcf, transaction) => {
         updateTombo.variedade_id = null;
     }
 
-    if (alteracao.genero_id !== undefined) {
-        if (alteracao.genero_id) {
-            const genero = await Genero.findOne({
-                where: {
-                    id: alteracao.genero_id,
-                    familia_id: updateTombo.familia_id || tomboAtual.familia_id,
-                },
-                transaction,
-                raw: true,
-                nest: true,
-            });
+    if (alteracao.genero_id) {
+        const genero = await Genero.findOne({
+            where: {
+                id: alteracao.genero_id,
+                familia_id: updateTombo.familia_id || tomboAtual.familia_id,
+            },
+            transaction,
+            raw: true,
+            nest: true,
+        });
 
-            if (!genero) {
-                throw new BadRequestExeption(404);
-            }
-
-            updateTombo.genero_id = alteracao.genero_id;
-            nomesCientificosPartes.push(genero.nome);
-        } else {
-            updateTombo.genero_id = null;
+        if (!genero) {
+            throw new BadRequestExeption(404);
         }
+
+        updateTombo.genero_id = alteracao.genero_id;
+        nomesCientificosPartes.push(genero.nome);
 
         updateTombo.especie_id = null;
         updateTombo.sub_especie_id = null;
         updateTombo.variedade_id = null;
     }
 
-    if (alteracao.especie_id !== undefined) {
-        if (alteracao.especie_id) {
-            const especie = await Especie.findOne({
-                where: {
-                    id: alteracao.especie_id,
-                    genero_id: updateTombo.genero_id || tomboAtual.genero_id,
-                },
-                transaction,
-                raw: true,
-                nest: true,
-            });
+    if (alteracao.especie_id) {
+        const especie = await Especie.findOne({
+            where: {
+                id: alteracao.especie_id,
+                genero_id: updateTombo.genero_id || tomboAtual.genero_id,
+            },
+            transaction,
+            raw: true,
+            nest: true,
+        });
 
-            if (!especie) {
-                throw new BadRequestExeption(404);
-            }
-
-            updateTombo.especie_id = alteracao.especie_id;
-            nomesCientificosPartes.push(especie.nome);
-        } else {
-            updateTombo.especie_id = null;
+        if (!especie) {
+            throw new BadRequestExeption(404);
         }
+
+        updateTombo.especie_id = alteracao.especie_id;
+        nomesCientificosPartes.push(especie.nome);
 
         updateTombo.sub_especie_id = null;
         updateTombo.variedade_id = null;
     }
 
-    if (alteracao.sub_especie_id !== undefined) {
-        if (alteracao.sub_especie_id) {
-            const subespecie = await Subespecie.findOne({
-                where: {
-                    id: alteracao.sub_especie_id,
-                    especie_id: updateTombo.especie_id || tomboAtual.especie_id,
-                },
-                transaction,
-                raw: true,
-                nest: true,
-            });
+    if (alteracao.sub_especie_id) {
+        const subespecie = await Subespecie.findOne({
+            where: {
+                id: alteracao.sub_especie_id,
+                especie_id: updateTombo.especie_id || tomboAtual.especie_id,
+            },
+            transaction,
+            raw: true,
+            nest: true,
+        });
 
-            if (!subespecie) {
-                throw new BadRequestExeption(404);
-            }
-
-            updateTombo.sub_especie_id = alteracao.sub_especie_id;
-            nomesCientificosPartes.push(subespecie.nome);
-        } else {
-            updateTombo.sub_especie_id = null;
+        if (!subespecie) {
+            throw new BadRequestExeption(404);
         }
+
+        updateTombo.sub_especie_id = alteracao.sub_especie_id;
+        nomesCientificosPartes.push(subespecie.nome);
 
         updateTombo.variedade_id = null;
     }
 
-    if (alteracao.variedade_id !== undefined) {
-        if (alteracao.variedade_id) {
-            const variedade = await Variedade.findOne({
-                where: {
-                    id: alteracao.variedade_id,
-                    especie_id: updateTombo.especie_id || tomboAtual.especie_id,
-                },
-                transaction,
-                raw: true,
-                nest: true,
-            });
+    if (alteracao.variedade_id) {
+        const variedade = await Variedade.findOne({
+            where: {
+                id: alteracao.variedade_id,
+                especie_id: updateTombo.especie_id || tomboAtual.especie_id,
+            },
+            transaction,
+            raw: true,
+            nest: true,
+        });
 
-            if (!variedade) {
-                throw new BadRequestExeption(404);
-            }
-
-            updateTombo.variedade_id = alteracao.variedade_id;
-            nomesCientificosPartes.push(variedade.nome);
-        } else {
-            updateTombo.variedade_id = null;
+        if (!variedade) {
+            throw new BadRequestExeption(404);
         }
+
+        updateTombo.variedade_id = alteracao.variedade_id;
+        nomesCientificosPartes.push(variedade.nome);
     }
 
     if (nomesCientificosPartes.length > 0) {
         updateTombo.nome_cientifico = nomesCientificosPartes.join(' ');
     }
 
-    if (alteracao.local_coleta_id !== undefined) {
+    if (alteracao.local_coleta_id) {
         const localColeta = await LocalColeta.findOne({
             where: { id: alteracao.local_coleta_id },
             transaction,
@@ -1377,93 +1353,74 @@ export const aprovarPendencia = async (alteracao, hcf, transaction) => {
         updateTombo.descricao = alteracao.descricao;
     }
 
-    if (alteracao.solo_id !== undefined) {
-        if (alteracao.solo_id) {
-            const soloId = alteracao.solo_id;
-            const solo = await Solo.findOne({
-                where: { id: soloId },
-                transaction,
-                raw: true,
-                nest: true,
-            });
+    if (alteracao.solo_id) {
+        const solo = await Solo.findOne({
+            where: { id: alteracao.solo_id },
+            transaction,
+            raw: true,
+            nest: true,
+        });
 
-            if (!solo) {
-                throw new BadRequestExeption(404);
-            }
-
-            updateTombo.solo_id = soloId;
-        } else {
-            updateTombo.solo_id = null;
+        if (!solo) {
+            throw new BadRequestExeption(404);
         }
+
+        updateTombo.solo_id = alteracao.solo_id;
     }
 
-    if (alteracao.relevo_id !== undefined) {
-        if (alteracao.relevo_id) {
-            const relevoId = alteracao.relevo_id;
-            const relevo = await Relevo.findOne({
-                where: { id: relevoId },
-                transaction,
-                raw: true,
-                nest: true,
-            });
+    if (alteracao.relevo_id) {
+        const relevo = await Relevo.findOne({
+            where: { id: alteracao.relevo_id },
+            transaction,
+            raw: true,
+            nest: true,
+        });
 
-            if (!relevo) {
-                throw new BadRequestExeption(404);
-            }
-
-            updateTombo.relevo_id = relevoId;
-        } else {
-            updateTombo.relevo_id = null;
+        if (!relevo) {
+            throw new BadRequestExeption(404);
         }
+
+        updateTombo.relevo_id = alteracao.relevo_id;
     }
 
-    if (alteracao.vegetacao_id !== undefined) {
-        if (alteracao.vegetacao_id) {
-            const vegetacaoId = alteracao.vegetacao_id;
-            const vegetacao = await Vegetacao.findOne({
-                where: { id: vegetacaoId },
-                transaction,
-                raw: true,
-                nest: true,
-            });
+    if (alteracao.vegetacao_id) {
+        const vegetacao = await Vegetacao.findOne({
+            where: { id: alteracao.vegetacao_id },
+            transaction,
+            raw: true,
+            nest: true,
+        });
 
-            if (!vegetacao) {
-                throw new BadRequestExeption(404);
-            }
-
-            updateTombo.vegetacao_id = vegetacaoId;
-        } else {
-            updateTombo.vegetacao_id = null;
+        if (!vegetacao) {
+            throw new BadRequestExeption(404);
         }
+
+        updateTombo.vegetacao_id = alteracao.vegetacao_id;
     }
 
-    if (alteracao.coletor_id !== undefined) {
-        if (alteracao.coletor_id) {
-            const coletor = await Coletor.findOne({
+    if (alteracao.coletor_id) {
+        const coletor = await Coletor.findOne({
+            where: { id: alteracao.coletor_id },
+            transaction,
+            raw: true,
+            nest: true,
+        });
+
+        if (!coletor) {
+            throw new BadRequestExeption(404);
+        }
+
+        const numeroColeta = updateTombo.numero_coleta;
+        if (numeroColeta && coletor.numero && coletor.numero < numeroColeta) {
+            await Coletor.update({
+                numero: numeroColeta,
+            }, {
                 where: { id: alteracao.coletor_id },
                 transaction,
-                raw: true,
-                nest: true,
             });
-
-            if (!coletor) {
-                throw new BadRequestExeption(404);
-            }
-
-            const numeroColeta = updateTombo.numero_coleta;
-            if (numeroColeta && coletor.numero && coletor.numero < numeroColeta) {
-                await Coletor.update({
-                    numero: numeroColeta,
-                }, {
-                    where: { id: alteracao.coletor_id },
-                    transaction,
-                });
-            }
-
-            updateTombo.coletor_id = alteracao.coletor_id;
-        } else {
-            updateTombo.coletor_id = null;
         }
+
+        updateTombo.coletor_id = alteracao.coletor_id;
     }
 
     if (Object.keys(updateTombo).length > 0) {
@@ -1568,6 +1525,8 @@ export const aprovarPendencia = async (alteracao, hcf, transaction) => {
         tombo: tomboFinal,
     };
 };
+
+// ...existing code...
 
 export const visualizarComJsonNome = (alteracao, hcf, transaction) => new Promise((resolve, reject) => {
     Tombo.findOne({
