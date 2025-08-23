@@ -1690,7 +1690,7 @@ export async function visualizar(request, response, next) {
 
         const objetoAlterado = JSON.parse(alteracao.tombo_json);
         const parametros = {};
-
+        
         if (objetoAlterado.nomes_populares) parametros.nome_popular = objetoAlterado.nomes_populares;
         if (objetoAlterado.numero_coleta) parametros.numero_coleta = objetoAlterado.numero_coleta;
         if (objetoAlterado.data_coleta?.dia) parametros.data_coleta_dia = objetoAlterado.data_coleta.dia;
@@ -1709,6 +1709,11 @@ export async function visualizar(request, response, next) {
         if (objetoAlterado.sub_familia_nome) parametros.subfamilia = objetoAlterado.sub_familia_nome;
         if (objetoAlterado.genero_nome) parametros.genero = objetoAlterado.genero_nome;
         if (objetoAlterado.especie_nome) parametros.especie = objetoAlterado.especie_nome;
+
+        if (objetoAlterado.familia_id) parametros.familia = await Familia.findOne({ where: { id: objetoAlterado.familia_id }, raw: true, nest: true });
+        if (objetoAlterado.subfamilia_id) parametros.subfamilia = await Subfamilia.findOne({ where: { id: objetoAlterado.subfamilia_id }, raw: true, nest: true });
+        if (objetoAlterado.genero_id) parametros.genero = await Genero.findOne({ where: { id: objetoAlterado.genero_id }, raw: true, nest: true });
+        if (objetoAlterado.especie_id) parametros.especie = await Especie.findOne({ where: { id: objetoAlterado.especie_id }, raw: true, nest: true });
 
         if (objetoAlterado.identificadores) parametros.identificador = await Usuario.findOne({ where: { id: objetoAlterado.identificadores }, raw: true, nest: true });
         if (objetoAlterado.fase_sucessional_id) parametros.faseSucessional = await FaseSucessional.findOne({ where: { numero: objetoAlterado.fase_sucessional_id }, raw: true, nest: true });
@@ -1775,51 +1780,71 @@ export async function visualizar(request, response, next) {
             jsonRetorno.push({ key: '8', campo: 'Localidade cor', antigo: tombo?.cor || '', novo: parametros.cor });
         }
 
-        if (parametros.familia && (!tombo?.familia?.nome || tombo.familia.nome !== parametros.familia)) {
-            jsonRetorno.push({ key: '9', campo: 'Família', antigo: tombo?.familia?.nome || '', novo: parametros.familia });
+        if (parametros.familia) {
+            const nomeFamilia = typeof parametros.familia === 'string' ? parametros.familia : parametros.familia.nome;
+            const idFamilia = typeof parametros.familia === 'string' ? null : parametros.familia.id;
+            if ((idFamilia && (!tombo?.familia?.id || tombo.familia.id !== idFamilia)) || (typeof parametros.familia === 'string' && tombo.familia.nome !== nomeFamilia)) {
+                jsonRetorno.push({ key: '9', campo: 'Família', antigo: tombo?.familia?.nome || '', novo: nomeFamilia });
+            }
         }
 
-        if (parametros.genero && (!tombo?.genero?.nome || tombo.genero.nome !== parametros.genero)) {
-            jsonRetorno.push({ key: '10', campo: 'Gênero', antigo: tombo?.genero?.nome || '', novo: parametros.genero });
+        if (parametros.genero) {
+            const nomeGenero = typeof parametros.genero === 'string' ? parametros.genero : parametros.genero.nome;
+            const idGenero = typeof parametros.genero === 'string' ? null : parametros.genero.id;
+            if ((idGenero && (!tombo?.genero?.id || tombo.genero.id !== idGenero)) || (typeof parametros.genero === 'string' && tombo.genero.nome !== nomeGenero)) {
+                jsonRetorno.push({ key: '10', campo: 'Gênero', antigo: tombo?.genero?.nome || '', novo: nomeGenero });
+            }
         }
 
-        if (parametros.subfamilia && (!tombo?.sub_familia?.nome || tombo.sub_familia.nome !== parametros.subfamilia)) {
-            jsonRetorno.push({ key: '11', campo: 'Subfamília', antigo: tombo?.sub_familia?.nome || '', novo: parametros.subfamilia });
+        if (parametros.subfamilia) {
+            const nomeSubfamilia = typeof parametros.subfamilia === 'string' ? parametros.subfamilia : parametros.subfamilia.nome;
+            const idSubfamilia = typeof parametros.subfamilia === 'string' ? null : parametros.subfamilia.id;
+            if ((idSubfamilia && (!tombo?.sub_familia?.id || tombo.sub_familia.id !== idSubfamilia)) || (typeof parametros.subfamilia === 'string' && tombo.sub_familia.nome !== nomeSubfamilia)) {
+                jsonRetorno.push({ key: '11', campo: 'Subfamília', antigo: tombo?.sub_familia?.nome || '', novo: nomeSubfamilia });
+            }
         }
 
-        if (parametros.especie && (!tombo?.especy?.nome || tombo.especy.nome !== parametros.especie)) {
-            jsonRetorno.push({ key: '12', campo: 'Espécie', antigo: tombo?.especy?.nome || '', novo: parametros.especie });
+        if (parametros.especie) {
+            const nomeEspecie = typeof parametros.especie === 'string' ? parametros.especie : parametros.especie.nome;
+            const idEspecie = typeof parametros.especie === 'string' ? null : parametros.especie.id;
+            if ((idEspecie && (!tombo?.especy?.id || tombo.especy.id !== idEspecie)) || (typeof parametros.especie === 'string' && tombo.especy.nome !== nomeEspecie)) {
+                jsonRetorno.push({ key: '12', campo: 'Espécie', antigo: tombo?.especy?.nome || '', novo: nomeEspecie });
+            }
         }
 
         if (parametros.subespecie && (!tombo?.sub_especy?.id || tombo.sub_especy.id !== parametros.subespecie.id)) {
             jsonRetorno.push({ key: '13', campo: 'Subespécie', antigo: tombo?.sub_especy?.nome || '', novo: parametros.subespecie.nome });
         }
 
+        if (parametros.variedade && (!tombo?.variedade?.id || tombo.variedade.id !== parametros.variedade.id)) {
+            jsonRetorno.push({ key: '14', campo: 'Variedade', antigo: tombo?.variedade?.nome || '', novo: parametros.variedade.nome });
+        }
+
         if (parametros.altitude && tombo?.altitude !== parametros.altitude) {
-            jsonRetorno.push({ key: '14', campo: 'Altitude', antigo: tombo?.altitude || '', novo: parametros.altitude });
+            jsonRetorno.push({ key: '15', campo: 'Altitude', antigo: tombo?.altitude || '', novo: parametros.altitude });
         }
 
         if (tombo?.locais_coletum) {
             if (parametros.cidade && (!tombo?.locais_coletum?.cidade?.id || tombo.locais_coletum.cidade.id !== parametros.cidade.id)) {
-                jsonRetorno.push({ key: '15', campo: 'Cidade', antigo: tombo?.locais_coletum?.cidade?.nome || '', novo: parametros.cidade.nome });
+                jsonRetorno.push({ key: '16', campo: 'Cidade', antigo: tombo?.locais_coletum?.cidade?.nome || '', novo: parametros.cidade.nome });
             }
             if (parametros.local_coleta_id && tombo?.locais_coletum?.local_coleta_id !== parametros.local_coleta_id) {
-                jsonRetorno.push({ key: '16', campo: 'Local de Coleta', antigo: tombo?.locais_coletum?.local_coleta_id || '', novo: parametros.local_coleta_id });
+                jsonRetorno.push({ key: '17', campo: 'Local de Coleta', antigo: tombo?.locais_coletum?.local_coleta_id || '', novo: parametros.local_coleta_id });
             }
             if (parametros.solo && (!tombo?.locais_coletum?.solo?.id || tombo.locais_coletum.solo.id !== parametros.solo.id)) {
-                jsonRetorno.push({ key: '17', campo: 'Solo', antigo: tombo?.locais_coletum?.solo?.nome || '', novo: parametros.solo.nome });
+                jsonRetorno.push({ key: '18', campo: 'Solo', antigo: tombo?.locais_coletum?.solo?.nome || '', novo: parametros.solo.nome });
             }
             if (parametros.descricao && tombo?.locais_coletum?.descricao !== parametros.descricao) {
-                jsonRetorno.push({ key: '18', campo: 'Descrição do relevo', antigo: tombo?.locais_coletum?.descricao || '', novo: parametros.descricao });
+                jsonRetorno.push({ key: '19', campo: 'Descrição do relevo', antigo: tombo?.locais_coletum?.descricao || '', novo: parametros.descricao });
             }
             if (parametros.relevo && (!tombo?.locais_coletum?.relevo?.id || tombo.locais_coletum.relevo.id !== parametros.relevo.id)) {
-                jsonRetorno.push({ key: '19', campo: 'Relevo', antigo: tombo?.locais_coletum?.relevo?.nome || '', novo: parametros.relevo.nome });
+                jsonRetorno.push({ key: '20', campo: 'Relevo', antigo: tombo?.locais_coletum?.relevo?.nome || '', novo: parametros.relevo.nome });
             }
             if (parametros.vegetacao && (!tombo?.locais_coletum?.vegetaco?.id || tombo.locais_coletum.vegetaco.id !== parametros.vegetacao.id)) {
-                jsonRetorno.push({ key: '20', campo: 'Vegetação', antigo: tombo?.locais_coletum?.vegetaco?.nome || '', novo: parametros.vegetacao.nome });
+                jsonRetorno.push({ key: '21', campo: 'Vegetação', antigo: tombo?.locais_coletum?.vegetaco?.nome || '', novo: parametros.vegetacao.nome });
             }
             if (parametros.faseSucessional && (!tombo?.locais_coletum?.fase_sucessional?.numero || tombo.locais_coletum.fase_sucessional.numero !== parametros.faseSucessional.id)) {
-                jsonRetorno.push({ key: '21', campo: 'Fase sucessional', antigo: tombo?.locais_coletum?.fase_sucessional?.nome || '', novo: parametros.faseSucessional.nome });
+                jsonRetorno.push({ key: '22', campo: 'Fase sucessional', antigo: tombo?.locais_coletum?.fase_sucessional?.nome || '', novo: parametros.faseSucessional.nome });
             }
         }
 
@@ -1836,21 +1861,21 @@ export async function visualizar(request, response, next) {
             if (identificadores?.length) {
                 const identificadorAntigo = identificadores.find(i => i.ordem === 1)?.identificadore;
                 if (identificadorAntigo && identificadorAntigo.identificador_id !== parametros.identificador.id) {
-                    jsonRetorno.push({ key: '22', campo: 'Identificador', antigo: identificadorAntigo.nome, novo: parametros.identificador.nome });
+                    jsonRetorno.push({ key: '23', campo: 'Identificador', antigo: identificadorAntigo.nome, novo: parametros.identificador.nome });
                 }
             }
         }
 
         if (parametros.data_identificacao_dia && tombo?.data_identificacao_dia !== parametros.data_identificacao_dia) {
-            jsonRetorno.push({ key: '23', campo: 'Data de identificação dia', antigo: tombo?.data_identificacao_dia || '', novo: parametros.data_identificacao_dia });
+            jsonRetorno.push({ key: '24', campo: 'Data de identificação dia', antigo: tombo?.data_identificacao_dia || '', novo: parametros.data_identificacao_dia });
         }
 
         if (parametros.data_identificacao_mes && tombo?.data_identificacao_mes !== parametros.data_identificacao_mes) {
-            jsonRetorno.push({ key: '24', campo: 'Data de identificação mês', antigo: tombo?.data_identificacao_mes || '', novo: parametros.data_identificacao_mes });
+            jsonRetorno.push({ key: '25', campo: 'Data de identificação mês', antigo: tombo?.data_identificacao_mes || '', novo: parametros.data_identificacao_mes });
         }
 
         if (parametros.data_identificacao_ano && tombo?.data_identificacao_ano !== parametros.data_identificacao_ano) {
-            jsonRetorno.push({ key: '25', campo: 'Data de identificação ano', antigo: tombo?.data_identificacao_ano || '', novo: parametros.data_identificacao_ano });
+            jsonRetorno.push({ key: '26', campo: 'Data de identificação ano', antigo: tombo?.data_identificacao_ano || '', novo: parametros.data_identificacao_ano });
         }
 
         const jsonRender = {
