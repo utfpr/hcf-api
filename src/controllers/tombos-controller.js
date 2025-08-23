@@ -489,11 +489,11 @@ function alteracaoCuradorouOperador(request, response, transaction) {
     const localColeta = body?.localidade?.local_coleta_id;
     if (localColeta) update.local_coleta_id = localColeta;
     const soloId = body?.paisagem?.solo_id;
-    if(soloId) update.solo_id = soloId;
+    if (soloId) update.solo_id = soloId;
     const relevoId = body?.paisagem?.relevo_id;
-    if(relevoId) update.relevo_id = relevoId;
+    if (relevoId) update.relevo_id = relevoId;
     const vegetacaoId = body?.paisagem?.vegetacao_id;
-    if(vegetacaoId) update.vegetacao_id = vegetacaoId;
+    if (vegetacaoId) update.vegetacao_id = vegetacaoId;
     const descricao = body?.paisagem?.descricao;
     if (descricao) update.descricao = descricao;
     const faseSucessionalId = body?.paisagem?.fase_sucessional_id;
