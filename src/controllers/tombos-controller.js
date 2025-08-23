@@ -105,12 +105,12 @@ export const cadastro = (request, response, next) => {
                 return undefined;
             })
             .then(() => {
-                if (!localidade?.complemento) {
+                if (!localidade?.local_coleta_id) {
                     throw new BadRequestExeption(400);
                 }
                 return LocalColeta.findOne({
                     where: {
-                        id: localidade.complemento,
+                        id: localidade.local_coleta_id,
                     },
                     transaction,
                 });
@@ -271,7 +271,7 @@ export const cadastro = (request, response, next) => {
                     data_coleta_mes: principal.data_coleta.mes,
                     data_coleta_ano: principal.data_coleta.ano,
                     numero_coleta: principal.numero_coleta,
-                    local_coleta_id: localidade.complemento,
+                    local_coleta_id: localidade.local_coleta_id,
                     cor: principal.cor,
                     coletor_id: coletor,
                 };
@@ -486,36 +486,14 @@ function alteracaoCuradorouOperador(request, response, transaction) {
     if (longitude) update.longitude = converteParaDecimal(longitude);
     const altitude = body?.localidade?.altitude;
     if (altitude) update.altitude = altitude;
-    const complemento = body?.localidade?.complemento;
-    if (complemento) update.local_coleta_id = complemento;
-
-    const soloIdRaw = body?.paisagem?.solo_id;
-    if (soloIdRaw !== undefined) {
-        if (soloIdRaw) {
-            const soloId = typeof soloIdRaw === 'object' ? soloIdRaw.key : soloIdRaw;
-            update.solo_id = soloId;
-        } else {
-            update.solo_id = null;
-        }
-    }
-    const relevoIdRaw = body?.paisagem?.relevo_id;
-    if (relevoIdRaw !== undefined) {
-        if (relevoIdRaw) {
-            const relevoId = typeof relevoIdRaw === 'object' ? relevoIdRaw.key : relevoIdRaw;
-            update.relevo_id = relevoId;
-        } else {
-            update.relevo_id = null;
-        }
-    }
-    const vegetacaoIdRaw = body?.paisagem?.vegetacao_id;
-    if (vegetacaoIdRaw !== undefined) {
-        if (vegetacaoIdRaw) {
-            const vegetacaoId = typeof vegetacaoIdRaw === 'object' ? vegetacaoIdRaw.key : vegetacaoIdRaw;
-            update.vegetacao_id = vegetacaoId;
-        } else {
-            update.vegetacao_id = null;
-        }
-    }
+    const localColeta = body?.localidade?.local_coleta_id;
+    if (localColeta) update.local_coleta_id = localColeta;
+    const soloId = body?.paisagem?.solo_id;
+    if(soloId) update.solo_id = soloId;
+    const relevoId = body?.paisagem?.relevo_id;
+    if(relevoId) update.relevo_id = relevoId;
+    const vegetacaoId = body?.paisagem?.vegetacao_id;
+    if(vegetacaoId) update.vegetacao_id = vegetacaoId;
     const descricao = body?.paisagem?.descricao;
     if (descricao) update.descricao = descricao;
     const faseSucessionalId = body?.paisagem?.fase_sucessional_id;

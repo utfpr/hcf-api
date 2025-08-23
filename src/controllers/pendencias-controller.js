@@ -1739,7 +1739,7 @@ export async function visualizar(request, response, next) {
         if (objetoAlterado.data_coleta?.ano) parametros.data_coleta_ano = objetoAlterado.data_coleta.ano;
         if (objetoAlterado.cor) parametros.cor = objetoAlterado.cor;
         if (objetoAlterado.altitude) parametros.altitude = objetoAlterado.altitude;
-        if (objetoAlterado.complemento) parametros.complemento = objetoAlterado.complemento;
+        if (objetoAlterado.local_coleta_id) parametros.local_coleta_id = objetoAlterado.local_coleta_id;
         if (objetoAlterado.descricao) parametros.descricao = objetoAlterado.descricao;
         if (objetoAlterado.data_identificacao?.dia) parametros.data_identificacao_dia = objetoAlterado.data_identificacao.dia;
         if (objetoAlterado.data_identificacao?.mes) parametros.data_identificacao_mes = objetoAlterado.data_identificacao.mes;
@@ -1844,8 +1844,8 @@ export async function visualizar(request, response, next) {
             if (parametros.cidade && (!tombo?.locais_coletum?.cidade?.id || tombo.locais_coletum.cidade.id !== parametros.cidade.id)) {
                 jsonRetorno.push({ key: '15', campo: 'Cidade', antigo: tombo?.locais_coletum?.cidade?.nome || '', novo: parametros.cidade.nome });
             }
-            if (parametros.complemento && tombo?.locais_coletum?.complemento !== parametros.complemento) {
-                jsonRetorno.push({ key: '16', campo: 'Complemento', antigo: tombo?.locais_coletum?.complemento || '', novo: parametros.complemento });
+            if (parametros.local_coleta_id && tombo?.locais_coletum?.local_coleta_id !== parametros.local_coleta_id) {
+                jsonRetorno.push({ key: '16', campo: 'Local de Coleta', antigo: tombo?.locais_coletum?.local_coleta_id || '', novo: parametros.local_coleta_id });
             }
             if (parametros.solo && (!tombo?.locais_coletum?.solo?.id || tombo.locais_coletum.solo.id !== parametros.solo.id)) {
                 jsonRetorno.push({ key: '17', campo: 'Solo', antigo: tombo?.locais_coletum?.solo?.nome || '', novo: parametros.solo.nome });
