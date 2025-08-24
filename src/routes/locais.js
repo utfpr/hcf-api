@@ -336,7 +336,6 @@ export default app => {
             validacoesMiddleware(localColetaListagemEsquema),
             controller.buscarLocaisColeta,
         ]);
-
     /**
      * @swagger
      * /locais-coleta/{id}:
