@@ -1,9 +1,11 @@
+import pick from '~/helpers/pick';
+
 import BadRequestExeption from '../errors/bad-request-exception';
 import models from '../models';
 import codigos from '../resources/codigos-http';
 
 const {
-    Relevo, Solo, Vegetacao, sequelize,
+    Relevo, Solo, Vegetacao, LocalColeta, Cidade, FaseSucessional, Estado, Pais, sequelize,
 } = models;
 
 export const cadastrarSolo = (request, response, next) => {
@@ -120,4 +122,158 @@ export const buscarVegetacoes = (request, response, next) => {
         .catch(next);
 };
 
+export const cadastrarLocalColeta = async (request, response, next) => {
+    try {
+        const dados = pick(request.body, ['descricao', 'complemento', 'cidade_id', 'fase_sucessional_id']);
+        const localColeta = await LocalColeta.create(dados);
+        response.status(201).json(localColeta);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const buscarLocaisColeta = async (request, response, next) => {
+    try {
+        const { cidade_id: cidadeId } = request.query;
+        const { limite, pagina, offset } = request.paginacao;
+
+        const where = {};
+        if (cidadeId) {
+            where.cidade_id = cidadeId;
+        }
+
+        const { count, rows } = await LocalColeta.findAndCountAll({
+            where,
+            include: [
+                { model: Cidade,
+                    include: [
+                        { model: Estado,
+                            include: [
+                                Pais,
+                            ],
+                        },
+                    ],
+                },
+                { model: FaseSucessional },
+            ],
+            limit: limite,
+            offset,
+        });
+
+        response.status(200).json({
+            metadados: {
+                total: count,
+                pagina,
+                limite,
+            },
+            resultado: rows,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const buscarLocalColetaPorId = async (request, response, next) => {
+    try {
+        const { id } = request.params;
+
+        const localColeta = await LocalColeta.findOne({
+            where: { id },
+            include: [
+                { model: Cidade,
+                    include: [
+                        { model: Estado,
+                            include: [
+                                Pais,
+                            ],
+                        },
+                    ],
+                },
+                { model: FaseSucessional },
+            ],
+        });
+
+        if (!localColeta) {
+            response.status(404).json({
+                mensagem: 'Local de coleta não encontrado.',
+            });
+            return;
+        }
+
+        response.status(200).json(localColeta);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const atualizarLocalColeta = async (request, response, next) => {
+    try {
+        const { id } = request.params;
+        const dados = pick(request.body, ['descricao', 'complemento', 'cidade_id', 'fase_sucessional_id']);
+
+        const [updated] = await LocalColeta.update(dados, {
+            where: { id },
+        });
+
+        if (updated === 0) {
+            response.status(404).json({
+                mensagem: 'Local de coleta não encontrado.',
+            });
+            return;
+        }
+
+        const localColetaAtualizado = await LocalColeta.findOne({
+            where: { id },
+            include: [
+                { model: Cidade },
+                { model: FaseSucessional },
+            ],
+        });
+
+        response.status(200).json(localColetaAtualizado);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const deletarLocalColeta = async (request, response, next) => {
+    try {
+        const { id } = request.params;
+
+        const localColeta = await LocalColeta.findOne({
+            where: { id },
+        });
+
+        if (!localColeta) {
+            response.status(404).json({
+                mensagem: 'Local de coleta não encontrado.',
+            });
+            return;
+        }
+
+        const { Tombo } = models;
+        const tombosAssociados = await Tombo.count({
+            where: {
+                local_coleta_id: id,
+                ativo: true,
+            },
+        });
+
+        if (tombosAssociados > 0) {
+            response.status(400).json({
+                mensagem: `Não é possível excluir o local de coleta. Existem ${tombosAssociados} tombo(s) associado(s) a este local.`,
+            });
+            return;
+        }
+
+        await LocalColeta.destroy({
+            where: { id },
+        });
+
+        response.status(204).send();
+
+    } catch (error) {
+        next(error);
+    }
+};
 export default {};

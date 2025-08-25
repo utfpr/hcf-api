@@ -13,6 +13,7 @@ import models from '../models';
 import codigos from '../resources/codigos-http';
 import verifyRecaptcha from '../utils/verify-recaptcha';
 import { ForeignKeyConstraintError } from 'sequelize';
+import { aprovarPendencia } from './pendencias-controller';
 
 const {
     Solo, Relevo, Cidade, Estado, Vegetacao, FaseSucessional, Pais, Tipo, LocalColeta, Familia, sequelize,
@@ -105,22 +106,21 @@ export const cadastro = (request, response, next) => {
                 return undefined;
             })
             .then(() => {
-                let json = {};
-                // /////////CRIA LOCAL DE COLETA////////////
-                if (paisagem) {
-                    json = pick(paisagem, ['descricao', 'solo_id', 'relevo_id', 'vegetacao_id', 'fase_sucessional_id']);
+                if (!localidade?.local_coleta_id) {
+                    throw new BadRequestExeption(400);
                 }
-                if (localidade.complemento) {
-                    json.complemento = localidade.complemento;
-                }
-                json.cidade_id = localidade.cidade_id;
-                return LocalColeta.create(json, { transaction });
+                return LocalColeta.findOne({
+                    where: {
+                        id: localidade.local_coleta_id,
+                    },
+                    transaction,
+                });
             })
             .then(localColeta => {
                 if (!localColeta) {
-                    throw new BadRequestExeption(400);
+                    throw new BadRequestExeption(533);
                 }
-                principal.local_coleta_id = localColeta.id;
+                return undefined;
             })
         // //////////////CRIA COLECOES ANEXAS///////////
             .then(() => {
@@ -272,10 +272,14 @@ export const cadastro = (request, response, next) => {
                     data_coleta_mes: principal.data_coleta.mes,
                     data_coleta_ano: principal.data_coleta.ano,
                     numero_coleta: principal.numero_coleta,
-                    local_coleta_id: principal.local_coleta_id,
+                    local_coleta_id: localidade.local_coleta_id,
                     cor: principal.cor,
                     coletor_id: coletor,
                 };
+
+                if (paisagem.descricao) {
+                    jsonTombo.descricao = paisagem.descricao;
+                }
 
                 if (observacoes) {
                     jsonTombo.observacao = observacoes;
@@ -445,202 +449,110 @@ function alteracaoIdentificador(request, transaction) {
         });
 }
 
-function alteracaoCuradorouOperador(request, response, next) {
+function alteracaoCuradorouOperador(request, response, transaction) {
     const { body } = request;
-
-    const nomePopular = body?.principal?.nome_popular;
-    const entidadeId = body?.principal?.entidade_id;
-    const numeroColeta = body.principal.numero_coleta;
-    const dataColeta = body.principal.data_coleta;
-    const tipoId = body?.principal?.tipo_id;
-    const { cor } = body.principal || null;
-
-    const familiaId = body?.taxonomia?.familia_id;
-    const subfamiliaId = body?.taxonomia?.sub_familia_id;
-    const generoId = body?.taxonomia?.genero_id;
-    const especieId = body?.taxonomia?.especie_id;
-    const subespecieId = body?.taxonomia?.sub_especie_id;
-    const variedadeId = body?.taxonomia?.variedade_id;
-
-    const { latitude } = body.localidade || null;
-    const { longitude } = body.localidade || null;
-    const { altitude } = body.localidade || null;
-    const cidadeId = body.localidade.cidade_id;
-    const { complemento } = body.localidade || null;
-
-    const soloId = body?.paisagem?.solo_id;
-    const { descricao } = body.paisagem || null;
-    const relevoId = body?.paisagem?.relevo_id;
-    const vegetacaoId = body?.paisagem?.vegetacao_id;
-    const faseSucessionalId = body?.paisagem.fase_sucessional_id;
-
-    const { identificadores } = body.identificacao || null;
-    const dataIdentificacao = body?.identificacao?.data_identificacao;
-
-    const { coletores } = body || null;
-    const complementares = body?.coletor_complementar?.complementares || null;
-    const colecoesAnexasTipo = body?.colecoes_anexas?.tipo;
-    const colecoesAnexasObservacoes = body?.colecoes_anexas?.observacoes;
-
-    const { observacoes } = body || null;
-
-    const { tombo_id: tomboId } = request.params;
     const update = {};
 
-    if (nomePopular) {
-        update.nomes_populares = nomePopular;
-    }
+    const nomePopular = body?.principal?.nome_popular;
+    if (nomePopular) update.nomes_populares = nomePopular;
+    const entidadeId = body?.principal?.entidade_id;
+    if (entidadeId) update.entidade_id = entidadeId;
+    const numeroColeta = body?.principal?.numero_coleta;
+    if (numeroColeta) update.numero_coleta = numeroColeta;
+    const dataColeta = body?.principal?.data_coleta;
+    if (dataColeta?.dia) update.data_coleta_dia = dataColeta.dia;
+    if (dataColeta?.mes) update.data_coleta_mes = dataColeta.mes;
+    if (dataColeta?.ano) update.data_coleta_ano = dataColeta.ano;
+    const tipoId = body?.principal?.tipo_id;
+    if (tipoId) update.tipo_id = tipoId;
+    const { cor } = body.principal || {};
+    if (cor) update.cor = cor;
 
-    if (entidadeId) {
-        update.entidade_id = entidadeId;
-    }
+    const familiaId = body?.taxonomia?.familia_id;
+    if (familiaId) update.familia_id = familiaId;
+    const subfamiliaId = body?.taxonomia?.sub_familia_id;
+    if (subfamiliaId) update.sub_familia_id = subfamiliaId;
+    const generoId = body?.taxonomia?.genero_id;
+    if (generoId) update.genero_id = generoId;
+    const especieId = body?.taxonomia?.especie_id;
+    if (especieId) update.especie_id = especieId;
+    const subespecieId = body?.taxonomia?.sub_especie_id;
+    if (subespecieId) update.sub_especie_id = subespecieId;
+    const variedadeId = body?.taxonomia?.variedade_id;
+    if (variedadeId) update.variedade_id = variedadeId;
 
-    if (numeroColeta) {
-        update.numero_coleta = numeroColeta;
-    }
+    const latitude = body?.localidade?.latitude;
+    if (latitude) update.latitude = converteParaDecimal(latitude);
+    const longitude = body?.localidade?.longitude;
+    if (longitude) update.longitude = converteParaDecimal(longitude);
+    const altitude = body?.localidade?.altitude;
+    if (altitude) update.altitude = altitude;
+    const localColeta = body?.localidade?.local_coleta_id;
+    if (localColeta) update.local_coleta_id = localColeta;
+    const soloId = body?.paisagem?.solo_id;
+    if (soloId) update.solo_id = soloId;
+    const relevoId = body?.paisagem?.relevo_id;
+    if (relevoId) update.relevo_id = relevoId;
+    const vegetacaoId = body?.paisagem?.vegetacao_id;
+    if (vegetacaoId) update.vegetacao_id = vegetacaoId;
+    const descricao = body?.paisagem?.descricao;
+    if (descricao) update.descricao = descricao;
+    const faseSucessionalId = body?.paisagem?.fase_sucessional_id;
+    if (faseSucessionalId) update.fase_sucessional_id = faseSucessionalId;
 
-    if (dataColeta) {
-        update.data_coleta = dataColeta;
-    }
+    const identificadores = body?.identificacao?.identificadores;
+    if (identificadores?.length) update.identificadores = identificadores;
+    const dataIdentificacao = body?.identificacao?.data_identificacao;
+    if (dataIdentificacao?.dia) update.data_identificacao_dia = dataIdentificacao.dia;
+    if (dataIdentificacao?.mes) update.data_identificacao_mes = dataIdentificacao.mes;
+    if (dataIdentificacao?.ano) update.data_identificacao_ano = dataIdentificacao.ano;
 
-    if (tipoId) {
-        update.tipo_id = tipoId;
-    }
+    const coletores = body?.coletores;
+    if (coletores) update.coletor_id = coletores;
+    const complementares = body?.coletor_complementar?.complementares;
+    if (complementares) update.complementares = complementares;
+    const colecoesAnexasTipo = body?.colecoes_anexas?.tipo;
+    if (colecoesAnexasTipo) update.colecoes_anexas_tipo = colecoesAnexasTipo;
+    const colecoesAnexasObservacoes = body?.colecoes_anexas?.observacoes;
+    if (colecoesAnexasObservacoes) update.colecoes_anexas_observacoes = colecoesAnexasObservacoes;
+    const { observacoes } = body || {};
+    if (observacoes) update.observacao = observacoes;
 
-    if (cor) {
-        update.cor = cor;
-    }
+    const { tombo_id: tomboId } = request.params;
 
-    if (familiaId) {
-        update.familia_id = familiaId;
-    }
-    if (subfamiliaId) {
-        update.sub_familia_id = subfamiliaId;
-    }
-    if (generoId) {
-        update.genero_id = generoId;
-    }
-    if (especieId) {
-        update.especie_id = especieId;
-    }
-    if (subespecieId) {
-        update.sub_especie_id = subespecieId;
-    }
-    if (variedadeId) {
-        update.variedade_id = variedadeId;
-    }
-
-    if (latitude) {
-        update.latitude = converteParaDecimal(latitude);
-    }
-
-    if (longitude) {
-        update.longitude = converteParaDecimal(longitude);
-    }
-
-    if (altitude) {
-        update.altitude = altitude;
-    }
-
-    if (cidadeId) {
-        update.cidade_id = cidadeId;
-    }
-
-    if (complemento) {
-        update.complemento = complemento;
-    }
-
-    if (soloId) {
-        update.solo_id = soloId;
-    }
-
-    if (descricao) {
-        update.descricao = descricao;
-    }
-
-    if (relevoId) {
-        update.relevo_id = relevoId;
-    }
-
-    if (vegetacaoId) {
-        update.vegetacao_id = vegetacaoId;
-    }
-
-    if (faseSucessionalId) {
-        update.fase_sucessional_id = faseSucessionalId;
-    }
-
-    if (identificadores && identificadores.length > 0) {
-        update.identificadores = identificadores;
-    }
-
-    if (dataIdentificacao) {
-        update.data_identificacao = dataIdentificacao;
-    }
-
-    if (coletores) {
-        update.coletores = coletores;
-    }
-
-    if (complementares) {
-        update.complementares = complementares;
-    }
-
-    if (colecoesAnexasTipo) {
-        update.colecoes_anexas_tipo = colecoesAnexasTipo;
-    }
-
-    if (colecoesAnexasObservacoes) {
-        update.colecoes_anexas_observacoes = colecoesAnexasObservacoes;
-    }
-
-    if (observacoes) {
-        update.observacao = observacoes;
-    }
-
-    return Promise.resolve()
-        .then(() => {
-
-            if (request.usuario.tipo_usuario_id === 2) { // OPERADOR
-                Alteracao.create({
-                    tombo_hcf: tomboId,
-                    usuario_id: request.usuario.id,
-                    status: 'ESPERANDO', // operador fica em espera e curador APROVADO {ESPERANDO - para nao esquecer}
-                    tombo_json: JSON.stringify(update),
-                    ativo: true,
-                    identificacao: 1,
-                }).then(tombos => {
-                    response.status(codigos.BUSCAR_UM_ITEM)
-                        .json(tombos);
-                })
-                    .catch(next);
-            } else if (request.usuario.tipo_usuario_id === 1) { // CURADOR
-                Alteracao.create({
-                    tombo_hcf: tomboId,
-                    usuario_id: request.usuario.id,
-                    status: 'APROVADO', // operador fica em espera e curador APROVADO {ESPERANDO - para nao esquecer}
-                    tombo_json: JSON.stringify(update),
-                    ativo: true,
-                    identificacao: 1,
-                }).then(tombos => {
-                    response.status(codigos.BUSCAR_UM_ITEM)
-                        .json(tombos);
-                })
-                    .catch(next);
+    return Alteracao.create({
+        tombo_hcf: tomboId,
+        usuario_id: request.usuario.id,
+        status: 'ESPERANDO',
+        tombo_json: JSON.stringify(update),
+        ativo: true,
+        identificacao: 1,
+    }, { transaction })
+        .then(alteracaoCriada => {
+            if (request.usuario.tipo_usuario_id === 1) {
+                return aprovarPendencia(update, tomboId, transaction)
+                    .then(() => Alteracao.update({ status: 'APROVADO' }, {
+                        where: { id: alteracaoCriada.id },
+                        transaction,
+                    }))
+                    .then(() => alteracaoCriada.toJSON());
+            } if (request.usuario.tipo_usuario_id !== 2) {
+                throw new BadRequestExeption(421);
             }
+            return alteracaoCriada.toJSON();
         });
 }
 
 export function alteracao(request, response, next) {
-    const callback = transaction => {
+    return sequelize.transaction(transaction => {
         if (request.usuario.tipo_usuario_id === 3) {
             return alteracaoIdentificador(request, transaction);
         } if (request.usuario.tipo_usuario_id === 1 || request.usuario.tipo_usuario_id === 2) {
-            return alteracaoCuradorouOperador(request, response, next);
+            return alteracaoCuradorouOperador(request, response, transaction);
         }
-        return Promise.reject(new BadRequestExeption(421));
-    };
-    sequelize.transaction(callback)
+        throw new BadRequestExeption(421);
+
+    })
         .then(() => {
             if (request.usuario.tipo_usuario_id === 3) {
                 response.status(codigos.EDITAR_SEM_RETORNO).send();
@@ -1023,8 +935,6 @@ export const obterTombo = async (request, response, next) => {
 
         let resposta = {};
         let dadosTombo = {};
-        // eslint-disable-next-line
-        // console.error(id);
         Promise.resolve()
             .then(() =>
                 Tombo.findOne({
@@ -1053,6 +963,7 @@ export const obterTombo = async (request, response, next) => {
                         'data_identificacao_dia',
                         'data_identificacao_mes',
                         'data_identificacao_ano',
+                        'descricao',
                     ],
                     include: [
                         {
@@ -1183,27 +1094,20 @@ export const obterTombo = async (request, response, next) => {
                     especieInicial: tombo.especy !== null ? tombo.especy?.id : '',
                     subespecieInicial: tombo.sub_especy !== null ? tombo.sub_especy?.id : '',
                     variedadeInicial: tombo.variedade !== null ? tombo.variedade?.id : '',
+                    idSoloInicial: tombo.solo !== null ? tombo.solo?.id : '',
                     soloInicial: tombo.solo !== null ? tombo.solo?.nome : '',
+                    idRelevoInicial: tombo.relevo !== null ? tombo.relevo?.id : '',
                     relevoInicial: tombo.relevo !== null ? tombo.relevo?.nome : '',
+                    idVegetacaoInicial: tombo.vegetaco !== null ? tombo.vegetaco?.id : '',
                     vegetacaoInicial: tombo.vegetaco !== null ? tombo.vegetaco?.nome : '',
                     faseInicial:
             tombo.locais_coletum !== null && tombo.locais_coletum?.fase_sucessional !== null ? tombo.locais_coletum?.fase_sucessional?.numero : '',
-                    //   coletoresInicial: tombo.coletores.map((coletor) => ({
-                    //     key: `${coletor.id}`,
-                    //     label: coletor.nome,
-                    //   })),
                     coletor: tombo.coletore
                         ? {
                             id: tombo.coletore?.id,
                             nome: tombo.coletore?.nome,
                         }
                         : null,
-                    // coletorComplementar: tombo.coletorComplementar
-                    //     ? {
-                    //         hcf: tombo.coletorComplementar.hcf,
-                    //         complementares: tombo.coletorComplementar.complementares,
-                    //     }
-                    //     : '',
                     colecaoInicial: tombo.colecoes_anexa !== null ? tombo.colecoes_anexa?.tipo : '',
                     complementoInicial: tombo.localizacao !== null && tombo.localizacao !== undefined ? tombo.localizacao?.complemento : '',
                     hcf: tombo.hcf,
@@ -1212,6 +1116,7 @@ export const obterTombo = async (request, response, next) => {
                     observacao: tombo.observacao !== null ? tombo.observacao : '',
                     tipo: tombo.tipo !== null ? tombo.tipo?.nome : '',
                     numero_coleta: tombo.numero_coleta,
+                    descricao: tombo.descricao !== null ? tombo.descricao : '',
                     herbario: tombo.herbario !== null ? `${tombo.herbario?.sigla} - ${tombo.herbario?.nome}` : '',
                     localizacao: {
                         latitude: tombo.latitude !== null ? tombo.latitude : '',
@@ -1232,6 +1137,7 @@ export const obterTombo = async (request, response, next) => {
                         complemento: tombo.locais_coletum?.complemento !== null ? tombo.locais_coletum?.complemento : '',
                     },
                     local_coleta: {
+                        id: tombo.locais_coletum !== null ? tombo.locais_coletum?.id : '',
                         descricao: tombo.locais_coletum !== null && tombo.locais_coletum?.descricao !== null ? tombo.locais_coletum.descricao : '',
                         solo: tombo.solo !== null ? tombo.solo?.nome : '',
                         relevo: tombo.relevo !== null ? tombo.relevo?.nome : '',
