@@ -12,6 +12,7 @@ import { converteInteiroParaRomano } from '../helpers/tombo';
 import models from '../models';
 import codigos from '../resources/codigos-http';
 import verifyRecaptcha from '../utils/verify-recaptcha';
+import { ForeignKeyConstraintError } from 'sequelize';
 
 const {
     Solo, Relevo, Cidade, Estado, Vegetacao, FaseSucessional, Pais, Tipo, LocalColeta, Familia, sequelize,
@@ -1577,6 +1578,95 @@ export const getUltimoNumeroTombo = (request, response, next) => {
         .catch(next);
 };
 
+export async function deletarCodigoBarras(request, response, next) {
+    try {
+        const count = await TomboFoto.destroy({
+            where: { num_barra: request.params.codigo },
+        });
+
+        if (count === 0) {
+            return response.status(404).json({ error: 'Código de barras não encontrado' });
+        }
+        return response.status(204).end();
+    } catch (err) {
+        return next(err);
+    }
+}
+
+export const getUltimoCodigoBarra = (request, response, next) => {
+    Tombo.findAll({ attributes: ['hcf'] })
+      .then((tombos) => {
+        const findByHcf = (hcf) =>
+          TomboFoto.findOne({
+            where: { tombo_hcf: hcf },
+            attributes: ['id', 'codigo_barra', 'num_barra', 'caminho_foto'],
+            order: [['num_barra', 'DESC'], ['id', 'DESC']],
+          });
+  
+        if (!tombos || tombos.length === 0) {
+          return Promise.resolve(null);
+        }
+  
+        const maximo = Math.max(...tombos.map((e) => e.hcf));
+  
+        return findByHcf(maximo).then((registro) => {
+          if (registro) return registro;
+          return findByHcf(maximo - 1);
+        });
+      })
+      .then((tomboFoto) =>
+        response.status(codigos.BUSCAR_UM_ITEM).json(tomboFoto || null)
+      )
+      .catch(next);
+};  
+
+export const postCodigoBarraTombo = (request, response, next) => {
+    const toHCFFormat = (hcf, codigo) => {
+      const codigoStr = String(codigo || '').padStart(9, '0');
+      return `HCF${codigoStr}`;
+    };
+  
+    const criarTransacaoCodigoBarra = (transaction) =>
+      Promise.resolve().then(() => {
+        const { hcf, codigo_barra: codigoBarra } = request.body || {};
+  
+        if (hcf == null || codigoBarra == null) {
+          const err = new Error('Parâmetros obrigatórios: hcf e codigo_barra.');
+          err.status = 400;
+          throw err;
+        }
+  
+        const formattedCodigoBarra = toHCFFormat(hcf, codigoBarra);
+        if (!formattedCodigoBarra) {
+          const err = new Error('Erro ao formatar o codigo_barra.');
+          err.status = 400;
+          throw err;
+        }
+  
+        const payload = {
+          tombo_hcf: hcf,
+          em_vivo: true,
+          codigo_barra: formattedCodigoBarra,
+          num_barra: codigoBarra,
+          caminho_foto: null,
+        };
+  
+        return TomboFoto.create(payload, { transaction });
+      });
+
+    return sequelize
+      .transaction(criarTransacaoCodigoBarra)
+      .then((foto) => response.status(201).json(foto))
+      .catch((err) => {
+        if (err instanceof ForeignKeyConstraintError) {
+          return response
+            .status(400)
+            .json({ error: 'Violação de chave estrangeira.' });
+        }
+        return next(err);
+      });
+};
+
 export const getUltimoNumeroCodigoBarras = (request, response, next) => {
     const { emVivo } = request.params;
     Promise.resolve()
@@ -1642,7 +1732,7 @@ export const editarCodigoBarra = (request, response, next) => {
         .catch(next);
 };
 
-export const deletaCodigoBarra = codBarra => TomboFoto.destroy({
+/* export const deletaCodigoBarra = codBarra => TomboFoto.destroy({
     where: {
         codigo_barra: codBarra,
     },
@@ -1659,6 +1749,6 @@ export const deletarCodigoBarra = (request, response, next) => {
             response.status(codigos.EDITAR_SEM_RETORNO).send();
         })
         .catch(next);
-};
+}; */
 
 export default {};
