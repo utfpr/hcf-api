@@ -104,7 +104,7 @@ export const cadastro = (request, response, next) => {
                 return undefined;
             })
             .then(() => {
-                if(!localidade?.complemento){
+                if (!localidade?.complemento) {
                     throw new BadRequestExeption(400);
                 }
                 return LocalColeta.findOne({
@@ -275,7 +275,7 @@ export const cadastro = (request, response, next) => {
                     coletor_id: coletor,
                 };
 
-                if(paisagem.descricao) {
+                if (paisagem.descricao) {
                     jsonTombo.descricao = paisagem.descricao;
                 }
 
