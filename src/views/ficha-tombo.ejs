@@ -228,7 +228,7 @@
     <script>
         window.addEventListener('load', () => {
             const id = "<%- '#code128_' + fotos[i]['id'] %>";
-            const cbarra = "<%- fotos[i]['codigo_barra'] %>";
+            const cbarra = "<%- codigo_barras_selecionado %>";
             JsBarcode(id, cbarra, { margin: 0, width: 1.4, height: 40, fontSize: 10 });
         });
     </script>
