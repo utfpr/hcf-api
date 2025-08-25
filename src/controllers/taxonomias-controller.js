@@ -1340,13 +1340,14 @@ export const buscarAutores = async (request, response, next) => {
 
         const { limite, pagina, offset } = request.paginacao;
         const { autor } = request.query;
+        const { orderClause } = request.ordenacao;
 
         const where = { ativo: 1 };
         if (autor) where.nome = { [Op.like]: `%${autor}%` };
 
         const result = await Autor.findAndCountAll({
             attributes: ['id', 'nome', 'iniciais'],
-            order: [['created_at', 'DESC']],
+            order: orderClause,
             limit: limite,
             offset,
             where,

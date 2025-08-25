@@ -261,6 +261,10 @@ export default (Sequelize, DataTypes) => {
             type: DataTypes.INTEGER,
             allowNull: true,
         },
+        descricao: {
+            type: DataTypes.TEXT,
+            allowNull: true,
+        },
     };
 
     const options = {

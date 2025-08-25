@@ -41,7 +41,13 @@ function formataDataSaida(data) {
 
 export default function fichaTomboController(request, response, next) {
     const { tombo_id: tomboId } = request.params;
-    const { qtd } = request.query;
+    const { qtd, code } = request.query;
+
+    if (qtd < 1) {
+        Promise.reject(new Error('Quantidade inválida'));
+    } else if (qtd > 3) {
+        Promise.reject(new Error('Quantidade máxima de 3 itens excedida'));
+    }
 
     Promise.resolve()
         .then(() => {
@@ -97,7 +103,7 @@ export default function fichaTomboController(request, response, next) {
                     model: LocalColeta,
                     include: [
                         {
-                            required: true,
+                            required: false,
                             model: Cidade,
                             include: {
                                 required: true,
@@ -123,10 +129,11 @@ export default function fichaTomboController(request, response, next) {
 
             const where = {
                 ativo: true,
-                hcf: tomboId,
+                hcf: parseInt(tomboId),
             };
 
-            return Tombo.findOne({ include, where });
+            const tombo = Tombo.findOne({ include, where });
+            return tombo;
         })
         .then(tombo => {
             if (!tombo) {
@@ -197,9 +204,9 @@ export default function fichaTomboController(request, response, next) {
             const coletores = `${tombo.coletore.nome}${tombo.coletor_complementar ? tombo.coletor_complementar.complementares : ''}`;
 
             const localColeta = tombo.local_coleta;
-            const { cidade } = localColeta;
-            const { estado } = cidade;
-            const { pais } = estado;
+            const cidade = localColeta.cidade || '';
+            const estado = cidade?.estado || '';
+            const pais = estado?.pais || '';
 
             const romanos = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
             const dataTombo = new Date(tombo.data_tombo);
@@ -252,6 +259,7 @@ export default function fichaTomboController(request, response, next) {
                 romano_data_identificacao: romanoDataIdentificacao,
                 romano_data_coleta: romanoDataColeta,
                 numero_copias: qtd || 1,
+                codigo_barras_selecionado: code,
             };
 
             const caminhoArquivoHtml = path.resolve(__dirname, '../views/ficha-tombo.ejs');
