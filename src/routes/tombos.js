@@ -7,7 +7,8 @@ import {
     getDadosCadTombo, getNumeroTombo, cadastro, listagem,
     desativar, obterTombo, cadastrarTipo, buscarTipos, cadastrarColetores, buscarColetores,
     buscarProximoNumeroColetor, alteracao, getNumeroColetor, getUltimoNumeroTombo, getCodigoBarraTombo,
-    editarCodigoBarra, deletarCodigoBarra, getUltimoNumeroCodigoBarras,
+    editarCodigoBarra, getUltimoNumeroCodigoBarras, postCodigoBarraTombo,
+    getUltimoCodigoBarra, deletarCodigoBarras,
 } from '../controllers/tombos-controller';
 import exportarTombosController from '../controllers/tombos-exportacoes-controller';
 import criaJsonMiddleware from '../middlewares/json-middleware';
@@ -110,7 +111,7 @@ export default app => {
 
     /**
      * @swagger
-     * /tombos/codBarras/{idTombo}:
+     * /tombos/codigo_barras/{idTombo}:
      *   get:
      *     summary: Obtém o código de barras de um tombo
      *     tags: [Tombos]
@@ -143,39 +144,10 @@ export default app => {
      *         $ref: '#/components/responses/NotFound'
      *       '500':
      *         $ref: '#/components/responses/InternalServerError'
-     *   delete:
-     *     summary: Remove o código de barras de um tombo
-     *     tags: [Tombos]
-     *     parameters:
-     *       - in: path
-     *         name: idTombo
-     *         required: true
-     *         schema:
-     *           type: integer
-     *         description: ID do tombo
-     *     responses:
-     *       204:
-     *         description: Código de barras removido com sucesso
-     *       '401':
-     *         $ref: '#/components/responses/Unauthorized'
-     *       '403':
-     *         $ref: '#/components/responses/Forbidden'
-     *       '404':
-     *         $ref: '#/components/responses/NotFound'
-     *       '500':
-     *         $ref: '#/components/responses/InternalServerError'
      */
-    app.route('/tombos/codBarras/:idTombo')
+    app.route('/tombos/codigo_barras/:idTombo')
         .get([
             getCodigoBarraTombo,
-        ])
-        .delete([
-            tokensMiddleware([
-                TIPOS_USUARIOS.CURADOR,
-                TIPOS_USUARIOS.OPERADOR,
-                TIPOS_USUARIOS.IDENTIFICADOR,
-            ]),
-            deletarCodigoBarra,
         ]);
 
     /**
@@ -332,6 +304,70 @@ export default app => {
     app.route('/tombos/filtrar_ultimo_numero')
         .get([
             getUltimoNumeroTombo,
+        ]);
+
+    /**
+     * @swagger
+     * /tombos/ultimo_codigo_barra:
+     *   get:
+     *     summary: Obtém o último codigo de barras
+     *     tags: [Tombos]
+     *     responses:
+     *       200:
+     *         description: Último número retornado com sucesso
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
+     */
+    app.route('/tombos/ultimo_codigo_barra')
+        .get([
+            getUltimoCodigoBarra,
+        ]);
+
+    /**
+     * @swagger
+     * /tombos/codigo_barras:
+     *   post:
+     *     summary: Cadastra um código de barra a um tombo
+     *     tags: [Tombos]
+     *     responses:
+     *       200:
+     *         description: Último número retornado com sucesso
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
+     */
+    app.route('/tombos/codigo_barras')
+        .post([
+            postCodigoBarraTombo,
+        ]);
+
+    /**
+     * @swagger
+     * /tombos/codigo_barras/{codigo}:
+     *   delete:
+     *     summary: Exclui um código de barras
+     *     tags: [Tombos]
+     *     parameters:
+     *       - in: path
+     *         name: codigo
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: codigo de barras
+     *     responses:
+     *       204:
+     *         description: Código de barras removido com sucesso
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '404':
+     *         $ref: '#/components/responses/NotFound'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
+     */
+    app.route('/tombos/codigo_barras/:codigo')
+        .delete([
+            deletarCodigoBarras,
         ]);
 
     /**
