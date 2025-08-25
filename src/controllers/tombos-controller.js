@@ -506,8 +506,8 @@ function alteracaoCuradorouOperador(request, response, transaction) {
     if (dataIdentificacao?.mes) update.data_identificacao_mes = dataIdentificacao.mes;
     if (dataIdentificacao?.ano) update.data_identificacao_ano = dataIdentificacao.ano;
 
-    const coletores = body?.coletores;
-    if (coletores) update.coletor_id = coletores;
+    const coletor = body?.coletor;
+    if (coletor) update.coletor_id = coletor;
     const complementares = body?.coletor_complementar?.complementares;
     if (complementares) update.complementares = complementares;
     const colecoesAnexasTipo = body?.colecoes_anexas?.tipo;
