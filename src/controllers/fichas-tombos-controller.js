@@ -41,7 +41,7 @@ function formataDataSaida(data) {
 
 export default function fichaTomboController(request, response, next) {
     const { tombo_id: tomboId } = request.params;
-    const { qtd, code } = request.query;
+    const { qtd } = request.query;
 
     if (qtd < 1) {
         Promise.reject(new Error('Quantidade inválida'));
@@ -259,7 +259,6 @@ export default function fichaTomboController(request, response, next) {
                 romano_data_identificacao: romanoDataIdentificacao,
                 romano_data_coleta: romanoDataColeta,
                 numero_copias: qtd || 1,
-                codigo_barras_selecionado: code,
             };
 
             const caminhoArquivoHtml = path.resolve(__dirname, '../views/ficha-tombo.ejs');

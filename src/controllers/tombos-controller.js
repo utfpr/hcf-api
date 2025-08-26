@@ -12,7 +12,6 @@ import { converteInteiroParaRomano } from '../helpers/tombo';
 import models from '../models';
 import codigos from '../resources/codigos-http';
 import verifyRecaptcha from '../utils/verify-recaptcha';
-import { aprovarPendencia } from './pendencias-controller';
 
 const {
     Solo, Relevo, Cidade, Estado, Vegetacao, FaseSucessional, Pais, Tipo, LocalColeta, Familia, sequelize,
@@ -106,12 +105,12 @@ export const cadastro = (request, response, next) => {
                 return undefined;
             })
             .then(() => {
-                if (!localidade?.local_coleta_id) {
+                if (!localidade?.complemento) {
                     throw new BadRequestExeption(400);
                 }
                 return LocalColeta.findOne({
                     where: {
-                        id: localidade.local_coleta_id,
+                        id: localidade.complemento,
                     },
                     transaction,
                 });
@@ -279,7 +278,7 @@ export const cadastro = (request, response, next) => {
                     data_coleta_mes: principal.data_coleta.mes,
                     data_coleta_ano: principal.data_coleta.ano,
                     numero_coleta: principal.numero_coleta,
-                    local_coleta_id: localidade.local_coleta_id,
+                    local_coleta_id: localidade.complemento,
                     cor: principal.cor,
                     coletor_id: coletor,
                 };
@@ -459,110 +458,208 @@ function alteracaoIdentificador(request, transaction) {
         });
 }
 
-function alteracaoCuradorouOperador(request, response, transaction) {
+function alteracaoCuradorouOperador(request, response, next) {
     const { body } = request;
-    const update = {};
 
     const nomePopular = body?.principal?.nome_popular;
-    if (nomePopular) update.nomes_populares = nomePopular;
     const entidadeId = body?.principal?.entidade_id;
-    if (entidadeId) update.entidade_id = entidadeId;
-    const numeroColeta = body?.principal?.numero_coleta;
-    if (numeroColeta) update.numero_coleta = numeroColeta;
-    const dataColeta = body?.principal?.data_coleta;
-    if (dataColeta?.dia) update.data_coleta_dia = dataColeta.dia;
-    if (dataColeta?.mes) update.data_coleta_mes = dataColeta.mes;
-    if (dataColeta?.ano) update.data_coleta_ano = dataColeta.ano;
+    const numeroColeta = body.principal.numero_coleta;
+    const dataColeta = body.principal.data_coleta;
     const tipoId = body?.principal?.tipo_id;
-    if (tipoId) update.tipo_id = tipoId;
-    const { cor } = body.principal || {};
-    if (cor) update.cor = cor;
+    const { cor } = body.principal || null;
 
     const familiaId = body?.taxonomia?.familia_id;
-    if (familiaId) update.familia_id = familiaId;
     const subfamiliaId = body?.taxonomia?.sub_familia_id;
-    if (subfamiliaId) update.sub_familia_id = subfamiliaId;
     const generoId = body?.taxonomia?.genero_id;
-    if (generoId) update.genero_id = generoId;
     const especieId = body?.taxonomia?.especie_id;
-    if (especieId) update.especie_id = especieId;
     const subespecieId = body?.taxonomia?.sub_especie_id;
-    if (subespecieId) update.sub_especie_id = subespecieId;
     const variedadeId = body?.taxonomia?.variedade_id;
-    if (variedadeId) update.variedade_id = variedadeId;
 
-    const latitude = body?.localidade?.latitude;
-    if (latitude) update.latitude = converteParaDecimal(latitude);
-    const longitude = body?.localidade?.longitude;
-    if (longitude) update.longitude = converteParaDecimal(longitude);
-    const altitude = body?.localidade?.altitude;
-    if (altitude) update.altitude = altitude;
-    const localColeta = body?.localidade?.local_coleta_id;
-    if (localColeta) update.local_coleta_id = localColeta;
+    const { latitude } = body.localidade || null;
+    const { longitude } = body.localidade || null;
+    const { altitude } = body.localidade || null;
+    const cidadeId = body.localidade.cidade_id;
+    const { complemento } = body.localidade || null;
+
     const soloId = body?.paisagem?.solo_id;
-    if (soloId) update.solo_id = soloId;
+    const { descricao } = body.paisagem || null;
     const relevoId = body?.paisagem?.relevo_id;
-    if (relevoId) update.relevo_id = relevoId;
     const vegetacaoId = body?.paisagem?.vegetacao_id;
-    if (vegetacaoId) update.vegetacao_id = vegetacaoId;
-    const descricao = body?.paisagem?.descricao;
-    if (descricao) update.descricao = descricao;
-    const faseSucessionalId = body?.paisagem?.fase_sucessional_id;
-    if (faseSucessionalId) update.fase_sucessional_id = faseSucessionalId;
+    const faseSucessionalId = body?.paisagem.fase_sucessional_id;
 
-    const identificadores = body?.identificacao?.identificadores;
-    if (identificadores?.length) update.identificadores = identificadores;
+    const { identificadores } = body.identificacao || null;
     const dataIdentificacao = body?.identificacao?.data_identificacao;
-    if (dataIdentificacao?.dia) update.data_identificacao_dia = dataIdentificacao.dia;
-    if (dataIdentificacao?.mes) update.data_identificacao_mes = dataIdentificacao.mes;
-    if (dataIdentificacao?.ano) update.data_identificacao_ano = dataIdentificacao.ano;
 
-    const coletor = body?.coletor;
-    if (coletor) update.coletor_id = coletor;
-    const complementares = body?.coletor_complementar?.complementares;
-    if (complementares) update.complementares = complementares;
+    const { coletores } = body || null;
+    const complementares = body?.coletor_complementar?.complementares || null;
     const colecoesAnexasTipo = body?.colecoes_anexas?.tipo;
-    if (colecoesAnexasTipo) update.colecoes_anexas_tipo = colecoesAnexasTipo;
     const colecoesAnexasObservacoes = body?.colecoes_anexas?.observacoes;
-    if (colecoesAnexasObservacoes) update.colecoes_anexas_observacoes = colecoesAnexasObservacoes;
-    const { observacoes } = body || {};
-    if (observacoes) update.observacao = observacoes;
+
+    const exsicataTipo = body?.exsicataTipo || null;
+
+    const { observacoes } = body || null;
 
     const { tombo_id: tomboId } = request.params;
+    const update = {};
 
-    return Alteracao.create({
-        tombo_hcf: tomboId,
-        usuario_id: request.usuario.id,
-        status: 'ESPERANDO',
-        tombo_json: JSON.stringify(update),
-        ativo: true,
-        identificacao: 1,
-    }, { transaction })
-        .then(alteracaoCriada => {
-            if (request.usuario.tipo_usuario_id === 1) {
-                return aprovarPendencia(update, tomboId, transaction)
-                    .then(() => Alteracao.update({ status: 'APROVADO' }, {
-                        where: { id: alteracaoCriada.id },
-                        transaction,
-                    }))
-                    .then(() => alteracaoCriada.toJSON());
-            } if (request.usuario.tipo_usuario_id !== 2) {
-                throw new BadRequestExeption(421);
+    if (nomePopular) {
+        update.nomes_populares = nomePopular;
+    }
+
+    if (exsicataTipo) {
+        update.exsicata_tipo = exsicataTipo;
+    }
+
+    if (entidadeId) {
+        update.entidade_id = entidadeId;
+    }
+
+    if (numeroColeta) {
+        update.numero_coleta = numeroColeta;
+    }
+
+    if (dataColeta) {
+        update.data_coleta = dataColeta;
+    }
+
+    if (tipoId) {
+        update.tipo_id = tipoId;
+    }
+
+    if (cor) {
+        update.cor = cor;
+    }
+
+    if (familiaId) {
+        update.familia_id = familiaId;
+    }
+    if (subfamiliaId) {
+        update.sub_familia_id = subfamiliaId;
+    }
+    if (generoId) {
+        update.genero_id = generoId;
+    }
+    if (especieId) {
+        update.especie_id = especieId;
+    }
+    if (subespecieId) {
+        update.sub_especie_id = subespecieId;
+    }
+    if (variedadeId) {
+        update.variedade_id = variedadeId;
+    }
+
+    if (latitude) {
+        update.latitude = converteParaDecimal(latitude);
+    }
+
+    if (longitude) {
+        update.longitude = converteParaDecimal(longitude);
+    }
+
+    if (altitude) {
+        update.altitude = altitude;
+    }
+
+    if (cidadeId) {
+        update.cidade_id = cidadeId;
+    }
+
+    if (complemento) {
+        update.complemento = complemento;
+    }
+
+    if (soloId) {
+        update.solo_id = soloId;
+    }
+
+    if (descricao) {
+        update.descricao = descricao;
+    }
+
+    if (relevoId) {
+        update.relevo_id = relevoId;
+    }
+
+    if (vegetacaoId) {
+        update.vegetacao_id = vegetacaoId;
+    }
+
+    if (faseSucessionalId) {
+        update.fase_sucessional_id = faseSucessionalId;
+    }
+
+    if (identificadores && identificadores.length > 0) {
+        update.identificadores = identificadores;
+    }
+
+    if (dataIdentificacao) {
+        update.data_identificacao = dataIdentificacao;
+    }
+
+    if (coletores) {
+        update.coletores = coletores;
+    }
+
+    if (complementares) {
+        update.complementares = complementares;
+    }
+
+    if (colecoesAnexasTipo) {
+        update.colecoes_anexas_tipo = colecoesAnexasTipo;
+    }
+
+    if (colecoesAnexasObservacoes) {
+        update.colecoes_anexas_observacoes = colecoesAnexasObservacoes;
+    }
+
+    if (observacoes) {
+        update.observacao = observacoes;
+    }
+
+    return Promise.resolve()
+        .then(() => {
+
+            if (request.usuario.tipo_usuario_id === 2) { // OPERADOR
+                Alteracao.create({
+                    tombo_hcf: tomboId,
+                    usuario_id: request.usuario.id,
+                    status: 'ESPERANDO', // operador fica em espera e curador APROVADO {ESPERANDO - para nao esquecer}
+                    tombo_json: JSON.stringify(update),
+                    ativo: true,
+                    identificacao: 1,
+                }).then(tombos => {
+                    response.status(codigos.BUSCAR_UM_ITEM)
+                        .json(tombos);
+                })
+                    .catch(next);
+            } else if (request.usuario.tipo_usuario_id === 1) { // CURADOR
+                Alteracao.create({
+                    tombo_hcf: tomboId,
+                    usuario_id: request.usuario.id,
+                    status: 'APROVADO', // operador fica em espera e curador APROVADO {ESPERANDO - para nao esquecer}
+                    tombo_json: JSON.stringify(update),
+                    ativo: true,
+                    identificacao: 1,
+                }).then(tombos => {
+                    response.status(codigos.BUSCAR_UM_ITEM)
+                        .json(tombos);
+                })
+                    .catch(next);
             }
-            return alteracaoCriada.toJSON();
         });
 }
 
 export function alteracao(request, response, next) {
-    return sequelize.transaction(transaction => {
+    const callback = transaction => {
         if (request.usuario.tipo_usuario_id === 3) {
             return alteracaoIdentificador(request, transaction);
         } if (request.usuario.tipo_usuario_id === 1 || request.usuario.tipo_usuario_id === 2) {
-            return alteracaoCuradorouOperador(request, response, transaction);
+            return alteracaoCuradorouOperador(request, response, next);
         }
-        throw new BadRequestExeption(421);
-
-    })
+        return Promise.reject(new BadRequestExeption(421));
+    };
+    sequelize.transaction(callback)
         .then(() => {
             if (request.usuario.tipo_usuario_id === 3) {
                 response.status(codigos.EDITAR_SEM_RETORNO).send();
@@ -1105,11 +1202,8 @@ export const obterTombo = async (request, response, next) => {
                     especieInicial: tombo.especy !== null ? tombo.especy?.id : '',
                     subespecieInicial: tombo.sub_especy !== null ? tombo.sub_especy?.id : '',
                     variedadeInicial: tombo.variedade !== null ? tombo.variedade?.id : '',
-                    idSoloInicial: tombo.solo !== null ? tombo.solo?.id : '',
                     soloInicial: tombo.solo !== null ? tombo.solo?.nome : '',
-                    idRelevoInicial: tombo.relevo !== null ? tombo.relevo?.id : '',
                     relevoInicial: tombo.relevo !== null ? tombo.relevo?.nome : '',
-                    idVegetacaoInicial: tombo.vegetaco !== null ? tombo.vegetaco?.id : '',
                     vegetacaoInicial: tombo.vegetaco !== null ? tombo.vegetaco?.nome : '',
                     exsicataTipo: tombo.exsicata_tipo !== null ? tombo.exsicata_tipo : '',
                     faseInicial:

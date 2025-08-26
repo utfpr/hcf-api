@@ -98,7 +98,7 @@ export default {
         isEmpty: false,
         isInt: true,
     },
-    'json.localidade.local_coleta_id': {
+    'json.localidade.complemento': {
         in: 'body',
         isString: true,
         isEmpty: false,
