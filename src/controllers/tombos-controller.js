@@ -553,9 +553,7 @@ export function alteracao(request, response, next) {
 
     })
         .then(() => {
-            if (request.usuario.tipo_usuario_id === 3) {
-                response.status(codigos.EDITAR_SEM_RETORNO).send();
-            }
+            response.status(codigos.EDITAR_SEM_RETORNO).send();
         })
         .catch(next);
 }
