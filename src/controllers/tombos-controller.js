@@ -411,22 +411,22 @@ function alteracaoIdentificador(request, transaction) {
     const { tombo_id: tomboId } = request.params;
     const update = {};
 
-    if (familiaId) {
+    if (familiaId !== undefined) {
         update.familia_id = familiaId;
     }
-    if (subfamiliaId) {
+    if (subfamiliaId !== undefined) {
         update.subfamilia_id = subfamiliaId;
     }
-    if (generoId) {
+    if (generoId !== undefined) {
         update.genero_id = generoId;
     }
-    if (especieId) {
+    if (especieId !== undefined) {
         update.especie_id = especieId;
     }
-    if (subespecieId) {
+    if (subespecieId !== undefined) {
         update.subespecie_id = subespecieId;
     }
-    if (variedadeId) {
+    if (variedadeId !== undefined) {
         update.variedade_id = variedadeId;
     }
 
@@ -453,69 +453,96 @@ function alteracaoCuradorouOperador(request, response, transaction) {
     const update = {};
 
     const nomePopular = body?.principal?.nome_popular;
-    if (nomePopular) update.nomes_populares = nomePopular;
+    if (nomePopular !== undefined) update.nomes_populares = nomePopular;
+
     const entidadeId = body?.principal?.entidade_id;
-    if (entidadeId) update.entidade_id = entidadeId;
+    if (entidadeId !== undefined) update.entidade_id = entidadeId;
+
     const numeroColeta = body?.principal?.numero_coleta;
-    if (numeroColeta) update.numero_coleta = numeroColeta;
+    if (numeroColeta !== undefined) update.numero_coleta = numeroColeta;
+
     const dataColeta = body?.principal?.data_coleta;
-    if (dataColeta?.dia) update.data_coleta_dia = dataColeta.dia;
-    if (dataColeta?.mes) update.data_coleta_mes = dataColeta.mes;
-    if (dataColeta?.ano) update.data_coleta_ano = dataColeta.ano;
+    if (dataColeta?.dia !== undefined) update.data_coleta_dia = dataColeta.dia;
+    if (dataColeta?.mes !== undefined) update.data_coleta_mes = dataColeta.mes;
+    if (dataColeta?.ano !== undefined) update.data_coleta_ano = dataColeta.ano;
+
     const tipoId = body?.principal?.tipo_id;
-    if (tipoId) update.tipo_id = tipoId;
+    if (tipoId !== undefined) update.tipo_id = tipoId;
+
     const { cor } = body.principal || {};
-    if (cor) update.cor = cor;
+    if (cor !== undefined) update.cor = cor;
 
     const familiaId = body?.taxonomia?.familia_id;
-    if (familiaId) update.familia_id = familiaId;
+    if (familiaId !== undefined) update.familia_id = familiaId;
+
     const subfamiliaId = body?.taxonomia?.sub_familia_id;
-    if (subfamiliaId) update.sub_familia_id = subfamiliaId;
+    if (subfamiliaId !== undefined) update.sub_familia_id = subfamiliaId;
+
     const generoId = body?.taxonomia?.genero_id;
-    if (generoId) update.genero_id = generoId;
+    if (generoId !== undefined) update.genero_id = generoId;
+
     const especieId = body?.taxonomia?.especie_id;
-    if (especieId) update.especie_id = especieId;
+    if (especieId !== undefined) update.especie_id = especieId;
+
     const subespecieId = body?.taxonomia?.sub_especie_id;
-    if (subespecieId) update.sub_especie_id = subespecieId;
+    if (subespecieId !== undefined) update.sub_especie_id = subespecieId;
+
     const variedadeId = body?.taxonomia?.variedade_id;
-    if (variedadeId) update.variedade_id = variedadeId;
+    if (variedadeId !== undefined) update.variedade_id = variedadeId;
 
     const latitude = body?.localidade?.latitude;
-    if (latitude) update.latitude = converteParaDecimal(latitude);
+    if (latitude !== undefined) {
+        update.latitude = latitude ? converteParaDecimal(latitude) : null;
+    }
+
     const longitude = body?.localidade?.longitude;
-    if (longitude) update.longitude = converteParaDecimal(longitude);
+    if (longitude !== undefined) {
+        update.longitude = longitude ? converteParaDecimal(longitude) : null;
+    }
+
     const altitude = body?.localidade?.altitude;
-    if (altitude) update.altitude = altitude;
+    if (altitude !== undefined) update.altitude = altitude;
+
     const localColeta = body?.localidade?.local_coleta_id;
-    if (localColeta) update.local_coleta_id = localColeta;
+    if (localColeta !== undefined) update.local_coleta_id = localColeta;
+
     const soloId = body?.paisagem?.solo_id;
-    if (soloId) update.solo_id = soloId;
+    if (soloId !== undefined) update.solo_id = soloId;
+
     const relevoId = body?.paisagem?.relevo_id;
-    if (relevoId) update.relevo_id = relevoId;
+    if (relevoId !== undefined) update.relevo_id = relevoId;
+
     const vegetacaoId = body?.paisagem?.vegetacao_id;
-    if (vegetacaoId) update.vegetacao_id = vegetacaoId;
+    if (vegetacaoId !== undefined) update.vegetacao_id = vegetacaoId;
+
     const descricao = body?.paisagem?.descricao;
-    if (descricao) update.descricao = descricao;
+    if (descricao !== undefined) update.descricao = descricao;
+
     const faseSucessionalId = body?.paisagem?.fase_sucessional_id;
-    if (faseSucessionalId) update.fase_sucessional_id = faseSucessionalId;
+    if (faseSucessionalId !== undefined) update.fase_sucessional_id = faseSucessionalId;
 
     const identificadores = body?.identificacao?.identificadores;
-    if (identificadores?.length) update.identificadores = identificadores;
+    if (identificadores !== undefined) update.identificadores = identificadores;
+
     const dataIdentificacao = body?.identificacao?.data_identificacao;
-    if (dataIdentificacao?.dia) update.data_identificacao_dia = dataIdentificacao.dia;
-    if (dataIdentificacao?.mes) update.data_identificacao_mes = dataIdentificacao.mes;
-    if (dataIdentificacao?.ano) update.data_identificacao_ano = dataIdentificacao.ano;
+    if (dataIdentificacao?.dia !== undefined) update.data_identificacao_dia = dataIdentificacao.dia;
+    if (dataIdentificacao?.mes !== undefined) update.data_identificacao_mes = dataIdentificacao.mes;
+    if (dataIdentificacao?.ano !== undefined) update.data_identificacao_ano = dataIdentificacao.ano;
 
     const coletor = body?.coletor;
-    if (coletor) update.coletor_id = coletor;
+    if (coletor !== undefined) update.coletor_id = coletor;
+
     const complementares = body?.coletor_complementar?.complementares;
-    if (complementares) update.complementares = complementares;
+    if (complementares !== undefined) update.complementares = complementares;
+
     const colecoesAnexasTipo = body?.colecoes_anexas?.tipo;
-    if (colecoesAnexasTipo) update.colecoes_anexas_tipo = colecoesAnexasTipo;
+    if (colecoesAnexasTipo !== undefined) update.colecoes_anexas_tipo = colecoesAnexasTipo;
+
     const colecoesAnexasObservacoes = body?.colecoes_anexas?.observacoes;
-    if (colecoesAnexasObservacoes) update.colecoes_anexas_observacoes = colecoesAnexasObservacoes;
+    if (colecoesAnexasObservacoes !== undefined) update.colecoes_anexas_observacoes = colecoesAnexasObservacoes;
+
     const { observacoes } = body || {};
-    if (observacoes) update.observacao = observacoes;
+    if (observacoes !== undefined) update.observacao = observacoes;
 
     const { tombo_id: tomboId } = request.params;
 
