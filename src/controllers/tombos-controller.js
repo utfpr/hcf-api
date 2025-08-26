@@ -661,9 +661,7 @@ export function alteracao(request, response, next) {
     };
     sequelize.transaction(callback)
         .then(() => {
-            if (request.usuario.tipo_usuario_id === 3) {
-                response.status(codigos.EDITAR_SEM_RETORNO).send();
-            }
+            response.status(codigos.EDITAR_SEM_RETORNO).send();
         })
         .catch(next);
 }
