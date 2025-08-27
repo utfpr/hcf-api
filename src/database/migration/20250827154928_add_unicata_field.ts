@@ -4,12 +4,12 @@ import { Knex } from 'knex'
 export async function run(knex: Knex): Promise<void> {
 
   knex.schema.alterTable('tombos', table => {
-    table.enu('exsicata_tipo', ['UNICATA', 'DUPLICATA']).nullable()
+    table.boolean('unicata').defaultTo(null).nullable()
   })
 
   await knex.transaction(async trx => {
     const rows = parseFile(
-      `${__dirname}/tombo/exsicata_tipo.csv`,
+      `${__dirname}/tombo_exsicata_tipo.csv`,
       { headers: true }
     )
 
@@ -19,7 +19,7 @@ export async function run(knex: Knex): Promise<void> {
 
       await trx('tombos')
         .where({ hcf: id })
-        .update({ exsicata_tipo: tomboTipo })
+        .update({ unicata: tomboTipo === 'UNICATA' ? true : false })
     }
   })
 }
