@@ -15,7 +15,9 @@ export default {
     'principal.nome_popular': {
         in: 'body',
         isString: true,
-        optional: true,
+        optional: {
+            options: { nullable: true },
+        },
         isLength: {
             options: [{ min: 3 }],
         },
@@ -38,59 +40,81 @@ export default {
     },
     'json.principal.tipo_id': {
         in: 'body',
-        optional: true,
+        optional: {
+            options: { nullable: true },
+        },
         isInt: true,
     },
     'json.principal.cor': {
         in: 'body',
-        optional: true,
+        optional: {
+            options: { nullable: true },
+        },
         custom: {
             options: validaCor,
         },
     },
     'json.taxonomia.familia_id': {
         in: 'body',
-        optional: true,
+        optional: {
+            options: { nullable: true },
+        },
         isInt: true,
     },
     'json.taxonomia.genero_id': {
         in: 'body',
-        optional: true,
+        optional: {
+            options: { nullable: true },
+        },
         isInt: true,
     },
     'json.taxonomia.subfamilia_id': {
         in: 'body',
-        optional: true,
+        optional: {
+            options: { nullable: true },
+        },
         isInt: true,
     },
     'json.taxonomia.especie_id': {
         in: 'body',
-        optional: true,
+        optional: {
+            options: { nullable: true },
+        },
         isInt: true,
     },
     'json.taxonomia.variedade_id': {
         in: 'body',
-        optional: true,
+        optional: {
+            options: { nullable: true },
+        },
         isInt: true,
     },
     'json.taxonomia.subespecie_id': {
         in: 'body',
-        optional: true,
+        optional: {
+            options: { nullable: true },
+        },
         isInt: true,
     },
     'json.localidade.latitude': {
         in: 'body',
-        optional: true,
+        optional: {
+            options: { nullable: true },
+        },
         isString: true,
     },
     'json.localidade.longitude': {
         in: 'body',
-        optional: true,
+        optional: {
+            options: { nullable: true },
+        },
         isString: true,
     },
     'json.localidade.altitude': {
         in: 'body',
-        optional: true,
+        optional: {
+            options: { nullable: true },
+        },
         isInt: true,
     },
     'json.localidade.cidade_id': {
@@ -108,40 +132,54 @@ export default {
     },
     'json.paisagem.solo_id': {
         in: 'body',
-        optional: true,
+        optional: {
+            options: { nullable: true },
+        },
         isInt: true,
     },
     'json.paisagem.relevo_id': {
         in: 'body',
-        optional: true,
+        optional: {
+            options: { nullable: true },
+        },
         isInt: true,
     },
     'json.paisagem.vegetacao_id': {
         in: 'body',
-        optional: true,
+        optional: {
+            options: { nullable: true },
+        },
         isInt: true,
     },
     'json.paisagem.fase_sucessional': {
         in: 'body',
-        optional: true,
+        optional: {
+            options: { nullable: true },
+        },
         isInt: true,
     },
     'json.paisagem.descricao': {
         in: 'body',
         isString: true,
-        optional: true,
+        optional: {
+            options: { nullable: true },
+        },
         isLength: {
             options: [{ min: 3 }],
         },
     },
     'json.identificacao.identificador_id': {
         in: 'body',
-        optional: true,
+        optional: {
+            options: { nullable: true },
+        },
         isInt: true,
     },
     'json.identificacao.data_identificacao': {
         in: 'body',
-        optional: true,
+        optional: {
+            options: { nullable: true },
+        },
         custom: {
             options: validaData,
         },
@@ -155,14 +193,18 @@ export default {
     },
     'json.colecoes_anexas.tipo': {
         in: 'body',
-        optional: true,
+        optional: {
+            options: { nullable: true },
+        },
         custom: {
             options: validaColecoesAnexas,
         },
     },
     'json.colecoes_anexas.observacoes': {
         in: 'body',
-        optional: true,
+        optional: {
+            options: { nullable: true },
+        },
         isString: true,
         isLength: {
             options: [{ min: 3 }],
@@ -171,7 +213,9 @@ export default {
     'json.observacoes': {
         in: 'body',
         isString: true,
-        optional: true,
+        optional: {
+            options: { nullable: true },
+        },
         isLength: {
             options: [{ min: 3 }],
         },
