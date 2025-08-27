@@ -32,6 +32,7 @@ export const cadastro = (request, response, next) => {
         coletor_complementar,
         colecoes_anexas: colecoesAnexas,
         observacoes,
+        unicata,
     } = request.body.json;
     let tomboCriado = null;
 
@@ -283,6 +284,9 @@ export const cadastro = (request, response, next) => {
                 if (observacoes) {
                     jsonTombo.observacao = observacoes;
                 }
+                if (unicata !== undefined) {
+                    jsonTombo.unicata = unicata;
+                }
                 if (principal.nome_popular) {
                     jsonTombo.nomes_populares = principal.nome_popular;
                 }
@@ -517,6 +521,9 @@ function alteracaoCuradorouOperador(request, response, transaction) {
 
     const descricao = body?.paisagem?.descricao;
     if (descricao !== undefined) update.descricao = descricao;
+
+    const unicata = body?.unicata;
+    if (unicata !== undefined) update.unicata = unicata;
 
     const faseSucessionalId = body?.paisagem?.fase_sucessional_id;
     if (faseSucessionalId !== undefined) update.fase_sucessional_id = faseSucessionalId;
@@ -988,6 +995,7 @@ export const obterTombo = async (request, response, next) => {
                         'data_identificacao_mes',
                         'data_identificacao_ano',
                         'descricao',
+                        'unicata',
                     ],
                     include: [
                         {
@@ -1193,6 +1201,7 @@ export const obterTombo = async (request, response, next) => {
                         tipo: tombo.colecoes_anexa !== null ? tombo.colecoes_anexa?.tipo : '',
                         observacao: tombo.colecoes_anexa !== null ? tombo.colecoes_anexa?.observacoes : '',
                     },
+                    unicata: tombo.unicata ?? null,
                 };
                 let dataCol = '';
                 let dataIdent = '';

@@ -1119,6 +1119,10 @@ export const aprovarPendencia = async (alteracao, hcf, transaction) => {
         updateTombo.nomes_populares = alteracao.nomes_populares;
     }
 
+    if (alteracao.unicata !== undefined) {
+        updateTombo.unicata = alteracao.unicata;
+    }
+
     if (alteracao.numero_coleta !== undefined) {
         updateTombo.numero_coleta = alteracao.numero_coleta;
     }

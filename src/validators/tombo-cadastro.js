@@ -181,4 +181,9 @@ export default {
             options: [{ min: 3 }],
         },
     },
+    'json.unicata': {
+        in: 'body',
+        optional: true,
+        isBoolean: true,
+    },
 };

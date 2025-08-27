@@ -265,6 +265,10 @@ export default (Sequelize, DataTypes) => {
             type: DataTypes.TEXT,
             allowNull: true,
         },
+        unicata: {
+            type: DataTypes.BOOLEAN,
+            allowNull: true,
+        },
     };
 
     const options = {
