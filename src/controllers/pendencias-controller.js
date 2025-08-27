@@ -1690,7 +1690,7 @@ export async function visualizar(request, response, next) {
 
         const objetoAlterado = JSON.parse(alteracao.tombo_json);
         const parametros = {};
-        
+
         if (objetoAlterado.nomes_populares) parametros.nome_popular = objetoAlterado.nomes_populares;
         if (objetoAlterado.numero_coleta) parametros.numero_coleta = objetoAlterado.numero_coleta;
         if (objetoAlterado.data_coleta?.dia) parametros.data_coleta_dia = objetoAlterado.data_coleta.dia;
