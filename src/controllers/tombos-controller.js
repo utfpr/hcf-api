@@ -14,7 +14,6 @@ import { converteInteiroParaRomano } from '../helpers/tombo';
 import models from '../models';
 import codigos from '../resources/codigos-http';
 import verifyRecaptcha from '../utils/verify-recaptcha';
-import { ForeignKeyConstraintError } from 'sequelize';
 import { aprovarPendencia } from './pendencias-controller';
 
 const {
@@ -1503,27 +1502,27 @@ export async function deletarCodigoBarras(request, response, next) {
 
 export const getUltimoCodigoBarra = async (req, res, next) => {
     try {
-      const row = await TomboFoto.findOne({
-        attributes: ['id', 'codigo_barra', 'num_barra', 'caminho_foto'],
-        order: [
-          ['tombo_hcf', 'DESC'],
-          ['num_barra', 'DESC'],
-          ['id', 'DESC'],
-        ],
-      });
-      return res.status(codigos.BUSCAR_UM_ITEM).json(row || null);
+        const row = await TomboFoto.findOne({
+            attributes: ['id', 'codigo_barra', 'num_barra', 'caminho_foto'],
+            order: [
+                ['tombo_hcf', 'DESC'],
+                ['num_barra', 'DESC'],
+                ['id', 'DESC'],
+            ],
+        });
+        return res.status(codigos.BUSCAR_UM_ITEM).json(row || null);
     } catch (err) {
-      return next(err);
+        return next(err);
     }
 };
-  
-const toHCFFormat = (codigo) => {
+
+const toHCFFormat = codigo => {
     const codigoStr = String(codigo || '').padStart(9, '0');
     return `HCF${codigoStr}`;
 };
 
 export const postCodigoBarraTombo = (request, response, next) => {
-    const criarTransacaoCodigoBarra = (transaction) =>
+    const criarTransacaoCodigoBarra = transaction =>
         Promise.resolve().then(() => {
             const { hcf, codigo_barra: codigoBarra } = request.body || {};
 
@@ -1545,8 +1544,8 @@ export const postCodigoBarraTombo = (request, response, next) => {
 
     return sequelize
         .transaction(criarTransacaoCodigoBarra)
-        .then((foto) => response.status(201).json(foto))
-        .catch((err) => {
+        .then(foto => response.status(201).json(foto))
+        .catch(err => {
             if (err instanceof ForeignKeyConstraintError) {
                 return response.status(400).json({ error: 'Violação de chave estrangeira.' });
             }
@@ -1618,24 +1617,5 @@ export const editarCodigoBarra = (request, response, next) => {
         })
         .catch(next);
 };
-
-/* export const deletaCodigoBarra = codBarra => TomboFoto.destroy({
-    where: {
-        codigo_barra: codBarra,
-    },
-});
-
-export const deletarCodigoBarra = (request, response, next) => {
-    const { idTombo } = request.params;
-    Promise.resolve()
-        .then(() => deletaCodigoBarra(idTombo))
-        .then(retorno => {
-            if (!retorno) {
-                throw new BadRequestExeption(111);
-            }
-            response.status(codigos.EDITAR_SEM_RETORNO).send();
-        })
-        .catch(next);
-}; */
 
 export default {};

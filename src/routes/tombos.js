@@ -15,11 +15,11 @@ import criaJsonMiddleware from '../middlewares/json-middleware';
 import listagensMiddleware from '../middlewares/listagens-middleware';
 import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middleware';
 import validacoesMiddleware from '../middlewares/validacoes-middleware';
+import cadastrarCodigoBarrasEsquema from '../validators/codigo-barras-cadastro';
 import coletorCadastro from '../validators/coletor-cadastro';
 import cadastrarTipoEsquema from '../validators/tipo-cadastro';
 import cadastrarTomboEsquema from '../validators/tombo-cadastro';
 import listagemTombo from '../validators/tombo-listagem';
-import cadastrarCodigoBarrasEsquema from '../validators/codigo-barras-cadastro';
 
 /**
  * @swagger
