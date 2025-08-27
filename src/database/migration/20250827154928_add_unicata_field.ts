@@ -4,7 +4,8 @@ import { Knex } from 'knex'
 export async function run(knex: Knex): Promise<void> {
 
   knex.schema.alterTable('tombos', table => {
-    table.boolean('unicata').defaultTo(null).nullable()
+    table.boolean('unicata').defaultTo(null)
+      .nullable()
   })
 
   await knex.transaction(async trx => {
@@ -19,7 +20,7 @@ export async function run(knex: Knex): Promise<void> {
 
       await trx('tombos')
         .where({ hcf: id })
-        .update({ unicata: tomboTipo === 'UNICATA' ? true : false })
+        .update({ unicata: tomboTipo === 'UNICATA' })
     }
   })
 }
