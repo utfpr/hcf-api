@@ -19,6 +19,7 @@ import coletorCadastro from '../validators/coletor-cadastro';
 import cadastrarTipoEsquema from '../validators/tipo-cadastro';
 import cadastrarTomboEsquema from '../validators/tombo-cadastro';
 import listagemTombo from '../validators/tombo-listagem';
+import cadastrarCodigoBarrasEsquema from '../validators/codigo-barras-cadastro';
 
 /**
  * @swagger
@@ -337,6 +338,7 @@ export default app => {
      */
     app.route('/tombos/codigo_barras')
         .post([
+            validacoesMiddleware(cadastrarCodigoBarrasEsquema),
             postCodigoBarraTombo,
         ]);
 

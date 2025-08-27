@@ -1,5 +1,7 @@
 /* eslint-disable quotes */
 // @ts-nocheck
+import { ForeignKeyConstraintError } from 'sequelize';
+
 import { padronizarNomeDarwincore } from '~/helpers/padroniza-nome-darwincore';
 
 import BadRequestExeption from '../errors/bad-request-exception';
@@ -1499,78 +1501,57 @@ export async function deletarCodigoBarras(request, response, next) {
     }
 }
 
-export const getUltimoCodigoBarra = (request, response, next) => {
-    Tombo.findAll({ attributes: ['hcf'] })
-      .then((tombos) => {
-        const findByHcf = (hcf) =>
-          TomboFoto.findOne({
-            where: { tombo_hcf: hcf },
-            attributes: ['id', 'codigo_barra', 'num_barra', 'caminho_foto'],
-            order: [['num_barra', 'DESC'], ['id', 'DESC']],
-          });
+export const getUltimoCodigoBarra = async (req, res, next) => {
+    try {
+      const row = await TomboFoto.findOne({
+        attributes: ['id', 'codigo_barra', 'num_barra', 'caminho_foto'],
+        order: [
+          ['tombo_hcf', 'DESC'],
+          ['num_barra', 'DESC'],
+          ['id', 'DESC'],
+        ],
+      });
+      return res.status(codigos.BUSCAR_UM_ITEM).json(row || null);
+    } catch (err) {
+      return next(err);
+    }
+};
   
-        if (!tombos || tombos.length === 0) {
-          return Promise.resolve(null);
-        }
-  
-        const maximo = Math.max(...tombos.map((e) => e.hcf));
-  
-        return findByHcf(maximo).then((registro) => {
-          if (registro) return registro;
-          return findByHcf(maximo - 1);
-        });
-      })
-      .then((tomboFoto) =>
-        response.status(codigos.BUSCAR_UM_ITEM).json(tomboFoto || null)
-      )
-      .catch(next);
-};  
+const toHCFFormat = (codigo) => {
+    const codigoStr = String(codigo || '').padStart(9, '0');
+    return `HCF${codigoStr}`;
+};
 
 export const postCodigoBarraTombo = (request, response, next) => {
-    const toHCFFormat = (hcf, codigo) => {
-      const codigoStr = String(codigo || '').padStart(9, '0');
-      return `HCF${codigoStr}`;
-    };
-  
     const criarTransacaoCodigoBarra = (transaction) =>
-      Promise.resolve().then(() => {
-        const { hcf, codigo_barra: codigoBarra } = request.body || {};
-  
-        if (hcf == null || codigoBarra == null) {
-          const err = new Error('Parâmetros obrigatórios: hcf e codigo_barra.');
-          err.status = 400;
-          throw err;
-        }
-  
-        const formattedCodigoBarra = toHCFFormat(hcf, codigoBarra);
-        if (!formattedCodigoBarra) {
-          const err = new Error('Erro ao formatar o codigo_barra.');
-          err.status = 400;
-          throw err;
-        }
-  
-        const payload = {
-          tombo_hcf: hcf,
-          em_vivo: true,
-          codigo_barra: formattedCodigoBarra,
-          num_barra: codigoBarra,
-          caminho_foto: null,
-        };
-  
-        return TomboFoto.create(payload, { transaction });
-      });
+        Promise.resolve().then(() => {
+            const { hcf, codigo_barra: codigoBarra } = request.body || {};
+
+            const formattedCodigoBarra = toHCFFormat(codigoBarra);
+            if (!formattedCodigoBarra) {
+                throw new BadRequestExeption(417);
+            }
+
+            const payload = {
+                tombo_hcf: hcf,
+                em_vivo: true,
+                codigo_barra: formattedCodigoBarra,
+                num_barra: codigoBarra,
+                caminho_foto: null,
+            };
+
+            return TomboFoto.create(payload, { transaction });
+        });
 
     return sequelize
-      .transaction(criarTransacaoCodigoBarra)
-      .then((foto) => response.status(201).json(foto))
-      .catch((err) => {
-        if (err instanceof ForeignKeyConstraintError) {
-          return response
-            .status(400)
-            .json({ error: 'Violação de chave estrangeira.' });
-        }
-        return next(err);
-      });
+        .transaction(criarTransacaoCodigoBarra)
+        .then((foto) => response.status(201).json(foto))
+        .catch((err) => {
+            if (err instanceof ForeignKeyConstraintError) {
+                return response.status(400).json({ error: 'Violação de chave estrangeira.' });
+            }
+            return next(err);
+        });
 };
 
 export const getUltimoNumeroCodigoBarras = (request, response, next) => {
