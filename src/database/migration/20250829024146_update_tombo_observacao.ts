@@ -1,17 +1,16 @@
 /* eslint-disable */
 
-import { Knex } from 'knex'
 import { parseFile } from 'fast-csv'
+import { Knex } from 'knex'
 
 export async function run(knex: Knex): Promise<void> {
   const updates: Array<{
     HCF: string;
-    LOCAL_COLETA: string;
-    DESCRICAO_COLETA: string;
+    OBS_TOMBO: string;
   }> = []
 
   await new Promise<void>((resolve, reject) => {
-    parseFile(`${__dirname}/20250827115833_update_locais_coleta/locais_coleta_corrigidos.csv`, { headers: true })
+    parseFile(`${__dirname}/20250829024146_update_tombo_observacao/OBS_TOMBO_FIREBIRD.csv`, { headers: true })
       .on('error', error => reject(error))
       .on('data', row => {
         updates.push(row)
@@ -21,10 +20,10 @@ export async function run(knex: Knex): Promise<void> {
 
   await knex.transaction(async trx => {
     for (const update of updates) {
-      const { LOCAL_COLETA, DESCRICAO_COLETA } = update
-      await trx('locais_coleta').where({ id: LOCAL_COLETA })
+      const { HCF, OBS_TOMBO } = update
+      await trx('tombos').where({ hcf: HCF })
         .update({
-          descricao: DESCRICAO_COLETA
+          observacao: OBS_TOMBO
         })
     }
   })
