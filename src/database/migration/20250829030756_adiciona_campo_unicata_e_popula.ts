@@ -3,14 +3,14 @@ import { Knex } from 'knex'
 
 export async function run(knex: Knex): Promise<void> {
 
-  knex.schema.alterTable('tombos', table => {
+  await knex.schema.alterTable('tombos', table => {
     table.boolean('unicata').defaultTo(null)
       .nullable()
   })
 
   await knex.transaction(async trx => {
     const rows = parseFile(
-      `${__dirname}/tombo_exsicata_tipo.csv`,
+      `${__dirname}/20250829030756_adiciona_campo_unicata_e_popula/tombo_exsicata_tipo.csv`,
       { headers: true }
     )
 
