@@ -11,6 +11,7 @@ export async function run(knex: Knex): Promise<void> {
   }> = []
 
   await new Promise<void>((resolve, reject) => {
+
     parseFile(`${__dirname}/20250827115833_update_locais_coleta/locais_coleta_corrigidos.csv`, { headers: true })
       .on('error', error => reject(error))
       .on('data', row => {
