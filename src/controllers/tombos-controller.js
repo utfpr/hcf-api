@@ -1,5 +1,7 @@
 /* eslint-disable quotes */
 // @ts-nocheck
+import { ForeignKeyConstraintError } from 'sequelize';
+
 import { padronizarNomeDarwincore } from '~/helpers/padroniza-nome-darwincore';
 
 import BadRequestExeption from '../errors/bad-request-exception';
@@ -1508,6 +1510,74 @@ export const getUltimoNumeroTombo = (request, response, next) => {
         .catch(next);
 };
 
+export async function deletarCodigoBarras(request, response, next) {
+    try {
+        const count = await TomboFoto.destroy({
+            where: { num_barra: request.params.codigo },
+        });
+
+        if (count === 0) {
+            return response.status(404).json({ error: 'Código de barras não encontrado' });
+        }
+        return response.status(204).end();
+    } catch (err) {
+        return next(err);
+    }
+}
+
+export const getUltimoCodigoBarra = async (req, res, next) => {
+    try {
+        const row = await TomboFoto.findOne({
+            attributes: ['id', 'codigo_barra', 'num_barra', 'caminho_foto'],
+            order: [
+                ['tombo_hcf', 'DESC'],
+                ['num_barra', 'DESC'],
+                ['id', 'DESC'],
+            ],
+        });
+        return res.status(codigos.BUSCAR_UM_ITEM).json(row || null);
+    } catch (err) {
+        return next(err);
+    }
+};
+
+const toHCFFormat = codigo => {
+    const codigoStr = String(codigo || '').padStart(9, '0');
+    return `HCF${codigoStr}`;
+};
+
+export const postCodigoBarraTombo = (request, response, next) => {
+    const criarTransacaoCodigoBarra = transaction =>
+        Promise.resolve().then(() => {
+            const { hcf, codigo_barra: codigoBarra } = request.body || {};
+
+            const formattedCodigoBarra = toHCFFormat(codigoBarra);
+            if (!formattedCodigoBarra) {
+                throw new BadRequestExeption(417);
+            }
+
+            const payload = {
+                tombo_hcf: hcf,
+                em_vivo: true,
+                codigo_barra: formattedCodigoBarra,
+                num_barra: codigoBarra,
+                caminho_foto: null,
+            };
+
+            return TomboFoto.create(payload, { transaction });
+        });
+
+    return sequelize
+        .transaction(criarTransacaoCodigoBarra)
+        .then(foto => response.status(201).json(foto))
+        .catch(err => {
+            if (err instanceof ForeignKeyConstraintError) {
+                return response.status(400).json({ error: 'Violação de chave estrangeira.' });
+            }
+            return next(err);
+        });
+};
+
 export const getUltimoNumeroCodigoBarras = (request, response, next) => {
     const { emVivo } = request.params;
     Promise.resolve()
@@ -1564,25 +1634,6 @@ export const editarCodigoBarra = (request, response, next) => {
     const { body } = request;
     Promise.resolve()
         .then(() => atualizaCodigoBarra(body.codBarra, body.novoCod))
-        .then(retorno => {
-            if (!retorno) {
-                throw new BadRequestExeption(111);
-            }
-            response.status(codigos.EDITAR_SEM_RETORNO).send();
-        })
-        .catch(next);
-};
-
-export const deletaCodigoBarra = codBarra => TomboFoto.destroy({
-    where: {
-        codigo_barra: codBarra,
-    },
-});
-
-export const deletarCodigoBarra = (request, response, next) => {
-    const { idTombo } = request.params;
-    Promise.resolve()
-        .then(() => deletaCodigoBarra(idTombo))
         .then(retorno => {
             if (!retorno) {
                 throw new BadRequestExeption(111);
