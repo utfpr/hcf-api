@@ -279,7 +279,7 @@ export const cadastro = (request, response, next) => {
                     coletor_id: coletor,
                 };
 
-                if (paisagem.descricao) {
+                if (paisagem?.descricao) {
                     jsonTombo.descricao = paisagem.descricao;
                 }
 
