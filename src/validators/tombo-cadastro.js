@@ -38,6 +38,11 @@ export default {
         isEmpty: false,
         isInt: true,
     },
+    'json.principal.data_tombo': {
+        in: 'body',
+        isString: true,
+        isEmpty: false,
+    },
     'json.principal.data_coleta': {
         in: 'body',
         custom: {
