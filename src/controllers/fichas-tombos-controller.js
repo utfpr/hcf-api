@@ -211,8 +211,9 @@ export default function fichaTomboController(request, response, next) {
             const romanos = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
             const dataTombo = new Date(tombo.data_tombo);
             const romanoDataTombo = (`${dataTombo.getDate()}/${romanos[dataTombo.getMonth()]}/${dataTombo.getFullYear()}`);
+            const dataIdentificacao = new Date(identificacao.created_at);
             // eslint-disable-next-line max-len
-            const romanoDataIdentificacao = (`${identificacao.data_identificacao_dia}/${romanos[identificacao.data_identificacao_mes - 1]}/${identificacao.data_identificacao_ano}`);
+            const romanoDataIdentificacao = (`${dataIdentificacao.getDate()}/${romanos[dataIdentificacao.getMonth()]}/${dataIdentificacao.getFullYear()}`);
             const romanoDataColeta = (`${tombo.data_coleta_dia}/${romanos[tombo.data_coleta_mes - 1]}/${tombo.data_coleta_ano}`);
 
             const parametros = {
