@@ -240,7 +240,7 @@ export default function fichaTomboController(request, response, next) {
                 familia: tombo.familia,
                 imprimir: request.params.imprimir_cod,
 
-                identificador: tombo.identificadores[0].nome,
+                identificador: tombo.identificadores?.[0]?.nome,
                 identificacao: {
                     ...identificacao,
                     data_identificacao: formataColunasSeparadas(
