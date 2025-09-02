@@ -32,7 +32,9 @@ function parseDataTombo(valor) {
         if (!Number.isNaN(dia) && !Number.isNaN(mes) && !Number.isNaN(ano)) {
             return new Date(ano, mes, dia, 12, 0, 0, 0);
         }
+        return null;
     }
+    return null;
 }
 
 export const cadastro = (request, response, next) => {
