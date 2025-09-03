@@ -183,8 +183,6 @@ export const buscarLocaisColetaPaginado = async (request, response, next) => {
             where.cidade_id = cidadeId;
         }
 
-        const { LocalColeta, Cidade, Estado, Pais, FaseSucessional } = models;
-
         const { count, rows } = await LocalColeta.findAndCountAll({
             where,
             include: [
