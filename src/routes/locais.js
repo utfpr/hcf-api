@@ -332,7 +332,6 @@ export default app => {
                 TIPOS_USUARIOS.OPERADOR,
                 TIPOS_USUARIOS.IDENTIFICADOR,
             ]),
-            listagensMiddleware,
             validacoesMiddleware(localColetaListagemEsquema),
             controller.buscarLocaisColeta,
         ]);
