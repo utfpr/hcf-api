@@ -173,6 +173,47 @@ export const buscarLocaisColeta = async (request, response, next) => {
     }
 };
 
+export const buscarLocaisColetaPaginado = async (request, response, next) => {
+    try {
+        const cidadeId = request.query.cidade_id;
+        const { limite, pagina, offset } = request.paginacao;
+
+        const where = {};
+        if (cidadeId) {
+            where.cidade_id = cidadeId;
+        }
+
+        const { LocalColeta, Cidade, Estado, Pais, FaseSucessional } = models;
+
+        const { count, rows } = await LocalColeta.findAndCountAll({
+            where,
+            include: [
+                { model: Cidade,
+                    include: [
+                        { model: Estado,
+                            include: [Pais],
+                        },
+                    ],
+                },
+                { model: FaseSucessional },
+            ],
+            limit: limite,
+            offset,
+        });
+
+        return response.status(200).json({
+            metadados: {
+                total: count,
+                pagina,
+                limite,
+            },
+            resultado: rows,
+        });
+    } catch (error) {
+        return next(error);
+    }
+};
+
 export const buscarLocalColetaPorId = async (request, response, next) => {
     try {
         const { id } = request.params;
