@@ -135,7 +135,7 @@ export const cadastrarLocalColeta = async (request, response, next) => {
 export const buscarLocaisColeta = async (request, response, next) => {
     try {
         const { cidade_id: cidadeId } = request.query;
-        const { limite, pagina, offset } = request.paginacao;
+        //const { limite, pagina, offset } = request.paginacao;
 
         const where = {};
         if (cidadeId) {
@@ -156,16 +156,16 @@ export const buscarLocaisColeta = async (request, response, next) => {
                 },
                 { model: FaseSucessional },
             ],
-            limit: limite,
-            offset,
+            //limit: limite,
+            //offset,
         });
 
         response.status(200).json({
-            metadados: {
-                total: count,
-                pagina,
-                limite,
-            },
+            // metadados: {
+            //     total: count,
+            //     pagina,
+            //     limite,
+            // },
             resultado: rows,
         });
     } catch (error) {
