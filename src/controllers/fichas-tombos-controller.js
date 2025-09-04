@@ -229,16 +229,16 @@ export default function fichaTomboController(request, response, next) {
             const romanoDataTombo = (`${dataTombo.getDate()}/${romanos[dataTombo.getMonth()]}/${dataTombo.getFullYear()}`);
 
             const jsonParaIdentificacao = parseJsonSafe(identificacao?.tombo_json);
-            const identificador = tombo.identificadores?.[0]?.nome || '';
+            const identificador = tombo.identificadores?.[0]?.nome &&
+              tombo.identificadores?.[0]?.nome.toLowerCase() !== 'não-identificado' ?
+                tombo.identificadores?.[0]?.nome : '' || '';
 
-            let temDataIdentificacao = !jsonParaIdentificacao && false;
             const romanoDataIdentificacao = formataDataIdentificacao(
                 jsonParaIdentificacao?.data_identificacao_dia,
                 jsonParaIdentificacao?.data_identificacao_mes,
                 jsonParaIdentificacao?.data_identificacao_ano,
                 romanos
             );
-            temDataIdentificacao = romanoDataIdentificacao !== '';
 
             // eslint-disable-next-line max-len
             const romanoDataColeta = (`${tombo.data_coleta_dia}/${romanos[tombo.data_coleta_mes - 1]}/${tombo.data_coleta_ano}`);
@@ -289,7 +289,6 @@ export default function fichaTomboController(request, response, next) {
                 romano_data_tombo: romanoDataTombo,
 
                 romano_data_identificacao: romanoDataIdentificacao, // Data de identificação. Se não existir, será uma string vazia
-                tem_data_identificacao: temDataIdentificacao, // Chave que diz se a data de identificação existe e deve ser exibida
 
                 numero_copias: qtd || 1,
                 codigo_barras_selecionado: code,

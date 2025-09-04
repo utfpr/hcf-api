@@ -137,18 +137,14 @@
                 <b style="font-size: 14px;">Nome Vulgar:</b> <%- tombo.nomes_populares %>
             </td>
         </tr>
-        <% if (identificacao) { %>
         <tr>
-            <td colspan="3">
-                <b style="font-size: 14px;">Identificador:</b> <%- identificador %>
-            </td>
-            <td>
-                <% if (tem_data_identificacao) { %>
-                  <b style="font-size: 14px;">Data:</b> <%- romano_data_identificacao %>
-                <% } %>
-            </td>
+          <td colspan="3">
+              <b style="font-size: 14px;">Identificador:</b> <%- identificador %>
+          </td>
+          <td>
+            <b style="font-size: 14px;">Data:</b> <%- romano_data_identificacao %>
+          </td>
         </tr>
-        <% } %>
         <tr>
             <td colspan="4">
                 <b style="font-size: 14px;">Local de coleta:</b>
