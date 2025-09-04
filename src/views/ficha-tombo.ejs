@@ -137,10 +137,10 @@
                 <b style="font-size: 14px;">Nome Vulgar:</b> <%- tombo.nomes_populares %>
             </td>
         </tr>
-        <% if (identificacao && identificacao.usuario) { %>
+        <% if (identificacao) { %>
         <tr>
             <td colspan="3">
-                <b style="font-size: 14px;">Identificador:</b> <%- identificacao.usuario.nome %>
+                <b style="font-size: 14px;">Identificador:</b> <%- identificador %>
             </td>
             <td>
                 <% if (tem_data_identificacao) { %>
