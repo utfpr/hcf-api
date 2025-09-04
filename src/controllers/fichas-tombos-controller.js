@@ -217,7 +217,7 @@ export default function fichaTomboController(request, response, next) {
             const { tombo, identificacao, fotos } = resultado;
 
             // eslint-disable-next-line max-len
-            const coletores = `${!!tombo?.coletore?.nome !== false ? tombo?.coletore?.nome : ''}${tombo?.coletor_complementar ? tombo.coletor_complementar?.complementares : ''}`;
+            const coletores = `${!!tombo?.coletore?.nome !== false ? tombo?.coletore?.nome?.concat(' ') : ''}${tombo?.coletor_complementar ? tombo.coletor_complementar?.complementares : ''}`;
 
             const localColeta = tombo.local_coleta;
             const cidade = localColeta.cidade || '';

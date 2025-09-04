@@ -209,12 +209,17 @@
         </tr>
         <tr>
             <td colspan="2">
-                <b style="font-size: 14px;"><%- tombo.coletores.length == 1 ? 'Coletor' : 'Coletores' %>:</b> <%- tombo.coletores %>
+              <div style="display: flex; gap: 5px;">
+                <b style="font-size: 14px;"><%- tombo.coletores.length == 1 ? 'Coletor' : 'Coletores' %>:</b>
+                <div>
+                  <%- tombo.coletores %>
+                </div>
+              </div>
             </td>
-            <td width="20%" class="text-right">
+            <td width="19%" class="text-right" style="text-align:right; vertical-align:top;">
                 <b>nº:</b> <%- tombo.numero_coleta %>
             </td>
-            <td width="21%" class="text-right">
+            <td width="21%" class="text-right" style="text-align:right; vertical-align:top;">
                 <b>Data:</b> <%- romano_data_coleta %>
             </td>
         </tr>
