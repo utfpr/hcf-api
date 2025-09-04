@@ -35,7 +35,9 @@ export default {
     },
     'json.principal.numero_coleta': {
         in: 'body',
-        isEmpty: false,
+        optional: {
+            options: { nullable: true },
+        },
         isInt: true,
     },
     'json.principal.data_coleta': {
