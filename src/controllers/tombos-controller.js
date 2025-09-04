@@ -23,9 +23,9 @@ const {
 } = models;
 
 function parseDataTombo(valor) {
-    const partes = valor.split(/[/-]/).map(p => p.trim());
+    const partes = valor.split(/[-]/).map(p => p.trim());
     if (partes.length >= 3) {
-        const [diaStr, mesStr, anoStr] = partes;
+        const [anoStr, mesStr, diaStr] = partes;
         const dia = parseInt(diaStr, 10);
         const mes = parseInt(mesStr, 10) - 1;
         const ano = parseInt(anoStr, 10);

@@ -1,23 +1,7 @@
 import validaColecoesAnexas from './tombo-colecoes-anexas';
 import validaCor from './tombo-cor';
 import validaData from './tombo-data';
-
-// const validaColetores = coletores => {
-//     if (!Array.isArray(coletores)) {
-//         return false;
-//     }
-
-//     if (coletores.length <= 0) {
-//         return false;
-//     }
-
-//     for (let i = 0; i < coletores.length; i += 1) {
-//         if (!Number.isInteger(coletores[i])) {
-//             return false;
-//         }
-//     }
-//     return true;
-// };
+import validaDataTombo from './tombo-data-tombo';
 
 export default {
     'json.principal.nome_popular': {
@@ -40,8 +24,9 @@ export default {
     },
     'json.principal.data_tombo': {
         in: 'body',
-        isString: true,
-        isEmpty: false,
+        custom: {
+            options: validaDataTombo,
+        },
     },
     'json.principal.data_coleta': {
         in: 'body',
