@@ -1,4 +1,3 @@
-import listagensMiddleware from '../middlewares/listagens-middleware';
 import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middleware';
 import validacoesMiddleware from '../middlewares/validacoes-middleware';
 import localColetaCadastroEsquema from '../validators/localColeta-cadastro';
@@ -332,7 +331,6 @@ export default app => {
                 TIPOS_USUARIOS.OPERADOR,
                 TIPOS_USUARIOS.IDENTIFICADOR,
             ]),
-            listagensMiddleware,
             validacoesMiddleware(localColetaListagemEsquema),
             controller.buscarLocaisColeta,
         ]);

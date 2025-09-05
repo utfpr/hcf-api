@@ -229,6 +229,7 @@ export default function fichaTomboController(request, response, next) {
             const romanoDataTombo = (`${dataTombo.getDate()}/${romanos[dataTombo.getMonth()]}/${dataTombo.getFullYear()}`);
 
             const jsonParaIdentificacao = parseJsonSafe(identificacao?.tombo_json);
+
             const identificador = tombo.identificadores?.[0]?.nome &&
               tombo.identificadores?.[0]?.nome.toLowerCase() !== 'não-identificado' ?
                 tombo.identificadores?.[0]?.nome : '' || '';

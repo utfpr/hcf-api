@@ -22,6 +22,21 @@ const {
     ColecaoAnexa, Especie, Herbario, Tombo, Alteracao, TomboIdentificador, ColetorComplementar, Sequelize: { Op },
 } = models;
 
+function parseDataTombo(valor) {
+    const partes = valor.split(/[-]/).map(p => p.trim());
+    if (partes.length >= 3) {
+        const [anoStr, mesStr, diaStr] = partes;
+        const dia = parseInt(diaStr, 10);
+        const mes = parseInt(mesStr, 10) - 1;
+        const ano = parseInt(anoStr, 10);
+        if (!Number.isNaN(dia) && !Number.isNaN(mes) && !Number.isNaN(ano)) {
+            return new Date(ano, mes, dia, 12, 0, 0, 0);
+        }
+        return null;
+    }
+    return null;
+}
+
 export const cadastro = (request, response, next) => {
     const {
         principal,
@@ -277,7 +292,8 @@ export const cadastro = (request, response, next) => {
                     local_coleta_id: localidade.local_coleta_id,
                     cor: principal.cor,
                     coletor_id: coletor,
-                };
+                    data_tombo: parseDataTombo(principal.data_tombo),
+                };  
 
                 if (paisagem?.descricao) {
                     jsonTombo.descricao = paisagem.descricao;
@@ -478,6 +494,9 @@ function alteracaoCuradorouOperador(request, response, transaction) {
     const { cor } = body.principal || {};
     if (cor !== undefined) update.cor = cor;
 
+    const dataTombo = body?.principal?.data_tombo;
+    if(dataTombo !== undefined) update.data_tombo = parseDataTombo(dataTombo);
+
     const familiaId = body?.taxonomia?.familia_id;
     if (familiaId !== undefined) update.familia_id = familiaId;
 
@@ -537,6 +556,11 @@ function alteracaoCuradorouOperador(request, response, transaction) {
     if (dataIdentificacao?.dia !== undefined) update.data_identificacao_dia = dataIdentificacao.dia;
     if (dataIdentificacao?.mes !== undefined) update.data_identificacao_mes = dataIdentificacao.mes;
     if (dataIdentificacao?.ano !== undefined) update.data_identificacao_ano = dataIdentificacao.ano;
+    if(dataIdentificacao === null) { 
+        update.data_identificacao_dia = null; 
+        update.data_identificacao_mes = null; 
+        update.data_identificacao_ano = null;
+    }
 
     const coletor = body?.coletor;
     if (coletor !== undefined) update.coletor_id = coletor;
