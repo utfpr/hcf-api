@@ -537,6 +537,11 @@ function alteracaoCuradorouOperador(request, response, transaction) {
     if (dataIdentificacao?.dia !== undefined) update.data_identificacao_dia = dataIdentificacao.dia;
     if (dataIdentificacao?.mes !== undefined) update.data_identificacao_mes = dataIdentificacao.mes;
     if (dataIdentificacao?.ano !== undefined) update.data_identificacao_ano = dataIdentificacao.ano;
+    if(dataIdentificacao === null) { 
+        update.data_identificacao_dia = null; 
+        update.data_identificacao_mes = null; 
+        update.data_identificacao_ano = null;
+    }
 
     const coletor = body?.coletor;
     if (coletor !== undefined) update.coletor_id = coletor;
