@@ -133,43 +133,54 @@ export const cadastrarLocalColeta = async (request, response, next) => {
 };
 
 export const buscarLocaisColeta = async (request, response, next) => {
-    try {
-        const { cidade_id: cidadeId } = request.query;
-        //const { limite, pagina, offset } = request.paginacao;
+        try {
+        const cidadeId = request.query.cidade_id;
+        const { limite, pagina, offset } = request.paginacao;
+        const { getAll } = request.query;
 
         const where = {};
         if (cidadeId) {
             where.cidade_id = cidadeId;
         }
 
-        const { rows } = await LocalColeta.findAndCountAll({
+        const queryOptions = {
             where,
             include: [
                 { model: Cidade,
                     include: [
                         { model: Estado,
-                            include: [
-                                Pais,
-                            ],
+                            include: [Pais],
                         },
                     ],
                 },
                 { model: FaseSucessional },
             ],
-            //limit: limite,
-            //offset,
-        });
+            order: [['id', 'DESC']],
+        };
 
-        response.status(200).json({
-            // metadados: {
-            //     total: count,
-            //     pagina,
-            //     limite,
-            // },
+        if (getAll !== 'true') {
+            queryOptions.limit = limite;
+            queryOptions.offset = offset;
+        }
+
+        const { count, rows } = await LocalColeta.findAndCountAll(queryOptions);
+
+        if (getAll === 'true') {
+            return response.status(200).json({
+                resultado: rows,
+            });
+        }
+
+        return response.status(200).json({
+            metadados: {
+                total: count,
+                pagina,
+                limite,
+            },
             resultado: rows,
         });
     } catch (error) {
-        next(error);
+        return next(error);
     }
 };
 

@@ -3,6 +3,7 @@ import validacoesMiddleware from '../middlewares/validacoes-middleware';
 import localColetaCadastroEsquema from '../validators/localColeta-cadastro';
 import localColetaListagemEsquema from '../validators/localColeta-listagem';
 import nomeEsquema from '../validators/nome-obrigatorio';
+import listagensMiddleware from '~/middlewares/listagens-middleware';
 
 const controller = require('../controllers/locais-coleta-controller');
 
@@ -292,7 +293,7 @@ export default app => {
          *     tags: [Locais]
          *     parameters:
          *       - in: query
-         *         name: cidadeId
+         *         name: cidade_id
          *         schema:
          *           type: integer
          *         description: Filtrar por ID da cidade
@@ -331,6 +332,7 @@ export default app => {
                 TIPOS_USUARIOS.OPERADOR,
                 TIPOS_USUARIOS.IDENTIFICADOR,
             ]),
+            listagensMiddleware,
             validacoesMiddleware(localColetaListagemEsquema),
             controller.buscarLocaisColeta,
         ]);
