@@ -143,7 +143,9 @@
                 <b style="font-size: 14px;">Identificador:</b> <%- identificacao.usuario.nome %>
             </td>
             <td>
-                <b style="font-size: 14px;">Data:</b> <%- romano_data_identificacao %>
+                <% if (tem_data_identificacao) { %>
+                  <b style="font-size: 14px;">Data:</b> <%- romano_data_identificacao %>
+                <% } %>
             </td>
         </tr>
         <% } %>
