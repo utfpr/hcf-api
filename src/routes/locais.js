@@ -332,6 +332,7 @@ export default app => {
                 TIPOS_USUARIOS.OPERADOR,
                 TIPOS_USUARIOS.IDENTIFICADOR,
             ]),
+            listagensMiddleware,
             validacoesMiddleware(localColetaListagemEsquema),
             controller.buscarLocaisColeta,
         ]);
@@ -519,95 +520,5 @@ export default app => {
                 TIPOS_USUARIOS.OPERADOR,
             ]),
             controller.deletarLocalColeta,
-        ]);
-    /**
-     * @swagger
-     * /locais-coleta-paginado:
-     *   get:
-     *     summary: Lista os locais de coleta (paginado)
-     *     tags: [Locais]
-     *     description: Versão paginada da listagem de locais de coleta. Igual à rota /locais-coleta porém retorna metadados e suporta paginação.
-     *     parameters:
-     *       - in: query
-     *         name: cidade_id
-     *         schema:
-     *           type: integer
-     *         description: Filtrar por ID da cidade
-     *       - in: query
-     *         name: pagina
-     *         schema:
-     *           type: integer
-     *         description: Número da página
-     *       - in: query
-     *         name: limite
-     *         schema:
-     *           type: integer
-     *         description: Quantidade de resultados por página
-     *     responses:
-     *       200:
-     *         description: Lista paginada de locais de coleta
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 metadados:
-     *                   type: object
-     *                   properties:
-     *                     total:
-     *                       type: integer
-     *                     pagina:
-     *                       type: integer
-     *                     limite:
-     *                       type: integer
-     *                 resultado:
-     *                   type: array
-     *                   items:
-     *                     type: object
-     *                     properties:
-     *                       id:
-     *                         type: integer
-     *                       descricao:
-     *                         type: string
-     *                       complemento:
-     *                         type: string
-     *                         nullable: true
-     *                       cidade_id:
-     *                         type: integer
-     *                       fase_sucessional_id:
-     *                         type: integer
-     *                         nullable: true
-     *                       cidade:
-     *                         type: object
-     *                         properties:
-     *                           id:
-     *                             type: integer
-     *                           nome:
-     *                             type: string
-     *                       fase_sucessional:
-     *                         type: object
-     *                         nullable: true
-     *                         properties:
-     *                           id:
-     *                             type: integer
-     *                           nome:
-     *                             type: string
-     *       '401':
-     *         $ref: '#/components/responses/Unauthorized'
-     *       '403':
-     *         $ref: '#/components/responses/Forbidden'
-     *       '500':
-     *         $ref: '#/components/responses/InternalServerError'
-     */
-    app.route('/locais-coleta-paginado')
-        .get([
-            tokensMiddleware([
-                TIPOS_USUARIOS.CURADOR,
-                TIPOS_USUARIOS.OPERADOR,
-                TIPOS_USUARIOS.IDENTIFICADOR,
-            ]),
-            listagensMiddleware,
-            validacoesMiddleware(localColetaListagemEsquema),
-            controller.buscarLocaisColetaPaginado,
         ]);
 };
