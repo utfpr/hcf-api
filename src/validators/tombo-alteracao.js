@@ -1,6 +1,7 @@
 import validaColecoesAnexas from './tombo-colecoes-anexas';
 import validaCor from './tombo-cor';
 import validaData from './tombo-data';
+import validaDataTombo from './tombo-data-tombo';
 
 const validaColetores = coletores => {
     if (!Array.isArray(coletores) || coletores.length < 1) {
@@ -29,8 +30,16 @@ export default {
     },
     'json.principal.numero_coleta': {
         in: 'body',
-        isEmpty: false,
+        optional: {
+            options: { nullable: true },
+        },
         isInt: true,
+    },
+    'json.principal.data_tombo': {
+        in: 'body',
+        custom: {
+            options: validaDataTombo,
+        },
     },
     'json.principal.data_coleta': {
         in: 'body',

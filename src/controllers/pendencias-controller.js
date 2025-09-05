@@ -1135,6 +1135,10 @@ export const aprovarPendencia = async (alteracao, hcf, transaction) => {
         updateTombo.cor = alteracao.cor ? alteracao.cor.toUpperCase() : null;
     }
 
+    if(alteracao.data_tombo !== undefined){
+        updateTombo.data_tombo = alteracao.data_tombo;
+    }
+
     if (alteracao.data_coleta_dia !== undefined) {
         updateTombo.data_coleta_dia = alteracao.data_coleta_dia;
     }

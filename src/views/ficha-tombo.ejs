@@ -137,16 +137,14 @@
                 <b style="font-size: 14px;">Nome Vulgar:</b> <%- tombo.nomes_populares %>
             </td>
         </tr>
-        <% if (identificacao && identificacao.usuario) { %>
         <tr>
-            <td colspan="3">
-                <b style="font-size: 14px;">Identificador:</b> <%- identificacao.usuario.nome %>
-            </td>
-            <td>
-                <b style="font-size: 14px;">Data:</b> <%- romano_data_identificacao %>
-            </td>
+          <td colspan="3">
+              <b style="font-size: 14px;">Identificador:</b> <%- identificador %>
+          </td>
+          <td>
+            <b style="font-size: 14px;">Data:</b> <%- romano_data_identificacao %>
+          </td>
         </tr>
-        <% } %>
         <tr>
             <td colspan="4">
                 <b style="font-size: 14px;">Local de coleta:</b>
@@ -173,8 +171,8 @@
         <tr>
             <td colspan="4">
                 <b style="font-size: 14px;">Observações:</b> 
-                <% if (tombo && tombo.observacao) { %>
-                    <%- tombo.observacao %>
+                <% if (tombo && tombo.descricao) { %>
+                    <%- tombo.descricao %>
                 <% } %>
                 <% if (tombo && tombo.latitude) { %>
                     - Latitude: <%- tombo.latitude %>
@@ -183,7 +181,7 @@
                     - Longitude: <%- tombo.longitude %>
                 <% } %>
                 <% if (tombo && tombo.altitude) { %>
-                    - Altitude: <%- tombo.altitude %>
+                    - Altitude: <%- tombo.altitude %>m
                 <% } %>
                 <% if (localColeta && localColeta.solo) { %>
                     - Solo: <%- localColeta.solo.nome %>
@@ -207,12 +205,17 @@
         </tr>
         <tr>
             <td colspan="2">
-                <b style="font-size: 14px;"><%- tombo.coletores.length == 1 ? 'Coletor' : 'Coletores' %>:</b> <%- tombo.coletores %>
+              <div style="display: flex; gap: 5px;">
+                <b style="font-size: 14px;"><%- tombo.coletores.length == 1 ? 'Coletor' : 'Coletores' %>:</b>
+                <div>
+                  <%- tombo.coletores %>
+                </div>
+              </div>
             </td>
-            <td width="20%" class="text-right">
+            <td width="19%" class="text-right" style="text-align:right; vertical-align:top;">
                 <b>nº:</b> <%- tombo.numero_coleta %>
             </td>
-            <td width="21%" class="text-right">
+            <td width="21%" class="text-right" style="text-align:right; vertical-align:top;">
                 <b>Data:</b> <%- romano_data_coleta %>
             </td>
         </tr>
