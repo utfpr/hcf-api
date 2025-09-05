@@ -90,16 +90,16 @@ const options = {
                 },
             },
             securitySchemes: {
-                ApiKeyAuth: {
-                    type: 'apiKey',
-                    in: 'header',
-                    name: 'token',
+                BearerAuth: {
+                    type: 'http',
+                    scheme: 'bearer',
+                    bearerFormat: 'JWT',
                 },
             },
         },
         security: [
             {
-                ApiKeyAuth: [],
+                BearerAuth: [],
             },
         ],
     },

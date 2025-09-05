@@ -213,9 +213,9 @@ export function fazComparacaoInformacao(codBarra, informacaoSpecieslink) {
                                             const anoIdentificacao = getInformacaoSpecieslink.yearidentified;
                                             insereAlteracaoSugerida(idUsuario, 'ESPERANDO', getNroTombo, alteracao, diaIdentificacao, mesIdentificacao, anoIdentificacao);
                                             // eslint-disable-next-line no-console
-                                            console.log(getInformacaoSpecieslink.identifiedby);
+                                            // console.log(getInformacaoSpecieslink.identifiedby); // Removed debug log
                                             // eslint-disable-next-line no-console
-                                            console.log(getInformacaoSpecieslink.dateidentified);
+                                            // console.log(getInformacaoSpecieslink.dateidentified); // Removed debug log
                                         });
                                     } else {
                                         const diaIdentificacao = getInformacaoSpecieslink.dayidentified;
@@ -224,9 +224,9 @@ export function fazComparacaoInformacao(codBarra, informacaoSpecieslink) {
                                         const { id } = listaUsuario[0].dataValues;
                                         insereAlteracaoSugerida(id, 'ESPERANDO', getNroTombo, alteracao, diaIdentificacao, mesIdentificacao, anoIdentificacao);
                                         // eslint-disable-next-line no-console
-                                        console.log(getInformacaoSpecieslink.identifiedby);
+                                        // console.log(getInformacaoSpecieslink.identifiedby); // Removed debug log
                                         // eslint-disable-next-line no-console
-                                        console.log(getInformacaoSpecieslink.dateidentified);
+                                        // console.log(getInformacaoSpecieslink.dateidentified); // Removed debug log
                                     }
                                 });
                                 promessa.resolve();
@@ -259,11 +259,11 @@ export function fazComparacaoTomboSpecieslink() {
     selectUmaInformacaoSpecieslink().then(informacaoSpecieslink => {
         if (informacaoSpecieslink.length === 0) {
             // eslint-disable-next-line no-console
-            console.log('akc');
+            // console.log('akc'); // Removed debug log
             promessa.resolve(true);
         } else {
             // eslint-disable-next-line no-console
-            console.log('akd');
+            // console.log('akd'); // Removed debug log
             const getCodBarra = informacaoSpecieslink[0].dataValues.cod_barra;
             const getInformacaoSpecieslink = processaRespostaSpecieslink(informacaoSpecieslink[0].dataValues.tombo_json);
             throttle(() => {

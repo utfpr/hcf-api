@@ -20,7 +20,9 @@
 		"start": "nodemon --ext 'js,ts,tsx' --exec babel-node --extensions '.js,.ts,.tsx' ./src/index.js",
 		"build": "run-s clean build:app",
 		"test": "jest",
-		"prepare": "husky"
+		"prepare": "husky",
+		"audit": "npm audit --audit-level=moderate",
+		"audit:fix": "npm audit fix"
 	},
 	"devDependencies": {
 		"@babel/cli": "7.27.0",
@@ -65,7 +67,9 @@
 		"express-validator": "7.2.1",
 		"fast-csv": "^5.0.5",
 		"handlebars": "^4.7.8",
+		"helmet": "^8.0.0",
 		"jsonwebtoken": "9.0.2",
+		"express-rate-limit": "^7.4.1",
 		"knex": "2.5.1",
 		"moment": "^2.24.0",
 		"moment-timezone": "^0.5.21",

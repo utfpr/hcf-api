@@ -1,3 +1,5 @@
+import rateLimit from 'express-rate-limit';
+
 import listagensMiddleware from '../middlewares/listagens-middleware';
 import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middleware';
 import validacoesMiddleware from '../middlewares/validacoes-middleware';
@@ -9,6 +11,19 @@ import listagemUsuarioEsquema from '../validators/usuario-listagem';
 import usuarioLoginEsquema from '../validators/usuario-login';
 
 const controller = require('../controllers/usuarios-controller');
+
+// Rate limiting for login attempts
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // Limit each IP to 5 login requests per windowMs
+    message: {
+        error: {
+            code: 429,
+            message: 'Muitas tentativas de login. Tente novamente em 15 minutos.',
+        },
+    },
+    skipSuccessfulRequests: true, // Don't count successful requests
+});
 
 /**
  * @swagger
@@ -70,6 +85,7 @@ export default app => {
      */
     app.route('/login')
         .post([
+            loginLimiter,
             validacoesMiddleware(usuarioLoginEsquema),
             controller.login,
         ]);

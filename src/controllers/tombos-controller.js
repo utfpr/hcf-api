@@ -694,9 +694,9 @@ export const listagem = (request, response, next) => {
                 'created_at',
             ],
             include: {
-                // required: true,
                 model: Coletor,
                 attributes: ['id', 'nome'],
+                required: false,
             },
             where,
             order: [['hcf', 'DESC']],
