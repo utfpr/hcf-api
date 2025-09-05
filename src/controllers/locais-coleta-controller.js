@@ -142,7 +142,7 @@ export const buscarLocaisColeta = async (request, response, next) => {
             where.cidade_id = cidadeId;
         }
 
-        const { count, rows } = await LocalColeta.findAndCountAll({
+        const { rows } = await LocalColeta.findAndCountAll({
             where,
             include: [
                 { model: Cidade,
