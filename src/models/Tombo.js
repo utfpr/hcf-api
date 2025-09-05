@@ -183,7 +183,7 @@ export default (Sequelize, DataTypes) => {
         },
         numero_coleta: {
             type: DataTypes.INTEGER,
-            allowNull: false,
+            allowNull: true,
         },
         latitude: {
             type: DataTypes.DOUBLE,
