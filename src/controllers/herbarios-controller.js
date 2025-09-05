@@ -62,7 +62,7 @@ export const buscarHerbario = (request, response, next) => {
         .then(() => listaTodosHerbariosAtivos(1, 0, where))
         .then(herbario => {
             // eslint-disable-next-line
-            console.log(herbario.rows[0].cidade)
+            // console.log(herbario.rows[0].cidade) // Removed debug log
             // eslint-disable-next-line prefer-destructuring
             retorno.herbario = herbario.rows[0];
             if (retorno.count === 0) {
@@ -132,7 +132,7 @@ export const cadastro = (request, response, next) => {
         })
         .then(endereco => {
             // eslint-disable-next-line
-            console.log(request.body.herbario)
+            // console.log(request.body.herbario) // Removed debug log
             const herbario = {
                 ...request.body.herbario,
                 endereco_id: endereco.id,

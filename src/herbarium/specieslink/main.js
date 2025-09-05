@@ -66,11 +66,11 @@ function verificaRequisicoesAgendado(existeExecucaoSpeciesLink) {
             });
         } else {
             // eslint-disable-next-line no-console
-            console.log(`Não tá na hora ${moment().format('HH')}`);
+            // console.log(`Não tá na hora ${moment().format('HH')}`); // Removed debug log
         }
     } else {
         // eslint-disable-next-line no-console
-        console.log(`Não tá no dia ${moment().format('DD/MM/YYYY')}`);
+        // console.log(`Não tá no dia ${moment().format('DD/MM/YYYY')}`); // Removed debug log
     }
 }
 

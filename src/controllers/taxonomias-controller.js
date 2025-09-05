@@ -26,7 +26,7 @@ export const cadastrarFamilia = (request, response, next) => {
         .then(() => Familia.create({ nome, reino_id: reinoId }, transaction));
     sequelize.transaction(callback)
         .then(familiaCriada => {
-            console.log(familiaCriada); // eslint-disable-line
+            // console.log(familiaCriada); // Removed debug log
             if (!familiaCriada) {
                 throw new BadRequestExeption(502);
             }
@@ -53,7 +53,7 @@ export const cadastrarReino = (request, response, next) => {
         .then(() => Reino.create({ nome }, transaction));
     sequelize.transaction(callback)
         .then(reinoCriado => {
-            console.log(reinoCriado); // eslint-disable-line
+            // console.log(reinoCriado); // Removed debug log
             if (!reinoCriado) {
                 throw new BadRequestExeption(502);
             }
@@ -86,7 +86,7 @@ export const editarReino = (request, response, next) => {
         }));
     sequelize.transaction(callback)
         .then(reinoEditado => {
-            console.log(reinoEditado); // eslint-disable-line
+            // console.log(reinoEditado); // Removed debug log
             if (!reinoEditado) {
                 throw new BadRequestExeption(502);
             }
@@ -192,7 +192,7 @@ export const editarFamilia = (request, response, next) => {
         }));
     sequelize.transaction(callback)
         .then(familiaCriada => {
-            console.log(familiaCriada); // eslint-disable-line
+            // console.log(familiaCriada); // Removed debug log
             if (!familiaCriada) {
                 throw new BadRequestExeption(502);
             }

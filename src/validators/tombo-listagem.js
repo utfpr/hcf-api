@@ -8,7 +8,7 @@ const validaSituacao = situacao => {
 
 export default {
     nome_cientifico: {
-        in: 'body',
+        in: 'query',
         isString: true,
         optional: true,
         isLength: {
@@ -16,7 +16,7 @@ export default {
         },
     },
     nome_popular: {
-        in: 'body',
+        in: 'query',
         isString: true,
         optional: true,
         isLength: {
@@ -24,19 +24,19 @@ export default {
         },
     },
     tipo: {
-        in: 'body',
+        in: 'query',
         optional: true,
         isInt: true,
     },
     situacao: {
-        in: 'body',
+        in: 'query',
         optional: true,
         custom: {
             options: validaSituacao,
         },
     },
     hcf: {
-        in: 'body',
+        in: 'query',
         isInt: true,
         optional: true,
     },
