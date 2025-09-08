@@ -39,6 +39,26 @@ function formataDataSaida(data) {
         .format('D/M/YYYY');
 }
 
+function formataDataIdentificacao(dia, mes, ano, arrayRomanos) {
+    // Se não tiver ano, não mostra nada
+    if (!ano) {
+        return '';
+    }
+
+    // Se tiver mês e ano mas não tiver dia, mostra mês/ano
+    if (!dia && mes && ano) {
+        return `${arrayRomanos[mes - 1]}/${ano}`;
+    }
+
+    // Se não tiver mês mas tiver ano, mostra só o ano
+    if (!mes && ano) {
+        return `${ano}`;
+    }
+
+    // Se tiver dia, mês e ano, mostra tudo
+    return `${dia}/${arrayRomanos[mes - 1]}/${ano}`;
+}
+
 export default function fichaTomboController(request, response, next) {
     const { tombo_id: tomboId } = request.params;
     const { qtd, code } = request.query;
@@ -53,7 +73,6 @@ export default function fichaTomboController(request, response, next) {
         .then(() => {
             const include = [
                 {
-                    required: true,
                     model: Coletor,
                 },
                 {
@@ -99,19 +118,16 @@ export default function fichaTomboController(request, response, next) {
                 },
                 {
                     as: 'local_coleta',
-                    required: true,
                     model: LocalColeta,
                     include: [
                         {
                             required: false,
                             model: Cidade,
                             include: {
-                                required: true,
                                 model: Estado,
                                 attributes: ['id', 'nome', 'sigla', 'codigo_telefone', 'pais_id'],
                                 include: {
                                     as: 'pais',
-                                    required: true,
                                     model: Pais,
                                 },
                             },
@@ -201,7 +217,8 @@ export default function fichaTomboController(request, response, next) {
         .then(resultado => {
             const { tombo, identificacao, fotos } = resultado;
 
-            const coletores = `${tombo.coletore.nome}${tombo.coletor_complementar ? tombo.coletor_complementar.complementares : ''}`;
+            // eslint-disable-next-line max-len
+            const coletores = `${!!tombo?.coletore?.nome !== false ? tombo?.coletore?.nome?.concat(' ') : ''}${tombo?.coletor_complementar ? tombo.coletor_complementar?.complementares : ''}`;
 
             const localColeta = tombo.local_coleta;
             const cidade = localColeta.cidade || '';
@@ -211,8 +228,19 @@ export default function fichaTomboController(request, response, next) {
             const romanos = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
             const dataTombo = new Date(tombo.data_tombo);
             const romanoDataTombo = (`${dataTombo.getDate()}/${romanos[dataTombo.getMonth()]}/${dataTombo.getFullYear()}`);
+
+            const identificador = tombo.identificadores?.[0]?.nome &&
+              tombo.identificadores?.[0]?.nome.toLowerCase() !== 'não-identificado' ?
+                tombo.identificadores?.[0]?.nome : '' || '';
+
+            const romanoDataIdentificacao = formataDataIdentificacao(
+                tombo?.data_identificacao_dia,
+                tombo?.data_identificacao_mes,
+                tombo?.data_identificacao_ano,
+                romanos
+            );
+
             // eslint-disable-next-line max-len
-            const romanoDataIdentificacao = (`${identificacao.data_identificacao_dia}/${romanos[identificacao.data_identificacao_mes - 1]}/${identificacao.data_identificacao_ano}`);
             const romanoDataColeta = (`${tombo.data_coleta_dia}/${romanos[tombo.data_coleta_mes - 1]}/${tombo.data_coleta_ano}`);
 
             const parametros = {
@@ -234,13 +262,13 @@ export default function fichaTomboController(request, response, next) {
                 variedade: tombo.variedade,
                 subespecie: tombo.sub_especy,
 
-                relevo: tombo.relevo?.nome || '',
-                vegetacao: tombo.vegetaco?.nome || '',
+                relevo: tombo?.relevo?.nome || '',
+                vegetacao: tombo?.vegetaco?.nome || '',
 
                 familia: tombo.familia,
                 imprimir: request.params.imprimir_cod,
 
-                identificador: tombo.identificadores?.[0]?.nome,
+                identificador,
                 identificacao: {
                     ...identificacao,
                     data_identificacao: formataColunasSeparadas(
@@ -251,13 +279,17 @@ export default function fichaTomboController(request, response, next) {
                 },
 
                 localColeta,
+                romano_data_coleta: romanoDataColeta,
+
                 cidade,
                 estado,
                 estado_sigla: estado.sigla,
                 pais,
+
                 romano_data_tombo: romanoDataTombo,
-                romano_data_identificacao: romanoDataIdentificacao,
-                romano_data_coleta: romanoDataColeta,
+
+                romano_data_identificacao: romanoDataIdentificacao, // Data de identificação. Se não existir, será uma string vazia
+
                 numero_copias: qtd || 1,
                 codigo_barras_selecionado: code,
             };
