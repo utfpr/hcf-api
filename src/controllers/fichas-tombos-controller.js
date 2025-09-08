@@ -40,22 +40,23 @@ function formataDataSaida(data) {
 }
 
 function formataDataIdentificacao(dia, mes, ano, arrayRomanos) {
-    if (!dia || !mes || !ano) {
+    // Se não tiver ano, não mostra nada
+    if (!ano) {
         return '';
     }
-    return `${dia}/${arrayRomanos[mes - 1]}/${ano}`;
-}
 
-function parseJsonSafe(str) {
-    try {
-        const parsed = JSON.parse(str);
-        if (parsed && typeof parsed === 'object') {
-            return parsed; // existe e é um objeto/array
-        }
-        return null; // pode ser null, number, string etc.
-    } catch {
-        return null; // inválido
+    // Se tiver mês e ano mas não tiver dia, mostra mês/ano
+    if (!dia && mes && ano) {
+        return `${arrayRomanos[mes - 1]}/${ano}`;
     }
+
+    // Se não tiver mês mas tiver ano, mostra só o ano
+    if (!mes && ano) {
+        return `${ano}`;
+    }
+
+    // Se tiver dia, mês e ano, mostra tudo
+    return `${dia}/${arrayRomanos[mes - 1]}/${ano}`;
 }
 
 export default function fichaTomboController(request, response, next) {
@@ -228,16 +229,14 @@ export default function fichaTomboController(request, response, next) {
             const dataTombo = new Date(tombo.data_tombo);
             const romanoDataTombo = (`${dataTombo.getDate()}/${romanos[dataTombo.getMonth()]}/${dataTombo.getFullYear()}`);
 
-            const jsonParaIdentificacao = parseJsonSafe(identificacao?.tombo_json);
-
             const identificador = tombo.identificadores?.[0]?.nome &&
               tombo.identificadores?.[0]?.nome.toLowerCase() !== 'não-identificado' ?
                 tombo.identificadores?.[0]?.nome : '' || '';
 
             const romanoDataIdentificacao = formataDataIdentificacao(
-                jsonParaIdentificacao?.data_identificacao_dia,
-                jsonParaIdentificacao?.data_identificacao_mes,
-                jsonParaIdentificacao?.data_identificacao_ano,
+                tombo?.data_identificacao_dia,
+                tombo?.data_identificacao_mes,
+                tombo?.data_identificacao_ano,
                 romanos
             );
 
