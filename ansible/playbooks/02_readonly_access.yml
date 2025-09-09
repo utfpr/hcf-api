@@ -1,0 +1,43 @@
+- name: Setup readonly access to MySQL
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Ensure readonly_tunnel user is present
+      user:
+        name: readonly_tunnel
+        create_home: yes
+        shell: /bin/false
+        system: yes
+
+    - name: Ensure readonly_tunnel user authorization key is present
+      authorized_key:
+        user: readonly_tunnel
+        key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIARuxJ71FWsdjwVaZgoXILWRmVSdVEJBKfZi8kAYUkVA readonly_tunnel"
+
+    - name: Ensure SSH access is strict
+      blockinfile:
+        path: /etc/ssh/sshd_config.d/10-readonly-tunnel.conf
+        block: |
+          Match User readonly_tunnel
+            PermitTTY no
+            PermitTunnel no
+            GatewayPorts no
+            PermitOpen localhost:3306
+            ForceCommand /bin/false
+            X11Forwarding no
+            AllowAgentForwarding no
+            AllowTcpForwarding yes
+            AllowStreamLocalForwarding no
+            AuthenticationMethods publickey
+        backup: no
+        create: yes
+        validate: /usr/sbin/sshd -T -f %s
+      register: sshd_config_file
+
+    - name: Reload SSH
+      service:
+        name: sshd
+        enabled: yes
+        state: reloaded
+      when: sshd_config_file.changed

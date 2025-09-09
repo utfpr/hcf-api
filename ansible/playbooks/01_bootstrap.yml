@@ -10,19 +10,19 @@
       when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
 
   tasks:
-    - name: Ensure ansible user is present
+    - name: Ensure Ansible user is present
       user:
         name: ansible
         groups: root
         create_home: yes
         shell: /bin/bash
 
-    - name: Ensure ansible user authorized key is present
+    - name: Ensure Ansible user authorized key is present
       ansible.posix.authorized_key:
         user: ansible
         key: "{{ bootstrap_ssh_key }}"
 
-    - name: Ensure ansible user sudoers file is present
+    - name: Ensure Ansible user sudoers file is present
       copy:
         src: files/etc/sudoers.d/ansible
         dest: /etc/sudoers.d/ansible
@@ -44,14 +44,7 @@
 
     - name: Restart SSH
       service:
-        name: "{{ item.name }}"
-        enabled: "{{ item.enabled }}"
-        state: "{{ item.state }}"
-      with_items:
-        - name: ssh.socket
-          enabled: no
-          state: stopped
-        - name: ssh.service
-          enabled: yes
-          state: restarted
+        name: sshd
+        enabled: yes
+        state: restarted
       when: sshd_config_file.changed
