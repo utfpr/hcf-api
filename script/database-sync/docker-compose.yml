@@ -1,0 +1,19 @@
+services:
+  database-sync:
+    image: database-sync:local
+    container_name: database-sync
+    build: .
+    environment:
+      SYNC_SOURCE_HOST: "127.0.0.1"
+      SYNC_SOURCE_PORT: "3306"
+      SYNC_SOURCE_USER: "root"
+      SYNC_SOURCE_PASSWORD: "masterkey"
+      SYNC_SOURCE_DATABASE: "herbario_dev"
+      SYNC_DEST_HOST: "127.0.0.1"
+      SYNC_DEST_PORT: "3306"
+      SYNC_DEST_USER: "root"
+      SYNC_DEST_PASSWORD: "masterkey"
+      SYNC_DEST_DATABASE: "herbario_test"
+      SYNC_EXCLUDE_TABLES: "usuarios"
+      CRON_SCHEDULE: "0 3 * * *"
+      TZ: "America/Sao_Paulo"
