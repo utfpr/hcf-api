@@ -5,9 +5,7 @@
 - [Install Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#pipx-install)
 - Add the following collections to your Ansible installation
   - `ansible-galaxy collection install ansible.posix`
-  - `ansible-galaxy collection install community.general`
-  - `ansible-galaxy collection install community.docker`
-  - `ansible-galaxy collection install community.postgresql`
+  - `ansible-galaxy collection install community.mysql`
 
 ## Setup
 
@@ -18,5 +16,5 @@ Run the following command replacing the necessary values between angle brackets 
 - *The user replaced in `<user>` needs sudo access*
 
 ```shell
-ansible-playbook --user <user> --private-key <ssh private key path> --ask-become-pass playbooks/01_bootstrap.yml
+ansible-playbook --user <user> --key-file <ssh private key path> --ask-become-pass playbooks/01_bootstrap.yml
 ```
