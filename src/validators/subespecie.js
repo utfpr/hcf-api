@@ -7,16 +7,6 @@ export default {
             options: [{ min: 3 }],
         },
     },
-    familia_id: {
-        in: 'body',
-        isInt: true,
-        isEmpty: false,
-    },
-    genero_id: {
-        in: 'body',
-        isInt: true,
-        isEmpty: false,
-    },
     especie_id: {
         in: 'body',
         isInt: true,
