@@ -17,9 +17,4 @@ export default {
         isInt: true,
         optional: true,
     },
-    familia_id: {
-        in: 'body',
-        isInt: true,
-        isEmpty: false,
-    },
 };
