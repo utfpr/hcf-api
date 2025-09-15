@@ -1,6 +1,6 @@
 {
 	"name": "hcf-api",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Projeto para construção da API para o sistema do Herbário da UTFPR",
 	"main": "dist/app/index.js",
 	"author": "Elaine Sangali <e.nani@gmail.com>",
