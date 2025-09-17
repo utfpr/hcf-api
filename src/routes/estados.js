@@ -56,9 +56,6 @@ export default app => {
             controller.cadastrarEstado,
         ])
         .get([
-            tokensMiddleware([TIPOS_USUARIOS.CURADOR, TIPOS_USUARIOS.OPERADOR, TIPOS_USUARIOS.IDENTIFICADOR]),
-            listagensMiddleware,
-            validacoesMiddleware(listagemEstadoEsquema),
             controller.listagem,
         ]);
 
@@ -116,7 +113,6 @@ export default app => {
      */
     app.route('/estados/:estadoId')
         .get([
-            tokensMiddleware([TIPOS_USUARIOS.CURADOR, TIPOS_USUARIOS.OPERADOR, TIPOS_USUARIOS.IDENTIFICADOR]),
             controller.encontrarEstado,
         ])
         .put([

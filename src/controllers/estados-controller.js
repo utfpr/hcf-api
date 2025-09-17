@@ -7,6 +7,7 @@ import codigos from '../resources/codigos-http';
 const {
     Estado,
     Pais,
+    Cidade,
     sequelize,
     Sequelize,
 } = models;
@@ -27,7 +28,7 @@ export const cadastrarEstado = (req, res, next) => {
                 throw new BadRequestException(308);
             }
         })
-        .then(() => Estado.create({ nome, sigla, codigoTelefone, pais_id: paisId, }, { transaction }));
+        .then(() => Estado.create({ nome, sigla, codigoTelefone, pais_id: paisId }, { transaction }));
 
     return sequelize.transaction(callback)
         .then(estadoCriado => {
@@ -95,8 +96,6 @@ export const desativarEstado = async (req, res, next) => {
             return res.status(404).json({ mensagem: 'Estado não encontrado.' });
         }
 
-        // Verifica cidades associadas
-        const { Cidade } = models;
         const cidadesAssociadas = await Cidade.count({ where: { estado_id: estadoId } });
 
         if (cidadesAssociadas > 0) {

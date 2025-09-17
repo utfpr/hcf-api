@@ -1,9 +1,96 @@
+import pick from '~/helpers/pick';
 import models from '../models';
 import verifyRecaptcha from '../utils/verify-recaptcha';
+import codigos from '../resources/codigos-http';
 
 const { Op } = require('sequelize');
 
-const { Cidade, LocalColeta, Tombo, Reino, Familia, Subfamilia, Genero, Especie, Subespecie, Variedade } = models;
+const { Cidade, LocalColeta, Tombo, Reino, Familia, Subfamilia, Genero, Especie, Subespecie, Variedade,sequelize } = models;
+
+export const cadastrarCidade = (req, res, next) => {
+    const { nome, estado_id: estadoId, latitude, longitude } = req.body;
+
+    const callback = transaction => Promise.resolve()
+        .then(() => Cidade.findOne({
+            where: {
+                nome,
+                 estado_id: estadoId,
+            },
+            transaction,
+        }))
+        .then(cidadeEncontrada => {
+            if (cidadeEncontrada) {
+                throw new BadRequestException(402); // Cidade já existe
+            }
+        })
+        .then(() => Cidade.create({ nome,  estado_id: estadoId, latitude, longitude }, { transaction }));
+
+    return sequelize.transaction(callback)
+        .then(cidadeCriada => {
+            if (!cidadeCriada) throw new BadRequestException(403);
+            return res.status(codigos.CADASTRO_RETORNO).json(cidadeCriada);
+        })
+        .catch(next);
+};
+
+export const atualizarCidade = async (req, res, next) => {
+    try {
+        const { cidadeId } = req.params;
+        const dados = pick(req.body, ['nome', 'estado_id', 'latitude', 'longitude']);
+
+        const [updated] = await Cidade.update(dados, { where: { id: cidadeId } });
+        if (updated === 0) {
+            return res.status(404).json({ mensagem: 'Cidade não encontrada.' });
+        }
+
+        const cidadeAtualizada = await Cidade.findOne({ where: { id: cidadeId } });
+        return res.status(codigos.EDITAR_RETORNO).json(cidadeAtualizada);
+    } catch (error) {
+        return next(error);
+    }
+};
+
+export const desativarCidade = async (req, res, next) => {
+    try {
+        const { cidadeId } = req.params;
+        const cidade = await Cidade.findOne({ where: { id: cidadeId } });
+
+        if (!cidade) {
+            return res.status(404).json({ mensagem: 'Cidade não encontrada.' });
+        }
+        
+        const locaisAssociados = await LocalColeta.count({ where: { cidade_id: cidadeId } });
+
+        if (locaisAssociados > 0) {
+            return res.status(400).json({
+                mensagem: `Não é possível excluir a cidade. Existem ${locaisAssociados} local(is) de coleta associado(s) a esta cidade.`,
+            });
+        }
+
+        await Cidade.destroy({ where: { id: cidadeId } });
+        return res.status(204).send();
+    } catch (error) {
+        return next(error);
+    }
+};
+
+export const encontrarCidade = async (req, res, next) => {
+    try {
+        const { cidadeId } = req.params;
+
+        const cidade = await Cidade.findOne({
+            where: { id: cidadeId },
+        });
+
+        if (!cidade) {
+            return res.status(404).json({ mensagem: 'Cidade não encontrada.' });
+        }
+
+        return res.status(codigos.BUSCAR_UM_ITEM).json(cidade);
+    } catch (error) {
+        return next(error);
+    }
+};
 
 export const listaTodosCidades = where =>
     Cidade.findAndCountAll({
