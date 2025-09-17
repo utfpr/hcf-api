@@ -68,7 +68,7 @@ tfoot {
   margin-top: 0.625rem;
 }
 
-#grupoComBorda {
+.grupoComBorda {
   border: 1px solid #808080;
   padding: 2px; 
   margin-bottom: 10px;
@@ -77,46 +77,47 @@ tfoot {
   page-break-after: always;
 }
 
-#nomeGrupoContainer {
-  display: flex; 
+.nomeGrupoContainer {
   align-items: center; 
   justify-content: left; 
   background-color: #D3D3D3; 
-  padding: 5px; 
   border-radius: 5px;
+  width: 100%;
 }
 
-#nomeGrupo {
+.nomeGrupo {
   margin: 0; 
-  padding: 0; 
+  padding: 5px 10px; 
   font-weight: 500;
+  width: 100%;
+  font-size: 14px;
 }
 
-#tabelaComBordaSimples {
+.tabelaComBordaSimples {
   border-bottom: 2px solid #E4E4E4;
 }
 
-#col1 {
+.col1 {
   width: 30%;
   font-size: 14px;
 }
 
-#col2 {
+.col2 {
   width: 70%;
   font-size: 14px;
 }
 
-#grupoLocalColeta {
+.grupoLocalColeta {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-#grupoLocalColeta div {
+.grupoLocalColeta div {
   width: calc(33%); /* 33% menos 2.5rem de espaçamento das margens */
 }
 
-#grupoLocalColeta div h1 {
+.grupoLocalColeta div h1 {
   white-space: nowrap;         /* impede quebra de linha */
   overflow: hidden;            /* esconde o que ultrapassa */
   text-overflow: ellipsis;  
