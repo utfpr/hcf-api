@@ -6,7 +6,7 @@ import fichaTomboController from '../controllers/fichas-tombos-controller';
 import {
     getDadosCadTombo, getNumeroTombo, cadastro, listagem,
     desativar, obterTombo, cadastrarTipo, buscarTipos, cadastrarColetores, buscarColetores,
-    buscarProximoNumeroColetor, alteracao, getNumeroColetor, getUltimoNumeroTombo, getCodigoBarraTombo,
+    alteracao, getNumeroColetor, getUltimoNumeroTombo, getCodigoBarraTombo,
     editarCodigoBarra, getUltimoNumeroCodigoBarras, postCodigoBarraTombo,
     getUltimoCodigoBarra, deletarCodigoBarras,
 } from '../controllers/tombos-controller';
@@ -914,37 +914,6 @@ export default app => {
         ])
         .get([
             buscarColetores,
-        ]);
-
-    /**
-     * @swagger
-     * /numero-coletores:
-     *   get:
-     *     summary: Obtém o próximo número de coletor
-     *     tags: [Tombos]
-     *     responses:
-     *       200:
-     *         description: Próximo número retornado com sucesso
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 numero:
-     *                   type: integer
-     *       '401':
-     *         $ref: '#/components/responses/Unauthorized'
-     *       '403':
-     *         $ref: '#/components/responses/Forbidden'
-     *       '500':
-     *         $ref: '#/components/responses/InternalServerError'
-     */
-    app.route('/numero-coletores')
-        .get([
-            tokensMiddleware([
-                TIPOS_USUARIOS.CURADOR, TIPOS_USUARIOS.OPERADOR,
-            ]),
-            buscarProximoNumeroColetor,
         ]);
 
     /**
