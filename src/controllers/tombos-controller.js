@@ -293,7 +293,7 @@ export const cadastro = (request, response, next) => {
                     cor: principal.cor,
                     coletor_id: coletor,
                     data_tombo: parseDataTombo(principal.data_tombo),
-                };  
+                };
 
                 if (paisagem?.descricao) {
                     jsonTombo.descricao = paisagem.descricao;
@@ -495,7 +495,7 @@ function alteracaoCuradorouOperador(request, response, transaction) {
     if (cor !== undefined) update.cor = cor;
 
     const dataTombo = body?.principal?.data_tombo;
-    if(dataTombo !== undefined) update.data_tombo = parseDataTombo(dataTombo);
+    if (dataTombo !== undefined) update.data_tombo = parseDataTombo(dataTombo);
 
     const familiaId = body?.taxonomia?.familia_id;
     if (familiaId !== undefined) update.familia_id = familiaId;
@@ -556,9 +556,9 @@ function alteracaoCuradorouOperador(request, response, transaction) {
     if (dataIdentificacao?.dia !== undefined) update.data_identificacao_dia = dataIdentificacao.dia;
     if (dataIdentificacao?.mes !== undefined) update.data_identificacao_mes = dataIdentificacao.mes;
     if (dataIdentificacao?.ano !== undefined) update.data_identificacao_ano = dataIdentificacao.ano;
-    if(dataIdentificacao === null) { 
-        update.data_identificacao_dia = null; 
-        update.data_identificacao_mes = null; 
+    if (dataIdentificacao === null) {
+        update.data_identificacao_dia = null;
+        update.data_identificacao_mes = null;
         update.data_identificacao_ano = null;
     }
 
