@@ -1,10 +1,8 @@
-import listagensMiddleware from '../middlewares/listagens-middleware';
 import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middleware';
 import validacoesMiddleware from '../middlewares/validacoes-middleware';
 import atualizarEstadoEsquema from '../validators/estado-atualiza';
 import cadastrarEstadoEsquema from '../validators/estado-cadastro';
 import desativarEstadoEsquema from '../validators/estado-desativa';
-import listagemEstadoEsquema from '../validators/estado-listagem';
 
 const controller = require('../controllers/estados-controller');
 

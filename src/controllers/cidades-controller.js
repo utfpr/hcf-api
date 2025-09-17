@@ -1,11 +1,13 @@
 import pick from '~/helpers/pick';
+
+import BadRequestException from '../errors/bad-request-exception';
 import models from '../models';
-import verifyRecaptcha from '../utils/verify-recaptcha';
 import codigos from '../resources/codigos-http';
+import verifyRecaptcha from '../utils/verify-recaptcha';
 
 const { Op } = require('sequelize');
 
-const { Cidade, LocalColeta, Tombo, Reino, Familia, Subfamilia, Genero, Especie, Subespecie, Variedade,sequelize } = models;
+const { Cidade, LocalColeta, Tombo, Reino, Familia, Subfamilia, Genero, Especie, Subespecie, Variedade, sequelize } = models;
 
 export const cadastrarCidade = (req, res, next) => {
     const { nome, estado_id: estadoId, latitude, longitude } = req.body;
@@ -14,7 +16,7 @@ export const cadastrarCidade = (req, res, next) => {
         .then(() => Cidade.findOne({
             where: {
                 nome,
-                 estado_id: estadoId,
+                estado_id: estadoId,
             },
             transaction,
         }))
@@ -23,7 +25,7 @@ export const cadastrarCidade = (req, res, next) => {
                 throw new BadRequestException(402); // Cidade já existe
             }
         })
-        .then(() => Cidade.create({ nome,  estado_id: estadoId, latitude, longitude }, { transaction }));
+        .then(() => Cidade.create({ nome, estado_id: estadoId, latitude, longitude }, { transaction }));
 
     return sequelize.transaction(callback)
         .then(cidadeCriada => {
@@ -58,7 +60,7 @@ export const desativarCidade = async (req, res, next) => {
         if (!cidade) {
             return res.status(404).json({ mensagem: 'Cidade não encontrada.' });
         }
-        
+
         const locaisAssociados = await LocalColeta.count({ where: { cidade_id: cidadeId } });
 
         if (locaisAssociados > 0) {
