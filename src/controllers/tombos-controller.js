@@ -909,7 +909,6 @@ export const cadastrarColetores = (request, response, next) => {
             where: {
                 nome: request.body.nome,
                 email: request.body.email,
-                numero: request.body.numero,
             },
             transaction,
         }))
@@ -921,7 +920,6 @@ export const cadastrarColetores = (request, response, next) => {
         .then(() => Coletor.create({
             nome: request.body.nome,
             email: request.body.email,
-            numero: request.body.numero,
         }, transaction));
     sequelize.transaction(callback)
         .then(coletor => {
@@ -962,23 +960,6 @@ export const buscarColetores = (request, response, next) => {
                 throw new BadRequestExeption(415);
             }
             response.status(codigos.LISTAGEM).json(coletores.rows);
-        })
-        .catch(next);
-};
-
-export const buscarProximoNumeroColetor = (request, response, next) => {
-    Promise.resolve()
-        .then(() => Coletor.findAndCountAll({
-            attributes: ['id', 'nome', 'email', 'numero'],
-            order: [['numero', 'DESC']],
-        }))
-        .then(coletores => {
-            if (!coletores) {
-                throw new BadRequestExeption(214);
-            }
-            response.status(codigos.LISTAGEM).json({
-                numero: coletores.rows[0].numero + 1,
-            });
         })
         .catch(next);
 };
