@@ -5,7 +5,32 @@ import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middlewa
 
 const controller = require('../controllers/uploads-controller');
 
-const uploadMiddleware = multer({ dest: upload });
+// File upload validation
+const fileFilter = (req, file, cb) => {
+    // Allowed image MIME types
+    const allowedMimes = [
+        'image/jpeg',
+        'image/jpg',
+        'image/png',
+        'image/gif',
+        'image/webp',
+    ];
+
+    if (allowedMimes.includes(file.mimetype)) {
+        cb(null, true);
+    } else {
+        cb(new Error('Tipo de arquivo não permitido. Apenas imagens são aceitas.'), false);
+    }
+};
+
+const uploadMiddleware = multer({
+    dest: upload,
+    fileFilter,
+    limits: {
+        fileSize: 10 * 1024 * 1024, // 10MB limit
+        files: 1, // Only one file per request
+    },
+});
 
 /**
  * @swagger

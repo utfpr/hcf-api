@@ -22,6 +22,9 @@
     "paths": {
       "~/*": [
         "./src/*"
+      ],
+      "@core/*": [
+        "./src/core/*"
       ]
     },
     "typeRoots": [
