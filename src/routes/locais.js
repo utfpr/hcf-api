@@ -1,9 +1,10 @@
+import listagensMiddleware from '~/middlewares/listagens-middleware';
+
 import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middleware';
 import validacoesMiddleware from '../middlewares/validacoes-middleware';
 import localColetaCadastroEsquema from '../validators/localColeta-cadastro';
 import localColetaListagemEsquema from '../validators/localColeta-listagem';
 import nomeEsquema from '../validators/nome-obrigatorio';
-import listagensMiddleware from '~/middlewares/listagens-middleware';
 
 const controller = require('../controllers/locais-coleta-controller');
 

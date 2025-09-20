@@ -20,16 +20,16 @@ function InventarioEspecies({ dados }: InventarioEspeciesProps) {
   return (
     <Page title="Relatório de Inventário de Espécies">
       {dados.map((grupo) => (
-        <div key={grupo.familia} id="grupoComBorda">
-          <div id="nomeGrupoContainer">
-            <h1 id="nomeGrupo"><b>Família: </b>{grupo.familia}</h1>
-          </div>
+        <div key={grupo.familia} className="grupoComBorda">
 
           <table>
             <thead>
-              <tr id="tabelaComBordaSimples">
-                <th id="col1">Espécie</th>
-                <th id="col2">Tombos relacionados</th>
+              <tr className="nomeGrupoContainer">
+                <th className="nomeGrupo" colSpan={2}><b>Família: </b>{grupo.familia}</th>
+              </tr>
+              <tr className="tabelaComBordaSimples">
+                <th className="col1">Espécie</th>
+                <th className="col2">Tombos relacionados</th>
               </tr>
             </thead>
             <tbody>

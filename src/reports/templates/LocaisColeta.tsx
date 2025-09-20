@@ -97,7 +97,7 @@ function RelacaoLocaisColeta({ dados, total, textoFiltro }: RelacaoLocaisColetaP
   const renderItem = (item: LocaisColeta) => {
     return (
       <div>
-        <div key={item.local} id="grupoLocalColeta">
+        <div key={item.local} className="grupoLocalColeta">
           <div>
             <h1>UF.: {item.estadoSigla}</h1>
           </div>
