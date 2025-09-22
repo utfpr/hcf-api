@@ -1,4 +1,4 @@
-export default (data) => {
+export default data => {
     if (typeof data !== 'string') {
         return false;
     }
@@ -15,6 +15,5 @@ export default (data) => {
     if (mes < 1 || mes > 12) return false;
     if (dia < 1 || dia > 31) return false;
 
-
     return true;
-}
+};

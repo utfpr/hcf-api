@@ -6,14 +6,6 @@ const { Coletor, Sequelize: { Op } } = models;
 
 export const cadastraColetor = async (req, res, next) => {
     try {
-        if (req.body.numero) {
-            const validaNumero = await Coletor.findOne({
-                where: { numero: req.body.numero },
-            });
-
-            if (validaNumero) return res.status(400).json({ mensagem: 'Número do coletor já está em uso.' });
-        }
-
         const coletor = await Coletor.create(req.body);
 
         res.status(codigos.CADASTRO_RETORNO).json(coletor);

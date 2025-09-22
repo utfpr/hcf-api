@@ -1135,7 +1135,7 @@ export const aprovarPendencia = async (alteracao, hcf, transaction) => {
         updateTombo.cor = alteracao.cor ? alteracao.cor.toUpperCase() : null;
     }
 
-    if(alteracao.data_tombo !== undefined){
+    if (alteracao.data_tombo !== undefined) {
         updateTombo.data_tombo = alteracao.data_tombo;
     }
 
@@ -1463,15 +1463,6 @@ export const aprovarPendencia = async (alteracao, hcf, transaction) => {
                 throw new BadRequestExeption(404);
             }
 
-            const numeroColeta = updateTombo.numero_coleta;
-            if (numeroColeta && coletor.numero && coletor.numero < numeroColeta) {
-                await Coletor.update({
-                    numero: numeroColeta,
-                }, {
-                    where: { id: alteracao.coletor_id },
-                    transaction,
-                });
-            }
         }
         updateTombo.coletor_id = alteracao.coletor_id;
     }
