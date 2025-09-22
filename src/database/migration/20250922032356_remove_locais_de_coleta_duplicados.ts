@@ -1,7 +1,7 @@
-import { Knex } from "knex";
+import { Knex } from 'knex'
 
 export async function run(knex: Knex): Promise<void> {
-  await knex.transaction(async (trx) => {
+  await knex.transaction(async trx => {
     // 1) Atualiza tombos -> id canônico
     await trx.raw(
       `
@@ -36,7 +36,7 @@ export async function run(knex: Knex): Promise<void> {
         ON t.local_coleta_id = f.old_id
       SET t.local_coleta_id = f.keep_id;
       `
-    );
+    )
 
     // 2) Deleta locais não canônicos
     await trx.raw(
@@ -71,6 +71,6 @@ export async function run(knex: Knex): Promise<void> {
       JOIN to_fix f
         ON lc.id = f.old_id;
       `
-    );
-  });
+    )
+  })
 }
