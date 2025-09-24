@@ -14,7 +14,9 @@ export default {
     },
     'json.principal.entidade_id': {
         in: 'body',
-        isEmpty: false,
+        optional: {
+            options: { nullable: true },
+        },
         isInt: true,
     },
     'json.principal.numero_coleta': {
