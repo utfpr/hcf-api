@@ -1,5 +1,4 @@
 import pick from '~/helpers/pick';
-
 import BadRequestException from '../errors/bad-request-exception';
 import models from '../models';
 import codigos from '../resources/codigos-http';
@@ -15,25 +14,53 @@ const {
 export const cadastrarEstado = (req, res, next) => {
     const { nome, sigla, codigo_telefone: codigoTelefone, pais_id: paisId } = req.body;
 
-    const callback = transaction => Promise.resolve()
-        .then(() => Estado.findOne({
+    const callback = async (transaction) => {
+        const estadoConflitante = await Estado.findOne({
             where: {
-                [Sequelize.Op.or]: [{ nome }, { sigla }],
                 pais_id: paisId,
+                [Sequelize.Op.or]: [
+                    { nome },
+                    { sigla },
+                    { codigo_telefone: codigoTelefone }
+                ]
             },
             transaction,
-        }))
-        .then(estadoEncontrado => {
-            if (estadoEncontrado) {
-                throw new BadRequestException(308);
-            }
-        })
-        .then(() => Estado.create({ nome, sigla, codigoTelefone, pais_id: paisId }, { transaction }));
+        });
+
+        if (estadoConflitante) {
+            let campoDuplicado = '';
+            if (estadoConflitante.nome === nome) campoDuplicado = 'nome';
+            else if (estadoConflitante.sigla === sigla) campoDuplicado = 'UF';
+            else if (estadoConflitante.codigo_telefone === codigoTelefone) campoDuplicado = 'código de telefone';
+
+            return res.status(400).json({
+                error: {
+                    code: 308,
+                    mensagem: `Já existe um estado com este ${campoDuplicado} neste país.`
+                }
+            });
+
+        }
+
+
+        const estadoCriado = await Estado.create(
+            { nome, sigla, codigo_telefone: codigoTelefone, pais_id: paisId },
+            { transaction }
+        );
+
+        return estadoCriado;
+    };
 
     return sequelize.transaction(callback)
-        .then(estadoCriado => {
+        .then(async (estadoCriado) => {
             if (!estadoCriado) throw new BadRequestException(309);
-            return res.status(codigos.CADASTRO_RETORNO).json(estadoCriado);
+            const estadoComPais = await Estado.findOne({
+                where: { id: estadoCriado.id },
+                attributes: { exclude: ['created_at', 'updated_at'] },
+                include: [{ model: Pais, as: 'pais', attributes: ['id', 'nome', 'sigla'] }]
+            });
+
+            return res.status(codigos.CADASTRO_RETORNO).json(estadoComPais);
         })
         .catch(next);
 };
@@ -43,7 +70,7 @@ export const listagem = async (req, res, next) => {
         const estados = await Estado.findAll({
             attributes: { exclude: ['created_at', 'updated_at'] },
             include: [{ model: Pais, as: 'pais', attributes: ['id', 'nome', 'sigla'] }],
-            order: [['id', 'ASC']],
+            order: [['id', 'DESC']],
         });
 
         return res.status(codigos.LISTAGEM).json(estados);
@@ -60,7 +87,7 @@ export const encontrarEstado = async (req, res, next) => {
             where: { id: estadoId },
         });
 
-        if (!estado) return res.status(404).json({ mensagem: 'Estado não encontrado.' });
+        if (!estado) return res.status(404).json({ code: 404, mensagem: 'Estado não encontrado.' });
 
         return res.status(codigos.BUSCAR_UM_ITEM).json(estado);
     } catch (error) {
@@ -71,7 +98,38 @@ export const encontrarEstado = async (req, res, next) => {
 export const atualizarEstado = async (req, res, next) => {
     try {
         const { estadoId } = req.params;
-        const dados = pick(req.body, ['nome', 'sigla', 'codigo_telefone']);
+        const dados = pick(req.body, ['nome', 'sigla', 'codigo_telefone', 'pais_id']);
+
+        const estadoAtual = await Estado.findOne({ where: { id: estadoId } });
+        if (!estadoAtual) {
+            return res.status(404).json({ mensagem: 'Estado não encontrado.' });
+        }
+
+        const estadoConflitante = await Estado.findOne({
+            where: {
+                pais_id: dados.pais_id ?? estadoAtual.pais_id,
+                id: { [Sequelize.Op.ne]: estadoId },
+                [Sequelize.Op.or]: [
+                    { nome: dados.nome },
+                    { sigla: dados.sigla },
+                    { codigo_telefone: dados.codigo_telefone }
+                ]
+            }
+        });
+
+        if (estadoConflitante) {
+            let campoDuplicado = '';
+            if (estadoConflitante.nome === dados.nome) campoDuplicado = 'nome';
+            else if (estadoConflitante.sigla === dados.sigla) campoDuplicado = 'UF';
+            else if (estadoConflitante.codigo_telefone === dados.codigo_telefone) campoDuplicado = 'código de telefone';
+
+            return res.status(400).json({
+                error: {
+                    code: 308,
+                    mensagem: `Já existe um estado com este ${campoDuplicado} neste país.`
+                }
+            });
+        }
 
         const [updated] = await Estado.update(dados, { where: { id: estadoId } });
         if (updated === 0) return res.status(404).json({ mensagem: 'Estado não encontrado.' });
@@ -79,6 +137,7 @@ export const atualizarEstado = async (req, res, next) => {
         const estadoAtualizado = await Estado.findOne({
             where: { id: estadoId },
             attributes: ['id', 'nome', 'sigla', 'codigo_telefone', 'pais_id'],
+            include: [{ model: Pais, as: 'pais', attributes: ['id', 'nome', 'sigla'] }]
         });
 
         return res.status(codigos.EDITAR_RETORNO).json(estadoAtualizado);
@@ -100,7 +159,10 @@ export const desativarEstado = async (req, res, next) => {
 
         if (cidadesAssociadas > 0) {
             return res.status(400).json({
-                mensagem: `Não é possível excluir o estado. Existem ${cidadesAssociadas} cidade(s) associada(s) a este estado.`,
+                error:{
+                    code: 400,
+                    mensagem: `Não é possível excluir o estado. Existem ${cidadesAssociadas} cidade(s) associada(s) a este estado.`,
+                }
             });
         }
 

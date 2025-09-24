@@ -12,24 +12,33 @@ const { Cidade, LocalColeta, Tombo, Reino, Familia, Subfamilia, Genero, Especie,
 export const cadastrarCidade = (req, res, next) => {
     const { nome, estado_id: estadoId, latitude, longitude } = req.body;
 
-    const callback = transaction => Promise.resolve()
-        .then(() => Cidade.findOne({
-            where: {
-                nome,
-                estado_id: estadoId,
-            },
+    const callback = async (transaction) => {
+        const cidadeEncontrada = await Cidade.findOne({
+            where: { nome, estado_id: estadoId },
             transaction,
-        }))
-        .then(cidadeEncontrada => {
-            if (cidadeEncontrada) {
-                throw new BadRequestException(402); // Cidade já existe
-            }
-        })
-        .then(() => Cidade.create({ nome, estado_id: estadoId, latitude, longitude }, { transaction }));
+        });
 
-    return sequelize.transaction(callback)
-        .then(cidadeCriada => {
-            if (!cidadeCriada) throw new BadRequestException(403);
+        if (cidadeEncontrada) {
+            return res.status(400).json({
+                error: {
+                    code: 308,
+                    mensagem: `Já existe uma cidade com esse nome cadastrada neste estado.`
+                }
+            });
+        }
+
+        const cidadeCriada = await Cidade.create(
+            { nome, estado_id: estadoId, latitude, longitude },
+            { transaction }
+        );
+
+        return cidadeCriada;
+    };
+
+    return sequelize
+        .transaction(callback)
+        .then((cidadeCriada) => {
+            if (!cidadeCriada) throw new BadRequestException(403, "Erro ao cadastrar a cidade.");
             return res.status(codigos.CADASTRO_RETORNO).json(cidadeCriada);
         })
         .catch(next);
@@ -39,18 +48,42 @@ export const atualizarCidade = async (req, res, next) => {
     try {
         const { cidadeId } = req.params;
         const dados = pick(req.body, ['nome', 'estado_id', 'latitude', 'longitude']);
-
-        const [updated] = await Cidade.update(dados, { where: { id: cidadeId } });
-        if (updated === 0) {
-            return res.status(404).json({ mensagem: 'Cidade não encontrada.' });
+        const cidadeAtual = await Cidade.findOne({ where: { id: cidadeId } });
+        if (!cidadeAtual) {
+            return res.status(404).json({
+                error: {
+                    code: 404,
+                    mensagem: 'Cidade não encontrada.'
+                }
+            });
         }
+        const cidadeConflitante = await Cidade.findOne({
+            where: {
+                nome: dados.nome,
+                estado_id: dados.estado_id ?? cidadeAtual.estado_id,
+                id: { [Op.ne]: cidadeId }
+            }
+        });
+        if (cidadeConflitante) {
+            return res.status(400).json({
+                error: {
+                    code: 308,
+                    mensagem: `Já existe uma cidade com esse nome cadastrada neste estado.`
+                }
+            });
+        }
+        await Cidade.update(dados, { where: { id: cidadeId } });
+        const cidadeAtualizada = await Cidade.findOne({
+            where: { id: cidadeId },
+            attributes: ['id', 'nome', 'estado_id', 'latitude', 'longitude']
+        });
 
-        const cidadeAtualizada = await Cidade.findOne({ where: { id: cidadeId } });
         return res.status(codigos.EDITAR_RETORNO).json(cidadeAtualizada);
     } catch (error) {
         return next(error);
     }
 };
+
 
 export const desativarCidade = async (req, res, next) => {
     try {
@@ -65,7 +98,10 @@ export const desativarCidade = async (req, res, next) => {
 
         if (locaisAssociados > 0) {
             return res.status(400).json({
-                mensagem: `Não é possível excluir a cidade. Existem ${locaisAssociados} local(is) de coleta associado(s) a esta cidade.`,
+                error: {
+                    code: 400,
+                    mensagem: `Não é possível excluir a cidade. Existem ${locaisAssociados} local(is) de coleta associado(s) a esta cidade.`,
+                }
             });
         }
 
@@ -94,12 +130,19 @@ export const encontrarCidade = async (req, res, next) => {
     }
 };
 
-export const listaTodosCidades = where =>
+export const listaTodosCidades = (where) =>
     Cidade.findAndCountAll({
         attributes: {
             exclude: ['updated_at', 'created_at'],
         },
         where,
+        include: [
+            {
+                model: models.Estado,
+                as: 'estado',
+                attributes: ['id', 'nome', 'sigla', 'codigo_telefone', 'pais_id'],
+            },
+        ],
     });
 
 export const listagem = (request, response, next) => {
@@ -110,9 +153,10 @@ export const listagem = (request, response, next) => {
             estado_id: request.query.id,
         };
     }
+
     Promise.resolve()
         .then(() => listaTodosCidades(where))
-        .then(cidades => {
+        .then((cidades) => {
             response.status(200).json(cidades.rows);
         })
         .catch(next);
