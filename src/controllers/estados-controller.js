@@ -1,4 +1,5 @@
 import pick from '~/helpers/pick';
+
 import BadRequestException from '../errors/bad-request-exception';
 import models from '../models';
 import codigos from '../resources/codigos-http';
@@ -14,15 +15,15 @@ const {
 export const cadastrarEstado = (req, res, next) => {
     const { nome, sigla, codigo_telefone: codigoTelefone, pais_id: paisId } = req.body;
 
-    const callback = async (transaction) => {
+    const callback = async transaction => {
         const estadoConflitante = await Estado.findOne({
             where: {
                 pais_id: paisId,
                 [Sequelize.Op.or]: [
                     { nome },
                     { sigla },
-                    { codigo_telefone: codigoTelefone }
-                ]
+                    { codigo_telefone: codigoTelefone },
+                ],
             },
             transaction,
         });
@@ -36,12 +37,11 @@ export const cadastrarEstado = (req, res, next) => {
             return res.status(400).json({
                 error: {
                     code: 308,
-                    mensagem: `Já existe um estado com este ${campoDuplicado} neste país.`
-                }
+                    mensagem: `Já existe um estado com este ${campoDuplicado} neste país.`,
+                },
             });
 
         }
-
 
         const estadoCriado = await Estado.create(
             { nome, sigla, codigo_telefone: codigoTelefone, pais_id: paisId },
@@ -52,12 +52,12 @@ export const cadastrarEstado = (req, res, next) => {
     };
 
     return sequelize.transaction(callback)
-        .then(async (estadoCriado) => {
+        .then(async estadoCriado => {
             if (!estadoCriado) throw new BadRequestException(309);
             const estadoComPais = await Estado.findOne({
                 where: { id: estadoCriado.id },
                 attributes: { exclude: ['created_at', 'updated_at'] },
-                include: [{ model: Pais, as: 'pais', attributes: ['id', 'nome', 'sigla'] }]
+                include: [{ model: Pais, as: 'pais', attributes: ['id', 'nome', 'sigla'] }],
             });
 
             return res.status(codigos.CADASTRO_RETORNO).json(estadoComPais);
@@ -112,9 +112,9 @@ export const atualizarEstado = async (req, res, next) => {
                 [Sequelize.Op.or]: [
                     { nome: dados.nome },
                     { sigla: dados.sigla },
-                    { codigo_telefone: dados.codigo_telefone }
-                ]
-            }
+                    { codigo_telefone: dados.codigo_telefone },
+                ],
+            },
         });
 
         if (estadoConflitante) {
@@ -126,8 +126,8 @@ export const atualizarEstado = async (req, res, next) => {
             return res.status(400).json({
                 error: {
                     code: 308,
-                    mensagem: `Já existe um estado com este ${campoDuplicado} neste país.`
-                }
+                    mensagem: `Já existe um estado com este ${campoDuplicado} neste país.`,
+                },
             });
         }
 
@@ -137,7 +137,7 @@ export const atualizarEstado = async (req, res, next) => {
         const estadoAtualizado = await Estado.findOne({
             where: { id: estadoId },
             attributes: ['id', 'nome', 'sigla', 'codigo_telefone', 'pais_id'],
-            include: [{ model: Pais, as: 'pais', attributes: ['id', 'nome', 'sigla'] }]
+            include: [{ model: Pais, as: 'pais', attributes: ['id', 'nome', 'sigla'] }],
         });
 
         return res.status(codigos.EDITAR_RETORNO).json(estadoAtualizado);
@@ -159,10 +159,10 @@ export const desativarEstado = async (req, res, next) => {
 
         if (cidadesAssociadas > 0) {
             return res.status(400).json({
-                error:{
+                error: {
                     code: 400,
                     mensagem: `Não é possível excluir o estado. Existem ${cidadesAssociadas} cidade(s) associada(s) a este estado.`,
-                }
+                },
             });
         }
 
