@@ -251,20 +251,26 @@
                   </div>
                 </div>
 
-                <div>
-                  <b class="fs-14">nº:</b> <%- tombo.numero_coleta %>
-                </div>
+                <div class="flex flex-col gap-1">
+                  <div class="flex center-between w-full">
+                    <div>
+                      <b class="fs-14">nº:</b> <%- tombo.numero_coleta %>
+                    </div>
+    
+                    <div>
+                      <b class="fs-14">Data:</b> <%- romano_data_coleta %>
+                    </div>
+                  </div>
 
-                <div>
-                  <b class="fs-14">Data:</b> <%- romano_data_coleta %>
+                  <div class="linha-vazia"></div>
+
+                  <% if (!!fotos[i]['id'] && imprimir !== '0') { %>
+                    <div class="flex center-end">
+                      <svg id="<%- 'code128_' + fotos[i]['id'] %>"></svg>
+                    </div>
+                  <% } %>
                 </div>
               </div>
-
-              <% if (!!fotos[i]['id'] && imprimir !== '0') { %>
-                <div class="flex center-end">
-                  <svg id="<%- 'code128_' + fotos[i]['id'] %>"></svg>
-                </div>
-              <% } %>
              </div>
           </div>
           <% if (!!fotos[i]['id'] && imprimir !== '0') { %>
