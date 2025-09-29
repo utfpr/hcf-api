@@ -154,6 +154,9 @@
               <% if (familia && familia.nome) { %>
                 <div>
                   <b class="fs-14">Família: </b> <%- tombo.familia.nome %>
+                  <% if (tombo && tombo.sub_familia) { %>
+                    - <%- subfamilia.nome %>
+                <% } %>
                 </div>
               <% } %>
 

@@ -14,6 +14,7 @@ const {
     Coletor,
     Familia,
     Especie,
+    Subfamilia,
 
     Subespecie,
     Variedade,
@@ -96,6 +97,9 @@ export default function fichaTomboController(request, response, next) {
                         model: Autor,
                         as: 'autor',
                     },
+                },
+                {
+                    model: Subfamilia,
                 },
                 {
                     model: Variedade,
@@ -214,8 +218,21 @@ export default function fichaTomboController(request, response, next) {
                     return { ...resultado, fotos };
                 });
         })
-        .then(resultado => {
+        .then(async resultado => {
             const { tombo, identificacao, fotos } = resultado;
+
+            // await Subfamilia.findAll({
+            //     where: {
+            //         familia_id: dadosTombo.familia?.id,
+            //     },
+            //     include: [
+            //         {
+            //             model: Autor,
+            //             attributes: ['id', 'nome'],
+            //             as: 'autor',
+            //         },
+            //     ],
+            // });
 
             // eslint-disable-next-line max-len
             const coletores = `${!!tombo?.coletore?.nome !== false ? tombo?.coletore?.nome?.concat(' ') : ''}${tombo?.coletor_complementar ? tombo.coletor_complementar?.complementares : ''}`;
@@ -261,6 +278,7 @@ export default function fichaTomboController(request, response, next) {
                 especie: tombo.especie,
                 variedade: tombo.variedade,
                 subespecie: tombo.sub_especy,
+                subfamilia: tombo.sub_familia,
 
                 relevo: tombo?.relevo?.nome || '',
                 vegetacao: tombo?.vegetaco?.nome || '',
@@ -293,6 +311,8 @@ export default function fichaTomboController(request, response, next) {
                 numero_copias: qtd || 1,
                 codigo_barras_selecionado: code,
             };
+
+            // console.log(parametros);
 
             const caminhoArquivoHtml = path.resolve(__dirname, '../views/ficha-tombo.ejs');
             return renderizaArquivoHtml(caminhoArquivoHtml, parametros, response)
