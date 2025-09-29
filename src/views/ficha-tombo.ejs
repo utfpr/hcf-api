@@ -1,153 +1,209 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+<%# Nesse arquivo, há a criação da ficha tombo, que é exibida quando se %>
+<%# deseja imprimir dados de um tombo específico, por exemplo. %>
 
-<head>
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Ficha Tombo</title>
     <style>
-        @page {
-          margin: 0;
-        }
+      @page {
+        margin: 0;
+      }
 
-        html,
-        body {
-          font-size: 12px;
-          font-family: Arial, Helvetica, sans-serif;
-          padding-top: 8px;
-          padding-left: 8px;
-        }
+      html, body {
+        font-size: 12px;
+        font-family: Arial, Helvetica, sans-serif;
+        padding-top: 8px;
+        padding-left: 8px;
+      }
 
-        body {
-          max-width: 80%;
-        }
+      body {
+        max-width: 80%;
+      }
 
-        .break-line-before {
-          page-break-before: always;
-          page-break-inside: avoid;
-        }
+      .pad-padrao {
+        padding: 2px 8px;
+      }
 
-        .text-center {
-          text-align: center;
-        }
+      .pad-topbottom {
+        padding: 20px 8px;
+      }
 
-        .text-right {
-          text-align: right;
-        }
+      .w-full {
+        width: 100%;
+      }
 
-        .tabela-principal {
-          border-collapse: collapse;
-          border: 1px solid #333;
-          width: 14cm;
-          min-height: 9cm;
-          margin-bottom: 5px;
-        }
+      .ficha {
+        border-collapse: collapse;
+        border: 1px solid #000;
+        width: 14cm;
+        min-height: 7cm;
+        margin-bottom: 5px;
+      }
 
-        .tabela-principal td {
-          padding: 2px 8px;
-        }
+      .flex {
+        display: flex;
+      }
 
-        .tabela-principal tr:first-child > td:first-child {
-          border-right: 1px solid #333;
-        }
+      .border-right {
+        border-right: 1px solid #000;
+      }
 
-        .tabela-principal .linha-vazia {
-          height: 5px;
-        }
+      .border-bottom {
+        border-bottom: 1px solid #000;
+      }
 
-        .tabela-principal .celular-imagem {
-          border-right: 1px solid #333;
-          border-bottom: 1px solid #333;
-        }
+      .cabecalho-img {
+        width: 100px;
+      }
 
-        .border-bottom {
-          border-bottom: 1px solid #333;
-        }
-      </style>
-</head>
+      .cabecalho-info {
+        flex: 1;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+      }
 
-<body>
-    <% if ( imprimir === '0') { %>
+      .center-between {
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .fs-14 {
+        font-size: 14px;
+      }
+
+      .flex-col {
+        flex-direction: column;
+      }
+
+      .gap-1 {
+        gap: 0.25rem;
+      }
+
+      .linha-vazia {
+        height: 5px;
+      }
+
+      .items-center {
+        align-items: center;
+      }
+
+      .items-start {
+        align-items: flex-start;
+      }
+
+      .start-between {
+        align-items: flex-start;
+        justify-content: space-between;
+      }
+
+      .center-end {
+        align-items: center;
+        justify-content: flex-end;
+      }
+
+      .ml-1 {
+        margin-left: 0.25rem;
+      }
+
+      .ml-2 {
+        margin-left: 0.5rem;
+      }
+
+      .limited-div-50 {
+        max-width: 7cm;
+      }
+
+      .limited-code-div {
+        min-width: 5cm;
+      }
+    </style>
+    <body>
+      <% if ( imprimir === '0') { %>
         <% fotos.length = 1%>
-    <% } %>
-    <% const copias = parseInt(numero_copias || 1); %>
-    <% let fichaIndex = 0; %>
-    <% for (let i = 0; i < fotos.length; i++) { 
-      for (let j = 0; j < copias; j++) { %>
-    <% if (fichaIndex !== 0 && fichaIndex % 3 === 0) { %>
-      
-    <% } %>
-    <table class="tabela-principal">
-        <tr>
-            <td rowspan="2" width="100" class="celular-imagem text-center">
+      <% } %>
+
+      <% const copias = parseInt(numero_copias || 1); %>
+      <% let fichaIndex = 0; %>
+
+      <% for (let i = 0; i < fotos.length; i++) { %>
+        <% for (let j = 0; j < copias; j++) { %>
+          <div class="ficha">
+            <!-- Cabeçalho da ficha -->
+            <div class="flex">
+              <div class="cabecalho-img pad-padrao border-right border-bottom">
                 <img width="100" src="/assets/logotipo_HCF.png" alt="Logo UTFPR">
-                <div style="font-size: .5em;"><b>CAMPUS CAMPO MOURÃO</b></div>
-            </td>
-            <td colspan="3" class="text-center">
-                <b style="font-size: 14px;">Herbário da Universidade Tecnológica Federal do Paraná - <br/>Campus Campo Mourão</b>
-            </td>
-        </tr>
-        <tr class="border-bottom">
-            <td colspan="2" style="border: none;">
-                <b style="font-size: 14px;">HCF <%- tombo.hcf %></b>
-            </td>
-            <td colspan="2" style="font-size: 14px;">
-                <div style="display: flex;"><b>Data:</b> <%- romano_data_tombo %></div>
-            </td>
-        </tr>
-        <% if (familia && familia.nome) { %>
-        <tr>
-            <td colspan="4">
-                <b style="font-size: 14px;">Família: </b> <%- tombo.familia.nome %>
-            </td>
-        </tr>
-        <% } %>
-        <tr>
-            <td colspan="4">
-                <b style="font-size: 14px;">Espécie:</b>
+              </div>
+              <div class="cabecalho-info pad-topbottom border-bottom">
+                <b class="fs-14">Herbário da Universidade Tecnológica Federal do Paraná - <br/>Campus Campo Mourão</b>
+              
+                <div class="flex center-between w-full">
+                  <b class="fs-14">HCF <%- tombo.hcf %></b>
+
+                  <div class="flex fs-14">
+                    <b>Data:</b> <%- romano_data_tombo %>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Corpo da ficha -->
+             <div class="flex flex-col pad-padrao gap-1">
+              <% if (familia && familia.nome) { %>
+                <div>
+                  <b class="fs-14">Família: </b> <%- tombo.familia.nome %>
+                  <% if (tombo && tombo.sub_familia) { %>
+                    - <%- subfamilia.nome %>
+                <% } %>
+                </div>
+              <% } %>
+
+              <div>
+                <b class="fs-14">Espécie:</b>
                 <% if (genero && genero.nome) { %>
                     <i><%- genero.nome %></i>
                 <% } %>
                 <% if (especie && especie.nome) { %>
                     <i><%- especie.nome %></i>
                 <% } %>
-                <% if (especie && especie.autore) { %>
-                    <%- especie.autore.nome %>
+                <% if (especie && especie.autor) { %>
+                    <%- especie.autor.nome %>
                 <% } %>
                 <% if (variedade && variedade.nome) { %>
-                    var. <i><%- variedade.nome %></i>
+                  <text class="ml-2">var. </text><i><%- variedade.nome %></i>
                 <% } %>
-                <% if (variedade && variedade.autore) { %>
-                    <%- variedade.autore.nome %>
+                <% if (variedade && variedade.autor) { %>
+                    <%- variedade.autor.nome %>
                 <% } %>
                 <% if (subespecie && subespecie.nome) { %>
-                    ssp. <i><%- subespecie.nome %></i>
+                  <text class="ml-2">subsp. </text><i><%- subespecie.nome %></i>
                 <% } %>
-                <% if (subespecie && subespecie.autore) { %>
-                    <%- subespecie.autore.nome %>
+                <% if (subespecie && subespecie.autor) { %>
+                    <%- subespecie.autor.nome %>
                 <% } %>
-            </td>
-        </tr>
-        <tr>
-            <td colspan="4" class="linha-vazia"></td>
-        </tr>
-        <tr>
-            <td colspan="4">
-                <b style="font-size: 14px;">Nome Vulgar:</b> <%- tombo.nomes_populares %>
-            </td>
-        </tr>
-        <tr>
-          <td colspan="3">
-              <b style="font-size: 14px;">Identificador:</b> <%- identificador %>
-          </td>
-          <td>
-            <b style="font-size: 14px;">Data:</b> <%- romano_data_identificacao %>
-          </td>
-        </tr>
-        <tr>
-            <td colspan="4">
-                <b style="font-size: 14px;">Local de coleta:</b>
+              </div>
+
+              <div class="linha-vazia"></div>
+
+              <div>
+                <b class="fs-14">Nome Vulgar:</b> <%- tombo.nomes_populares %>
+              </div>
+              <div class="flex center-between">
+                <div>
+                  <b class="fs-14">Identificador:</b> <%- identificador %>
+                </div>
+                <div>
+                  <b class="fs-14">Data:</b> <%- romano_data_identificacao %>
+                </div>
+              </div>
+              <div>
+                <b class="fs-14">Local de Coleta:</b>
                 <% if (localColeta && localColeta.complemento) { %>
                     <%- localColeta.complemento %>
                 <% } %>
@@ -163,14 +219,12 @@
                 <% if (cidade && cidade.estado && cidade.estado.pais) { %>
                     - <%- cidade.estado.pais.nome %>
                 <% } %>
-            </td>
-        </tr>
-        <tr>
-            <td colspan="4" class="linha-vazia"></td>
-        </tr>
-        <tr>
-            <td colspan="4">
-                <b style="font-size: 14px;">Observações:</b> 
+              </div>
+
+              <div class="linha-vazia"></div>
+
+              <div>
+                <b class="fs-14">Observações:</b>
                 <% if (tombo && tombo.descricao) { %>
                     <%- tombo.descricao %>
                 <% } %>
@@ -195,60 +249,63 @@
                 <% if (localColeta && localColeta.fase_sucessional) { %>
                     - Fase sucessional: <%- localColeta.fase_sucessional.nome %>
                 <% } %>
-            </td>
-        </tr>
-        <tr>
-            <td colspan="4" class="linha-vazia"></td>
-        </tr>
-        <tr>
-            <td colspan="4" class="linha-vazia"></td>
-        </tr>
-        <tr>
-            <td colspan="2">
-              <div style="display: flex; gap: 5px;">
-                <b style="font-size: 14px;"><%- tombo.coletores.length == 1 ? 'Coletor' : 'Coletores' %>:</b>
-                <div>
-                  <%- tombo.coletores %>
+              </div>
+
+              <div class="linha-vazia"></div>
+              <div class="linha-vazia"></div>
+
+              <div class="flex start-between">
+                <div class="flex items-start">
+                  <b class="fs-14"><%- tombo.coletores.length == 1 ? 'Coletor' : 'Coletores' %>:</b>
+                  <div class="ml-1 limited-div-50">
+                    <%- tombo.coletores %>
+                  </div>
+                </div>
+
+                <div class="flex flex-col gap-1 limited-code-div">
+                  <div class="flex center-between w-full">
+                    <div>
+                      <b class="fs-14">nº:</b> <%- tombo.numero_coleta %>
+                    </div>
+    
+                    <div>
+                      <b class="fs-14">Data:</b> <%- romano_data_coleta %>
+                    </div>
+                  </div>
+
+                  <div class="linha-vazia"></div>
+
+                  <% if (!!fotos[i]['id'] && imprimir !== '0') { %>
+                    <div class="flex center-end">
+                      <svg id="<%- 'code128_' + fotos[i]['id'] %>"></svg>
+                    </div>
+                  <% } %>
                 </div>
               </div>
-            </td>
-            <td width="19%" class="text-right" style="text-align:right; vertical-align:top;">
-                <b>nº:</b> <%- tombo.numero_coleta %>
-            </td>
-            <td width="21%" class="text-right" style="text-align:right; vertical-align:top;">
-                <b>Data:</b> <%- romano_data_coleta %>
-            </td>
-        </tr>
-        <% if (!!fotos[i]['id'] && imprimir !== '0') { %>
-        <tr>
-            <td colspan="4" class="text-right">
-                <svg id="<%- 'code128_' + fotos[i]['id'] %>"></svg>
-            </td>
-        </tr>
+             </div>
+          </div>
+          <% if (!!fotos[i]['id'] && imprimir !== '0') { %>
+            <script>
+              window.addEventListener('load', () => {
+                const id = "<%- '#code128_' + fotos[i]['id'] %>";
+                const cbarra = "<%- codigo_barras_selecionado %>";
+                JsBarcode(id, cbarra, { margin: 0, width: 1.4, height: 40, fontSize: 10 });
+              });
+            </script>
+          <% } %>
+          <% fichaIndex++; %>
         <% } %>
-    </table>
-    <% if (!!fotos[i]['id'] && imprimir !== '0') { %>
-    <script>
-        window.addEventListener('load', () => {
-            const id = "<%- '#code128_' + fotos[i]['id'] %>";
-            const cbarra = "<%- codigo_barras_selecionado %>";
-            JsBarcode(id, cbarra, { margin: 0, width: 1.4, height: 40, fontSize: 10 });
-        });
-    </script>
-    <% } %>
-    <% fichaIndex++; %>
-    <% } %>
-    <% } %>
-    <script src="/assets/js/jsbarcode.code128.min.js"></script>
-    <script>
+      <% } %>
+      <script src="/assets/js/jsbarcode.code128.min.js"></script>
+      <script>
         function onPageLoaded() {
-            if (!/standalone/.test(window.location.href)) {
-                window.print();
-            }
+          if (!/standalone/.test(window.location.href)) {
+            window.print();
+          }
         }
 
         window.addEventListener('load', onPageLoaded);
-    </script>
-</body>
-
+      </script>
+    </body>
+  </head>
 </html>
