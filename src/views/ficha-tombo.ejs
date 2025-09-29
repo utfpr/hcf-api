@@ -172,8 +172,8 @@
                 <% if (especie && especie.nome) { %>
                     <i><%- especie.nome %></i>
                 <% } %>
-                <% if (especie && especie.autore) { %>
-                    <%- especie.autore.nome %>
+                <% if (especie && especie.autor) { %>
+                    <%- especie.autor.nome %>
                 <% } %>
                 <% if (variedade && variedade.nome) { %>
                   <text class="ml-2">var. </text><i><%- variedade.nome %></i>
@@ -182,10 +182,10 @@
                     <%- variedade.autor.nome %>
                 <% } %>
                 <% if (subespecie && subespecie.nome) { %>
-                    subsp. <i><%- subespecie.nome %></i>
+                  <text class="ml-2">subsp. </text><i><%- subespecie.nome %></i>
                 <% } %>
-                <% if (subespecie && subespecie.autore) { %>
-                    <%- subespecie.autore.nome %>
+                <% if (subespecie && subespecie.autor) { %>
+                    <%- subespecie.autor.nome %>
                 <% } %>
               </div>
 
