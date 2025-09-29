@@ -40,7 +40,7 @@
         border-collapse: collapse;
         border: 1px solid #000;
         width: 14cm;
-        min-height: 9cm;
+        min-height: 7cm;
         margin-bottom: 5px;
       }
 
@@ -112,6 +112,10 @@
         margin-left: 0.25rem;
       }
 
+      .ml-2 {
+        margin-left: 0.5rem;
+      }
+
       .limited-div-50 {
         max-width: 7cm;
       }
@@ -172,10 +176,10 @@
                     <%- especie.autore.nome %>
                 <% } %>
                 <% if (variedade && variedade.nome) { %>
-                    var. <i><%- variedade.nome %></i>
+                  <text class="ml-2">var. </text><i><%- variedade.nome %></i>
                 <% } %>
-                <% if (variedade && variedade.autore) { %>
-                    <%- variedade.autore.nome %>
+                <% if (variedade && variedade.autor) { %>
+                    <%- variedade.autor.nome %>
                 <% } %>
                 <% if (subespecie && subespecie.nome) { %>
                     subsp. <i><%- subespecie.nome %></i>
