@@ -87,7 +87,7 @@
       }
 
       .linha-vazia {
-        height: 5px;
+        height: 1.5px;
       }
 
       .items-center {
@@ -157,10 +157,13 @@
              <div class="flex flex-col pad-padrao gap-1">
               <% if (familia && familia.nome) { %>
                 <div>
-                  <b class="fs-14">Família: </b> <%- tombo.familia.nome %>
+                  <b class="fs-14">Família: </b> 
+                  <% if (familia && familia.nome.toLowerCase() !== 'indeterminada') { %>
+                    <%- tombo.familia.nome %>
+                  <% } %>
                   <% if (tombo && tombo.sub_familia) { %>
                     - <%- subfamilia.nome %>
-                <% } %>
+                  <% } %>
                 </div>
               <% } %>
 
@@ -251,7 +254,6 @@
                 <% } %>
               </div>
 
-              <div class="linha-vazia"></div>
               <div class="linha-vazia"></div>
 
               <div class="flex start-between">
