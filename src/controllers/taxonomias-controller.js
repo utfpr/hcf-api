@@ -649,6 +649,7 @@ export const cadastrarEspecie = (request, response, next) => {
             where: {
                 nome,
                 genero_id: generoId,
+                ativo: true,
             },
             transaction,
         }))
