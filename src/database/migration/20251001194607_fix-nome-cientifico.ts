@@ -6,7 +6,7 @@ export async function run(knex: Knex): Promise<void> {
       .select('hcf', 'genero_id', 'especie_id')
       .where('hcf', '>=', 42852)
 
-    for (const tombo of tombos) {
+    const updates = tombos.map(async (tombo) => {
       let nomeCientifico = null
 
       if (tombo.genero_id) {
@@ -31,11 +31,13 @@ export async function run(knex: Knex): Promise<void> {
         }
       }
 
-      await trx('tombos')
+      return trx('tombos')
         .where('hcf', tombo.hcf)
         .update({
           nome_cientifico: nomeCientifico
         })
-    }
+    })
+
+    await Promise.all(updates)
   })
 }
