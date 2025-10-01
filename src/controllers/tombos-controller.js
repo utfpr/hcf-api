@@ -359,7 +359,7 @@ export const cadastro = (request, response, next) => {
 
                 const dadosComplementares = coletor_complementar?.complementares || '';
 
-                const tomboData = { ...tombo.toJSON(), complementares: dadosComplementares };
+                const tomboData = { ...tombo.toJSON(), complementares: dadosComplementares, colecoes_anexas_tipo: colecoesAnexas?.tipo || null, colecoes_anexas_observacoes: colecoesAnexas?.observacoes || null };
                 
                 if (identificacao?.identificadores && identificacao.identificadores.length > 0) {
                     tomboData.identificadores = identificacao.identificadores;
