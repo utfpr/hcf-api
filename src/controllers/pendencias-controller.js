@@ -1736,6 +1736,7 @@ export async function visualizar(request, response, next) {
 
         const objetoAlterado = JSON.parse(alteracao.tombo_json);
         const parametros = {};
+        const alteracaoAprovada = alteracao.status === 'APROVADO';
 
         if (objetoAlterado.nomes_populares !== undefined) {
             parametros.nome_popular = objetoAlterado.nomes_populares;
@@ -1773,16 +1774,16 @@ export async function visualizar(request, response, next) {
             parametros.descricao = objetoAlterado.descricao;
         }
 
-        if (objetoAlterado.data_identificacao?.dia !== undefined) {
-            parametros.data_identificacao_dia = objetoAlterado.data_identificacao.dia;
+        if (objetoAlterado.data_identificacao_dia !== undefined) {
+            parametros.data_identificacao_dia = objetoAlterado.data_identificacao_dia;
         }
 
-        if (objetoAlterado.data_identificacao?.mes !== undefined) {
-            parametros.data_identificacao_mes = objetoAlterado.data_identificacao.mes;
+        if (objetoAlterado.data_identificacao_mes !== undefined) {
+            parametros.data_identificacao_mes = objetoAlterado.data_identificacao_mes;
         }
 
-        if (objetoAlterado.data_identificacao?.ano !== undefined) {
-            parametros.data_identificacao_ano = objetoAlterado.data_identificacao.ano;
+        if (objetoAlterado.data_identificacao_ano !== undefined) {
+            parametros.data_identificacao_ano = objetoAlterado.data_identificacao_ano;
         }
 
         if (objetoAlterado.colecoes_anexas_observacoes !== undefined) {
@@ -1901,6 +1902,27 @@ export async function visualizar(request, response, next) {
         const jsonRetorno = [];
         const ehRascunho = tombo?.rascunho === 1;
 
+        const converteDecimalParaDMS = (decimal, isLatitude = true) => {
+            if (decimal === null || decimal === undefined || decimal === '') {
+                return '';
+            }
+
+            const abs = Math.abs(decimal);
+            const graus = Math.floor(abs);
+            const minutosDecimal = (abs - graus) * 60;
+            const minutos = Math.floor(minutosDecimal);
+            const segundos = ((minutosDecimal - minutos) * 60).toFixed(2);
+
+            let hemisferio;
+            if (isLatitude) {
+                hemisferio = decimal >= 0 ? 'N' : 'S';
+            } else {
+                hemisferio = decimal >= 0 ? 'E' : 'W';
+            }
+
+            return `${graus}° ${minutos}' ${segundos}" ${hemisferio}`;
+        };
+
         const addRetorno = (key, campo, antigo, novo) => {
             const antigoStr = String(antigo || '').trim();
             const novoStr = String(novo || '').trim();
@@ -1908,133 +1930,138 @@ export async function visualizar(request, response, next) {
             if (antigoStr === '' && novoStr === '') {
                 return;
             }
-            
-            jsonRetorno.push({ key, campo, antigo: antigoStr, novo: novoStr });
+            if(antigoStr != novoStr){
+                jsonRetorno.push({ key, campo, antigo: antigoStr, novo: novoStr });
+            }
         };
 
         if (parametros.familia !== undefined) {
             const nomeFamilia = typeof parametros.familia === 'string' ? parametros.familia : parametros.familia?.nome || '';
-            const antigoFamilia = ehRascunho ? '' : (tombo?.familia?.nome || '');
+            const antigoFamilia = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.familia?.nome || '');
             addRetorno('1', 'Família', antigoFamilia, nomeFamilia);
         }
 
         if (parametros.subfamilia !== undefined) {
             const nomeSubfamilia = typeof parametros.subfamilia === 'string' ? parametros.subfamilia : parametros.subfamilia?.nome || '';
-            const antigoSubfamilia = ehRascunho ? '' : (tombo?.sub_familia?.nome || '');
+            const antigoSubfamilia = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.sub_familia?.nome || '');
             addRetorno('2', 'Subfamília', antigoSubfamilia, nomeSubfamilia);
         }
 
         if (parametros.genero !== undefined) {
             const nomeGenero = typeof parametros.genero === 'string' ? parametros.genero : parametros.genero?.nome || '';
-            const antigoGenero = ehRascunho ? '' : (tombo?.genero?.nome || '');
+            const antigoGenero = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.genero?.nome || '');
             addRetorno('3', 'Gênero', antigoGenero, nomeGenero);
         }
 
         if (parametros.especie !== undefined) {
             const nomeEspecie = typeof parametros.especie === 'string' ? parametros.especie : parametros.especie?.nome || '';
-            const antigoEspecie = ehRascunho ? '' : (tombo?.especy?.nome || '');
+            const antigoEspecie = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.especy?.nome || '');
             addRetorno('4', 'Espécie', antigoEspecie, nomeEspecie);
         }
 
         if (parametros.subespecie !== undefined) {
-            const antigoSubespecie = ehRascunho ? '' : (tombo?.sub_especy?.nome || '');
+            const antigoSubespecie = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.sub_especy?.nome || '');
             addRetorno('5', 'Subespécie', antigoSubespecie, parametros.subespecie?.nome || '');
         }
 
         if (parametros.variedade !== undefined) {
-            const antigoVariedade = ehRascunho ? '' : (tombo?.variedade?.nome || '');
+            const antigoVariedade = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.variedade?.nome || '');
             addRetorno('6', 'Variedade', antigoVariedade, parametros.variedade?.nome || '');
         }
 
         if (parametros.coletor !== undefined) {
-            const antigoColetor = ehRascunho ? '' : (tombo?.coletore?.nome || '');
+            const antigoColetor = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.coletore?.nome || '');
             addRetorno('7', 'Coletor', antigoColetor, parametros.coletor?.nome || '');
         }
 
         if (parametros.complementares !== undefined) {
             const complementaresAtuais = tombo?.coletor_complementar?.complementares || '';
-            const complementaresNovos = typeof parametros.complementares === 'string' ? parametros.complementares : JSON.stringify(parametros.complementares);
-            const antigoComplementares = ehRascunho ? '' : complementaresAtuais;
+            const complementaresNovos = (parametros.complementares === null) 
+                ? '' 
+                : (typeof parametros.complementares === 'string' ? parametros.complementares : JSON.stringify(parametros.complementares));
+            const antigoComplementares = (alteracaoAprovada || ehRascunho) ? '' : complementaresAtuais;
             addRetorno('8', 'Coletores complementares', antigoComplementares, complementaresNovos);
         }
 
         if (parametros.numero_coleta !== undefined) {
-            const antigoNumeroColeta = ehRascunho ? '' : (tombo?.numero_coleta || '');
+            const antigoNumeroColeta = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.numero_coleta || '');
             addRetorno('9', 'Número da coleta', antigoNumeroColeta, parametros.numero_coleta);
         }
 
         if (parametros.data_coleta_dia !== undefined) {
-            const antigoDataDia = ehRascunho ? '' : (tombo?.data_coleta_dia || '');
+            const antigoDataDia = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.data_coleta_dia || '');
             addRetorno('10', 'Data de coleta dia', antigoDataDia, parametros.data_coleta_dia);
         }
 
         if (parametros.data_coleta_mes !== undefined) {
-            const antigoDataMes = ehRascunho ? '' : (tombo?.data_coleta_mes || '');
+            const antigoDataMes = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.data_coleta_mes || '');
             addRetorno('11', 'Data de coleta mês', antigoDataMes, parametros.data_coleta_mes);
         }
 
         if (parametros.data_coleta_ano !== undefined) {
-            const antigoDataAno = ehRascunho ? '' : (tombo?.data_coleta_ano || '');
+            const antigoDataAno = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.data_coleta_ano || '');
             addRetorno('12', 'Data de coleta ano', antigoDataAno, parametros.data_coleta_ano);
         }
 
         if (parametros.cor !== undefined) {
-            const antigoCor = ehRascunho ? '' : (tombo?.cor || '');
+            const antigoCor = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.cor || '');
             addRetorno('13', 'Localidade cor', antigoCor, parametros.cor);
         }
 
         if (parametros.nome_popular !== undefined) {
-            const antigoNomePopular = ehRascunho ? '' : (tombo?.nomes_populares || '');
+            const antigoNomePopular = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.nomes_populares || '');
             addRetorno('14', 'Nome popular', antigoNomePopular, parametros.nome_popular);
         }
 
         if (parametros.entidade !== undefined) {
-            const antigoHerbario = ehRascunho ? '' : (tombo?.herbario?.nome || '');
+            const antigoHerbario = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.herbario?.nome || '');
             addRetorno('15', 'Herbário', antigoHerbario, parametros.entidade?.nome || '');
         }
 
         if (parametros.tipo !== undefined) {
-            const antigoTipo = ehRascunho ? '' : (tombo?.tipo?.nome || '');
+            const antigoTipo = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.tipo?.nome || '');
             addRetorno('16', 'Tipo', antigoTipo, parametros.tipo?.nome || '');
         }
 
         if (parametros.latitude !== undefined) {
-            const antigoLatitude = ehRascunho ? '' : (tombo?.latitude || '');
-            addRetorno('17', 'Latitude', antigoLatitude, parametros.latitude);
+            const antigoLatitude = (alteracaoAprovada || ehRascunho) ? '' : converteDecimalParaDMS(tombo?.latitude, true);
+            const novoLatitude = converteDecimalParaDMS(parametros.latitude, true);
+            addRetorno('17', 'Latitude', antigoLatitude, novoLatitude);
         }
 
         if (parametros.longitude !== undefined) {
-            const antigoLongitude = ehRascunho ? '' : (tombo?.longitude || '');
-            addRetorno('18', 'Longitude', antigoLongitude, parametros.longitude);
+            const antigoLongitude = (alteracaoAprovada || ehRascunho) ? '' : converteDecimalParaDMS(tombo?.longitude, false);
+            const novoLongitude = converteDecimalParaDMS(parametros.longitude, false);
+            addRetorno('18', 'Longitude', antigoLongitude, novoLongitude);
         }
 
         if (parametros.altitude !== undefined) {
-            const antigoAltitude = ehRascunho ? '' : (tombo?.altitude || '');
+            const antigoAltitude = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.altitude || '');
             addRetorno('19', 'Altitude', antigoAltitude, parametros.altitude);
         }
 
         if (parametros.localColeta !== undefined) {
-            const antigoLocalColeta = ehRascunho ? '' : (tombo?.locais_coletum?.descricao || '');
+            const antigoLocalColeta = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.locais_coletum?.descricao || '');
             addRetorno('20', 'Local de Coleta', antigoLocalColeta, parametros.localColeta?.descricao || '');
         }
 
         if (parametros.descricao !== undefined) {
-            const antigoDescricao = ehRascunho ? '' : (tombo?.descricao || '');
+            const antigoDescricao = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.descricao || '');
             addRetorno('21', 'Descrição do relevo', antigoDescricao, parametros.descricao);
         }
 
         if (parametros.solo !== undefined) {
-            const antigoSolo = ehRascunho ? '' : (tombo?.solo?.nome || '');
+            const antigoSolo = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.solo?.nome || '');
             addRetorno('22', 'Solo', antigoSolo, parametros.solo?.nome || '');
         }
 
         if (parametros.relevo !== undefined) {
-            const antigoRelevo = ehRascunho ? '' : (tombo?.relevo?.nome || '');
+            const antigoRelevo = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.relevo?.nome || '');
             addRetorno('23', 'Relevo', antigoRelevo, parametros.relevo?.nome || '');
         }
 
         if (parametros.vegetacao !== undefined) {
-            const antigoVegetacao = ehRascunho ? '' : (tombo?.vegetaco?.nome || '');
+            const antigoVegetacao = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.vegetaco?.nome || '');
             addRetorno('24', 'Vegetação', antigoVegetacao, parametros.vegetacao?.nome || '');
         }
 
@@ -2050,43 +2077,43 @@ export async function visualizar(request, response, next) {
 
             const nomesNovos = parametros.identificadores.map(ident => ident.nome).join(', ');
             const nomesAntigos = identificadoresAtuais.map(ident => ident.identificadore?.nome || '').join(', ');
-            const antigoIdentificadores = ehRascunho ? '' : nomesAntigos;
+            const antigoIdentificadores = (alteracaoAprovada || ehRascunho) ? '' : nomesAntigos;
 
             addRetorno('25', 'Identificadores', antigoIdentificadores, nomesNovos);
         }
 
         if (parametros.data_identificacao_dia !== undefined) {
-            const antigoDataIdentDia = ehRascunho ? '' : (tombo?.data_identificacao_dia || '');
+            const antigoDataIdentDia = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.data_identificacao_dia || '');
             addRetorno('26', 'Data de identificação dia', antigoDataIdentDia, parametros.data_identificacao_dia);
         }
 
         if (parametros.data_identificacao_mes !== undefined) {
-            const antigoDataIdentMes = ehRascunho ? '' : (tombo?.data_identificacao_mes || '');
+            const antigoDataIdentMes = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.data_identificacao_mes || '');
             addRetorno('27', 'Data de identificação mês', antigoDataIdentMes, parametros.data_identificacao_mes);
         }
 
         if (parametros.data_identificacao_ano !== undefined) {
-            const antigoDataIdentAno = ehRascunho ? '' : (tombo?.data_identificacao_ano || '');
+            const antigoDataIdentAno = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.data_identificacao_ano || '');
             addRetorno('28', 'Data de identificação ano', antigoDataIdentAno, parametros.data_identificacao_ano);
         }
 
         if (objetoAlterado.colecoes_anexas_tipo !== undefined) {
-            const antigoTipoColecao = ehRascunho ? '' : (tombo?.colecoes_anexa?.tipo || '');
+            const antigoTipoColecao = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.colecoes_anexa?.tipo || '');
             addRetorno('29', 'Tipo - Coleção Anexa', antigoTipoColecao, objetoAlterado.colecoes_anexas_tipo);
         }
 
         if (parametros.colecoes_anexas_observacoes !== undefined) {
-            const antigoObsColecao = ehRascunho ? '' : (tombo?.colecoes_anexa?.observacoes || '');
+            const antigoObsColecao = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.colecoes_anexa?.observacoes || '');
             addRetorno('30', 'Observações - Coleção Anexa', antigoObsColecao, parametros.colecoes_anexas_observacoes);
         }
 
         if (parametros.observacoes !== undefined) {
-            const antigoObservacoes = ehRascunho ? '' : (tombo?.observacao || '');
+            const antigoObservacoes = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.observacao || '');
             addRetorno('31', 'Observações', antigoObservacoes, parametros.observacoes);
         }
 
         if (parametros.unicata !== undefined) {
-            const unicataAntigo = ehRascunho ? '' : (tombo?.unicata ? 'Unicata' : 'Duplicata');
+            const unicataAntigo = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.unicata ? 'Unicata' : 'Duplicata');
             const unicataNovo = parametros.unicata ? 'Unicata' : 'Duplicata';
             addRetorno('32', 'Tipo de Exsicata', unicataAntigo, unicataNovo);
         }
