@@ -218,18 +218,30 @@ export default app => {
      *             properties:
      *               nome:
      *                 type: string
+     *                 minLength: 1
      *               email:
      *                 type: string
+     *                 format: email
+     *                 minLength: 1
      *               senha:
      *                 type: string
+     *                 minLength: 1
+     *               tipo_usuario_id:
+     *                 type: integer
+     *               herbario_id:
+     *                 type: integer
      *             required:
      *               - nome
      *               - email
      *               - senha
+     *               - tipo_usuario_id
+     *               - herbario_id
      *           example:
      *             nome: "Novo Usuário"
      *             email: "novo@email.com"
      *             senha: "senha123"
+     *             tipo_usuario_id: 2
+     *             herbario_id: 1
      *     responses:
      *       201:
      *         description: Usuário cadastrado com sucesso
