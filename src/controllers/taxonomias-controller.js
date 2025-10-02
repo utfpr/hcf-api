@@ -815,8 +815,8 @@ export const editarEspecie = (request, response, next) => {
             }
         })
         .then(() => {
-            if (!autorId) {
-                return undefined;
+            if (autorId === null) {
+                return null;
             }
             const where = {
                 ativo: true,
@@ -828,7 +828,7 @@ export const editarEspecie = (request, response, next) => {
             });
         })
         .then(autor => {
-            if (autorId) {
+            if (autorId !== null) {
                 if (!autor) {
                     throw new BadRequestExeption(532);
                 }
@@ -1032,8 +1032,8 @@ export const editarSubespecie = (request, response, next) => {
             }
         })
         .then(() => {
-            if (!autorId) {
-                return undefined;
+            if (autorId === null) {
+                return null;
             }
             const where = {
                 ativo: true,
@@ -1045,7 +1045,7 @@ export const editarSubespecie = (request, response, next) => {
             });
         })
         .then(autor => {
-            if (autorId) {
+            if (autorId !== null) {
                 if (!autor) {
                     throw new BadRequestExeption(532);
                 }
@@ -1242,8 +1242,8 @@ export const editarVariedade = (request, response, next) => {
 
     const callback = transaction => Promise.resolve()
         .then(() => {
-            if (!autorId) {
-                return undefined;
+            if (autorId === null) {
+                return null;
             }
             const where = {
                 ativo: true,
@@ -1255,7 +1255,7 @@ export const editarVariedade = (request, response, next) => {
             });
         })
         .then(autor => {
-            if (autorId) {
+            if (autorId !== null) {
                 if (!autor) {
                     throw new BadRequestExeption(532);
                 }
