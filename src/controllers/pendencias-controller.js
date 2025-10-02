@@ -1930,7 +1930,7 @@ export async function visualizar(request, response, next) {
             if (antigoStr === '' && novoStr === '') {
                 return;
             }
-            if(antigoStr != novoStr){
+            if (antigoStr !== novoStr) {
                 jsonRetorno.push({ key, campo, antigo: antigoStr, novo: novoStr });
             }
         };
@@ -1976,9 +1976,7 @@ export async function visualizar(request, response, next) {
 
         if (parametros.complementares !== undefined) {
             const complementaresAtuais = tombo?.coletor_complementar?.complementares || '';
-            const complementaresNovos = (parametros.complementares === null) 
-                ? '' 
-                : (typeof parametros.complementares === 'string' ? parametros.complementares : JSON.stringify(parametros.complementares));
+            const complementaresNovos = parametros.complementares === null ? '' : parametros.complementares;
             const antigoComplementares = (alteracaoAprovada || ehRascunho) ? '' : complementaresAtuais;
             addRetorno('8', 'Coletores complementares', antigoComplementares, complementaresNovos);
         }
@@ -2113,7 +2111,13 @@ export async function visualizar(request, response, next) {
         }
 
         if (parametros.unicata !== undefined) {
-            const unicataAntigo = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.unicata ? 'Unicata' : 'Duplicata');
+            let unicataAntigo;
+            if (alteracaoAprovada || ehRascunho) {
+                unicataAntigo = '';
+            } else {
+                unicataAntigo = tombo?.unicata ? 'Unicata' : 'Duplicata';
+            }
+            
             const unicataNovo = parametros.unicata ? 'Unicata' : 'Duplicata';
             addRetorno('32', 'Tipo de Exsicata', unicataAntigo, unicataNovo);
         }
