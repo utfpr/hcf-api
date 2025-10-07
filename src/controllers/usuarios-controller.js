@@ -216,19 +216,6 @@ export const desativar = (request, response, next) => {
             return usuario;
         })
         .then(() => {
-            const { Tombo } = models;
-            return Tombo.count({
-                where: {
-                    usuario_id: usuarioId,
-                },
-            });
-        })
-        .then(tombosCount => {
-            if (tombosCount > 0) {
-                throw new BadRequestExeption(`Não é possível excluir o usuário. Existem ${tombosCount} tombo(s) associado(s) a este usuário.`);
-            }
-        })
-        .then(() => {
             const { Alteracao } = models;
             return Alteracao.count({
                 where: {
@@ -238,7 +225,7 @@ export const desativar = (request, response, next) => {
         })
         .then(alteracoesCount => {
             if (alteracoesCount > 0) {
-                throw new BadRequestExeption(`Não é possível excluir o usuário. Existem ${alteracoesCount} alteração(ões)/pendência(s) associada(s) a este usuário.`);
+                throw new BadRequestExeption(`Usuário não pode ser excluído porque possui dependentes.`);
             }
         })
         .then(() => {
