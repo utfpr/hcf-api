@@ -290,7 +290,7 @@ export const cadastro = (request, response, next) => {
                     data_coleta_ano: principal.data_coleta.ano,
                     numero_coleta: principal.numero_coleta,
                     local_coleta_id: localidade.local_coleta_id,
-                    cor: principal.cor,
+                    cor: principal.cor || null,
                     coletor_id: coletor,
                     data_tombo: parseDataTombo(principal.data_tombo),
                 };
@@ -357,18 +357,20 @@ export const cadastro = (request, response, next) => {
                     status = 'APROVADO';
                 }
 
-                const dadosComplementares = coletor_complementar?.complementares
-                    ? {
-                        hcf: tombo.hcf,
-                        complementares: coletor_complementar.complementares,
-                    }
-                    : {};
+                const dadosComplementares = coletor_complementar?.complementares || '';
+
+                const tomboData = { ...tombo.toJSON(), complementares: dadosComplementares, colecoes_anexas_tipo: colecoesAnexas?.tipo || null, colecoes_anexas_observacoes: colecoesAnexas?.observacoes || null };
+                
+                if (identificacao?.identificadores && identificacao.identificadores.length > 0) {
+                    tomboData.identificadores = identificacao.identificadores;
+                }
 
                 const dados = {
                     tombo_hcf: tombo.hcf,
                     usuario_id: request.usuario.id,
                     status,
-                    tombo_json: JSON.stringify({ ...tombo.toJSON(), complementares: dadosComplementares }),
+                    tombo_json: JSON.stringify(tomboData),
+                    ativo: true,
                     identificacao: 0,
                 };
                 tomboCriado = tombo;
