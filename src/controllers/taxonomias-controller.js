@@ -15,7 +15,6 @@ export const cadastrarFamilia = (request, response, next) => {
         .then(() => Familia.findOne({
             where: {
                 nome,
-                ativo: 1,
             },
             transaction,
         }))
@@ -146,7 +145,7 @@ export const buscarFamilias = async (request, response, next) => {
         const { orderClause } = request.ordenacao;
         const { familia, reino_id: reinoId } = request.query;
 
-        const where = { ativo: 1 };
+        const where = {};
         if (familia) where.nome = { [Op.like]: `%${familia}%` };
         if (reinoId) where.reino_id = reinoId;
 
@@ -177,7 +176,6 @@ export const editarFamilia = (request, response, next) => {
         .then(() => Familia.findOne({
             where: {
                 id,
-                ativo: 1,
             },
             transaction,
         }))
@@ -212,7 +210,6 @@ export const excluirFamilia = (request, response, next) => {
                 Familia.findOne({
                     where: {
                         id,
-                        ativo: 1,
                     },
                     transaction,
                 })
@@ -307,7 +304,7 @@ export const buscarSubfamilia = async (req, res, next) => {
             familia_nome: familiaNomeFiltro,
         } = req.query;
 
-        const where = { ativo: 1 };
+        const where = {};
         if (nomeFiltro) {
             where.nome = { [Op.like]: `%${nomeFiltro}%` };
         }
@@ -357,7 +354,6 @@ export const excluirSubfamilia = (request, response, next) => {
                 Subfamilia.findOne({
                     where: {
                         id,
-                        ativo: 1,
                     },
                     transaction,
                 })
@@ -488,7 +484,7 @@ export const buscarGeneros = async (request, response, next) => {
         const { orderClause } = request.ordenacao;
         const { genero, familia_id: familiaId, familia_nome: familiaNome } = request.query;
 
-        const where = { ativo: 1 };
+        const where = {};
         if (genero) where.nome = { [Op.like]: `%${genero}%` };
         if (familiaId) where.familia_id = familiaId;
 
@@ -525,7 +521,6 @@ export const excluirGeneros = (request, response, next) => {
                 Genero.findOne({
                     where: {
                         id,
-                        ativo: 1,
                     },
                     transaction,
                 })
@@ -615,7 +610,6 @@ export const cadastrarEspecie = (request, response, next) => {
                 return undefined;
             }
             const where = {
-                ativo: true,
                 id: autorId,
             };
             return Autor.findOne({
@@ -634,7 +628,6 @@ export const cadastrarEspecie = (request, response, next) => {
             where: {
                 nome,
                 genero_id: generoId,
-                ativo: true,
             },
             transaction,
         }))
@@ -688,7 +681,7 @@ export const buscarEspecies = async (request, response, next) => {
             genero_nome: generoNome,
         } = request.query;
 
-        const where = { ativo: 1 };
+        const where = {};
         if (especie) where.nome = { [Op.like]: `%${especie}%` };
         if (generoId) where.genero_id = generoId;
 
@@ -730,7 +723,6 @@ export const excluirEspecies = (request, response, next) => {
                 Especie.findOne({
                     where: {
                         id,
-                        ativo: 1,
                     },
                     transaction,
                 })
@@ -801,7 +793,6 @@ export const editarEspecie = (request, response, next) => {
                 return null;
             }
             const where = {
-                ativo: true,
                 id: autorId,
             };
             return Autor.findOne({
@@ -841,7 +832,6 @@ export const cadastrarSubespecie = (request, response, next) => {
                 return undefined;
             }
             const where = {
-                ativo: true,
                 id: autorId,
             };
             return Autor.findOne({
@@ -913,7 +903,7 @@ export const buscarSubespecies = async (request, response, next) => {
             especie_nome: especieNome,
         } = request.query;
 
-        const where = { ativo: 1 };
+        const where = {};
         if (subespecie) where.nome = { [Op.like]: `%${subespecie}%` };
         if (especieId) where.especie_id = especieId;
 
@@ -959,7 +949,6 @@ export const excluirSubespecies = (request, response, next) => {
                 Subespecie.findOne({
                     where: {
                         id,
-                        ativo: 1,
                     },
                     transaction,
                 })
@@ -1015,7 +1004,6 @@ export const editarSubespecie = (request, response, next) => {
                 return null;
             }
             const where = {
-                ativo: true,
                 id: autorId,
             };
             return Autor.findOne({
@@ -1074,7 +1062,6 @@ export const cadastrarVariedade = (request, response, next) => {
                 return undefined;
             }
             const where = {
-                ativo: true,
                 id: autorId,
             };
             return Autor.findOne({
@@ -1149,7 +1136,7 @@ export const buscarVariedades = async (request, response, next) => {
             especie_nome: especieNome,
         } = request.query;
 
-        const where = { ativo: 1 };
+        const where = {};
         if (variedade) where.nome = { [Op.like]: `%${variedade}%` };
         if (especieId) where.especie_id = especieId;
 
@@ -1193,7 +1180,6 @@ export const excluirVariedades = (request, response, next) => {
         .then(() => Variedade.findOne({
             where: {
                 id,
-                ativo: 1,
             },
             transaction,
         }))
@@ -1233,7 +1219,6 @@ export const editarVariedade = (request, response, next) => {
                 return null;
             }
             const where = {
-                ativo: true,
                 id: autorId,
             };
             return Autor.findOne({
@@ -1330,7 +1315,7 @@ export const buscarAutores = async (request, response, next) => {
         const { autor } = request.query;
         const { orderClause } = request.ordenacao;
 
-        const where = { ativo: 1 };
+        const where = {};
         if (autor) where.nome = { [Op.like]: `%${autor}%` };
 
         const result = await Autor.findAndCountAll({
@@ -1360,7 +1345,6 @@ export const excluirAutores = (request, response, next) => {
                 Autor.findOne({
                     where: {
                         id,
-                        ativo: 1,
                     },
                     transaction,
                 })

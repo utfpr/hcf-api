@@ -608,7 +608,6 @@ export const visualizarComCadastro = (alteracao, transaction) => {
                 hcf: {
                     [Op.in]: [alteracao.tombo_hcf, parametros.numero_tombo_alteracao],
                 },
-                ativo: true,
             },
             include: [
                 {
@@ -1024,7 +1023,6 @@ export const visualizarAlteracaoOperador = (json, alteracao, transaction) => {
         Tombo.findAll({
             where: {
                 hcf: alteracao.tombo_hcf,
-                ativo: true,
             },
             include: [
                 {
@@ -1102,7 +1100,7 @@ export const aprovarPendencia = async (alteracao, hcf, transaction) => {
     }
 
     const tomboAtual = await Tombo.findOne({
-        where: { hcf, ativo: true },
+        where: { hcf },
         transaction,
         raw: true,
         nest: true,
@@ -1771,7 +1769,7 @@ export async function visualizar(request, response, next) {
         if (objetoAlterado.sub_especie_id) parametros.subespecie = await Subespecie.findOne({ where: { id: objetoAlterado.sub_especie_id }, raw: true, nest: true });
 
         const tombo = await Tombo.findOne({
-            where: { hcf: alteracao.dataValues.tombo_hcf, ativo: true },
+            where: { hcf: alteracao.dataValues.tombo_hcf },
             include: [
                 { model: Variedade }, { model: Especie }, { model: Familia },
                 { model: Subfamilia }, { model: Genero }, { model: Subespecie },
