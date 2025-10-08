@@ -1235,7 +1235,6 @@ export const aprovarPendencia = async (alteracao, hcf, transaction) => {
             if (!familia) {
                 throw new BadRequestExeption(404);
             }
-            nomesCientificosPartes.push(familia.nome);
         }
 
         updateTombo.familia_id = alteracao.familia_id;
@@ -1264,7 +1263,6 @@ export const aprovarPendencia = async (alteracao, hcf, transaction) => {
             if (!subfamilia) {
                 throw new BadRequestExeption(404);
             }
-            nomesCientificosPartes.push(subfamilia.nome);
         }
 
         updateTombo.sub_familia_id = alteracao.sub_familia_id;
@@ -1345,7 +1343,6 @@ export const aprovarPendencia = async (alteracao, hcf, transaction) => {
             if (!subespecie) {
                 throw new BadRequestExeption(404);
             }
-            nomesCientificosPartes.push(subespecie.nome);
         }
 
         updateTombo.sub_especie_id = alteracao.sub_especie_id;
@@ -1370,7 +1367,6 @@ export const aprovarPendencia = async (alteracao, hcf, transaction) => {
             if (!variedade) {
                 throw new BadRequestExeption(404);
             }
-            nomesCientificosPartes.push(variedade.nome);
         }
 
         updateTombo.variedade_id = alteracao.variedade_id;
@@ -1378,7 +1374,7 @@ export const aprovarPendencia = async (alteracao, hcf, transaction) => {
 
     if (nomesCientificosPartes.length > 0) {
         updateTombo.nome_cientifico = nomesCientificosPartes.join(' ');
-    } else if (Object.keys(updateTombo).some(key => key.includes('familia_id') || key.includes('genero_id') || key.includes('especie_id') || key.includes('sub_especie_id') || key.includes('variedade_id'))) {
+    } else if (Object.keys(updateTombo).some(key => key.includes('genero_id') || key.includes('especie_id'))) {
         updateTombo.nome_cientifico = null;
     }
 

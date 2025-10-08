@@ -173,7 +173,6 @@ export const cadastro = (request, response, next) => {
                     if (!familia) {
                         throw new BadRequestExeption(402);
                     }
-                    taxonomia.nome_cientifico = familia.nome;
                 }
                 return undefined;
             })
@@ -194,7 +193,6 @@ export const cadastro = (request, response, next) => {
                     if (!subfamilia) {
                         throw new BadRequestExeption(403);
                     }
-                    taxonomia.nome_cientifico += ` ${subfamilia.nome}`;
                 }
                 return undefined;
             })
@@ -215,7 +213,7 @@ export const cadastro = (request, response, next) => {
                     if (!genero) {
                         throw new BadRequestExeption(404);
                     }
-                    taxonomia.nome_cientifico += ` ${genero.nome}`;
+                    taxonomia.nome_cientifico = genero.nome;
                 }
                 return undefined;
             })
@@ -257,7 +255,6 @@ export const cadastro = (request, response, next) => {
                     if (!subespecie) {
                         throw new BadRequestExeption(406);
                     }
-                    taxonomia.nome_cientifico += ` ${subespecie.nome}`;
                 }
                 return undefined;
             })
@@ -278,7 +275,6 @@ export const cadastro = (request, response, next) => {
                     if (!variedade) {
                         throw new BadRequestExeption(407);
                     }
-                    taxonomia.nome_cientifico += ` ${variedade.nome}`;
                 }
                 return undefined;
             })
