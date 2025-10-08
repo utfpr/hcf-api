@@ -57,7 +57,6 @@ export function converteRequisicaoParaTombo(requisicao) {
         data_identificacao_mes: dataIdentificacao.mes,
         data_identificacao_ano: dataIdentificacao.ano,
 
-        cor: principal.cor,
         tipo: {
             id: principal.tipo_id,
         },
