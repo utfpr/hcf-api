@@ -173,7 +173,6 @@ export const cadastro = (request, response, next) => {
                     if (!familia) {
                         throw new BadRequestExeption(402);
                     }
-                    taxonomia.nome_cientifico = familia.nome;
                 }
                 return undefined;
             })
@@ -194,7 +193,6 @@ export const cadastro = (request, response, next) => {
                     if (!subfamilia) {
                         throw new BadRequestExeption(403);
                     }
-                    taxonomia.nome_cientifico += ` ${subfamilia.nome}`;
                 }
                 return undefined;
             })
@@ -215,7 +213,7 @@ export const cadastro = (request, response, next) => {
                     if (!genero) {
                         throw new BadRequestExeption(404);
                     }
-                    taxonomia.nome_cientifico += ` ${genero.nome}`;
+                    taxonomia.nome_cientifico = genero.nome;
                 }
                 return undefined;
             })
@@ -257,7 +255,6 @@ export const cadastro = (request, response, next) => {
                     if (!subespecie) {
                         throw new BadRequestExeption(406);
                     }
-                    taxonomia.nome_cientifico += ` ${subespecie.nome}`;
                 }
                 return undefined;
             })
@@ -278,7 +275,6 @@ export const cadastro = (request, response, next) => {
                     if (!variedade) {
                         throw new BadRequestExeption(407);
                     }
-                    taxonomia.nome_cientifico += ` ${variedade.nome}`;
                 }
                 return undefined;
             })
@@ -290,7 +286,7 @@ export const cadastro = (request, response, next) => {
                     data_coleta_ano: principal.data_coleta.ano,
                     numero_coleta: principal.numero_coleta,
                     local_coleta_id: localidade.local_coleta_id,
-                    cor: principal.cor,
+                    cor: principal.cor || null,
                     coletor_id: coletor,
                     data_tombo: parseDataTombo(principal.data_tombo),
                 };
@@ -357,18 +353,19 @@ export const cadastro = (request, response, next) => {
                     status = 'APROVADO';
                 }
 
-                const dadosComplementares = coletor_complementar?.complementares
-                    ? {
-                        hcf: tombo.hcf,
-                        complementares: coletor_complementar.complementares,
-                    }
-                    : {};
+                const dadosComplementares = coletor_complementar?.complementares || '';
+
+                const tomboData = { ...tombo.toJSON(), complementares: dadosComplementares, colecoes_anexas_tipo: colecoesAnexas?.tipo || null, colecoes_anexas_observacoes: colecoesAnexas?.observacoes || null };
+                
+                if (identificacao?.identificadores && identificacao.identificadores.length > 0) {
+                    tomboData.identificadores = identificacao.identificadores;
+                }
 
                 const dados = {
                     tombo_hcf: tombo.hcf,
                     usuario_id: request.usuario.id,
                     status,
-                    tombo_json: JSON.stringify({ ...tombo.toJSON(), complementares: dadosComplementares }),
+                    tombo_json: JSON.stringify(tomboData),
                     ativo: true,
                     identificacao: 0,
                 };
