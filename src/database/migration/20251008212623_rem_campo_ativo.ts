@@ -4,7 +4,7 @@ export async function run(knex: Knex): Promise<void> {
   await knex.transaction(async trx => {
     const tabelas = [
       'autores',
-      'coletores', 
+      'coletores',
       'especies',
       'familias',
       'generos',
@@ -17,14 +17,15 @@ export async function run(knex: Knex): Promise<void> {
       'variedades'
     ]
 
-    for (const tabela of tabelas) {
-      const hasColumn = await trx.schema.hasColumn(tabela, 'ativo')
-      
-      if (hasColumn) {
-        await trx.schema.alterTable(tabela, table => {
-          table.dropColumn('ativo')
-        })
-      }
-    }
+    await Promise.all(
+      tabelas.map(async tabela => {
+        const hasColumn = await trx.schema.hasColumn(tabela, 'ativo')
+        if (hasColumn) {
+          await trx.schema.alterTable(tabela, table => {
+            table.dropColumn('ativo')
+          })
+        }
+      })
+    )
   })
 }
