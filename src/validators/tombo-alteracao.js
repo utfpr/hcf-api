@@ -1,5 +1,4 @@
 import validaColecoesAnexas from './tombo-colecoes-anexas';
-import validaCor from './tombo-cor';
 import validaData from './tombo-data';
 import validaDataTombo from './tombo-data-tombo';
 
@@ -53,15 +52,6 @@ export default {
             options: { nullable: true },
         },
         isInt: true,
-    },
-    'json.principal.cor': {
-        in: 'body',
-        optional: {
-            options: { nullable: true },
-        },
-        custom: {
-            options: validaCor,
-        },
     },
     'json.taxonomia.familia_id': {
         in: 'body',

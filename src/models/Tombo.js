@@ -205,10 +205,6 @@ export default (Sequelize, DataTypes) => {
             type: DataTypes.TEXT,
             allowNull: true,
         },
-        cor: {
-            type: DataTypes.ENUM('VERMELHO', 'VERDE', 'AZUL'),
-            allowNull: true,
-        },
         rascunho: {
             type: DataTypes.BOOLEAN,
             allowNull: true,
