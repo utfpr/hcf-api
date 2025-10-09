@@ -134,27 +134,40 @@ export const cadastrarLocalColeta = async (request, response, next) => {
 
 export const buscarLocaisColeta = async (request, response, next) => {
     try {
-        const cidadeId = request.query.cidade_id;
+        const { cidade_id: cidadeId, estado_id: estadoId, pais_id: paisId } = request.query;
         const { limite, pagina, offset } = request.paginacao;
         const { getAll } = request.query;
 
         const where = {};
+        const include = [
+            { 
+                model: Cidade,
+                include: [
+                    { 
+                        model: Estado,
+                        include: [Pais],
+                    },
+                ],
+            },
+            { model: FaseSucessional },
+        ];
+
         if (cidadeId) {
             where.cidade_id = cidadeId;
+        }
+        else if (estadoId) {
+            include[0].where = { estado_id: estadoId };
+            include[0].required = true;
+        }
+        else if (paisId) {
+            include[0].include[0].where = { pais_id: paisId };
+            include[0].include[0].required = true;
+            include[0].required = true;
         }
 
         const queryOptions = {
             where,
-            include: [
-                { model: Cidade,
-                    include: [
-                        { model: Estado,
-                            include: [Pais],
-                        },
-                    ],
-                },
-                { model: FaseSucessional },
-            ],
+            include,
             order: [['id', 'DESC']],
         };
 
