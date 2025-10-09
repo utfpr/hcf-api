@@ -20,7 +20,7 @@ export const encontraColetor = async (req, res, next) => {
     try {
         const { id } = req.params;
         const coletor = await Coletor.findOne({
-            where: { id, ativo: true },
+            where: { id },
         });
 
         if (!coletor) {
@@ -41,7 +41,7 @@ export const listaColetores = async (req, res, next) => {
         const { limite, pagina } = req.paginacao;
         const offset = (pagina - 1) * limite;
 
-        const where = { ativo: true };
+        const where = {};
         if (id) {
             where.id = id;
         } else if (nome) {
@@ -74,7 +74,7 @@ export const atualizaColetor = async (req, res, next) => {
     try {
         const { id } = req.params;
         const [updated] = await Coletor.update(req.body, {
-            where: { id, ativo: true },
+            where: { id },
         });
         if (updated) {
             const updatedColetor = await Coletor.findByPk(id);
@@ -90,15 +90,30 @@ export const atualizaColetor = async (req, res, next) => {
 export const desativaColetor = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const [updated] = await Coletor.update({ ativo: false }, {
-            where: { id, ativo: true },
+        const { Tombo } = models;
+
+        const coletor = await Coletor.findOne({
+            where: { id },
         });
 
-        if (updated) {
-            res.status(codigos.DESATIVAR).send();
-        } else {
+        if (!coletor) {
             throw new BadRequestException(404, 'Coletor não encontrado');
         }
+
+        const tombosAssociados = await Tombo.count({
+            where: {
+                coletor_id: id            },
+        });
+
+        if (tombosAssociados > 0) {
+            throw new BadRequestException('Coletor não pode ser excluído porque possui dependentes.');
+        }
+
+        await Coletor.destroy({
+            where: { id },
+        });
+
+        res.status(204).send();
     } catch (error) {
         next(error);
     }

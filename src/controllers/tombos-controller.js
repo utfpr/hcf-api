@@ -617,7 +617,6 @@ export const desativar = (request, response, next) => {
     Promise.resolve()
         .then(() => {
             const where = {
-                ativo: true,
                 hcf: params.tombo_id,
             };
 
@@ -648,7 +647,6 @@ export const listagem = (request, response, next) => {
         nome_cientifico: nomeCientifico, hcf, tipo, nome_popular: nomePopular, situacao,
     } = request.query;
     let where = {
-        ativo: true,
         rascunho: 0,
     };
 
@@ -744,9 +742,6 @@ export const getDadosCadTombo = (request, response, next) => {
         })
         .then(() => Herbario.findAndCountAll({
             attributes: ['id', 'nome', 'sigla'],
-            where: {
-                ativo: true,
-            },
             order: [['nome', 'ASC']],
             transaction,
         }))
@@ -780,9 +775,6 @@ export const getDadosCadTombo = (request, response, next) => {
         .then(() => Familia.findAndCountAll({
             attributes: ['id', 'nome'],
             order: [['nome', 'ASC']],
-            where: {
-                ativo: true,
-            },
             transaction,
         }))
         .then(familias => {
@@ -838,9 +830,6 @@ export const getDadosCadTombo = (request, response, next) => {
         .then(() => Autor.findAndCountAll({
             attributes: ['id', 'nome'],
             order: [['nome', 'ASC']],
-            where: {
-                ativo: true,
-            },
             transaction,
         }))
         .then(autores => {
@@ -925,9 +914,7 @@ export const cadastrarColetores = (request, response, next) => {
 };
 
 export const buscarColetores = (request, response, next) => {
-    let where = {
-        ativo: 1,
-    };
+    let where = {};
     let limit = 10;
     const { limite, nome } = request.query;
 
@@ -971,7 +958,6 @@ export const obterTombo = async (request, response, next) => {
                 Tombo.findOne({
                     where: {
                         hcf: id,
-                        ativo: true,
                         rascunho: 0,
                     },
                     attributes: [
@@ -1407,7 +1393,6 @@ export const obterTombo = async (request, response, next) => {
                 TomboFoto.findAll({
                     where: {
                         tombo_hcf: id,
-                        ativo: 1,
                     },
                     attributes: ['id', 'caminho_foto', 'em_vivo'],
                 })

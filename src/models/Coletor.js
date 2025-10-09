@@ -26,10 +26,6 @@ export default (Sequelize, DataTypes) => {
             type: DataTypes.STRING(200),
             allowNull: true,
         },
-        ativo: {
-            type: DataTypes.BOOLEAN,
-            allowNull: true,
-        },
     };
 
     const options = {

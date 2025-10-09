@@ -15,7 +15,6 @@ export const cadastrarFamilia = (request, response, next) => {
         .then(() => Familia.findOne({
             where: {
                 nome,
-                ativo: 1,
             },
             transaction,
         }))
@@ -146,7 +145,7 @@ export const buscarFamilias = async (request, response, next) => {
         const { orderClause } = request.ordenacao;
         const { familia, reino_id: reinoId } = request.query;
 
-        const where = { ativo: 1 };
+        const where = {};
         if (familia) where.nome = { [Op.like]: `%${familia}%` };
         if (reinoId) where.reino_id = reinoId;
 
@@ -177,7 +176,6 @@ export const editarFamilia = (request, response, next) => {
         .then(() => Familia.findOne({
             where: {
                 id,
-                ativo: 1,
             },
             transaction,
         }))
@@ -212,7 +210,6 @@ export const excluirFamilia = (request, response, next) => {
                 Familia.findOne({
                     where: {
                         id,
-                        ativo: 1,
                     },
                     transaction,
                 })
@@ -225,28 +222,21 @@ export const excluirFamilia = (request, response, next) => {
             .then(() =>
                 Promise.all([
                     Genero.count({ where: { familia_id: id }, transaction }),
-                    Especie.count({ where: { familia_id: id }, transaction }),
-                    Subespecie.count({ where: { familia_id: id }, transaction }),
-                    Variedade.count({ where: { familia_id: id }, transaction }),
-                    Subfamilia.count({ where: { familia_id: id }, transaction }),
                     Tombo.count({ where: { familia_id: id }, transaction }),
                 ])
             )
-            .then(([generosCount, especiesCount, subEspeciesCount, variedadesCount, subFamiliasCount, tombosCount]) => {
-                if (generosCount > 0 || especiesCount > 0 || subEspeciesCount > 0 || variedadesCount > 0 || subFamiliasCount > 0 || tombosCount > 0) {
+            .then(([generosCount, tombosCount]) => {
+                if (generosCount > 0 || tombosCount > 0) {
                     throw new BadRequestExeption('A família não pode ser excluída porque possui dependentes.');
                 }
             })
             .then(() =>
-                Familia.update(
-                    { ativo: 0 },
-                    {
-                        where: {
-                            id,
-                        },
-                        transaction,
-                    }
-                )
+                Familia.destroy({
+                    where: {
+                        id,
+                    },
+                    transaction,
+                })
             );
 
     sequelize
@@ -314,7 +304,7 @@ export const buscarSubfamilia = async (req, res, next) => {
             familia_nome: familiaNomeFiltro,
         } = req.query;
 
-        const where = { ativo: 1 };
+        const where = {};
         if (nomeFiltro) {
             where.nome = { [Op.like]: `%${nomeFiltro}%` };
         }
@@ -364,7 +354,6 @@ export const excluirSubfamilia = (request, response, next) => {
                 Subfamilia.findOne({
                     where: {
                         id,
-                        ativo: 1,
                     },
                     transaction,
                 })
@@ -383,15 +372,12 @@ export const excluirSubfamilia = (request, response, next) => {
                 }
             })
             .then(() =>
-                Subfamilia.update(
-                    { ativo: 0 },
-                    {
-                        where: {
-                            id,
-                        },
-                        transaction,
-                    }
-                )
+                Subfamilia.destroy({
+                    where: {
+                        id,
+                    },
+                    transaction,
+                })
             );
 
     sequelize
@@ -498,7 +484,7 @@ export const buscarGeneros = async (request, response, next) => {
         const { orderClause } = request.ordenacao;
         const { genero, familia_id: familiaId, familia_nome: familiaNome } = request.query;
 
-        const where = { ativo: 1 };
+        const where = {};
         if (genero) where.nome = { [Op.like]: `%${genero}%` };
         if (familiaId) where.familia_id = familiaId;
 
@@ -535,7 +521,6 @@ export const excluirGeneros = (request, response, next) => {
                 Genero.findOne({
                     where: {
                         id,
-                        ativo: 1,
                     },
                     transaction,
                 })
@@ -548,26 +533,21 @@ export const excluirGeneros = (request, response, next) => {
             .then(() =>
                 Promise.all([
                     Especie.count({ where: { genero_id: id }, transaction }),
-                    Subespecie.count({ where: { genero_id: id }, transaction }),
-                    Variedade.count({ where: { genero_id: id }, transaction }),
                     Tombo.count({ where: { genero_id: id }, transaction }),
                 ])
             )
-            .then(([especiesCount, subEspeciesCount, variedadesCount, tombosCount]) => {
-                if (especiesCount > 0 || subEspeciesCount > 0 || variedadesCount > 0 || tombosCount > 0) {
+            .then(([especiesCount, tombosCount]) => {
+                if (especiesCount > 0 || tombosCount > 0) {
                     throw new BadRequestExeption('O gênero não pode ser excluído porque possui dependentes.');
                 }
             })
             .then(() =>
-                Genero.update(
-                    { ativo: 0 },
-                    {
-                        where: {
-                            id,
-                        },
-                        transaction,
-                    }
-                )
+                Genero.destroy({
+                    where: {
+                        id,
+                    },
+                    transaction,
+                })
             );
 
     sequelize
@@ -630,7 +610,6 @@ export const cadastrarEspecie = (request, response, next) => {
                 return undefined;
             }
             const where = {
-                ativo: true,
                 id: autorId,
             };
             return Autor.findOne({
@@ -649,7 +628,6 @@ export const cadastrarEspecie = (request, response, next) => {
             where: {
                 nome,
                 genero_id: generoId,
-                ativo: true,
             },
             transaction,
         }))
@@ -703,7 +681,7 @@ export const buscarEspecies = async (request, response, next) => {
             genero_nome: generoNome,
         } = request.query;
 
-        const where = { ativo: 1 };
+        const where = {};
         if (especie) where.nome = { [Op.like]: `%${especie}%` };
         if (generoId) where.genero_id = generoId;
 
@@ -745,7 +723,6 @@ export const excluirEspecies = (request, response, next) => {
                 Especie.findOne({
                     where: {
                         id,
-                        ativo: 1,
                     },
                     transaction,
                 })
@@ -768,15 +745,12 @@ export const excluirEspecies = (request, response, next) => {
                 }
             })
             .then(() =>
-                Especie.update(
-                    { ativo: 0 },
-                    {
-                        where: {
-                            id,
-                        },
-                        transaction,
-                    }
-                )
+                Especie.destroy({
+                    where: {
+                        id,
+                    },
+                    transaction,
+                })
             );
 
     sequelize
@@ -815,11 +789,10 @@ export const editarEspecie = (request, response, next) => {
             }
         })
         .then(() => {
-            if (!autorId) {
-                return undefined;
+            if (autorId === null) {
+                return null;
             }
             const where = {
-                ativo: true,
                 id: autorId,
             };
             return Autor.findOne({
@@ -828,7 +801,7 @@ export const editarEspecie = (request, response, next) => {
             });
         })
         .then(autor => {
-            if (autorId) {
+            if (autorId !== null) {
                 if (!autor) {
                     throw new BadRequestExeption(532);
                 }
@@ -859,7 +832,6 @@ export const cadastrarSubespecie = (request, response, next) => {
                 return undefined;
             }
             const where = {
-                ativo: true,
                 id: autorId,
             };
             return Autor.findOne({
@@ -931,7 +903,7 @@ export const buscarSubespecies = async (request, response, next) => {
             especie_nome: especieNome,
         } = request.query;
 
-        const where = { ativo: 1 };
+        const where = {};
         if (subespecie) where.nome = { [Op.like]: `%${subespecie}%` };
         if (especieId) where.especie_id = especieId;
 
@@ -977,7 +949,6 @@ export const excluirSubespecies = (request, response, next) => {
                 Subespecie.findOne({
                     where: {
                         id,
-                        ativo: 1,
                     },
                     transaction,
                 })
@@ -996,15 +967,12 @@ export const excluirSubespecies = (request, response, next) => {
                 }
             })
             .then(() =>
-                Subespecie.update(
-                    { ativo: 0 },
-                    {
-                        where: {
-                            id,
-                        },
-                        transaction,
-                    }
-                )
+                Subespecie.destroy({
+                    where: {
+                        id,
+                    },
+                    transaction,
+                })
             );
 
     sequelize
@@ -1032,11 +1000,10 @@ export const editarSubespecie = (request, response, next) => {
             }
         })
         .then(() => {
-            if (!autorId) {
-                return undefined;
+            if (autorId === null) {
+                return null;
             }
             const where = {
-                ativo: true,
                 id: autorId,
             };
             return Autor.findOne({
@@ -1045,7 +1012,7 @@ export const editarSubespecie = (request, response, next) => {
             });
         })
         .then(autor => {
-            if (autorId) {
+            if (autorId !== null) {
                 if (!autor) {
                     throw new BadRequestExeption(532);
                 }
@@ -1095,7 +1062,6 @@ export const cadastrarVariedade = (request, response, next) => {
                 return undefined;
             }
             const where = {
-                ativo: true,
                 id: autorId,
             };
             return Autor.findOne({
@@ -1170,7 +1136,7 @@ export const buscarVariedades = async (request, response, next) => {
             especie_nome: especieNome,
         } = request.query;
 
-        const where = { ativo: 1 };
+        const where = {};
         if (variedade) where.nome = { [Op.like]: `%${variedade}%` };
         if (especieId) where.especie_id = especieId;
 
@@ -1214,7 +1180,6 @@ export const excluirVariedades = (request, response, next) => {
         .then(() => Variedade.findOne({
             where: {
                 id,
-                ativo: 1,
             },
             transaction,
         }))
@@ -1223,7 +1188,15 @@ export const excluirVariedades = (request, response, next) => {
                 throw new BadRequestExeption(526);
             }
         })
-        .then(() => Variedade.update({ ativo: 0 }, {
+        .then(() =>
+            Promise.all([Tombo.count({ where: { variedade_id: id }, transaction })])
+        )
+        .then(([tombosCount]) => {
+            if (tombosCount > 0) {
+                throw new BadRequestExeption('A variedade não pode ser excluída porque possui dependentes.');
+            }
+        })
+        .then(() => Variedade.destroy({
             where: {
                 id,
             },
@@ -1242,11 +1215,10 @@ export const editarVariedade = (request, response, next) => {
 
     const callback = transaction => Promise.resolve()
         .then(() => {
-            if (!autorId) {
-                return undefined;
+            if (autorId === null) {
+                return null;
             }
             const where = {
-                ativo: true,
                 id: autorId,
             };
             return Autor.findOne({
@@ -1255,7 +1227,7 @@ export const editarVariedade = (request, response, next) => {
             });
         })
         .then(autor => {
-            if (autorId) {
+            if (autorId !== null) {
                 if (!autor) {
                     throw new BadRequestExeption(532);
                 }
@@ -1343,7 +1315,7 @@ export const buscarAutores = async (request, response, next) => {
         const { autor } = request.query;
         const { orderClause } = request.ordenacao;
 
-        const where = { ativo: 1 };
+        const where = {};
         if (autor) where.nome = { [Op.like]: `%${autor}%` };
 
         const result = await Autor.findAndCountAll({
@@ -1373,7 +1345,6 @@ export const excluirAutores = (request, response, next) => {
                 Autor.findOne({
                     where: {
                         id,
-                        ativo: 1,
                     },
                     transaction,
                 })
@@ -1385,27 +1356,23 @@ export const excluirAutores = (request, response, next) => {
             })
             .then(() =>
                 Promise.all([
-                    Subfamilia.count({ where: { autor_id: id }, transaction }),
                     Subespecie.count({ where: { autor_id: id }, transaction }),
                     Especie.count({ where: { autor_id: id }, transaction }),
                     Variedade.count({ where: { autor_id: id }, transaction }),
                 ])
             )
-            .then(([subFamiliasCount, subEspeciesCount, especiesCount, variedadesCount]) => {
-                if (subFamiliasCount > 0 || subEspeciesCount > 0 || especiesCount > 0 || variedadesCount > 0) {
+            .then(([subEspeciesCount, especiesCount, variedadesCount]) => {
+                if (subEspeciesCount > 0 || especiesCount > 0 || variedadesCount > 0) {
                     throw new BadRequestExeption('O autor não pode ser excluído porque possui dependentes.');
                 }
             })
             .then(() =>
-                Autor.update(
-                    { ativo: 0 },
-                    {
-                        where: {
-                            id,
-                        },
-                        transaction,
-                    }
-                )
+                Autor.destroy({
+                    where: {
+                        id,
+                    },
+                    transaction,
+                })
             );
 
     sequelize

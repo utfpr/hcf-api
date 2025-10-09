@@ -15,7 +15,9 @@ export default {
     autor_id: {
         in: 'body',
         isInt: true,
-        optional: true,
+        optional: {
+            options: { nullable: true },
+        },
     },
     especie_id: {
         in: 'params',

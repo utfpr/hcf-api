@@ -148,7 +148,6 @@ export default function fichaTomboController(request, response, next) {
             ];
 
             const where = {
-                ativo: true,
                 hcf: parseInt(tomboId),
             };
 
@@ -204,7 +203,6 @@ export default function fichaTomboController(request, response, next) {
             ];
 
             const where = {
-                ativo: true,
                 tombo_hcf: tombo.hcf,
             };
 
