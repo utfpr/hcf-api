@@ -1,9 +1,10 @@
 import { UserRegistrationDTO } from '../dtos/UserRegistrationDTO';
 import BadRequestExeption from '../errors/bad-request-exception';
 import { comparaSenha, gerarSenha } from '../helpers/senhas';
-import { constroiPayloadUsuario, geraTokenUsuario } from '../helpers/tokens';
+import { constroiPayloadUsuario, geraTokenUsuario, geraTokenResetSenha } from '../helpers/tokens';
 import models from '../models';
 import codigos from '../resources/codigos-http';
+import nodemailer from 'nodemailer';
 
 const {
     Sequelize: { Op }, Usuario, TipoUsuario, Coletor, Identificador,
@@ -305,4 +306,95 @@ export const atualizarSenha = (request, response, next) => {
         .catch(next);
 };
 
+export const solicitarResetSenha = async (request, response, next) => {
+    const { email } = request.body;
+    try {
+        const usuario = await encontraUsuarioAtivoPorEmail(email);
+        if (usuario) {
+            const token = geraTokenResetSenha(usuario.id);
+            const dataExpiracao = new Date();
+            dataExpiracao.setMinutes(dataExpiracao.getMinutes() + 45);
+
+            await Usuario.update({
+                reset_token: token,
+                reset_token_expiration: dataExpiracao,
+            }, { where: { id: usuario.id } });
+
+            const transporter = nodemailer.createTransport({
+                host: process.env.SMTP_HOST,
+                port: process.env.SMTP_PORT,
+                secure: false,
+                auth: {
+                    user: process.env.SMTP_USER,
+                    pass: process.env.SMTP_PASS,
+                },
+            });
+
+            const link = `${process.env.URL_PAINEL}reset-senha?token=${token}`;
+            await transporter.sendMail({
+                from: '"Sistema HCF" <no-reply@hcf.com>',
+                to: email,
+                subject: 'Redefinição de senha',
+                html: `
+          <p>Olá ${usuario.nome},</p>
+          <p>Você solicitou uma redefinição de senha.</p>
+          <p>Não compartilhe esse link.</p>
+          <p>Clique no link abaixo para criar uma nova senha (válido por 45 minutos):</p>
+          <a href="${link}">${link}</a>
+        `,
+            });
+        }
+
+        return response.status(codigos.EDITAR_SEM_RETORNO).send();
+    } catch (err) {
+        next(err);
+    }
+};
+
+export const redefinirSenhaComToken = async (request, response, next) => {
+    const { token, novaSenha } = request.body;
+
+    try {
+        if (!token || !novaSenha) {
+            throw new BadRequestExeption(400, 'Token e nova senha são obrigatórios.');
+        }
+
+        const usuario = await Usuario.findOne({
+            where: {
+                reset_token: token,
+                reset_token_expiration: { [Op.gt]: new Date() },
+                ativo: true,
+            },
+        });
+
+        if (!usuario) {
+            return response.status(400).json({
+                sucesso: false,
+                mensagem: 'Token inválido ou expirado.',
+            });
+        }
+
+        const novaSenhaHash = gerarSenha(novaSenha);
+        await Usuario.update(
+            {
+                senha: novaSenhaHash,
+                reset_token: null,
+                reset_token_expiration: null,
+            },
+            { where: { id: usuario.id } }
+        );
+
+        return response.status(200).json({
+            sucesso: true,
+            mensagem: 'Senha redefinida com sucesso.',
+        });
+    } catch (err) {
+        console.error('Erro ao redefinir senha:', err.message);
+        return response.status(500).json({
+            sucesso: false,
+            mensagem: 'Erro interno ao redefinir senha.',
+            detalhe: process.env.NODE_ENV === 'development' ? err.message : undefined,
+        });
+    }
+};
 export default {};
