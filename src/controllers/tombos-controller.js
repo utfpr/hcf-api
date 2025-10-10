@@ -286,7 +286,6 @@ export const cadastro = (request, response, next) => {
                     data_coleta_ano: principal.data_coleta.ano,
                     numero_coleta: principal.numero_coleta,
                     local_coleta_id: localidade.local_coleta_id,
-                    cor: principal.cor || null,
                     coletor_id: coletor,
                     data_tombo: parseDataTombo(principal.data_tombo),
                 };
@@ -487,9 +486,6 @@ function alteracaoCuradorouOperador(request, response, transaction) {
 
     const tipoId = body?.principal?.tipo_id;
     if (tipoId !== undefined) update.tipo_id = tipoId;
-
-    const { cor } = body.principal || {};
-    if (cor !== undefined) update.cor = cor;
 
     const dataTombo = body?.principal?.data_tombo;
     if (dataTombo !== undefined) update.data_tombo = parseDataTombo(dataTombo);
@@ -979,7 +975,6 @@ export const obterTombo = async (request, response, next) => {
                         rascunho: 0,
                     },
                     attributes: [
-                        'cor',
                         'data_coleta_mes',
                         'data_coleta_ano',
                         'situacao',
@@ -1118,7 +1113,6 @@ export const obterTombo = async (request, response, next) => {
 
                 resposta = {
                     herbarioInicial: tombo.herbario !== null ? tombo.herbario?.id : '',
-                    localidadeInicial: tombo.cor !== null ? tombo?.cor : '',
                     tipoInicial: tombo.tipo !== null ? tombo.tipo?.id : '',
                     paisInicial: tombo.locais_coletum.cidade?.estado?.paise !== null ? tombo.locais_coletum.cidade?.estado?.paise?.id : '',
                     estadoInicial: tombo.locais_coletum.cidade?.estado !== null ? tombo.locais_coletum.cidade?.estado?.id : '',
@@ -1169,7 +1163,6 @@ export const obterTombo = async (request, response, next) => {
                         cidade: tombo.locais_coletum !== null && tombo.locais_coletum.cidade !== null ? tombo.locais_coletum?.cidade?.nome : '',
                         estado: tombo.locais_coletum !== null && tombo.locais_coletum.cidade !== null ? tombo.locais_coletum.cidade?.estado?.nome : '',
                         pais: tombo.locais_coletum !== null && tombo.locais_coletum.cidade !== null ? tombo.locais_coletum.cidade.estado?.paise?.nome : '',
-                        cor: tombo.cor !== null ? tombo.cor : '',
                         complemento: tombo.locais_coletum?.complemento !== null ? tombo.locais_coletum?.complemento : '',
                     },
                     local_coleta: {
