@@ -11,10 +11,14 @@ export const TIPOS_USUARIOS = {
 
 export default (tipoUsuarioPermitido = []) =>
     (request, response, next) => {
-    const token = request.headers['token']; // eslint-disable-line
+        // Extract token from Authorization header
+        const authHeader = request.headers.authorization;
+        const token = authHeader && authHeader.startsWith('Bearer ')
+            ? authHeader.slice(7)
+            : null;
 
         try {
-            if (typeof token !== 'string') {
+            if (!token || typeof token !== 'string') {
                 throw new ForbiddenException(101);
             }
 
