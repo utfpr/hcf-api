@@ -51,7 +51,6 @@ export const listaTodosHerbariosAtivos = (limit, offset, where) => Herbario.find
 export const buscarHerbario = (request, response, next) => {
     const where = {
         id: request.params.herbario_id,
-        ativo: true,
     };
     const retorno = {
         herbario: {},
@@ -118,7 +117,6 @@ export const cadastro = (request, response, next) => {
         .then(() => {
             const { herbario } = request.body;
             const where = {
-                ativo: true,
                 email: herbario.email,
             };
 
@@ -144,7 +142,6 @@ export const cadastro = (request, response, next) => {
         })
         .then(herbario => {
             const where = {
-                ativo: true,
                 id: herbario.id,
             };
 
@@ -169,7 +166,6 @@ export const editar = (request, response, next) => {
         .then(() => {
             const attributes = { exclude: undefined };
             const where = {
-                ativo: true,
                 id: request.params.herbario_id,
             };
 
@@ -206,7 +202,6 @@ export const editar = (request, response, next) => {
         })
         .then(herbario => {
             const where = {
-                ativo: true,
                 id: herbario.id,
             };
 
@@ -229,30 +224,87 @@ export const editar = (request, response, next) => {
 export const desativar = (request, response, next) => {
     const { params } = request;
 
-    Promise.resolve()
+    const callback = transaction => Promise.resolve()
         .then(() => {
             const where = {
-                ativo: true,
                 id: params.herbario_id,
             };
 
-            return Herbario.findOne({ where });
+            return Herbario.findOne({ where, transaction });
         })
         .then(herbario => {
             if (!herbario) {
                 throw new NotFoundExeption(200);
             }
-
-            const where = {
-                ativo: true,
-                id: params.herbario_id,
-            };
-
-            return herbario.update({ ativo: false }, { where });
         })
         .then(() => {
-            response.status(204)
-                .send();
+            const { Tombo } = models;
+            return Tombo.count({
+                where: {
+                    entidade_id: params.herbario_id,
+                },
+                transaction,
+            });
+        })
+        .then(tombosCount => {
+            if (tombosCount > 0) {
+                throw new BadRequestExeption(`Herbário não pode ser excluído porque possui dependentes.`);
+            }
+        })
+        .then(() => {
+            const { Usuario } = models;
+            return Usuario.count({
+                where: {
+                    herbario_id: params.herbario_id,
+                },
+                transaction,
+            });
+        })
+        .then(usuariosCount => {
+            if (usuariosCount > 0) {
+                throw new BadRequestExeption(`Herbário não pode ser excluído porque possui dependentes.`);
+            }
+        })
+        .then(() => {
+            const { Remessa } = models;
+            return Remessa.count({
+                where: {
+                    herbario_id: params.herbario_id,
+                },
+                transaction,
+            });
+        })
+        .then(remessasOrigemCount => {
+            if (remessasOrigemCount > 0) {
+                throw new BadRequestExeption(`Herbário não pode ser excluído porque possui dependentes.`);
+            }
+        })
+        .then(() => {
+            const { Remessa } = models;
+            return Remessa.count({
+                where: {
+                    entidade_destino_id: params.herbario_id,
+                },
+                transaction,
+            });
+        })
+        .then(remessasDestinoCount => {
+            if (remessasDestinoCount > 0) {
+                throw new BadRequestExeption(`Herbário não pode ser excluído porque possui dependentes.`);
+            }
+        })
+        .then(() => {
+            return Herbario.destroy({
+                where: {
+                    id: params.herbario_id,
+                },
+                transaction,
+            });
+        });
+
+    sequelize.transaction(callback)
+        .then(() => {
+            response.status(204).send();
         })
         .catch(next);
 };
@@ -261,9 +313,7 @@ export const listagem = (request, response, next) => {
     const { pagina, limite, offset } = request.paginacao;
     const { nome, email, sigla } = request.query;
 
-    let where = {
-        ativo: true,
-    };
+    let where = {};
 
     if (nome) {
         where = {

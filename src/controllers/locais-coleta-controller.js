@@ -269,25 +269,18 @@ export const deletarLocalColeta = async (request, response, next) => {
         });
 
         if (!localColeta) {
-            response.status(404).json({
-                mensagem: 'Local de coleta não encontrado.',
-            });
-            return;
+            throw new BadRequestExeption(`Local de Coleta não encontrado.`);
         }
 
         const { Tombo } = models;
         const tombosAssociados = await Tombo.count({
             where: {
                 local_coleta_id: id,
-                ativo: true,
             },
         });
 
         if (tombosAssociados > 0) {
-            response.status(400).json({
-                mensagem: `Não é possível excluir o local de coleta. Existem ${tombosAssociados} tombo(s) associado(s) a este local.`,
-            });
-            return;
+            throw new BadRequestExeption(`Local de Coleta não pode ser excluído porque possui dependentes.`);
         }
 
         await LocalColeta.destroy({
