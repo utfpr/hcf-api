@@ -23,9 +23,6 @@
       "~/*": [
         "./src/*"
       ],
-      "@core/*": [
-        "./src/core/*"
-      ]
     },
     "typeRoots": [
       "./node_modules/@types",

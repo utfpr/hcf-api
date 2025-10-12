@@ -234,10 +234,6 @@ export function fazComparacaoInformacao(codBarra, informacaoReflora) {
                                             const mesIdentificacao = getMesIdentificacao(getInformacaoReflora.dateidentified);
                                             const anoIdentificacao = getAnoIdentificacao(getInformacaoReflora.dateidentified);
                                             insereAlteracaoSugerida(idUsuario, 'ESPERANDO', getNroTombo, alteracao, diaIdentificacao, mesIdentificacao, anoIdentificacao);
-                                            // eslint-disable-next-line no-console
-                                            // console.log(getInformacaoReflora.identifiedby); // Removed debug log
-                                            // eslint-disable-next-line no-console
-                                            // console.log(getInformacaoReflora.dateidentified); // Removed debug log
                                         });
                                     } else {
                                         const diaIdentificacao = getDiaIdentificacao(getInformacaoReflora.dateidentified);
@@ -245,10 +241,6 @@ export function fazComparacaoInformacao(codBarra, informacaoReflora) {
                                         const anoIdentificacao = getAnoIdentificacao(getInformacaoReflora.dateidentified);
                                         const { id } = listaUsuario[0].dataValues;
                                         insereAlteracaoSugerida(id, 'ESPERANDO', getNroTombo, alteracao, diaIdentificacao, mesIdentificacao, anoIdentificacao);
-                                        // eslint-disable-next-line no-console
-                                        // console.log(getInformacaoReflora.identifiedby); // Removed debug log
-                                        // eslint-disable-next-line no-console
-                                        // console.log(getInformacaoReflora.dateidentified); // Removed debug log
                                     }
                                 });
                                 promessa.resolve();
@@ -280,12 +272,8 @@ export function fazComparacaoTomboReflora() {
     const throttle = throttledQueue(1, 2000);
     selectUmaInformacaoReflora().then(informacaoReflora => {
         if (informacaoReflora.length === 0) {
-            // eslint-disable-next-line no-console
-            // console.log('akc'); // Removed debug log
             promessa.resolve(true);
         } else {
-            // eslint-disable-next-line no-console
-            // console.log('akd'); // Removed debug log
             const getCodBarra = informacaoReflora[0].dataValues.cod_barra;
             const getInformacaoReflora = processaRespostaReflora(informacaoReflora[0].dataValues.tombo_json);
             throttle(() => {

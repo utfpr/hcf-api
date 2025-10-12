@@ -64,13 +64,7 @@ function verificaRequisicoesAgendado(existeExecucaoSpeciesLink) {
                 atualizaTabelaConfiguracao(2, existeExecucaoSpeciesLink[0].id, getHoraAtual(), null, existeExecucaoSpeciesLink[0].periodicidade, moment().day(agendamento)
                     .format('DD/MM/YYYY'));
             });
-        } else {
-            // eslint-disable-next-line no-console
-            // console.log(`Não tá na hora ${moment().format('HH')}`); // Removed debug log
         }
-    } else {
-        // eslint-disable-next-line no-console
-        // console.log(`Não tá no dia ${moment().format('DD/MM/YYYY')}`); // Removed debug log
     }
 }
 

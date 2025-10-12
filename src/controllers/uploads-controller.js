@@ -107,7 +107,7 @@ export const post = (request, response, next) => {
             return foto;
         });
 
-    sequelize.transaction(fn)
+    return sequelize.transaction(fn)
         .then(imagem => {
             response.status(201)
                 .json(imagem);

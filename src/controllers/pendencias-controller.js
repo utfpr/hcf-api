@@ -1893,7 +1893,7 @@ export async function visualizar(request, response, next) {
         const addRetorno = (key, campo, antigo, novo) => {
             const antigoStr = String(antigo || '').trim();
             const novoStr = String(novo || '').trim();
-            
+
             if (antigoStr === '' && novoStr === '') {
                 return;
             }
@@ -2079,7 +2079,7 @@ export async function visualizar(request, response, next) {
             } else {
                 unicataAntigo = tombo?.unicata ? 'Unicata' : 'Duplicata';
             }
-            
+
             const unicataNovo = parametros.unicata ? 'Unicata' : 'Duplicata';
             addRetorno('31', 'Tipo de Exsicata', unicataAntigo, unicataNovo);
         }

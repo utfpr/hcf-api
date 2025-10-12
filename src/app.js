@@ -43,10 +43,10 @@ const corsOptions = {
         ];
 
         if (allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
+            return callback(null, true);
         }
+        return callback(new Error('Not allowed by CORS'));
+
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -71,19 +71,6 @@ const limiter = rateLimit({
 
 // Apply rate limiting to all requests
 app.use(limiter);
-
-// Stricter rate limiting for login attempts
-const loginLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5, // Limit each IP to 5 login requests per windowMs
-    message: {
-        error: {
-            code: 429,
-            message: 'Muitas tentativas de login. Tente novamente em 15 minutos.',
-        },
-    },
-    skipSuccessfulRequests: true, // Don't count successful requests
-});
 
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(parser.json());

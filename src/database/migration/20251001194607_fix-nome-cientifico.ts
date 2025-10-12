@@ -1,12 +1,12 @@
 import { Knex } from 'knex'
 
 export async function run(knex: Knex): Promise<void> {
-  await knex.transaction(async (trx) => {
+  await knex.transaction(async trx => {
     const tombos = await trx('tombos')
       .select('hcf', 'genero_id', 'especie_id')
       .where('hcf', '>=', 42852)
 
-    const updates = tombos.map(async (tombo) => {
+    const updates = tombos.map(async tombo => {
       let nomeCientifico = null
 
       if (tombo.genero_id) {

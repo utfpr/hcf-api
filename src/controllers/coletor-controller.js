@@ -102,7 +102,7 @@ export const desativaColetor = async (req, res, next) => {
 
         const tombosAssociados = await Tombo.count({
             where: {
-                coletor_id: id            },
+                coletor_id: id },
         });
 
         if (tombosAssociados > 0) {
