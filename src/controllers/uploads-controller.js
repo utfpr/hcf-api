@@ -28,6 +28,19 @@ function apenasNumeros(string) {
 export const post = (request, response, next) => {
     const { file } = request;
 
+    // Validate file exists
+    if (!file) {
+        return next(new BadRequestExeption(400, 'Nenhum arquivo foi enviado'));
+    }
+
+    // Additional file validation
+    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+    const fileExtension = extname(file.originalname).toLowerCase();
+
+    if (!allowedExtensions.includes(fileExtension)) {
+        return next(new BadRequestExeption(400, 'Extensão de arquivo não permitida'));
+    }
+
     let maximoGlobalCodBarras = '';
     const isTrueSet = (request.body.em_vivo === 'true');
     const fn = transaction => Promise.resolve()
@@ -94,7 +107,7 @@ export const post = (request, response, next) => {
             return foto;
         });
 
-    sequelize.transaction(fn)
+    return sequelize.transaction(fn)
         .then(imagem => {
             response.status(201)
                 .json(imagem);

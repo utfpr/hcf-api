@@ -62,7 +62,6 @@ export const buscarHerbario = (request, response, next) => {
         .then(() => listaTodosHerbariosAtivos(1, 0, where))
         .then(herbario => {
             // eslint-disable-next-line
-            console.log(herbario.rows[0].cidade)
             // eslint-disable-next-line prefer-destructuring
             retorno.herbario = herbario.rows[0];
             if (retorno.count === 0) {
@@ -131,8 +130,6 @@ export const cadastro = (request, response, next) => {
             return Endereco.create(endereco, { transaction });
         })
         .then(endereco => {
-            // eslint-disable-next-line
-            console.log(request.body.herbario)
             const herbario = {
                 ...request.body.herbario,
                 endereco_id: endereco.id,
@@ -248,7 +245,7 @@ export const desativar = (request, response, next) => {
         })
         .then(tombosCount => {
             if (tombosCount > 0) {
-                throw new BadRequestExeption(`Herbário não pode ser excluído porque possui dependentes.`);
+                throw new BadRequestExeption('Herbário não pode ser excluído porque possui dependentes.');
             }
         })
         .then(() => {
@@ -262,7 +259,7 @@ export const desativar = (request, response, next) => {
         })
         .then(usuariosCount => {
             if (usuariosCount > 0) {
-                throw new BadRequestExeption(`Herbário não pode ser excluído porque possui dependentes.`);
+                throw new BadRequestExeption('Herbário não pode ser excluído porque possui dependentes.');
             }
         })
         .then(() => {
@@ -276,7 +273,7 @@ export const desativar = (request, response, next) => {
         })
         .then(remessasOrigemCount => {
             if (remessasOrigemCount > 0) {
-                throw new BadRequestExeption(`Herbário não pode ser excluído porque possui dependentes.`);
+                throw new BadRequestExeption('Herbário não pode ser excluído porque possui dependentes.');
             }
         })
         .then(() => {
@@ -290,17 +287,15 @@ export const desativar = (request, response, next) => {
         })
         .then(remessasDestinoCount => {
             if (remessasDestinoCount > 0) {
-                throw new BadRequestExeption(`Herbário não pode ser excluído porque possui dependentes.`);
+                throw new BadRequestExeption('Herbário não pode ser excluído porque possui dependentes.');
             }
         })
-        .then(() => {
-            return Herbario.destroy({
-                where: {
-                    id: params.herbario_id,
-                },
-                transaction,
-            });
-        });
+        .then(() => Herbario.destroy({
+            where: {
+                id: params.herbario_id,
+            },
+            transaction,
+        }));
 
     sequelize.transaction(callback)
         .then(() => {

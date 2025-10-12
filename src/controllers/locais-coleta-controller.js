@@ -140,10 +140,10 @@ export const buscarLocaisColeta = async (request, response, next) => {
 
         const where = {};
         const include = [
-            { 
+            {
                 model: Cidade,
                 include: [
-                    { 
+                    {
                         model: Estado,
                         include: [Pais],
                     },
@@ -154,12 +154,10 @@ export const buscarLocaisColeta = async (request, response, next) => {
 
         if (cidadeId) {
             where.cidade_id = cidadeId;
-        }
-        else if (estadoId) {
+        } else if (estadoId) {
             include[0].where = { estado_id: estadoId };
             include[0].required = true;
-        }
-        else if (paisId) {
+        } else if (paisId) {
             include[0].include[0].where = { pais_id: paisId };
             include[0].include[0].required = true;
             include[0].required = true;
@@ -269,7 +267,7 @@ export const deletarLocalColeta = async (request, response, next) => {
         });
 
         if (!localColeta) {
-            throw new BadRequestExeption(`Local de Coleta não encontrado.`);
+            throw new BadRequestExeption('Local de Coleta não encontrado.');
         }
 
         const { Tombo } = models;
@@ -280,7 +278,7 @@ export const deletarLocalColeta = async (request, response, next) => {
         });
 
         if (tombosAssociados > 0) {
-            throw new BadRequestExeption(`Local de Coleta não pode ser excluído porque possui dependentes.`);
+            throw new BadRequestExeption('Local de Coleta não pode ser excluído porque possui dependentes.');
         }
 
         await LocalColeta.destroy({

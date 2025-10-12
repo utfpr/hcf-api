@@ -202,13 +202,11 @@ export const editar = (request, response, next) => {
 
 export const desativar = (request, response, next) => {
     const usuarioId = parseInt(request.params.usuario_id);
-    
+
     Promise.resolve()
-        .then(() => {
-            return Usuario.findOne({
-                where: { id: usuarioId },
-            });
-        })
+        .then(() => Usuario.findOne({
+            where: { id: usuarioId },
+        }))
         .then(usuario => {
             if (!usuario) {
                 throw new BadRequestExeption(106);
@@ -225,14 +223,12 @@ export const desativar = (request, response, next) => {
         })
         .then(alteracoesCount => {
             if (alteracoesCount > 0) {
-                throw new BadRequestExeption(`Usuário não pode ser excluído porque possui dependentes.`);
+                throw new BadRequestExeption('Usuário não pode ser excluído porque possui dependentes.');
             }
         })
-        .then(() => {
-            return Usuario.destroy({
-                where: { id: usuarioId },
-            });
-        })
+        .then(() => Usuario.destroy({
+            where: { id: usuarioId },
+        }))
         .then(() => {
             response.status(codigos.DESATIVAR).send();
         })

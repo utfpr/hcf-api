@@ -355,7 +355,7 @@ export const cadastro = (request, response, next) => {
                 const dadosComplementares = coletor_complementar?.complementares || '';
 
                 const tomboData = { ...tombo.toJSON(), complementares: dadosComplementares, colecoes_anexas_tipo: colecoesAnexas?.tipo || null, colecoes_anexas_observacoes: colecoesAnexas?.observacoes || null };
-                
+
                 if (identificacao?.identificadores && identificacao.identificadores.length > 0) {
                     tomboData.identificadores = identificacao.identificadores;
                 }
@@ -709,9 +709,9 @@ export const listagem = (request, response, next) => {
                 'created_at',
             ],
             include: {
-                // required: true,
                 model: Coletor,
                 attributes: ['id', 'nome'],
+                required: false,
             },
             where,
             order: [['hcf', 'DESC']],
