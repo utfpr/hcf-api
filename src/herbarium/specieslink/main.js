@@ -20,7 +20,7 @@ import { preparaExecucao } from '../main';
  * atualiza com os novos valores. Caso contrário está executando.
  */
 export function agendaComparacaoSpeciesLink(nomeArquivo, response) {
-    selectTemExecucaoServico(2).then(execucaoSpeciesLink => {
+    selectTemExecucaoServico("SPECIESLINK").then(execucaoSpeciesLink => {
         if (execucaoSpeciesLink.length === 0) {
             insereExecucaoSpeciesLink(getHoraAtual(), null, nomeArquivo, 2);
             response.status(200).json(JSON.parse(' { "result": "success" } '));
@@ -61,7 +61,7 @@ function verificaRequisicoesAgendado(existeExecucaoSpeciesLink) {
     if (moment().format('DD/MM/YYYY') === existeExecucaoSpeciesLink[0].data_proxima_atualizacao) {
         if (moment().format('HH') === '00') {
             preparaExecucao(existeExecucaoSpeciesLink[0], 2).then(() => {
-                atualizaTabelaConfiguracao(2, existeExecucaoSpeciesLink[0].id, getHoraAtual(), null, existeExecucaoSpeciesLink[0].periodicidade, moment().day(agendamento)
+                atualizaTabelaConfiguracao("SPECIESLINK", existeExecucaoSpeciesLink[0].id, getHoraAtual(), null, existeExecucaoSpeciesLink[0].periodicidade, moment().day(agendamento)
                     .format('DD/MM/YYYY'));
             });
         } else {
@@ -84,10 +84,10 @@ function verificaRequisicoesAgendado(existeExecucaoSpeciesLink) {
  */
 export function daemonSpeciesLink() {
     setInterval(() => {
-        selectEstaExecutandoServico(2).then(existeExecucaoSpeciesLink => {
+        selectEstaExecutandoServico("SPECIESLINK").then(existeExecucaoSpeciesLink => {
             if (existeExecucaoSpeciesLink.length === 1) {
                 if (existeExecucaoSpeciesLink[0].periodicidade === 'MANUAL') {
-                    preparaExecucao(existeExecucaoSpeciesLink[0], 2);
+                    preparaExecucao(existeExecucaoSpeciesLink[0], "SPECIESLINK");
                 } else {
                     verificaRequisicoesAgendado(existeExecucaoSpeciesLink);
                 }

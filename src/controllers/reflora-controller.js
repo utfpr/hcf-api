@@ -37,7 +37,7 @@ export const preparaRequisicao = (request, response) => {
             } else if ((periodicidadeBD === 'SEMANAL') || (periodicidadeBD === '1MES') || (periodicidadeBD === '2MESES')) {
                 if (moment().format('DD/MM/YYYY') !== listaExecucaoReflora[0].dataValues.data_proxima_atualizacao) {
                     const { id } = listaExecucaoReflora[0].dataValues;
-                    atualizaTabelaConfiguracao(1, id, getHoraAtual(), null, periodicidade, proximaAtualizacao).then(() => {
+                    atualizaTabelaConfiguracao("REFLORA", id, getHoraAtual(), null, periodicidade, proximaAtualizacao).then(() => {
                         response.status(200).json(JSON.parse(' { "result": "success" } '));
                     });
                 } else {
@@ -45,14 +45,14 @@ export const preparaRequisicao = (request, response) => {
                 }
             }
         } else {
-            selectTemExecucaoServico(1).then(execucaoReflora => {
+            selectTemExecucaoServico("REFLORA").then(execucaoReflora => {
                 if (execucaoReflora.length === 0) {
                     insereExecucao(getHoraAtual(), null, periodicidade, proximaAtualizacao, 1).then(() => {
                         response.status(200).json(JSON.parse(' { "result": "success" } '));
                     });
                 } else {
                     const { id } = execucaoReflora[0].dataValues;
-                    atualizaTabelaConfiguracao(1, id, getHoraAtual(), null, periodicidade, proximaAtualizacao).then(() => {
+                    atualizaTabelaConfiguracao("REFLORA", id, getHoraAtual(), null, periodicidade, proximaAtualizacao).then(() => {
                         response.status(200).json(JSON.parse(' { "result": "success" } '));
                     });
                 }

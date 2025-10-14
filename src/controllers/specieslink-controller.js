@@ -37,7 +37,7 @@ export const preparaRequisicao = (request, response) => {
             } else if ((periodicidadeBD === 'SEMANAL') || (periodicidadeBD === '1MES') || (periodicidadeBD === '2MESES')) {
                 if (moment().format('DD/MM/YYYY') !== listaExecucaoSpecieslink[0].dataValues.data_proxima_atualizacao) {
                     const { id } = listaExecucaoSpecieslink[0].dataValues;
-                    atualizaTabelaConfiguracao(2, id, getHoraAtual(), null, periodicidade, proximaAtualizacao).then(() => {
+                    atualizaTabelaConfiguracao("SPECIESLINK", id, getHoraAtual(), null, periodicidade, proximaAtualizacao).then(() => {
                         response.status(200).json(JSON.parse(' { "result": "success" } '));
                     });
                 } else {
@@ -45,14 +45,14 @@ export const preparaRequisicao = (request, response) => {
                 }
             }
         } else {
-            selectTemExecucaoServico(2).then(execucaoSpecieslink => {
+            selectTemExecucaoServico("SPECIESLINK").then(execucaoSpecieslink => {
                 if (execucaoSpecieslink.length === 0) {
                     insereExecucao(getHoraAtual(), null, periodicidade, proximaAtualizacao, 2).then(() => {
                         response.status(200).json(JSON.parse(' { "result": "success" } '));
                     });
                 } else {
                     const { id } = execucaoSpecieslink[0].dataValues;
-                    atualizaTabelaConfiguracao(2, id, getHoraAtual(), null, periodicidade, proximaAtualizacao).then(() => {
+                    atualizaTabelaConfiguracao("SPECIESLINK", id, getHoraAtual(), null, periodicidade, proximaAtualizacao).then(() => {
                         response.status(200).json(JSON.parse(' { "result": "success" } '));
                     });
                 }
