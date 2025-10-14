@@ -370,7 +370,7 @@ export const cadastro = (request, response, next) => {
                     status,
                     tombo_json: JSON.stringify({ ...tombo.toJSON(), complementares: dadosComplementares }),
                     ativo: true,
-                    identificacao: 0,
+                    identificacao: false,
                 };
                 tomboCriado = tombo;
 
@@ -459,7 +459,7 @@ function alteracaoIdentificador(request, transaction) {
             status: 'ESPERANDO',
             tombo_json: JSON.stringify(update),
             ativo: true,
-            identificacao: 1,
+            identificacao: true,
         }, { transaction }))
         .then(alteracaoIdent => {
             if (request.usuario.tipo_usuario_id === 3) {
@@ -585,7 +585,7 @@ function alteracaoCuradorouOperador(request, response, transaction) {
         status: 'ESPERANDO',
         tombo_json: JSON.stringify(update),
         ativo: true,
-        identificacao: 1,
+        identificacao: true,
     }, { transaction })
         .then(alteracaoCriada => {
             if (request.usuario.tipo_usuario_id === 1) {
@@ -656,7 +656,7 @@ export const listagem = (request, response, next) => {
     } = request.query;
     let where = {
         ativo: true,
-        rascunho: 0,
+        rascunho: false,
     };
 
     if (nomeCientifico) {
@@ -933,7 +933,7 @@ export const cadastrarColetores = (request, response, next) => {
 
 export const buscarColetores = (request, response, next) => {
     let where = {
-        ativo: 1,
+        ativo: true,
     };
     let limit = 10;
     const { limite, nome } = request.query;
@@ -979,7 +979,7 @@ export const obterTombo = async (request, response, next) => {
                     where: {
                         hcf: id,
                         ativo: true,
-                        rascunho: 0,
+                        rascunho: false,
                     },
                     attributes: [
                         'cor',
@@ -1417,7 +1417,7 @@ export const obterTombo = async (request, response, next) => {
                 TomboFoto.findAll({
                     where: {
                         tombo_hcf: id,
-                        ativo: 1,
+                        ativo: true,
                     },
                     attributes: ['id', 'caminho_foto', 'em_vivo'],
                 })
@@ -1594,6 +1594,7 @@ export const postCodigoBarraTombo = (request, response, next) => {
 
 export const getUltimoNumeroCodigoBarras = (request, response, next) => {
     const { emVivo } = request.params;
+    console.log('EM VIVO AQUI!', emVivo);
     Promise.resolve()
         .then(() => TomboFoto.findAll({
             where: {

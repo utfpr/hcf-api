@@ -1,5 +1,5 @@
 const {
-  PG_DATABASE, PG_USERNAME, PG_PASSWORD, PG_HOST, PG_PORT,
+    PG_DATABASE, PG_USERNAME, PG_PASSWORD, PG_HOST, PG_PORT,
 } = process.env;
 
 export const database = PG_DATABASE;

@@ -370,7 +370,7 @@ export const buscarPontosTaxonomiaComFiltros = async (req, res, next) => {
         if (nomeFamilia) {
             whereClause.include.push({
                 model: Familia,
-                where: { nome: { [Op.eq]: nomeFamilia }, ativo: 1 },
+                where: { nome: { [Op.eq]: nomeFamilia }, ativo: true },
                 attributes: ['id', 'nome'],
                 required: true,
             });
@@ -379,7 +379,7 @@ export const buscarPontosTaxonomiaComFiltros = async (req, res, next) => {
         if (nomeSubFamilia) {
             whereClause.include.push({
                 model: Subfamilia,
-                where: { nome: { [Op.eq]: nomeSubFamilia }, ativo: 1 },
+                where: { nome: { [Op.eq]: nomeSubFamilia }, ativo: true },
                 attributes: ['id', 'nome'],
                 required: true,
             });
@@ -388,7 +388,7 @@ export const buscarPontosTaxonomiaComFiltros = async (req, res, next) => {
         if (nomeGenero) {
             whereClause.include.push({
                 model: Genero,
-                where: { nome: { [Op.eq]: nomeGenero }, ativo: 1 },
+                where: { nome: { [Op.eq]: nomeGenero }, ativo: true },
                 attributes: ['id', 'nome'],
                 required: true,
             });
@@ -397,7 +397,7 @@ export const buscarPontosTaxonomiaComFiltros = async (req, res, next) => {
         if (nomeEspecie) {
             whereClause.include.push({
                 model: Especie,
-                where: { nome: { [Op.eq]: nomeEspecie }, ativo: 1 },
+                where: { nome: { [Op.eq]: nomeEspecie }, ativo: true },
                 attributes: ['id', 'nome'],
                 required: true,
             });
@@ -406,7 +406,7 @@ export const buscarPontosTaxonomiaComFiltros = async (req, res, next) => {
         if (nomeSubEspecie) {
             whereClause.include.push({
                 model: Subespecie,
-                where: { nome: { [Op.eq]: nomeSubEspecie }, ativo: 1 },
+                where: { nome: { [Op.eq]: nomeSubEspecie }, ativo: true },
                 attributes: ['id', 'nome'],
                 required: true,
             });
@@ -415,7 +415,7 @@ export const buscarPontosTaxonomiaComFiltros = async (req, res, next) => {
         if (nomeVariedade) {
             whereClause.include.push({
                 model: Variedade,
-                where: { nome: { [Op.eq]: nomeVariedade }, ativo: 1 },
+                where: { nome: { [Op.eq]: nomeVariedade }, ativo: true },
                 attributes: ['id', 'nome'],
                 required: true,
             });
