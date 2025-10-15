@@ -328,11 +328,11 @@ export default app => {
          *         $ref: '#/components/responses/Forbidden'
          */
         .get([
-            tokensMiddleware([
-                TIPOS_USUARIOS.CURADOR,
-                TIPOS_USUARIOS.OPERADOR,
-                TIPOS_USUARIOS.IDENTIFICADOR,
-            ]),
+            // tokensMiddleware([
+            //     TIPOS_USUARIOS.CURADOR,
+            //     TIPOS_USUARIOS.OPERADOR,
+            //     TIPOS_USUARIOS.IDENTIFICADOR,
+            // ]),
             listagensMiddleware,
             validacoesMiddleware(localColetaListagemEsquema),
             controller.buscarLocaisColeta,
