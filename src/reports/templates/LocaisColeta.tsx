@@ -15,6 +15,12 @@ interface Registro {
       nome: string;
     }
   }
+  familia: {
+    nome: string;
+  }
+  genero: {
+    nome: string;
+  }
   coordenadasFormatadas: string;
 }
 
@@ -76,13 +82,13 @@ function RelacaoLocaisColeta({ dados, total, textoFiltro }: RelacaoLocaisColetaP
         </thead>
         <tbody>
           {registros.map((item, i) => {
-            const { especy } = item;
+            const { especy, familia, genero } = item;
             const cordenadas = obtemCordenadas(item);
             return (
               <tr key={`${i}-${item.hcf}`}>
                 <td>{criaData(item)}</td>
-                <td>{especy.familia.nome}</td>
-                <td style={{ fontStyle: 'italic' }}>{especy.genero.nome} {especy.nome}</td>
+                <td>{familia?.nome}</td>
+                <td style={{ fontStyle: 'italic' }}>{genero?.nome} {especy?.nome}</td>
                 <td>{cordenadas.latitude}</td>
                 <td>{cordenadas.longitude}</td>
                 <td style={{ textAlign: 'right' }}>{item.hcf}</td>
