@@ -134,27 +134,38 @@ export const cadastrarLocalColeta = async (request, response, next) => {
 
 export const buscarLocaisColeta = async (request, response, next) => {
     try {
-        const cidadeId = request.query.cidade_id;
+        const { cidade_id: cidadeId, estado_id: estadoId, pais_id: paisId } = request.query;
         const { limite, pagina, offset } = request.paginacao;
         const { getAll } = request.query;
 
         const where = {};
+        const include = [
+            {
+                model: Cidade,
+                include: [
+                    {
+                        model: Estado,
+                        include: [Pais],
+                    },
+                ],
+            },
+            { model: FaseSucessional },
+        ];
+
         if (cidadeId) {
             where.cidade_id = cidadeId;
+        } else if (estadoId) {
+            include[0].where = { estado_id: estadoId };
+            include[0].required = true;
+        } else if (paisId) {
+            include[0].include[0].where = { pais_id: paisId };
+            include[0].include[0].required = true;
+            include[0].required = true;
         }
 
         const queryOptions = {
             where,
-            include: [
-                { model: Cidade,
-                    include: [
-                        { model: Estado,
-                            include: [Pais],
-                        },
-                    ],
-                },
-                { model: FaseSucessional },
-            ],
+            include,
             order: [['id', 'DESC']],
         };
 
@@ -256,25 +267,18 @@ export const deletarLocalColeta = async (request, response, next) => {
         });
 
         if (!localColeta) {
-            response.status(404).json({
-                mensagem: 'Local de coleta não encontrado.',
-            });
-            return;
+            throw new BadRequestExeption('Local de Coleta não encontrado.');
         }
 
         const { Tombo } = models;
         const tombosAssociados = await Tombo.count({
             where: {
                 local_coleta_id: id,
-                ativo: true,
             },
         });
 
         if (tombosAssociados > 0) {
-            response.status(400).json({
-                mensagem: `Não é possível excluir o local de coleta. Existem ${tombosAssociados} tombo(s) associado(s) a este local.`,
-            });
-            return;
+            throw new BadRequestExeption('Local de Coleta não pode ser excluído porque possui dependentes.');
         }
 
         await LocalColeta.destroy({

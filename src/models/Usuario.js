@@ -65,6 +65,7 @@ export default (Sequelize, DataTypes) => {
             type: DataTypes.STRING(200),
             allowNull: false,
         },
+<<<<<<< HEAD
         ativo: {
             type: DataTypes.BOOLEAN,
             allowNull: false,
@@ -78,6 +79,8 @@ export default (Sequelize, DataTypes) => {
             type: DataTypes.DATE,
             allowNull: true,
         },
+=======
+>>>>>>> origin/development
     };
 
     const options = {

@@ -67,9 +67,17 @@ export const cadastrarEstado = (req, res, next) => {
 
 export const listagem = async (req, res, next) => {
     try {
+        const paisId = req.query.pais_id ? parseInt(req.query.pais_id, 10) : undefined;
+
+        const where = {};
+        if (!Number.isNaN(paisId) && paisId !== undefined) {
+            where.pais_id = paisId;
+        }
+
         const estados = await Estado.findAll({
             attributes: { exclude: ['created_at', 'updated_at'] },
             include: [{ model: Pais, as: 'pais', attributes: ['id', 'nome', 'sigla'] }],
+            where,
             order: [['id', 'DESC']],
         });
 
