@@ -23,4 +23,14 @@ export const constroiPayloadUsuario = usuario => {
     };
 };
 
+export const geraTokenResetSenha = usuarioId => {
+    const payload = { id: usuarioId };
+    const secretReset = secret + '-reset';
+    const token = jwt.sign(payload, secretReset, {
+        expiresIn: '45m',
+    });
+
+    return token;
+};
+
 export default {};
