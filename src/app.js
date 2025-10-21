@@ -23,6 +23,17 @@ app.use('/assets', express.static(assets));
 app.get('/reports/:fileName', reportPreview);
 app.post('/reports/:fileName', generatePreview);
 
+app.use(
+    '/uploads',
+    express.static(upload, {
+        index: false,
+        redirect: false,
+        setHeaders: res => {
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        },
+    })
+);
+
 app.use('/api', routes);
 
 app.use(errors);
