@@ -272,7 +272,8 @@ export const cadastrarSubfamilia = (request, response, next) => {
 
             return familiaEncontrada;
         })
-        .then(() => Subfamilia.create({ nome,
+        .then(() => Subfamilia.create({
+            nome,
             familia_id: familiaId,
         }, transaction));
     sequelize.transaction(callback)
@@ -323,7 +324,7 @@ export const buscarSubfamilia = async (req, res, next) => {
             limit: parseInt(limite, 10),
             offset: parseInt(offset, 10),
             include: [
-                { model: Familia, attributes: ['id', 'nome'], where: familiaWhere },
+                { model: Familia, attributes: ['id', 'nome'], where: familiaWhere, include: [{ model: Reino, attributes: ['id', 'nome'] }] },
                 { model: Autor, attributes: ['id', 'nome'], as: 'autor' },
             ],
         });
@@ -457,7 +458,8 @@ export const cadastrarGenero = (request, response, next) => {
 
             return familiaEncontrada;
         })
-        .then(() => Genero.create({ nome,
+        .then(() => Genero.create({
+            nome,
             familia_id: familiaId,
         }, transaction));
     sequelize.transaction(callback)
@@ -494,7 +496,7 @@ export const buscarGeneros = async (request, response, next) => {
             offset,
             where,
             include: [
-                { model: Familia, attributes: ['id', 'nome'], where: familiaWhere },
+                { model: Familia, attributes: ['id', 'nome'], include: [{ model: Reino, attributes: ['id', 'nome'] }], where: familiaWhere },
             ],
         });
 
@@ -694,8 +696,20 @@ export const buscarEspecies = async (request, response, next) => {
             offset,
             where,
             include: [
-                { model: Familia, attributes: ['id', 'nome'], where: familiaWhere },
-                { model: Genero, attributes: ['id', 'nome'], where: generoWhere },
+                {
+                    model: Genero,
+                    attributes: ['id', 'nome'],
+                    where: generoWhere,
+                    include: [{
+                        model: Familia,
+                        attributes: ['id', 'nome'],
+                        where: familiaWhere,
+                        include: [{
+                            model: Reino,
+                            attributes: ['id', 'nome']
+                        }]
+                    }]
+                },
                 { model: Autor, attributes: ['id', 'nome'], as: 'autor' },
             ],
         });
@@ -919,10 +933,31 @@ export const buscarSubespecies = async (request, response, next) => {
             offset,
             where,
             include: [
-                { model: Familia, attributes: ['id', 'nome'], where: familiaWhere },
-                { model: Genero, attributes: ['id', 'nome'], where: generoWhere },
-                { model: Especie, attributes: ['id', 'nome'], where: especieWhere, as: 'especie' },
-                { model: Autor, attributes: ['id', 'nome'], as: 'autor' },
+                {
+                    model: Especie, 
+                    attributes: ['id', 'nome'], 
+                    where: especieWhere, 
+                    as: 'especie', 
+                    include: [{ 
+                        model: Genero, 
+                        attributes: ['id', 'nome'], 
+                        where: generoWhere, 
+                        include: [{ 
+                            model: Familia, 
+                            attributes: ['id', 'nome'], 
+                            where: familiaWhere, 
+                            include: [{ 
+                                model: Reino, 
+                                attributes: ['id', 'nome'] 
+                            }] 
+                        }]
+                    }]
+                },
+                { 
+                    model: Autor, 
+                    attributes: ['id', 'nome'], 
+                    as: 'autor' 
+                },
             ],
         });
 
@@ -1152,10 +1187,31 @@ export const buscarVariedades = async (request, response, next) => {
             offset,
             where,
             include: [
-                { model: Familia, attributes: ['id', 'nome'], where: familiaWhere },
-                { model: Genero, attributes: ['id', 'nome'], where: generoWhere },
-                { model: Especie, attributes: ['id', 'nome'], where: especieWhere, as: 'especie' },
-                { model: Autor, attributes: ['id', 'nome'], as: 'autor' },
+                {
+                    model: Especie, 
+                    attributes: ['id', 'nome'], 
+                    where: especieWhere, 
+                    as: 'especie',
+                    include: [{ 
+                        model: Genero, 
+                        attributes: ['id', 'nome'], 
+                        where: generoWhere, 
+                        include: [{ 
+                            model: Familia, 
+                            attributes: ['id', 'nome'], 
+                            where: familiaWhere, 
+                            include: [{ 
+                                model: Reino, 
+                                attributes: ['id', 'nome'] 
+                            }] 
+                        }]
+                    }]
+                },
+                { 
+                    model: Autor, 
+                    attributes: ['id', 'nome'], 
+                    as: 'autor' 
+                },
             ],
         });
 
