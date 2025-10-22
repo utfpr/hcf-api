@@ -706,9 +706,9 @@ export const buscarEspecies = async (request, response, next) => {
                         where: familiaWhere,
                         include: [{
                             model: Reino,
-                            attributes: ['id', 'nome']
-                        }]
-                    }]
+                            attributes: ['id', 'nome'],
+                        }],
+                    }],
                 },
                 { model: Autor, attributes: ['id', 'nome'], as: 'autor' },
             ],
@@ -934,29 +934,29 @@ export const buscarSubespecies = async (request, response, next) => {
             where,
             include: [
                 {
-                    model: Especie, 
-                    attributes: ['id', 'nome'], 
-                    where: especieWhere, 
-                    as: 'especie', 
-                    include: [{ 
-                        model: Genero, 
-                        attributes: ['id', 'nome'], 
-                        where: generoWhere, 
-                        include: [{ 
-                            model: Familia, 
-                            attributes: ['id', 'nome'], 
-                            where: familiaWhere, 
-                            include: [{ 
-                                model: Reino, 
-                                attributes: ['id', 'nome'] 
-                            }] 
-                        }]
-                    }]
+                    model: Especie,
+                    attributes: ['id', 'nome'],
+                    where: especieWhere,
+                    as: 'especie',
+                    include: [{
+                        model: Genero,
+                        attributes: ['id', 'nome'],
+                        where: generoWhere,
+                        include: [{
+                            model: Familia,
+                            attributes: ['id', 'nome'],
+                            where: familiaWhere,
+                            include: [{
+                                model: Reino,
+                                attributes: ['id', 'nome'],
+                            }],
+                        }],
+                    }],
                 },
-                { 
-                    model: Autor, 
-                    attributes: ['id', 'nome'], 
-                    as: 'autor' 
+                {
+                    model: Autor,
+                    attributes: ['id', 'nome'],
+                    as: 'autor',
                 },
             ],
         });
@@ -1188,29 +1188,29 @@ export const buscarVariedades = async (request, response, next) => {
             where,
             include: [
                 {
-                    model: Especie, 
-                    attributes: ['id', 'nome'], 
-                    where: especieWhere, 
+                    model: Especie,
+                    attributes: ['id', 'nome'],
+                    where: especieWhere,
                     as: 'especie',
-                    include: [{ 
-                        model: Genero, 
-                        attributes: ['id', 'nome'], 
-                        where: generoWhere, 
-                        include: [{ 
-                            model: Familia, 
-                            attributes: ['id', 'nome'], 
-                            where: familiaWhere, 
-                            include: [{ 
-                                model: Reino, 
-                                attributes: ['id', 'nome'] 
-                            }] 
-                        }]
-                    }]
+                    include: [{
+                        model: Genero,
+                        attributes: ['id', 'nome'],
+                        where: generoWhere,
+                        include: [{
+                            model: Familia,
+                            attributes: ['id', 'nome'],
+                            where: familiaWhere,
+                            include: [{
+                                model: Reino,
+                                attributes: ['id', 'nome'],
+                            }],
+                        }],
+                    }],
                 },
-                { 
-                    model: Autor, 
-                    attributes: ['id', 'nome'], 
-                    as: 'autor' 
+                {
+                    model: Autor,
+                    attributes: ['id', 'nome'],
+                    as: 'autor',
                 },
             ],
         });
