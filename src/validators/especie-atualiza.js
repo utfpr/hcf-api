@@ -12,15 +12,12 @@ export default {
         isInt: true,
         isEmpty: false,
     },
-    familia_id: {
-        in: 'body',
-        isInt: true,
-        isEmpty: false,
-    },
     autor_id: {
         in: 'body',
         isInt: true,
-        optional: true,
+        optional: {
+            options: { nullable: true },
+        },
     },
     especie_id: {
         in: 'params',

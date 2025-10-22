@@ -83,3 +83,36 @@ export const atualizaIdentificador = async (req, res, next) => {
         next(error);
     }
 };
+
+export const excluirIdentificador = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+
+        const identificador = await Identificador.findOne({
+            where: { id },
+        });
+
+        if (!identificador) {
+            throw new BadRequestException('Identificador não encontrado');
+        }
+
+        const { TomboIdentificador } = models;
+        const tombosAssociados = await TomboIdentificador.count({
+            where: {
+                identificador_id: id,
+            },
+        });
+
+        if (tombosAssociados > 0) {
+            throw new BadRequestException('Identificador não pode ser excluído porque possui dependentes.');
+        }
+
+        await Identificador.destroy({
+            where: { id },
+        });
+
+        res.status(204).send();
+    } catch (error) {
+        next(error);
+    }
+};

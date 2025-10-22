@@ -173,7 +173,6 @@ export const cadastro = (request, response, next) => {
                     if (!familia) {
                         throw new BadRequestExeption(402);
                     }
-                    taxonomia.nome_cientifico = familia.nome;
                 }
                 return undefined;
             })
@@ -194,7 +193,6 @@ export const cadastro = (request, response, next) => {
                     if (!subfamilia) {
                         throw new BadRequestExeption(403);
                     }
-                    taxonomia.nome_cientifico += ` ${subfamilia.nome}`;
                 }
                 return undefined;
             })
@@ -215,7 +213,7 @@ export const cadastro = (request, response, next) => {
                     if (!genero) {
                         throw new BadRequestExeption(404);
                     }
-                    taxonomia.nome_cientifico += ` ${genero.nome}`;
+                    taxonomia.nome_cientifico = genero.nome;
                 }
                 return undefined;
             })
@@ -257,7 +255,6 @@ export const cadastro = (request, response, next) => {
                     if (!subespecie) {
                         throw new BadRequestExeption(406);
                     }
-                    taxonomia.nome_cientifico += ` ${subespecie.nome}`;
                 }
                 return undefined;
             })
@@ -278,7 +275,6 @@ export const cadastro = (request, response, next) => {
                     if (!variedade) {
                         throw new BadRequestExeption(407);
                     }
-                    taxonomia.nome_cientifico += ` ${variedade.nome}`;
                 }
                 return undefined;
             })
@@ -290,7 +286,6 @@ export const cadastro = (request, response, next) => {
                     data_coleta_ano: principal.data_coleta.ano,
                     numero_coleta: principal.numero_coleta,
                     local_coleta_id: localidade.local_coleta_id,
-                    cor: principal.cor,
                     coletor_id: coletor,
                     data_tombo: parseDataTombo(principal.data_tombo),
                 };
@@ -357,18 +352,19 @@ export const cadastro = (request, response, next) => {
                     status = 'APROVADO';
                 }
 
-                const dadosComplementares = coletor_complementar?.complementares
-                    ? {
-                        hcf: tombo.hcf,
-                        complementares: coletor_complementar.complementares,
-                    }
-                    : {};
+                const dadosComplementares = coletor_complementar?.complementares || '';
+
+                const tomboData = { ...tombo.toJSON(), complementares: dadosComplementares, colecoes_anexas_tipo: colecoesAnexas?.tipo || null, colecoes_anexas_observacoes: colecoesAnexas?.observacoes || null };
+
+                if (identificacao?.identificadores && identificacao.identificadores.length > 0) {
+                    tomboData.identificadores = identificacao.identificadores;
+                }
 
                 const dados = {
                     tombo_hcf: tombo.hcf,
                     usuario_id: request.usuario.id,
                     status,
-                    tombo_json: JSON.stringify({ ...tombo.toJSON(), complementares: dadosComplementares }),
+                    tombo_json: JSON.stringify(tomboData),
                     ativo: true,
                     identificacao: 0,
                 };
@@ -490,9 +486,6 @@ function alteracaoCuradorouOperador(request, response, transaction) {
 
     const tipoId = body?.principal?.tipo_id;
     if (tipoId !== undefined) update.tipo_id = tipoId;
-
-    const { cor } = body.principal || {};
-    if (cor !== undefined) update.cor = cor;
 
     const dataTombo = body?.principal?.data_tombo;
     if (dataTombo !== undefined) update.data_tombo = parseDataTombo(dataTombo);
@@ -624,7 +617,6 @@ export const desativar = (request, response, next) => {
     Promise.resolve()
         .then(() => {
             const where = {
-                ativo: true,
                 hcf: params.tombo_id,
             };
 
@@ -655,7 +647,6 @@ export const listagem = (request, response, next) => {
         nome_cientifico: nomeCientifico, hcf, tipo, nome_popular: nomePopular, situacao,
     } = request.query;
     let where = {
-        ativo: true,
         rascunho: 0,
     };
 
@@ -718,9 +709,9 @@ export const listagem = (request, response, next) => {
                 'created_at',
             ],
             include: {
-                // required: true,
                 model: Coletor,
                 attributes: ['id', 'nome'],
+                required: false,
             },
             where,
             order: [['hcf', 'DESC']],
@@ -751,9 +742,6 @@ export const getDadosCadTombo = (request, response, next) => {
         })
         .then(() => Herbario.findAndCountAll({
             attributes: ['id', 'nome', 'sigla'],
-            where: {
-                ativo: true,
-            },
             order: [['nome', 'ASC']],
             transaction,
         }))
@@ -787,9 +775,6 @@ export const getDadosCadTombo = (request, response, next) => {
         .then(() => Familia.findAndCountAll({
             attributes: ['id', 'nome'],
             order: [['nome', 'ASC']],
-            where: {
-                ativo: true,
-            },
             transaction,
         }))
         .then(familias => {
@@ -845,9 +830,6 @@ export const getDadosCadTombo = (request, response, next) => {
         .then(() => Autor.findAndCountAll({
             attributes: ['id', 'nome'],
             order: [['nome', 'ASC']],
-            where: {
-                ativo: true,
-            },
             transaction,
         }))
         .then(autores => {
@@ -932,9 +914,7 @@ export const cadastrarColetores = (request, response, next) => {
 };
 
 export const buscarColetores = (request, response, next) => {
-    let where = {
-        ativo: 1,
-    };
+    let where = {};
     let limit = 10;
     const { limite, nome } = request.query;
 
@@ -978,11 +958,9 @@ export const obterTombo = async (request, response, next) => {
                 Tombo.findOne({
                     where: {
                         hcf: id,
-                        ativo: true,
                         rascunho: 0,
                     },
                     attributes: [
-                        'cor',
                         'data_coleta_mes',
                         'data_coleta_ano',
                         'situacao',
@@ -1121,7 +1099,6 @@ export const obterTombo = async (request, response, next) => {
 
                 resposta = {
                     herbarioInicial: tombo.herbario !== null ? tombo.herbario?.id : '',
-                    localidadeInicial: tombo.cor !== null ? tombo?.cor : '',
                     tipoInicial: tombo.tipo !== null ? tombo.tipo?.id : '',
                     paisInicial: tombo.locais_coletum.cidade?.estado?.paise !== null ? tombo.locais_coletum.cidade?.estado?.paise?.id : '',
                     estadoInicial: tombo.locais_coletum.cidade?.estado !== null ? tombo.locais_coletum.cidade?.estado?.id : '',
@@ -1172,7 +1149,6 @@ export const obterTombo = async (request, response, next) => {
                         cidade: tombo.locais_coletum !== null && tombo.locais_coletum.cidade !== null ? tombo.locais_coletum?.cidade?.nome : '',
                         estado: tombo.locais_coletum !== null && tombo.locais_coletum.cidade !== null ? tombo.locais_coletum.cidade?.estado?.nome : '',
                         pais: tombo.locais_coletum !== null && tombo.locais_coletum.cidade !== null ? tombo.locais_coletum.cidade.estado?.paise?.nome : '',
-                        cor: tombo.cor !== null ? tombo.cor : '',
                         complemento: tombo.locais_coletum?.complemento !== null ? tombo.locais_coletum?.complemento : '',
                     },
                     local_coleta: {
@@ -1417,7 +1393,6 @@ export const obterTombo = async (request, response, next) => {
                 TomboFoto.findAll({
                     where: {
                         tombo_hcf: id,
-                        ativo: 1,
                     },
                     attributes: ['id', 'caminho_foto', 'em_vivo'],
                 })

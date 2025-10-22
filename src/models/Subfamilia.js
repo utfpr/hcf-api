@@ -36,10 +36,6 @@ export default (Sequelize, DataTypes) => {
             type: DataTypes.STRING(100),
             allowNull: false,
         },
-        ativo: {
-            type: DataTypes.BOOLEAN,
-            allowNull: true,
-        },
         familia_id: {
             type: DataTypes.INTEGER,
             allowNull: false,

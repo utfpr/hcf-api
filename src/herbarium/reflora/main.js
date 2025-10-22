@@ -36,13 +36,7 @@ function verificaRequisicoesAgendado(existeExecucaoReflora) {
                 atualizaTabelaConfiguracao(1, existeExecucaoReflora[0].id, getHoraAtual(), null, existeExecucaoReflora[0].periodicidade, moment().day(agendamento)
                     .format('DD/MM/YYYY'));
             });
-        } else {
-            // eslint-disable-next-line no-console
-            console.log(`Não tá na hora ${moment().format('HH')}`);
         }
-    } else {
-        // eslint-disable-next-line no-console
-        console.log(`Não tá no dia ${moment().format('DD/MM/YYYY')}`);
     }
 }
 
