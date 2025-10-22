@@ -14,6 +14,7 @@ const {
     Coletor,
     Familia,
     Especie,
+    Subfamilia,
 
     Subespecie,
     Variedade,
@@ -98,6 +99,9 @@ export default function fichaTomboController(request, response, next) {
                     },
                 },
                 {
+                    model: Subfamilia,
+                },
+                {
                     model: Variedade,
                     include: {
                         model: Autor,
@@ -144,7 +148,6 @@ export default function fichaTomboController(request, response, next) {
             ];
 
             const where = {
-                ativo: true,
                 hcf: parseInt(tomboId),
             };
 
@@ -200,7 +203,6 @@ export default function fichaTomboController(request, response, next) {
             ];
 
             const where = {
-                ativo: true,
                 tombo_hcf: tombo.hcf,
             };
 
@@ -214,8 +216,21 @@ export default function fichaTomboController(request, response, next) {
                     return { ...resultado, fotos };
                 });
         })
-        .then(resultado => {
+        .then(async resultado => {
             const { tombo, identificacao, fotos } = resultado;
+
+            // await Subfamilia.findAll({
+            //     where: {
+            //         familia_id: dadosTombo.familia?.id,
+            //     },
+            //     include: [
+            //         {
+            //             model: Autor,
+            //             attributes: ['id', 'nome'],
+            //             as: 'autor',
+            //         },
+            //     ],
+            // });
 
             // eslint-disable-next-line max-len
             const coletores = `${!!tombo?.coletore?.nome !== false ? tombo?.coletore?.nome?.concat(' ') : ''}${tombo?.coletor_complementar ? tombo.coletor_complementar?.complementares : ''}`;
@@ -261,6 +276,7 @@ export default function fichaTomboController(request, response, next) {
                 especie: tombo.especie,
                 variedade: tombo.variedade,
                 subespecie: tombo.sub_especy,
+                subfamilia: tombo.sub_familia,
 
                 relevo: tombo?.relevo?.nome || '',
                 vegetacao: tombo?.vegetaco?.nome || '',

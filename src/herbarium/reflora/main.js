@@ -33,16 +33,10 @@ function verificaRequisicoesAgendado(existeExecucaoReflora) {
     if (moment().format('DD/MM/YYYY') === existeExecucaoReflora[0].data_proxima_atualizacao) {
         if (moment().format('HH') === '00') {
             preparaExecucao(existeExecucaoReflora[0], 1).then(() => {
-                atualizaTabelaConfiguracao("REFLORA", existeExecucaoReflora[0].id, getHoraAtual(), null, existeExecucaoReflora[0].periodicidade, moment().day(agendamento)
+                atualizaTabelaConfiguracao('REFLORA', existeExecucaoReflora[0].id, getHoraAtual(), null, existeExecucaoReflora[0].periodicidade, moment().day(agendamento)
                     .format('DD/MM/YYYY'));
             });
-        } else {
-            // eslint-disable-next-line no-console
-            console.log(`Não tá na hora ${moment().format('HH')}`);
         }
-    } else {
-        // eslint-disable-next-line no-console
-        console.log(`Não tá no dia ${moment().format('DD/MM/YYYY')}`);
     }
 }
 
@@ -56,10 +50,10 @@ function verificaRequisicoesAgendado(existeExecucaoReflora) {
  */
 export function daemonFazRequisicaoReflora() {
     setInterval(() => {
-        selectEstaExecutandoServico("REFLORA").then(existeExecucaoReflora => {
+        selectEstaExecutandoServico('REFLORA').then(existeExecucaoReflora => {
             if (existeExecucaoReflora.length === 1) {
                 if (existeExecucaoReflora[0].periodicidade === 'MANUAL') {
-                    preparaExecucao(existeExecucaoReflora[0], "REFLORA");
+                    preparaExecucao(existeExecucaoReflora[0], 'REFLORA');
                 } else {
                     verificaRequisicoesAgendado(existeExecucaoReflora);
                 }

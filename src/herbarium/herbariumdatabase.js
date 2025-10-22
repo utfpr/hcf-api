@@ -162,7 +162,7 @@ export function insereExecucao(horaAtual, horaFim, periodicidadeUsuario, proxima
  * quando terminar de realizar a atualização.
  */
 export function atualizaTabelaConfiguracao(idServico, idExecucao, horaInicio, horaFim, periodicidadeUsuario, proximaAtualizacao) {
-    if (idServico === "REFLORA") {
+    if (idServico === 'REFLORA') {
         const tabelaConfiguracaoReflora = modeloConfiguracao(conexao, Sequelize);
         const promessa = Q.defer();
         tabelaConfiguracaoReflora.update(

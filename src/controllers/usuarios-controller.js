@@ -11,7 +11,6 @@ const {
 
 export const encontraUsuarioAtivoPorEmail = email => {
     const where = {
-        ativo: true,
         email,
     };
 
@@ -57,7 +56,6 @@ export const encontrarUsuario = id => Usuario.findOne({
     }],
     where: {
         id,
-        ativo: true,
     },
 });
 
@@ -115,9 +113,7 @@ export const recuperarSenha = (request, response, next) => {
 export const listagem = (request, response, next) => {
     const { limite, pagina, offset } = request.paginacao;
 
-    const where = {
-        ativo: true,
-    };
+    const where = {};
 
     const {
         nome, tipo, email, telefone,
@@ -206,18 +202,34 @@ export const editar = (request, response, next) => {
 
 export const desativar = (request, response, next) => {
     const usuarioId = parseInt(request.params.usuario_id);
+
     Promise.resolve()
-        .then(() => Usuario.update({
-            ativo: false,
-        }, {
-            where: {
-                id: usuarioId,
-            },
+        .then(() => Usuario.findOne({
+            where: { id: usuarioId },
         }))
-        .then(retorno => {
-            if (!retorno[0]) {
+        .then(usuario => {
+            if (!usuario) {
                 throw new BadRequestExeption(106);
             }
+            return usuario;
+        })
+        .then(() => {
+            const { Alteracao } = models;
+            return Alteracao.count({
+                where: {
+                    usuario_id: usuarioId,
+                },
+            });
+        })
+        .then(alteracoesCount => {
+            if (alteracoesCount > 0) {
+                throw new BadRequestExeption('Usuário não pode ser excluído porque possui dependentes.');
+            }
+        })
+        .then(() => Usuario.destroy({
+            where: { id: usuarioId },
+        }))
+        .then(() => {
             response.status(codigos.DESATIVAR).send();
         })
         .catch(next);
@@ -247,7 +259,6 @@ export const obtemColetores = (request, response, next) => {
             attributes: ['id', 'nome'],
             order: [['nome', 'ASC']],
             where: {
-                ativo: true,
                 nome: { [Op.like]: `%${nome}%` },
             },
             limit: 10,
@@ -282,7 +293,7 @@ export const atualizarSenha = (request, response, next) => {
 
     Promise.resolve()
         .then(() => Usuario.scope(null).findOne({
-            where: { id: usuarioId, ativo: true },
+            where: { id: usuarioId },
             attributes: ['senha'],
         }))
         .then(user => {

@@ -11,8 +11,5 @@ export default {
         in: 'body',
         isString: true,
         optional: true,
-        isLength: {
-            options: [{ min: 3 }],
-        },
     },
 };

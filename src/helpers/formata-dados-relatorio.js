@@ -232,7 +232,7 @@ export function agruparPorLocal(dados) {
     const agrupado = {};
     let quantidadeTotal = 0;
 
-    dados.forEach(entradaOriginal => {
+    dados.sort((a, b) => a?.familia?.nome.localeCompare(b?.familia?.nome)).forEach(entradaOriginal => {
         const locaisColetum = entradaOriginal.locais_coletum;
         const cidade = locaisColetum?.cidade;
         const estado = cidade?.estado?.nome || 'Desconhecido';

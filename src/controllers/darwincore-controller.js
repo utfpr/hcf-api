@@ -52,7 +52,6 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
         limit,
         offset,
         where: {
-            ativo: true,
             rascunho: false,
         },
         attributes: [
@@ -335,11 +334,6 @@ export const obterModeloDarwinCore = async (request, response, next) => {
     const limit = request.query.limit > 1000 ? 1000 : request.query.limit || 1000;
 
     const quantidadeTombos = await Tombo.count(
-        {
-            where: {
-                ativo: true,
-            },
-        },
         { distinct: true }
     );
 

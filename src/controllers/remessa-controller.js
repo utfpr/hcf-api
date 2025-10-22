@@ -26,7 +26,6 @@ export const cadastro = (request, response, next) => {
         .then(() => {
             const { herbario_id: herbarioId } = request.body.remessa;
             const where = {
-                ativo: true,
                 id: herbarioId,
             };
 
@@ -40,7 +39,6 @@ export const cadastro = (request, response, next) => {
         .then(() => {
             const { entidade_destino_id: entidadeDestino } = request.body.remessa;
             const where = {
-                ativo: true,
                 id: entidadeDestino,
             };
 
@@ -59,7 +57,6 @@ export const cadastro = (request, response, next) => {
             return Tombo.findAndCountAll({
                 where: {
                     [Op.or]: hcf,
-                    ativo: true,
                     rascunho: false,
                     situacao: 'REGULAR',
                 },
@@ -160,7 +157,6 @@ export const listagem = (request, response, next) => {
         whereTombo = {
             hcf: numTombo,
             rascunho: false,
-            ativo: true,
         };
     }
     Promise.resolve()
@@ -246,7 +242,6 @@ export const alteracao = (request, response, next) => {
         .then(() => {
             const { herbario_id: herbarioId } = request.body.remessa;
             const where = {
-                ativo: true,
                 id: herbarioId,
             };
 
@@ -260,7 +255,6 @@ export const alteracao = (request, response, next) => {
         .then(() => {
             const { entidade_destino_id: entidadeDestino } = request.body.remessa;
             const where = {
-                ativo: true,
                 id: entidadeDestino,
             };
 
@@ -298,7 +292,6 @@ export const alteracao = (request, response, next) => {
             return Tombo.findAndCountAll({
                 where: {
                     [Op.or]: hcf,
-                    ativo: true,
                     rascunho: false,
                     situacao: 'REGULAR',
                 },
@@ -495,7 +488,6 @@ export const devolverTombo = (request, response, next) => {
         .then(() => Tombo.findOne({
             where: {
                 hcf,
-                ativo: true,
                 rascunho: false,
                 situacao: 'EMPRESTIMO',
             },

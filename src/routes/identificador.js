@@ -229,4 +229,47 @@ export default app => {
         validacoesMiddleware(atualizarIdentificadorEsquema),
         identificadoresController.atualizaIdentificador,
     ]);
+
+    /**
+     * @swagger
+     * /identificadores/{id}:
+     *   delete:
+     *     summary: Remove um identificador
+     *     tags: [Identificadores]
+     *     description: Remove um identificador pelo ID. Verifica se não há tombos associados antes de remover.
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: ID do identificador
+     *     responses:
+     *       204:
+     *         description: Identificador removido com sucesso
+     *       '400':
+     *         description: Não é possível excluir - existem tombos associados
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 mensagem:
+     *                   type: string
+     *               example:
+     *                 mensagem: "Não é possível excluir o identificador. Existem 5 tombo(s) associado(s) a este identificador."
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '404':
+     *         $ref: '#/components/responses/NotFound'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
+     */
+    app.route('/identificadores/:id')
+        .delete([
+            tokensMiddleware([TIPOS_USUARIOS.CURADOR]),
+            identificadoresController.excluirIdentificador,
+        ]);
 };
