@@ -554,4 +554,8 @@ export default app => {
             validacoesMiddleware(atualizarSenhaEsquema),
             controller.atualizarSenha,
         ]);
+<<<<<<< HEAD
 };
+=======
+};
+>>>>>>> c83d0f3c41089c5ccbae26789fe5bbac7b34a3e5
