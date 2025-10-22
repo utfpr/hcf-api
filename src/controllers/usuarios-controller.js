@@ -290,7 +290,7 @@ export const obtemIdentificadores = (request, response, next) => {
 
 export const atualizarSenha = (request, response, next) => {
     const { usuarioId } = request.params;
-    const { senhaAtual, novaSenha } = request.body;
+    const { senha_atual, nova_senha } = request.body;
 
     Promise.resolve()
         .then(() => Usuario.scope(null).findOne({
@@ -305,11 +305,11 @@ export const atualizarSenha = (request, response, next) => {
                 throw new BadRequestExeption(100);
             }
 
-            if (!comparaSenha(senhaAtual, user.senha)) {
+            if (!comparaSenha(senha_atual, user.senha)) {
                 throw new BadRequestExeption(100);
             }
-            const novaSenhaHash = gerarSenha(novaSenha);
-            return Usuario.update({ senha: novaSenhaHash }, { where: { id: usuarioId } });
+            const nova_senhaHash = gerarSenha(nova_senha);
+            return Usuario.update({ senha: nova_senhaHash }, { where: { id: usuarioId } });
         })
         .then(() => {
             response.status(codigos.EDITAR_SEM_RETORNO).send();
@@ -364,10 +364,10 @@ export const solicitarResetSenha = async (request, response, next) => {
 
 
 export const redefinirSenhaComToken = async (request, response, next) => {
-  const { token, novaSenha } = request.body;
+  const { token, nova_senha } = request.body;
 
   try {
-    if (!token || !novaSenha) {
+    if (!token || !nova_senha) {
       throw new BadRequestExeption(400, 'Token e nova senha são obrigatórios.');
     }
 
@@ -386,10 +386,10 @@ export const redefinirSenhaComToken = async (request, response, next) => {
       });
     }
 
-    const novaSenhaHash = gerarSenha(novaSenha);
+    const nova_senhaHash = gerarSenha(nova_senha);
     await Usuario.update(
       {
-        senha: novaSenhaHash,
+        senha: nova_senhaHash,
         reset_token: null,
         reset_token_expiration: null,
       },

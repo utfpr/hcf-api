@@ -3,7 +3,7 @@ export default {
         isEmpty: false,
         errorMessage: 'O token é obrigatório.',
     },
-    novaSenha: {
+    nova_senha: {
         isEmpty: false,
         errorMessage: 'A nova senha é obrigatória.',
     },
