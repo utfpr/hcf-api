@@ -25,11 +25,46 @@ function apenasNumeros(string) {
     return parseInt(numsStr);
 }
 
+const isValidImageType = file => {
+    const allowedMimeTypes = [
+        'image/jpeg',
+        'image/jpg',
+        'image/png',
+        'image/gif',
+        'image/bmp',
+        'image/webp',
+        'image/tiff',
+        'image/svg+xml',
+    ];
+
+    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.tiff', '.svg'];
+
+    if (!allowedMimeTypes.includes(file.mimetype)) {
+        return false;
+    }
+
+    const fileExtension = file.originalname.toLowerCase().substring(file.originalname.lastIndexOf('.'));
+    if (!allowedExtensions.includes(fileExtension)) {
+        return false;
+    }
+
+    return true;
+};
+
 export const post = (request, response, next) => {
     const { file, body } = request;
 
     if (!file) {
         return response.status(400).json({ error: 'Nenhum arquivo foi enviado' });
+    }
+
+    if (!isValidImageType(file)) {
+        if (existsSync(file.path)) {
+            unlinkSync(file.path);
+        }
+        return response.status(400).json({
+            error: 'Apenas arquivos de imagem são permitidos (PNG, JPEG, JPG, GIF, BMP, WEBP, TIFF, SVG)',
+        });
     }
 
     if (!body.codigo_foto) {
@@ -62,7 +97,6 @@ export const post = (request, response, next) => {
                     unlinkSync(existingFilePath);
                 }
             }
-            
 
             renameSync(file.path, filePath);
 
