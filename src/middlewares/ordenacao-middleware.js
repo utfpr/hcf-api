@@ -38,7 +38,13 @@ const criaListagemMiddleware = (allowedColumns, defaultSort = 'nome', defaultDir
     } else if (column === 'familia') {
         orderClause = [['nome', direction.toUpperCase()]];
 
-        if (!request.path.includes('/familias')) orderClause = [[{ model: Familia }, 'nome', direction.toUpperCase()]];
+        if (request.path.includes('/variedades') || request.path.includes('/subespecies')) {
+            orderClause = [[{ model: Especie, as: 'especie' }, { model: Genero }, { model: Familia }, 'nome', direction.toUpperCase()]];
+        } else if (request.path.includes('/especies')) {
+            orderClause = [[{ model: Genero }, { model: Familia }, 'nome', direction.toUpperCase()]];
+        } else if (request.path.includes('/generos') || request.path.includes('/subfamilias')) {
+            orderClause = [[{ model: Familia }, 'nome', direction.toUpperCase()]];
+        }
     } else if (column === 'subfamilia') {
         orderClause = [['nome', direction.toUpperCase()]];
 
@@ -46,11 +52,17 @@ const criaListagemMiddleware = (allowedColumns, defaultSort = 'nome', defaultDir
     } else if (column === 'genero') {
         orderClause = [['nome', direction.toUpperCase()]];
 
-        if (!request.path.includes('/generos')) orderClause = [[{ model: Genero }, 'nome', direction.toUpperCase()]];
+        if (request.path.includes('/variedades') || request.path.includes('/subespecies')) {
+            orderClause = [[{ model: Especie, as: 'especie' }, { model: Genero }, 'nome', direction.toUpperCase()]];
+        } else if (request.path.includes('/especies')) {
+            orderClause = [[{ model: Genero }, 'nome', direction.toUpperCase()]];
+        }
     } else if (column === 'especie') {
         orderClause = [['nome', direction.toUpperCase()]];
 
-        if (!request.path.includes('/especies')) orderClause = [[{ model: Especie, as: 'especie' }, 'nome', direction.toUpperCase()]];
+        if (request.path.includes('/variedades') || request.path.includes('/subespecies')) {
+            orderClause = [[{ model: Especie, as: 'especie' }, 'nome', direction.toUpperCase()]];
+        }
     } else if (column === 'subespecie') {
         orderClause = [['nome', direction.toUpperCase()]];
 

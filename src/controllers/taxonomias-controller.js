@@ -312,10 +312,16 @@ export const buscarSubfamilia = async (req, res, next) => {
             }
         }
 
-        const familiaWhere = {};
-        if (familiaNomeFiltro) {
-            familiaWhere.nome = { [Op.like]: `%${familiaNomeFiltro}%` };
-        }
+        const include = [
+            { 
+                model: Familia, 
+                attributes: ['id', 'nome'], 
+                where: familiaNomeFiltro ? { nome: { [Op.like]: `%${familiaNomeFiltro}%` } } : undefined,
+                required: true,
+                include: [{ model: Reino, attributes: ['id', 'nome'] }] 
+            },
+            { model: Autor, attributes: ['id', 'nome'], as: 'autor' },
+        ];
 
         const { count, rows } = await Subfamilia.findAndCountAll({
             attributes: ['id', 'nome'],
@@ -323,10 +329,7 @@ export const buscarSubfamilia = async (req, res, next) => {
             order: orderClause,
             limit: parseInt(limite, 10),
             offset: parseInt(offset, 10),
-            include: [
-                { model: Familia, attributes: ['id', 'nome'], where: familiaWhere, include: [{ model: Reino, attributes: ['id', 'nome'] }] },
-                { model: Autor, attributes: ['id', 'nome'], as: 'autor' },
-            ],
+            include,
         });
 
         return res.status(codigos.LISTAGEM).json({
@@ -486,8 +489,15 @@ export const buscarGeneros = async (request, response, next) => {
         if (genero) where.nome = { [Op.like]: `%${genero}%` };
         if (familiaId) where.familia_id = familiaId;
 
-        const familiaWhere = {};
-        if (familiaNome) familiaWhere.nome = { [Op.like]: `%${familiaNome}%` };
+        const include = [
+            { 
+                model: Familia, 
+                attributes: ['id', 'nome'], 
+                where: familiaNome ? { nome: { [Op.like]: `%${familiaNome}%` } } : undefined,
+                required: true,
+                include: [{ model: Reino, attributes: ['id', 'nome'] }], 
+            },
+        ];
 
         const result = await Genero.findAndCountAll({
             attributes: ['id', 'nome'],
@@ -495,9 +505,7 @@ export const buscarGeneros = async (request, response, next) => {
             limit: limite,
             offset,
             where,
-            include: [
-                { model: Familia, attributes: ['id', 'nome'], include: [{ model: Reino, attributes: ['id', 'nome'] }], where: familiaWhere },
-            ],
+            include,
         });
 
         return response.status(codigos.LISTAGEM).json({
@@ -683,11 +691,25 @@ export const buscarEspecies = async (request, response, next) => {
         if (especie) where.nome = { [Op.like]: `%${especie}%` };
         if (generoId) where.genero_id = generoId;
 
-        const familiaWhere = {};
-        if (familiaNome) familiaWhere.nome = { [Op.like]: `%${familiaNome}%` };
-
-        const generoWhere = {};
-        if (generoNome) generoWhere.nome = { [Op.like]: `%${generoNome}%` };
+        const include = [
+            {
+                model: Genero,
+                attributes: ['id', 'nome'],
+                where: generoNome ? { nome: { [Op.like]: `%${generoNome}%` } } : undefined,
+                required: true,
+                include: [{
+                    model: Familia,
+                    attributes: ['id', 'nome'],
+                    where: familiaNome ? { nome: { [Op.like]: `%${familiaNome}%` } } : undefined,
+                    required: true,
+                    include: [{
+                        model: Reino,
+                        attributes: ['id', 'nome'],
+                    }],
+                }],
+            },
+            { model: Autor, attributes: ['id', 'nome'], as: 'autor' },
+        ];
 
         const result = await Especie.findAndCountAll({
             attributes: ['id', 'nome'],
@@ -695,23 +717,7 @@ export const buscarEspecies = async (request, response, next) => {
             limit: limite,
             offset,
             where,
-            include: [
-                {
-                    model: Genero,
-                    attributes: ['id', 'nome'],
-                    where: generoWhere,
-                    include: [{
-                        model: Familia,
-                        attributes: ['id', 'nome'],
-                        where: familiaWhere,
-                        include: [{
-                            model: Reino,
-                            attributes: ['id', 'nome'],
-                        }],
-                    }],
-                },
-                { model: Autor, attributes: ['id', 'nome'], as: 'autor' },
-            ],
+            include,
         });
 
         return response.status(codigos.LISTAGEM).json({
@@ -917,14 +923,36 @@ export const buscarSubespecies = async (request, response, next) => {
         if (subespecie) where.nome = { [Op.like]: `%${subespecie}%` };
         if (especieId) where.especie_id = especieId;
 
-        const familiaWhere = {};
-        if (familiaNome) familiaWhere.nome = { [Op.like]: `%${familiaNome}%` };
-
-        const generoWhere = {};
-        if (generoNome) generoWhere.nome = { [Op.like]: `%${generoNome}%` };
-
-        const especieWhere = {};
-        if (especieNome) especieWhere.nome = { [Op.like]: `%${especieNome}%` };
+        const include = [
+            {
+                model: Especie,
+                attributes: ['id', 'nome'],
+                where: especieNome ? { nome: { [Op.like]: `%${especieNome}%` } } : undefined,
+                required: true,
+                as: 'especie',
+                include: [{
+                    model: Genero,
+                    attributes: ['id', 'nome'],
+                    where: generoNome ? { nome: { [Op.like]: `%${generoNome}%` } } : undefined,
+                    required: true,
+                    include: [{
+                        model: Familia,
+                        attributes: ['id', 'nome'],
+                        where: familiaNome ? { nome: { [Op.like]: `%${familiaNome}%` } } : undefined,
+                        required: true,
+                        include: [{
+                            model: Reino,
+                            attributes: ['id', 'nome'],
+                        }],
+                    }],
+                }],
+            },
+            {
+                model: Autor,
+                attributes: ['id', 'nome'],
+                as: 'autor',
+            },
+        ];
 
         const result = await Subespecie.findAndCountAll({
             attributes: ['id', 'nome'],
@@ -932,33 +960,7 @@ export const buscarSubespecies = async (request, response, next) => {
             limit: limite,
             offset,
             where,
-            include: [
-                {
-                    model: Especie,
-                    attributes: ['id', 'nome'],
-                    where: especieWhere,
-                    as: 'especie',
-                    include: [{
-                        model: Genero,
-                        attributes: ['id', 'nome'],
-                        where: generoWhere,
-                        include: [{
-                            model: Familia,
-                            attributes: ['id', 'nome'],
-                            where: familiaWhere,
-                            include: [{
-                                model: Reino,
-                                attributes: ['id', 'nome'],
-                            }],
-                        }],
-                    }],
-                },
-                {
-                    model: Autor,
-                    attributes: ['id', 'nome'],
-                    as: 'autor',
-                },
-            ],
+            include,
         });
 
         return response.status(codigos.LISTAGEM).json({
@@ -1171,14 +1173,36 @@ export const buscarVariedades = async (request, response, next) => {
         if (variedade) where.nome = { [Op.like]: `%${variedade}%` };
         if (especieId) where.especie_id = especieId;
 
-        const familiaWhere = {};
-        if (familiaNome) familiaWhere.nome = { [Op.like]: `%${familiaNome}%` };
-
-        const generoWhere = {};
-        if (generoNome) generoWhere.nome = { [Op.like]: `%${generoNome}%` };
-
-        const especieWhere = {};
-        if (especieNome) especieWhere.nome = { [Op.like]: `%${especieNome}%` };
+        const include = [
+            {
+                model: Especie,
+                attributes: ['id', 'nome'],
+                where: especieNome ? { nome: { [Op.like]: `%${especieNome}%` } } : undefined,
+                required: true,
+                as: 'especie',
+                include: [{
+                    model: Genero,
+                    attributes: ['id', 'nome'],
+                    where: generoNome ? { nome: { [Op.like]: `%${generoNome}%` } } : undefined,
+                    required: true,
+                    include: [{
+                        model: Familia,
+                        attributes: ['id', 'nome'],
+                        where: familiaNome ? { nome: { [Op.like]: `%${familiaNome}%` } } : undefined,
+                        required: true,
+                        include: [{
+                            model: Reino,
+                            attributes: ['id', 'nome'],
+                        }],
+                    }],
+                }],
+            },
+            {
+                model: Autor,
+                attributes: ['id', 'nome'],
+                as: 'autor',
+            },
+        ];
 
         const result = await Variedade.findAndCountAll({
             attributes: ['id', 'nome'],
@@ -1186,33 +1210,7 @@ export const buscarVariedades = async (request, response, next) => {
             limit: limite,
             offset,
             where,
-            include: [
-                {
-                    model: Especie,
-                    attributes: ['id', 'nome'],
-                    where: especieWhere,
-                    as: 'especie',
-                    include: [{
-                        model: Genero,
-                        attributes: ['id', 'nome'],
-                        where: generoWhere,
-                        include: [{
-                            model: Familia,
-                            attributes: ['id', 'nome'],
-                            where: familiaWhere,
-                            include: [{
-                                model: Reino,
-                                attributes: ['id', 'nome'],
-                            }],
-                        }],
-                    }],
-                },
-                {
-                    model: Autor,
-                    attributes: ['id', 'nome'],
-                    as: 'autor',
-                },
-            ],
+            include,
         });
 
         return response.status(codigos.LISTAGEM).json({
