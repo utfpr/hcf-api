@@ -313,12 +313,12 @@ export const buscarSubfamilia = async (req, res, next) => {
         }
 
         const include = [
-            { 
-                model: Familia, 
-                attributes: ['id', 'nome'], 
+            {
+                model: Familia,
+                attributes: ['id', 'nome'],
                 where: familiaNomeFiltro ? { nome: { [Op.like]: `%${familiaNomeFiltro}%` } } : undefined,
                 required: true,
-                include: [{ model: Reino, attributes: ['id', 'nome'] }] 
+                include: [{ model: Reino, attributes: ['id', 'nome'] }],
             },
             { model: Autor, attributes: ['id', 'nome'], as: 'autor' },
         ];
@@ -490,12 +490,12 @@ export const buscarGeneros = async (request, response, next) => {
         if (familiaId) where.familia_id = familiaId;
 
         const include = [
-            { 
-                model: Familia, 
-                attributes: ['id', 'nome'], 
+            {
+                model: Familia,
+                attributes: ['id', 'nome'],
                 where: familiaNome ? { nome: { [Op.like]: `%${familiaNome}%` } } : undefined,
                 required: true,
-                include: [{ model: Reino, attributes: ['id', 'nome'] }], 
+                include: [{ model: Reino, attributes: ['id', 'nome'] }],
             },
         ];
 
