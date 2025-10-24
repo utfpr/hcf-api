@@ -5,15 +5,27 @@ const {
     Estado,
 } = models;
 
-export const listaTodosPaises = () => Pais.findAndCountAll({
+const { Op } = require('sequelize');
+
+export const listaTodosPaises = where => Pais.findAndCountAll({
     attributes: {
         exclude: ['updated_at', 'created_at'],
     },
+    where,
 });
 
 export const listagem = (request, response, next) => {
+    let where = {};
+
+    if (request.query.nome) {
+        where = {
+            ...where,
+            nome: { [Op.like]: `%${request.query.nome}%` },
+        };
+    }
+
     Promise.resolve()
-        .then(() => listaTodosPaises())
+        .then(() => listaTodosPaises(where))
         .then(paises => {
             response.status(200).json(paises.rows);
         })

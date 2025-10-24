@@ -15,6 +15,12 @@ export default app => {
      *     summary: Lista todos os países
      *     tags: [Países]
      *     description: Retorna uma lista de países.
+     *     parameters:
+     *       - in: query
+     *         name: nome
+     *         schema:
+     *           type: string
+     *         description: Filtrar por nome do país
      *     responses:
      *       200:
      *         description: Lista de países retornada com sucesso

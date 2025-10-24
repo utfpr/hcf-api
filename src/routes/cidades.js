@@ -19,6 +19,17 @@ export default app => {
      *   get:
      *     summary: Lista todas as cidades
      *     tags: [Cidades]
+     *     parameters:
+     *       - in: query
+     *         name: nome
+     *         schema:
+     *           type: string
+     *         description: Filtrar por nome da cidade
+     *       - in: query
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         description: Filtrar por ID do estado
      *     responses:
      *       200:
      *         description: Lista de cidades retornada com sucesso
