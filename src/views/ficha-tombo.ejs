@@ -230,15 +230,6 @@
               <% if (tombo && tombo.descricao) { %>
                   <%- tombo.descricao %>
               <% } %>
-              <% if (tombo && tombo.latitude) { %>
-                  - Latitude: <%- tombo.latitude %>
-              <% } %>
-              <% if (tombo && tombo.longitude) { %>
-                  - Longitude: <%- tombo.longitude %>
-              <% } %>
-              <% if (tombo && tombo.altitude) { %>
-                  - Altitude: <%- tombo.altitude %>m
-              <% } %>
               <% if (tombo.solo) { %>
                   - Solo: <%- tombo.solo.nome %>
               <% } %>
@@ -247,6 +238,15 @@
               <% } %>
               <% if (tombo.vegetacao) { %>
                   - Vegetação: <%- tombo.vegetacao.nome %>
+              <% } %>
+              <% if (tombo && tombo.latitude) { %>
+                  - Latitude: <%- tombo.latitude %>
+              <% } %>
+              <% if (tombo && tombo.longitude) { %>
+                  - Longitude: <%- tombo.longitude %>
+              <% } %>
+              <% if (tombo && tombo.altitude) { %>
+                  - Altitude: <%- tombo.altitude %>m
               <% } %>
               <% if (localColeta && localColeta.fase_sucessional) { %>
                   - Fase sucessional: <%- localColeta.fase_sucessional.nome %>
