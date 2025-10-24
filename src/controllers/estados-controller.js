@@ -4,6 +4,8 @@ import BadRequestException from '../errors/bad-request-exception';
 import models from '../models';
 import codigos from '../resources/codigos-http';
 
+const { Op } = require('sequelize');
+
 const {
     Estado,
     Pais,
@@ -68,10 +70,15 @@ export const cadastrarEstado = (req, res, next) => {
 export const listagem = async (req, res, next) => {
     try {
         const paisId = req.query.pais_id ? parseInt(req.query.pais_id, 10) : undefined;
+        const { nome } = req.query;
 
         const where = {};
         if (!Number.isNaN(paisId) && paisId !== undefined) {
             where.pais_id = paisId;
+        }
+
+        if (nome) {
+            where.nome = { [Op.like]: `%${nome}%` };
         }
 
         const estados = await Estado.findAll({

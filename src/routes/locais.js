@@ -57,6 +57,12 @@ export default app => {
      *   get:
      *     summary: Lista todos os solos
      *     tags: [Locais]
+     *     parameters:
+     *       - in: query
+     *         name: nome
+     *         schema:
+     *           type: string
+     *         description: Filtrar por nome do solo
      *     responses:
      *       200:
      *         description: Lista de solos
@@ -131,6 +137,12 @@ export default app => {
      *   get:
      *     summary: Lista todos os relevos
      *     tags: [Locais]
+     *     parameters:
+     *       - in: query
+     *         name: nome
+     *         schema:
+     *           type: string
+     *         description: Filtrar por nome do relevo
      *     responses:
      *       200:
      *         description: Lista de relevos
@@ -205,6 +217,12 @@ export default app => {
      *   get:
      *     summary: Lista todas as vegetações
      *     tags: [Locais]
+     *     parameters:
+     *       - in: query
+     *         name: nome
+     *         schema:
+     *           type: string
+     *         description: Filtrar por nome da vegetação
      *     responses:
      *       200:
      *         description: Lista de vegetações

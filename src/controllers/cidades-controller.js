@@ -147,9 +147,17 @@ export const listaTodosCidades = where =>
 export const listagem = (request, response, next) => {
     let where = {};
 
-    if (request.query.id !== undefined) {
+    if (request.query.estado_id !== undefined) {
         where = {
-            estado_id: request.query.id,
+            ...where,
+            estado_id: request.query.estado_id,
+        };
+    }
+
+    if (request.query.nome) {
+        where = {
+            ...where,
+            nome: { [Op.like]: `%${request.query.nome}%` },
         };
     }
 
