@@ -1,9 +1,10 @@
 import { UserRegistrationDTO } from '../dtos/UserRegistrationDTO';
 import BadRequestExeption from '../errors/bad-request-exception';
 import { comparaSenha, gerarSenha } from '../helpers/senhas';
-import { constroiPayloadUsuario, geraTokenUsuario } from '../helpers/tokens';
+import { constroiPayloadUsuario, geraTokenUsuario, geraTokenResetSenha } from '../helpers/tokens';
 import models from '../models';
 import codigos from '../resources/codigos-http';
+import nodemailer from 'nodemailer';
 
 const {
     Sequelize: { Op }, Usuario, TipoUsuario, Coletor, Identificador,
@@ -289,7 +290,7 @@ export const obtemIdentificadores = (request, response, next) => {
 
 export const atualizarSenha = (request, response, next) => {
     const { usuarioId } = request.params;
-    const { senhaAtual, novaSenha } = request.body;
+    const { senha_atual, nova_senha } = request.body;
 
     Promise.resolve()
         .then(() => Usuario.scope(null).findOne({
@@ -304,16 +305,105 @@ export const atualizarSenha = (request, response, next) => {
                 throw new BadRequestExeption(100);
             }
 
-            if (!comparaSenha(senhaAtual, user.senha)) {
+            if (!comparaSenha(senha_atual, user.senha)) {
                 throw new BadRequestExeption(100);
             }
-            const novaSenhaHash = gerarSenha(novaSenha);
-            return Usuario.update({ senha: novaSenhaHash }, { where: { id: usuarioId } });
+            const nova_senhaHash = gerarSenha(nova_senha);
+            return Usuario.update({ senha: nova_senhaHash }, { where: { id: usuarioId } });
         })
         .then(() => {
             response.status(codigos.EDITAR_SEM_RETORNO).send();
         })
         .catch(next);
+};
+
+export const solicitarResetSenha = async (request, response, next) => {
+  const { email } = request.body;
+  try {
+    const user = await encontraUsuarioAtivoPorEmail(email);
+    if (user) {
+      const token = geraTokenResetSenha(user.id);
+      const dataExpiracao = new Date();
+      dataExpiracao.setMinutes(dataExpiracao.getMinutes() + 45);
+
+      await Usuario.update(
+        { reset_token: token, reset_token_expiration: dataExpiracao },
+        { where: { id: user.id } }
+      );
+
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: process.env.SMTP_PORT,
+        secure: false,
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+      });
+
+      const link = `${process.env.URL_PAINEL}reset-senha?token=${token}`;
+      await transporter.sendMail({
+        from: process.env.SMTP_FROM || '"Sistema HCF" <no-reply@hcf.com>',
+        to: email,
+        subject: 'Redefinição de senha',
+        html: `
+          <p>Olá ${user.nome},</p>
+          <p>Você solicitou uma redefinição de senha.</p>
+          <p>Não compartilhe esse link.</p>
+          <p>Clique no link abaixo para criar uma nova senha (válido por 45 minutos):</p>
+          <a href="${link}">${link}</a>
+        `,
+      });
+    }
+
+    return response.status(codigos.EDITAR_SEM_RETORNO).send();
+  } catch (err) {
+    return next(err);
+  }
+};
+
+
+export const redefinirSenhaComToken = async (request, response, next) => {
+  const { token, nova_senha } = request.body;
+
+  try {
+    if (!token || !nova_senha) {
+      throw new BadRequestExeption(400, 'Token e nova senha são obrigatórios.');
+    }
+
+    const user = await Usuario.findOne({
+      where: {
+        reset_token: token,
+        reset_token_expiration: { [Op.gt]: new Date() },
+        ativo: true,
+      },
+    });
+
+    if (!user) {
+      return response.status(400).json({
+        sucesso: false,
+        mensagem: 'Token inválido ou expirado.',
+      });
+    }
+
+    const nova_senhaHash = gerarSenha(nova_senha);
+    await Usuario.update(
+      {
+        senha: nova_senhaHash,
+        reset_token: null,
+        reset_token_expiration: null,
+      },
+      { where: { id: user.id } }
+    );
+
+    return response.status(200).json({
+      sucesso: true,
+      mensagem: 'Senha redefinida com sucesso.',
+    });
+  } catch (err) {
+    // ✅ Remove console.error para passar no lint
+    return next(err);
+  }
 };
 
 export default {};

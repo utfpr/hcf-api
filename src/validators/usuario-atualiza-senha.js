@@ -1,9 +1,9 @@
 export default {
-    senhaAtual: {
+    senha_atual: {
         isEmpty: false,
         isString: true,
     },
-    novaSenha: {
+    nova_senha: {
         isEmpty: false,
         isString: true,
         isLength: {

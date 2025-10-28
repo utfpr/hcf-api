@@ -65,6 +65,19 @@ export default (Sequelize, DataTypes) => {
             type: DataTypes.STRING(200),
             allowNull: false,
         },
+        ativo: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: true,
+        },
+        reset_token: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        reset_token_expiration: {
+            type: DataTypes.DATE,
+            allowNull: true,
+        },
     };
 
     const options = {

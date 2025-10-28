@@ -1,5 +1,3 @@
-import rateLimit from 'express-rate-limit';
-
 import listagensMiddleware from '../middlewares/listagens-middleware';
 import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middleware';
 import validacoesMiddleware from '../middlewares/validacoes-middleware';
@@ -9,21 +7,10 @@ import cadastrarUsuarioEsquema from '../validators/usuario-cadastro';
 import desativarUsuarioEsquema from '../validators/usuario-desativa';
 import listagemUsuarioEsquema from '../validators/usuario-listagem';
 import usuarioLoginEsquema from '../validators/usuario-login';
+import solicitarResetSenhaEsquema from '../validators/usuario-solicita-reset';
+import redefinirSenhaEsquema from '../validators/usuario-redefine-senha';
 
 const controller = require('../controllers/usuarios-controller');
-
-// Rate limiting for login attempts
-const loginLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5, // Limit each IP to 5 login requests per windowMs
-    message: {
-        error: {
-            code: 429,
-            message: 'Muitas tentativas de login. Tente novamente em 15 minutos.',
-        },
-    },
-    skipSuccessfulRequests: true, // Don't count successful requests
-});
 
 /**
  * @swagger
@@ -32,6 +19,78 @@ const loginLimiter = rateLimit({
  *   description: Operações relacionadas aos usuários
  */
 export default app => {
+
+    /**
+   * @swagger
+   * /usuarios/redefinir-senha:
+   *   put:
+   *     summary: Redefine a senha do usuário usando um token válido
+   *     tags: [Usuários]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               token:
+   *                 type: string
+   *               nova_senha:
+   *                 type: string
+   *             required:
+   *               - token
+   *               - nova_senha
+   *           example:
+   *             token: "a1b2c3d4e5f6..."
+   *             nova_senha: "minhanova_senhaSuperSegura123"
+   *     responses:
+   *       '204':
+   *         description: Senha atualizada com sucesso.
+   *       '400':
+   *         $ref: '#/components/responses/BadRequest'
+   *       '500':
+   *         $ref: '#/components/responses/InternalServerError'
+   */
+    app.route('/usuarios/redefinir-senha')
+        .put([
+            validacoesMiddleware(redefinirSenhaEsquema),
+            controller.redefinirSenhaComToken,
+        ]);
+
+    /**
+* @swagger
+* /usuarios/solicitar-redefinicao-senha:
+*   post:
+*     summary: Inicia o processo de reset de senha para um usuário
+*     tags: [Usuários]
+*     requestBody:
+*       required: true
+*       content:
+*         application/json:
+*           schema:
+*             type: object
+*             properties:
+*               email:
+*                 type: string
+*                 format: email
+*             required:
+*               - email
+*           example:
+*             email: "usuario@exemplo.com"
+*     responses:
+*       '204':
+*         description: Solicitação recebida. Se o e-mail estiver cadastrado, um link para reset de senha será enviado.
+*       '400':
+*         $ref: '#/components/responses/BadRequest'
+*       '500':
+*         $ref: '#/components/responses/InternalServerError'
+*/
+    app.route('/usuarios/solicitar-redefinicao-senha')
+        .post([
+            validacoesMiddleware(solicitarResetSenhaEsquema),
+            controller.solicitarResetSenha,
+        ]);
+
     /**
      * @swagger
      * /login:
@@ -85,7 +144,6 @@ export default app => {
      */
     app.route('/login')
         .post([
-            loginLimiter,
             validacoesMiddleware(usuarioLoginEsquema),
             controller.login,
         ]);
@@ -465,7 +523,7 @@ export default app => {
      *             required:
      *               - senha
      *           example:
-     *             senha: "novaSenha123"
+     *             senha: "nova_senha123"
      *     responses:
      *       200:
      *         description: Senha atualizada com sucesso
@@ -496,4 +554,8 @@ export default app => {
             validacoesMiddleware(atualizarSenhaEsquema),
             controller.atualizarSenha,
         ]);
+<<<<<<< HEAD
 };
+=======
+};
+>>>>>>> c83d0f3c41089c5ccbae26789fe5bbac7b34a3e5
