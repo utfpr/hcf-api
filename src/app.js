@@ -86,13 +86,14 @@ app.post('/reports/:fileName', generatePreview);
 app.use(
     '/uploads',
     express.static(upload, {
-        index: false,
-        redirect: false,
-        setHeaders: res => {
-            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-        },
-    })
-);
+      index: false,
+      redirect: false,
+      setHeaders: (res) => {
+        res.setHeader('Cache-Control', 'public, max-age=2592000, immutable');
+        res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+      },
+    }),
+  );
 
 app.use('/api', routes);
 
