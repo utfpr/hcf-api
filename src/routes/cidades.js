@@ -1,10 +1,9 @@
+import * as controller from '../controllers/cidades-controller';
 import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middleware';
 import validacoesMiddleware from '../middlewares/validacoes-middleware';
 import atualizarCidadeEsquema from '../validators/cidade-atualiza';
 import cadastrarCidadeEsquema from '../validators/cidade-cadastro';
 import desativarCidadeEsquema from '../validators/cidade-desativa';
-
-const controller = require('../controllers/cidades-controller');
 
 /**
  * @swagger

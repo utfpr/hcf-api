@@ -1,5 +1,6 @@
 import rateLimit from 'express-rate-limit';
 
+import * as controller from '../controllers/usuarios-controller';
 import listagensMiddleware from '../middlewares/listagens-middleware';
 import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middleware';
 import validacoesMiddleware from '../middlewares/validacoes-middleware';
@@ -11,8 +12,6 @@ import listagemUsuarioEsquema from '../validators/usuario-listagem';
 import usuarioLoginEsquema from '../validators/usuario-login';
 import redefinirSenhaEsquema from '../validators/usuario-redefine-senha';
 import solicitarTrocaDeSenhaEsquema from '../validators/usuario-solicita-redefine-senha';
-
-const controller = require('../controllers/usuarios-controller');
 
 // Rate limiting for login attempts
 const loginLimiter = rateLimit({
@@ -162,7 +161,6 @@ export default app => {
             validacoesMiddleware(redefinirSenhaEsquema),
             controller.redefinirSenhaComToken,
         ]);
-
 
     /**
      * @swagger

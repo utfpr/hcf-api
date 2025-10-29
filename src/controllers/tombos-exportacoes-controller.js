@@ -92,7 +92,7 @@ function adicionaColunasTombosFotos(consulta, coluna, juncoes) {
         // Se a junção da tabela já foi feita, não faz de novo
         // pra não duplicar o INNER JOIN com a tabela
         consulta.leftJoin({ tbf: 'tombos_fotos' }, 'tbf.tombo_hcf', 'tmb.hcf');
-        juncoes.tbf = true; // eslint-disable-line
+        juncoes.tbf = true;
     }
 
     consulta.columns(coluna);
@@ -186,7 +186,7 @@ export default function exportacoes(request, response, next) {
 
             const colunas = Object.keys(tombos[0])
                 // Ordena para deixar a coluna "codigo_barra" sempre no final da tabela
-                .sort(a => a == 'codigo_barra' ? 1 : -1); // eslint-disable-line
+                .sort(a => a == 'codigo_barra' ? 1 : -1);
             const parametros = { colunas, tombos };
 
             const caminhoArquivoHtml = path.resolve(__dirname, '../views/exportacao-tombos.ejs');
