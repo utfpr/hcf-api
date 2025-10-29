@@ -55,7 +55,7 @@ export const post = (request, response, next) => {
     const { file, body } = request;
 
     if (!file) {
-        return response.status(400).json({ error: 'Nenhum arquivo foi enviado' });
+        return next(new BadRequestExeption(400, 'Nenhum arquivo foi enviado'));
     }
 
     if (!isValidImageType(file)) {
