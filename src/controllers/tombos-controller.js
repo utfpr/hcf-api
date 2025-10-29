@@ -1658,9 +1658,9 @@ export const verificarCoordenada = async (request, response, next) => {
             return response.status(404).json({ error: 'Cidade não encontrada' });
         }
 
-        response.json({ dentro: rows[0].dentro });
+        return response.json({ dentro: rows[0].dentro });
     } catch (err) {
-        next(err);
+        return next(err);
     }
 };
 
