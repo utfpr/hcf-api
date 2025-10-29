@@ -5724,6 +5724,11 @@ node-wkhtmltopdf@^2.0.0:
   resolved "https://registry.npmjs.org/node-wkhtmltopdf/-/node-wkhtmltopdf-2.0.0.tgz"
   integrity sha512-X/pMpExoExOOjkFI2+Uw4+jnzB25VT+maVkgVw5Gaiu1sCpMwUZqI9vmhC06N7tyGz9HYWkARXQBrcW0pfQKaQ==
 
+nodemailer@^7.0.10:
+  version "7.0.10"
+  resolved "https://registry.yarnpkg.com/nodemailer/-/nodemailer-7.0.10.tgz#540062dbbe574220b42e79d2d949956d3eac5a46"
+  integrity sha512-Us/Se1WtT0ylXgNFfyFSx4LElllVLJXQjWi2Xz17xWw7amDKO2MLtFnVp1WACy7GkVGs+oBlRopVNUzlrGSw1w==
+
 nodemon@3.1.9:
   version "3.1.9"
   resolved "https://registry.npmjs.org/nodemon/-/nodemon-3.1.9.tgz#df502cdc3b120e1c3c0c6e4152349019efa7387b"
