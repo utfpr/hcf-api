@@ -1632,4 +1632,36 @@ export const editarCodigoBarra = (request, response, next) => {
         .catch(next);
 };
 
+export const verificarCoordenada = async (request, response, next) => {
+    try {
+        const { cidade_id: cidadeId, latitude, longitude } = request.body;
+
+        if (!cidadeId || !latitude || !longitude) {
+            return response.status(400).json({ error: 'Parâmetros Inválidos' });
+        }
+
+        const query = `
+            SELECT ST_Contains(
+                poligono,
+                ST_SetSRID(ST_POINT($1, $2), 4674)
+            ) AS dentro
+            FROM cidades
+            WHERE id = $3;
+        `;
+
+        const rows = await sequelize.query(query, {
+            replacements: [longitude, latitude, cidadeId],
+            type: models.Sequelize.QueryTypes.SELECT,
+        });
+
+        if (!rows || rows.length === 0) {
+            return response.status(404).json({ error: 'Cidade não encontrada' });
+        }
+
+        response.json({ dentro: rows[0].dentro });
+    } catch (err) {
+        next(err);
+    }
+};
+
 export default {};
