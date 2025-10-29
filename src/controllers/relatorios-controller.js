@@ -183,19 +183,20 @@ export const obtemDadosDoRelatorioDeColetaPorLocalEIntervaloDeData = async (req,
             where: whereData,
             include: [
                 {
+                    model: Familia,
+                    attributes: ['id', 'nome'],
+                    // required: true,
+                },
+                {
+                    model: Genero,
+                    attributes: ['id', 'nome'],
+                    // required: true,
+                },
+                {
                     model: Especie,
                     attributes: ['id', 'nome'],
-                    required: true,
+                    // required: true,
                     include: [
-                        {
-                            model: Genero,
-                            attributes: ['id', 'nome'],
-                        },
-                        {
-                            model: Familia,
-                            attributes: ['id', 'nome'],
-                            required: true,
-                        },
                         {
                             model: Autor,
                             attributes: ['id', 'nome'],
@@ -214,13 +215,15 @@ export const obtemDadosDoRelatorioDeColetaPorLocalEIntervaloDeData = async (req,
         });
 
         if (req.method === 'GET') {
+            const dadosPuros = tombos.rows.map(registro => registro.get({ plain: true }));
+
             res.json({
                 metadados: {
-                    total: tombos.count,
+                    total: dadosPuros?.length,
                     pagina,
                     limite,
                 },
-                resultado: formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData(tombos),
+                resultado: formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData(dadosPuros),
                 filtro: formataTextFilter(local, dataInicio, dataFim || new Date()),
             });
             return;
@@ -502,24 +505,33 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
 
     try {
         const tombos = await Tombo.findAndCountAll({
-            attributes: ['hcf', 'numero_coleta', 'nome_cientifico', 'data_coleta_ano', 'data_coleta_mes', 'data_coleta_dia'],
+            attributes: [
+                'hcf',
+                'numero_coleta',
+                'familia_id',
+                'especie_id',
+                'genero_id',
+                'nome_cientifico',
+                'data_coleta_ano',
+                'data_coleta_mes',
+                'data_coleta_dia',
+            ],
             where: whereData,
             include: [
                 {
+                    model: Familia,
+                    attributes: ['id', 'nome'],
+                    // required: true,
+                },
+                {
+                    model: Genero,
+                    attributes: ['id', 'nome'],
+                    // required: true,
+                },
+                {
                     model: Especie,
                     attributes: ['id', 'nome'],
-                    required: true,
-                    include: [
-                        {
-                            model: Genero,
-                            attributes: ['id', 'nome'],
-                        },
-                        {
-                            model: Familia,
-                            attributes: ['id', 'nome'],
-                            required: true,
-                        },
-                    ],
+                    // required: true,
                 },
                 {
                     model: LocalColeta,

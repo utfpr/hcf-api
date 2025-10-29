@@ -41,7 +41,7 @@ export const formatarDadosParaRealtorioDeInventarioDeEspecies = dados => {
 const defineNomeCientifico = dado => {
     let nomeCientifico;
     const nomeEspecie = dado?.especy?.nome;
-    const nomeGenero = dado?.especy?.genero?.nome;
+    const nomeGenero = dado?.genero?.nome;
     if (nomeGenero && nomeEspecie) {
         nomeCientifico = `${nomeGenero} ${nomeEspecie}`;
     } else if (nomeGenero) {
@@ -65,9 +65,8 @@ export const formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData = dados 
         tombo: dado?.hcf,
         numeroColeta: dado.numero_coleta || '-',
         especie: defineNomeCientifico(dado),
-        familia: dado.especy.familia.nome,
+        familia: dado?.familia?.nome || 'Não Informada',
         autor: dado.especy?.autor?.nome || 'Não Informado',
-
     }));
 
     // Ordena os dados formatados por ordem alfabética
@@ -229,7 +228,7 @@ export function agruparPorLocal(dados) {
     const agrupado = {};
     let quantidadeTotal = 0;
 
-    dados.forEach(entradaOriginal => {
+    dados.sort((a, b) => a?.familia?.nome.localeCompare(b?.familia?.nome)).forEach(entradaOriginal => {
         const locaisColetum = entradaOriginal.locais_coletum;
         const cidade = locaisColetum?.cidade;
         const estado = cidade?.estado?.nome || 'Desconhecido';
