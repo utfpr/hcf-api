@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 import Q from 'q';
 import request from 'request';
 import throttledQueue from 'throttled-queue';

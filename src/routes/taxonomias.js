@@ -1,3 +1,4 @@
+import * as controller from '../controllers/taxonomias-controller';
 import listagensMiddleware from '../middlewares/listagens-middleware';
 import criaOrdenacaoMiddleware from '../middlewares/ordenacao-middleware';
 import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middleware';
@@ -29,8 +30,6 @@ import subfamiliaListagemEsquema from '../validators/subfamilia-listagem';
 import variedadeAtualizaEsquema from '../validators/variedade-atualiza';
 import variedadeDesativaEsquema from '../validators/variedade-desativa';
 import variedadeListagemEsquema from '../validators/variedade-listagem';
-
-const controller = require('../controllers/taxonomias-controller');
 
 const reinosOrdenacaoMiddleware = criaOrdenacaoMiddleware(['reino'], 'nome', 'asc');
 const familiasOrdenacaoMiddleware = criaOrdenacaoMiddleware(['reino', 'familia'], 'nome', 'asc');

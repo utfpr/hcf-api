@@ -170,7 +170,6 @@ export const postBarrSemFotos = (request, response, next) => {
         })
         .then(foto => {
             let nomeArquivo;
-            // @ts-ignore
             maximoGlobalCodBarras = apenasNumeros(maximoGlobalCodBarras);
 
             if (foto.em_vivo) {

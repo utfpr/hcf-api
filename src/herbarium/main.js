@@ -136,7 +136,6 @@ function ehPossivelFazerComparacao(nomeArquivo, idServico) {
  * @return promessa.promise, como é assíncrono ele só retorna quando resolver, ou seja,
  * quando acabar de realizar a comparação de informações.
  */
-// eslint-disable-next-line import/prefer-default-export
 export function preparaExecucao(existeExecucao, idServico) {
     const promessa = Q.defer();
     const nomeArquivo = processaNomeLog(existeExecucao.dataValues.hora_inicio);

@@ -1,7 +1,6 @@
 import fs from 'fs';
 import path from 'path';
 
-// eslint-disable-next-line
 const __basename = path.basename(__filename);
 
 const files = fs.readdirSync(__dirname)

@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+
 import { UserRegistrationDTO } from '../dtos/UserRegistrationDTO';
 import BadRequestExeption from '../errors/bad-request-exception';
 import { comparaSenha, gerarSenha } from '../helpers/senhas';
@@ -101,7 +102,7 @@ export const recuperarSenha = (request, response, next) => {
                     where: {
                         id: usuario.id,
                     },
-                }
+                },
             );
         })
         .then(retorno => {
@@ -328,7 +329,7 @@ export const solicitarTrocaDeSenha = async (request, response, next) => {
 
             await Usuario.update(
                 { token_troca_senha: token, token_troca_senha_expiracao: dataExpiracao },
-                { where: { id: user.id } }
+                { where: { id: user.id } },
             );
 
             const transporter = nodemailer.createTransport({
@@ -391,7 +392,7 @@ export const redefinirSenhaComToken = async (request, response, next) => {
                 token_troca_senha: null,
                 token_troca_senha_expiracao: null,
             },
-            { where: { id: user.id } }
+            { where: { id: user.id } },
         );
 
         return response.status(codigos.EDITAR_SEM_RETORNO).send();
