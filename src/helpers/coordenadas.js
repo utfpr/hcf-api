@@ -37,7 +37,6 @@ export const converteDecimalParaGraus = (decimal, isLat) => {
         return NaN;
     }
 
-    // eslint-disable-next-line no-mixed-operators
     const dec = abs % 1000000 / 1000000;
     const deg = Math.floor(abs / 1000000) * sign;
     const min = Math.floor(dec * 60);
@@ -87,7 +86,6 @@ export const converteDecimalParaGMSMinutos = (decimal, isLat) => {
         return NaN;
     }
 
-    // eslint-disable-next-line no-mixed-operators
     const dec = abs % 1000000 / 1000000;
     const min = Math.floor(dec * 60);
 
@@ -107,7 +105,6 @@ export const converteDecimalParaGMSSegundos = (decimal, isLat) => {
         return NaN;
     }
 
-    // eslint-disable-next-line no-mixed-operators
     const dec = abs % 1000000 / 1000000;
     const min = Math.floor(dec * 60);
     const sec = (dec - min / 60) * 3600;
@@ -129,7 +126,6 @@ export const converteDecimalParaGMSSinal = (decimal, isLat) => {
         return NaN;
     }
 
-    // eslint-disable-next-line no-mixed-operators
     const dec = abs % 1000000 / 1000000;
     const deg = Math.floor(abs / 1000000) * sign;
     const min = Math.floor(dec * 60);

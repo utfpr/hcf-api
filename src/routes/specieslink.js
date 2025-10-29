@@ -1,7 +1,6 @@
+import * as controllerComum from '../controllers/herbariovirtual-controller';
+import * as controller from '../controllers/specieslink-controller';
 import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middleware';
-
-const controllerComum = require('../controllers/herbariovirtual-controller');
-const controller = require('../controllers/specieslink-controller');
 
 /**
  * Essa variável app, está relacionada as rotas que vem do front end. Então se no front end

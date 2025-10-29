@@ -1,11 +1,11 @@
+import { Op } from 'sequelize';
+
 import models from '../models';
 
 const {
     Pais,
     Estado,
 } = models;
-
-const { Op } = require('sequelize');
 
 export const listaTodosPaises = where => Pais.findAndCountAll({
     attributes: {

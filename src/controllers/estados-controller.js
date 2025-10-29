@@ -4,8 +4,6 @@ import BadRequestException from '../errors/bad-request-exception';
 import models from '../models';
 import codigos from '../resources/codigos-http';
 
-const { Op } = require('sequelize');
-
 const {
     Estado,
     Pais,
@@ -13,6 +11,8 @@ const {
     sequelize,
     Sequelize,
 } = models;
+
+const { Op } = Sequelize;
 
 export const cadastrarEstado = (req, res, next) => {
     const { nome, sigla, codigo_telefone: codigoTelefone, pais_id: paisId } = req.body;
@@ -47,7 +47,7 @@ export const cadastrarEstado = (req, res, next) => {
 
         const estadoCriado = await Estado.create(
             { nome, sigla, codigo_telefone: codigoTelefone, pais_id: paisId },
-            { transaction }
+            { transaction },
         );
 
         return estadoCriado;

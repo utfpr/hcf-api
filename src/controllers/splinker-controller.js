@@ -220,7 +220,7 @@ export const obterModeloSPLinker = async (request, response, next) => {
     const limit = request.query.limit > 1000 ? 1000 : request.query.limit || 1000;
 
     const quantidadeTombos = await Tombo.count(
-        { distinct: true }
+        { distinct: true },
     );
 
     response.set({

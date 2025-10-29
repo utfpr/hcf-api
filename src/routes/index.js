@@ -2,7 +2,7 @@ import express from 'express';
 import { readdirSync } from 'fs';
 import { basename } from 'path';
 
-const __basename = basename(__filename); // eslint-disable-line
+const __basename = basename(__filename);
 const app = express();
 
 const isRouteFile = file => file !== __basename && /\.js$/.test(file);

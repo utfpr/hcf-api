@@ -1,12 +1,11 @@
 import listagensMiddleware from '~/middlewares/listagens-middleware';
 
+import * as controller from '../controllers/locais-coleta-controller';
 import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middleware';
 import validacoesMiddleware from '../middlewares/validacoes-middleware';
 import localColetaCadastroEsquema from '../validators/localColeta-cadastro';
 import localColetaListagemEsquema from '../validators/localColeta-listagem';
 import nomeEsquema from '../validators/nome-obrigatorio';
-
-const controller = require('../controllers/locais-coleta-controller');
 
 /**
  * @swagger
