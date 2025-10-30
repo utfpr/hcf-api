@@ -1,5 +1,7 @@
 import path from 'node:path'
 
+import { Logger } from '@/library/logger'
+
 import { CorruptedDirectoryError } from './error/corrupted-directory-error'
 import { MigrationFileSystem } from './migration-file-system'
 import { MigrationRepository } from './migration-repository'
@@ -7,20 +9,22 @@ import { MigrationRepository } from './migration-repository'
 interface Dependencies {
   migrationFileSystem: MigrationFileSystem
   migrationRepository: MigrationRepository
+  logger: Logger
 }
 
 export class ApplyMigrationService {
-
   private readonly migrationFileSystem: MigrationFileSystem
   private readonly migrationRepository: MigrationRepository
+  private readonly logger: Logger
 
   constructor(readonly dependencies: Dependencies) {
     this.migrationFileSystem = dependencies.migrationFileSystem
     this.migrationRepository = dependencies.migrationRepository
+    this.logger = dependencies.logger
   }
 
   async execute() {
-    const migrationFilePaths = await this.migrationFileSystem.listMigrationFiles()
+    const migrationFilePaths = this.migrationFileSystem.listMigrationFiles()
     const migrationNames = migrationFilePaths.map(file => path.basename(file, path.extname(file)))
 
     await this.migrationRepository.ensureMigrationTableExists()
@@ -36,22 +40,19 @@ export class ApplyMigrationService {
       .filter(migrationFileName => !appliedMigrations.some(appliedMigration => appliedMigration.name === migrationFileName))
 
     if (!unappliedMigrations.length) {
+      // eslint-disable-next-line no-console
       console.warn('No pending migrations to apply')
       return
     }
 
-    /* eslint-disable no-restricted-syntax, no-await-in-loop */
     for (const migrationName of unappliedMigrations) {
       try {
         await this.migrationFileSystem.runMigrationFile(migrationName)
         await this.migrationRepository.applyMigration(migrationName)
       } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error(`Error applying migration ${migrationName}`, error)
+        this.logger.error(`Error applying migration ${migrationName}`, error)
         throw error
       }
     }
-    /* eslint-enable no-restricted-syntax */
   }
-
 }

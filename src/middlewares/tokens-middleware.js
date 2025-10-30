@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import ForbiddenException from '../errors/forbidden-exception';
 import { decodificaTokenUsuario } from '../helpers/tokens';
 

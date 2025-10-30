@@ -1,11 +1,11 @@
+import { Op } from 'sequelize';
+
 import pick from '~/helpers/pick';
 
 import BadRequestException from '../errors/bad-request-exception';
 import models from '../models';
 import codigos from '../resources/codigos-http';
 import verifyRecaptcha from '../utils/verify-recaptcha';
-
-const { Op } = require('sequelize');
 
 const { Cidade, LocalColeta, Tombo, Reino, Familia, Subfamilia, Genero, Especie, Subespecie, Variedade, sequelize } = models;
 
@@ -29,7 +29,7 @@ export const cadastrarCidade = (req, res, next) => {
 
         const cidadeCriada = await Cidade.create(
             { nome, estado_id: estadoId, latitude, longitude },
-            { transaction }
+            { transaction },
         );
 
         return cidadeCriada;
@@ -388,13 +388,13 @@ export const buscarPontosTaxonomiaComFiltros = async (req, res, next) => {
         } = req.query;
 
         if (
-            !nomeReino &&
-            !nomeFamilia &&
-            !nomeSubFamilia &&
-            !nomeGenero &&
-            !nomeEspecie &&
-            !nomeSubEspecie &&
-            !nomeVariedade
+            !nomeReino
+            && !nomeFamilia
+            && !nomeSubFamilia
+            && !nomeGenero
+            && !nomeEspecie
+            && !nomeSubEspecie
+            && !nomeVariedade
         ) {
             return res
                 .status(400)

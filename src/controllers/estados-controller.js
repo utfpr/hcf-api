@@ -4,8 +4,6 @@ import BadRequestException from '../errors/bad-request-exception';
 import models from '../models';
 import codigos from '../resources/codigos-http';
 
-const { Op } = require('sequelize');
-
 const {
     Estado,
     Pais,
@@ -13,6 +11,8 @@ const {
     sequelize,
     Sequelize,
 } = models;
+
+const { Op } = Sequelize;
 
 export const cadastrarEstado = (req, res, next) => {
     const { nome, sigla, pais_id: paisId } = req.body;

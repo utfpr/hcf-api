@@ -1,4 +1,4 @@
-const controller = require('../controllers/paises-controller');
+import * as controller from '../controllers/paises-controller';
 
 /**
  * @swagger

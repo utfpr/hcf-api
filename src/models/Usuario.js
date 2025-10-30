@@ -65,6 +65,14 @@ export default (Sequelize, DataTypes) => {
             type: DataTypes.STRING(200),
             allowNull: false,
         },
+        token_troca_senha: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        token_troca_senha_expiracao: {
+            type: DataTypes.DATE,
+            allowNull: true,
+        },
     };
 
     const options = {

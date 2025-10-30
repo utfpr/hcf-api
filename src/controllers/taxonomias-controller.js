@@ -208,7 +208,7 @@ export const excluirFamilia = (request, response, next) => {
                         id,
                     },
                     transaction,
-                })
+                }),
             )
             .then(familiaEncontrada => {
                 if (!familiaEncontrada) {
@@ -219,7 +219,7 @@ export const excluirFamilia = (request, response, next) => {
                 Promise.all([
                     Genero.count({ where: { familia_id: id }, transaction }),
                     Tombo.count({ where: { familia_id: id }, transaction }),
-                ])
+                ]),
             )
             .then(([generosCount, tombosCount]) => {
                 if (generosCount > 0 || tombosCount > 0) {
@@ -232,7 +232,7 @@ export const excluirFamilia = (request, response, next) => {
                         id,
                     },
                     transaction,
-                })
+                }),
             );
 
     sequelize
@@ -356,7 +356,7 @@ export const excluirSubfamilia = (request, response, next) => {
                         id,
                     },
                     transaction,
-                })
+                }),
             )
             .then(encontrado => {
                 if (!encontrado) {
@@ -364,7 +364,7 @@ export const excluirSubfamilia = (request, response, next) => {
                 }
             })
             .then(() =>
-                Promise.all([Tombo.count({ where: { sub_familia_id: id }, transaction })])
+                Promise.all([Tombo.count({ where: { sub_familia_id: id }, transaction })]),
             )
             .then(([tombosCount]) => {
                 if (tombosCount > 0) {
@@ -377,7 +377,7 @@ export const excluirSubfamilia = (request, response, next) => {
                         id,
                     },
                     transaction,
-                })
+                }),
             );
 
     sequelize
@@ -529,7 +529,7 @@ export const excluirGeneros = (request, response, next) => {
                         id,
                     },
                     transaction,
-                })
+                }),
             )
             .then(generoEncontrado => {
                 if (!generoEncontrado) {
@@ -540,7 +540,7 @@ export const excluirGeneros = (request, response, next) => {
                 Promise.all([
                     Especie.count({ where: { genero_id: id }, transaction }),
                     Tombo.count({ where: { genero_id: id }, transaction }),
-                ])
+                ]),
             )
             .then(([especiesCount, tombosCount]) => {
                 if (especiesCount > 0 || tombosCount > 0) {
@@ -553,7 +553,7 @@ export const excluirGeneros = (request, response, next) => {
                         id,
                     },
                     transaction,
-                })
+                }),
             );
 
     sequelize
@@ -661,7 +661,7 @@ export const cadastrarEspecie = (request, response, next) => {
                 familia_id: genero.familia_id,
                 autor_id: autorId,
             },
-            transaction
+            transaction,
         ));
     sequelize.transaction(callback)
         .then(especieCriada => {
@@ -741,7 +741,7 @@ export const excluirEspecies = (request, response, next) => {
                         id,
                     },
                     transaction,
-                })
+                }),
             )
             .then(encontrado => {
                 if (!encontrado) {
@@ -753,7 +753,7 @@ export const excluirEspecies = (request, response, next) => {
                     Subespecie.count({ where: { especie_id: id }, transaction }),
                     Variedade.count({ where: { especie_id: id }, transaction }),
                     Tombo.count({ where: { especie_id: id }, transaction }),
-                ])
+                ]),
             )
             .then(([subEspeciesCount, variedadesCount, tombosCount]) => {
                 if (subEspeciesCount > 0 || variedadesCount > 0 || tombosCount > 0) {
@@ -766,7 +766,7 @@ export const excluirEspecies = (request, response, next) => {
                         id,
                     },
                     transaction,
-                })
+                }),
             );
 
     sequelize
@@ -984,7 +984,7 @@ export const excluirSubespecies = (request, response, next) => {
                         id,
                     },
                     transaction,
-                })
+                }),
             )
             .then(encontrado => {
                 if (!encontrado) {
@@ -992,7 +992,7 @@ export const excluirSubespecies = (request, response, next) => {
                 }
             })
             .then(() =>
-                Promise.all([Tombo.count({ where: { sub_especie_id: id }, transaction })])
+                Promise.all([Tombo.count({ where: { sub_especie_id: id }, transaction })]),
             )
             .then(([tombosCount]) => {
                 if (tombosCount > 0) {
@@ -1005,7 +1005,7 @@ export const excluirSubespecies = (request, response, next) => {
                         id,
                     },
                     transaction,
-                })
+                }),
             );
 
     sequelize
@@ -1141,7 +1141,7 @@ export const cadastrarVariedade = (request, response, next) => {
                 familia_id: especie.familia_id,
                 autor_id: autorId,
             },
-            transaction
+            transaction,
         ));
     sequelize.transaction(callback)
         .then(variedadeCriada => {
@@ -1239,7 +1239,7 @@ export const excluirVariedades = (request, response, next) => {
             }
         })
         .then(() =>
-            Promise.all([Tombo.count({ where: { variedade_id: id }, transaction })])
+            Promise.all([Tombo.count({ where: { variedade_id: id }, transaction })]),
         )
         .then(([tombosCount]) => {
             if (tombosCount > 0) {
@@ -1397,7 +1397,7 @@ export const excluirAutores = (request, response, next) => {
                         id,
                     },
                     transaction,
-                })
+                }),
             )
             .then(encontrado => {
                 if (!encontrado) {
@@ -1409,7 +1409,7 @@ export const excluirAutores = (request, response, next) => {
                     Subespecie.count({ where: { autor_id: id }, transaction }),
                     Especie.count({ where: { autor_id: id }, transaction }),
                     Variedade.count({ where: { autor_id: id }, transaction }),
-                ])
+                ]),
             )
             .then(([subEspeciesCount, especiesCount, variedadesCount]) => {
                 if (subEspeciesCount > 0 || especiesCount > 0 || variedadesCount > 0) {
@@ -1422,7 +1422,7 @@ export const excluirAutores = (request, response, next) => {
                         id,
                     },
                     transaction,
-                })
+                }),
             );
 
     sequelize
@@ -1474,7 +1474,7 @@ export const listagem = (request, response, next) => {
             .then(resultadoCount => {
                 let count = 0;
                 if (Array.isArray(resultadoCount) && resultadoCount.length > 0) {
-                    count = resultadoCount[0].count; // eslint-disable-line
+                    count = resultadoCount[0].count;
                 }
 
                 const retorno = { count };
