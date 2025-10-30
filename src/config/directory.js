@@ -1,4 +1,4 @@
-const { resolve } = require('path');
+import { resolve } from 'node:path';
 
 const { UPLOAD_PATH, STORAGE_PATH } = process.env;
 

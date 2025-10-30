@@ -1,6 +1,15 @@
 import { Knex } from 'knex'
 
+import { Logger } from '@/library/logger'
+
 import { MigrationRepository } from '../../src/database/migration-repository'
+
+const logger: Logger = {
+  debug: jest.fn(),
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn()
+}
 
 describe('Database > Migration Repository', () => {
   test('should create migration table if it does not exist', async () => {
@@ -13,7 +22,9 @@ describe('Database > Migration Repository', () => {
     } as unknown as Knex
 
     // act
-    const migrationRepository = new MigrationRepository({ knex, tableName: 'migrations' })
+    const migrationRepository = new MigrationRepository({
+      knex, tableName: 'migrations', logger
+    })
     await migrationRepository.ensureMigrationTableExists()
 
     // assert
@@ -31,7 +42,9 @@ describe('Database > Migration Repository', () => {
     } as unknown as Knex
 
     // act
-    const migrationRepository = new MigrationRepository({ knex, tableName: 'migrations' })
+    const migrationRepository = new MigrationRepository({
+      knex, tableName: 'migrations', logger
+    })
     await migrationRepository.ensureMigrationTableExists()
 
     // assert
@@ -41,11 +54,11 @@ describe('Database > Migration Repository', () => {
   test('should insert the migration name and applied_at date into the migration table', async () => {
     // arrange
     const insert = jest.fn()
-    const knex = jest.fn().mockReturnValue({
-      insert
-    }) as unknown as Knex
+    const knex = jest.fn().mockReturnValue({ insert }) as unknown as Knex
 
-    const migrationRepository = new MigrationRepository({ knex, tableName: 'migrations' })
+    const migrationRepository = new MigrationRepository({
+      knex, tableName: 'migrations', logger
+    })
     await migrationRepository.applyMigration('test')
 
     // assert
@@ -55,14 +68,12 @@ describe('Database > Migration Repository', () => {
 
   test('should return the list of applied migrations', async () => {
     // arrange
-    const select = jest.fn().mockResolvedValue([
-      { name: 'test', applied_at: new Date() }
-    ])
-    const knex = jest.fn().mockReturnValue({
-      select
-    }) as unknown as Knex
+    const select = jest.fn().mockResolvedValue([{ name: 'test', applied_at: new Date() }])
+    const knex = jest.fn().mockReturnValue({ select }) as unknown as Knex
 
-    const migrationRepository = new MigrationRepository({ knex, tableName: 'migrations' })
+    const migrationRepository = new MigrationRepository({
+      knex, tableName: 'migrations', logger
+    })
     const appliedMigrations = await migrationRepository.getAppliedMigrations()
 
     // assert

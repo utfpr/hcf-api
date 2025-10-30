@@ -1,5 +1,4 @@
 export class CorruptedDirectoryError extends Error {
-
   override readonly message: string
   readonly missingFiles: string[]
 
@@ -9,5 +8,4 @@ export class CorruptedDirectoryError extends Error {
     this.name = 'CorruptedDirectoryError'
     this.missingFiles = missingFiles
   }
-
 }

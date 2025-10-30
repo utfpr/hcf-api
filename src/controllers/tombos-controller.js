@@ -1,5 +1,3 @@
-/* eslint-disable quotes */
-// @ts-nocheck
 import { ForeignKeyConstraintError } from 'sequelize';
 
 import { padronizarNomeDarwincore } from '~/helpers/padroniza-nome-darwincore';
@@ -45,7 +43,7 @@ export const cadastro = (request, response, next) => {
         paisagem,
         identificacao,
         coletor,
-        // eslint-disable-next-line @typescript-eslint/naming-convention
+
         coletor_complementar,
         colecoes_anexas: colecoesAnexas,
         observacoes,
@@ -329,7 +327,7 @@ export const cadastro = (request, response, next) => {
                 if (taxonomia) {
                     jsonTombo = {
                         ...jsonTombo,
-                        // eslint-disable-next-line max-len
+
                         ...pick(taxonomia, ['nome_cientifico', 'variedade_id', 'especie_id', 'genero_id', 'familia_id', 'sub_familia_id', 'sub_especie_id']),
                     };
                 }
@@ -588,7 +586,8 @@ function alteracaoCuradorouOperador(request, response, transaction) {
                         transaction,
                     }))
                     .then(() => alteracaoCriada.toJSON());
-            } if (request.usuario.tipo_usuario_id !== 2) {
+            }
+            if (request.usuario.tipo_usuario_id !== 2) {
                 throw new BadRequestExeption(421);
             }
             return alteracaoCriada.toJSON();
@@ -599,7 +598,8 @@ export function alteracao(request, response, next) {
     return sequelize.transaction(transaction => {
         if (request.usuario.tipo_usuario_id === 3) {
             return alteracaoIdentificador(request, transaction);
-        } if (request.usuario.tipo_usuario_id === 1 || request.usuario.tipo_usuario_id === 2) {
+        }
+        if (request.usuario.tipo_usuario_id === 1 || request.usuario.tipo_usuario_id === 2) {
             return alteracaoCuradorouOperador(request, response, transaction);
         }
         throw new BadRequestExeption(421);
@@ -865,7 +865,7 @@ export const cadastrarTipo = (request, response, next) => {
             {
                 nome: request.body.nome,
             },
-            transaction
+            transaction,
         ));
     sequelize.transaction(callback)
         .then(() => {
@@ -1088,7 +1088,7 @@ export const obterTombo = async (request, response, next) => {
                             },
                         },
                     ],
-                })
+                }),
             )
             .then(tombo => {
                 if (!tombo) {
@@ -1120,9 +1120,9 @@ export const obterTombo = async (request, response, next) => {
             tombo.locais_coletum !== null && tombo.locais_coletum?.fase_sucessional !== null ? tombo.locais_coletum?.fase_sucessional?.numero : '',
                     coletor: tombo.coletore
                         ? {
-                            id: tombo.coletore?.id,
-                            nome: tombo.coletore?.nome,
-                        }
+                                id: tombo.coletore?.id,
+                                nome: tombo.coletore?.nome,
+                            }
                         : null,
                     colecaoInicial: tombo.colecoes_anexa !== null ? tombo.colecoes_anexa?.tipo : '',
                     complementoInicial: tombo.localizacao !== null && tombo.localizacao !== undefined ? tombo.localizacao?.complemento : '',
@@ -1238,25 +1238,25 @@ export const obterTombo = async (request, response, next) => {
                     where: {
                         pais_id: dadosTombo.locais_coletum.cidade?.estado?.paise?.id,
                     },
-                })
+                }),
             )
-        // eslint-disable-next-line no-return-assign
+
             .then(estados => (resposta.estados = estados))
             .then(() =>
                 Cidade.findAll({
                     where: {
                         estado_id: dadosTombo.locais_coletum.cidade?.estado?.id,
                     },
-                })
+                }),
             )
-        // eslint-disable-next-line no-return-assign
+
             .then(cidades => (resposta.cidades = cidades))
             .then(() =>
                 Familia.findAll({
                     where: {
                         id: dadosTombo.familia?.id,
                     },
-                })
+                }),
             )
             .then(familias => {
                 resposta.familias = familias;
@@ -1382,7 +1382,7 @@ export const obterTombo = async (request, response, next) => {
                         identificacao: true,
                     },
                     order: [['created_at', 'DESC']],
-                })
+                }),
             )
             .then(alter => {
                 if (alter) {
@@ -1395,14 +1395,13 @@ export const obterTombo = async (request, response, next) => {
                         tombo_hcf: id,
                     },
                     attributes: ['id', 'caminho_foto', 'em_vivo'],
-                })
+                }),
             )
             .then(fotos => {
                 const formatoFotos = [];
                 const fotosExsicata = [];
                 const fotosEmVivo = [];
 
-                // eslint-disable-next-line no-plusplus
                 for (let i = 0; i < fotos.length; i++) {
                     if (!fotos[i].em_vivo) {
                         fotosExsicata.push({
@@ -1425,7 +1424,7 @@ export const obterTombo = async (request, response, next) => {
                         id: foto.id,
                         original: foto.caminho_foto,
                         thumbnail: foto.caminho_foto,
-                    })
+                    }),
                 );
                 resposta.fotos = formatoFotos;
                 response.status(codigos.BUSCAR_UM_ITEM).json(resposta);
@@ -1464,7 +1463,7 @@ export const getNumeroColetor = (request, response, next) => {
                     coletor_id: idColetor,
                 },
                 attributes: ['hcf', 'numero_coleta'],
-            })
+            }),
         )
         .then(tombos => {
             response.status(codigos.BUSCAR_UM_ITEM).json(tombos);

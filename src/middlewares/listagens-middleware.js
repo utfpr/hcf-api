@@ -3,11 +3,11 @@ export default (request, response, next) => {
     let limite = parseInt(query.limite);
     let pagina = parseInt(query.pagina);
 
-    if (isNaN(limite) || typeof limite !== 'number') { // eslint-disable-line
+    if (isNaN(limite) || typeof limite !== 'number') {
         limite = 20;
     }
 
-    if (isNaN(pagina) || typeof pagina !== 'number') { // eslint-disable-line
+    if (isNaN(pagina) || typeof pagina !== 'number') {
         pagina = 1;
     }
 

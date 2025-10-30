@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 
 import { secret, expires } from '../config/security';
@@ -22,5 +23,7 @@ export const constroiPayloadUsuario = usuario => {
         tipo_usuario_id: tipoUsuarioId,
     };
 };
+
+export const geraTokenResetSenha = () => crypto.randomBytes(32).toString('hex');
 
 export default {};

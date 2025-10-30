@@ -12,7 +12,7 @@ export default async function verifyRecaptcha(request) {
     const response = await axios.post(
         'https://www.google.com/recaptcha/api/siteverify',
         null,
-        { params: { secret: recaptchaSecret, response: token } }
+        { params: { secret: recaptchaSecret, response: token } },
     );
     const { data } = response;
 

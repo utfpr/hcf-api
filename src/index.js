@@ -1,4 +1,4 @@
-/* eslint-disable no-console, no-inner-declarations */
+/* eslint-disable no-console */
 import './setup';
 import cluster from 'cluster';
 import http from 'http';
