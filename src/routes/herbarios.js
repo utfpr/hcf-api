@@ -192,9 +192,6 @@ export default app => {
          *                                     type: integer
          *                                   nome:
          *                                     type: string
-         *                                   codigo_telefone:
-         *                                     type: string
-         *                                     nullable: true
          *                                   paise:
          *                                     type: object
          *                                     properties:

@@ -28,8 +28,6 @@ export default app => {
      *             properties:
      *               nome:
      *                 type: string
-     *               codigo_telefone:
-     *                 type: string
      *               pais_id:
      *                 type: integer
      *             required:
@@ -91,8 +89,6 @@ export default app => {
      *             type: object
      *             properties:
      *               nome:
-     *                 type: string
-     *               codigo_telefone:
      *                 type: string
      *               pais_id:
      *                 type: integer
