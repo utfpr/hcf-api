@@ -45,7 +45,7 @@ export const cadastrarEstado = (req, res, next) => {
 
         const estadoCriado = await Estado.create(
             { nome, sigla, pais_id: paisId },
-            { transaction }
+            { transaction },
         );
 
         return estadoCriado;
