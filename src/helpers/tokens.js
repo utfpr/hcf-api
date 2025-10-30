@@ -1,7 +1,6 @@
 import jwt from 'jsonwebtoken';
 
 import { secret, expires } from '../config/security';
-
 import UnauthorizedException from '../errors/unauthorized-exception';
 
 export const geraTokenUsuario = json => {
