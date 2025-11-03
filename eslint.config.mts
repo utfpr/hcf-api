@@ -13,6 +13,7 @@ export default defineConfig([
       'dist/',
       'mysql/',
       'public/',
+      'coverage/',
       'node_modules/'
     ]
   },
@@ -159,6 +160,7 @@ export default defineConfig([
   {
     files: ['**/*.test.ts'],
     rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/unbound-method': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off'
     }
