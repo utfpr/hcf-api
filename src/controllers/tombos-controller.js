@@ -214,6 +214,7 @@ export const cadastro = (request, response, next) => {
                         throw new BadRequestExeption(404);
                     }
                     taxonomia.nome_cientifico = genero.nome;
+                    taxonomia.nome_cientifico = genero.nome;
                 }
                 return undefined;
             })
@@ -359,14 +360,22 @@ export const cadastro = (request, response, next) => {
                 if (identificacao?.identificadores && identificacao.identificadores.length > 0) {
                     tomboData.identificadores = identificacao.identificadores;
                 }
+                const dadosComplementares = coletor_complementar?.complementares || '';
+
+                const tomboData = { ...tombo.toJSON(), complementares: dadosComplementares, colecoes_anexas_tipo: colecoesAnexas?.tipo || null, colecoes_anexas_observacoes: colecoesAnexas?.observacoes || null };
+
+                if (identificacao?.identificadores && identificacao.identificadores.length > 0) {
+                    tomboData.identificadores = identificacao.identificadores;
+                }
 
                 const dados = {
                     tombo_hcf: tombo.hcf,
                     usuario_id: request.usuario.id,
                     status,
                     tombo_json: JSON.stringify(tomboData),
+                    tombo_json: JSON.stringify(tomboData),
                     ativo: true,
-                    identificacao: 0,
+                    identificacao: false,
                 };
                 tomboCriado = tombo;
 
@@ -455,7 +464,7 @@ function alteracaoIdentificador(request, transaction) {
             status: 'ESPERANDO',
             tombo_json: JSON.stringify(update),
             ativo: true,
-            identificacao: 1,
+            identificacao: true,
         }, { transaction }))
         .then(alteracaoIdent => {
             if (request.usuario.tipo_usuario_id === 3) {
@@ -578,7 +587,7 @@ function alteracaoCuradorouOperador(request, response, transaction) {
         status: 'ESPERANDO',
         tombo_json: JSON.stringify(update),
         ativo: true,
-        identificacao: 1,
+        identificacao: true,
     }, { transaction })
         .then(alteracaoCriada => {
             if (request.usuario.tipo_usuario_id === 1) {
@@ -711,6 +720,7 @@ export const listagem = (request, response, next) => {
             include: {
                 model: Coletor,
                 attributes: ['id', 'nome'],
+                required: false,
                 required: false,
             },
             where,
@@ -914,6 +924,7 @@ export const cadastrarColetores = (request, response, next) => {
 };
 
 export const buscarColetores = (request, response, next) => {
+    let where = {};
     let where = {};
     let limit = 10;
     const { limite, nome } = request.query;
@@ -1569,6 +1580,7 @@ export const postCodigoBarraTombo = (request, response, next) => {
 
 export const getUltimoNumeroCodigoBarras = (request, response, next) => {
     const { emVivo } = request.params;
+    console.log('EM VIVO AQUI!', emVivo);
     Promise.resolve()
         .then(() => TomboFoto.findAll({
             where: {

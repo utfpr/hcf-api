@@ -57,20 +57,23 @@ const defineNomeCientifico = dado => {
 
 export const formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData = dados => {
     const romanos = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
-    const dadosFormatados = dados.map(dado => ({
-        local: dado.locais_coletum?.complemento ?
-            `${dado.locais_coletum.descricao} ${dado.locais_coletum.complemento}` :
-            dado.locais_coletum?.descricao,
-        data: `${String(dado.data_coleta_dia).padStart(2, '0')}/${romanos[dado.data_coleta_mes - 1]}/${dado.data_coleta_ano}`,
+
+    // garante array
+    const arr = Array.isArray(dados) ? dados : (dados?.rows ?? []);
+    if (!Array.isArray(arr)) return [];
+
+    const dadosFormatados = arr.map(dado => ({
+        local: dado.locais_coletum?.complemento
+            ? `${dado.locais_coletum.descricao} ${dado.locais_coletum.complemento}`
+            : dado.locais_coletum?.descricao,
+        data: `${String(dado.data_coleta_dia).padStart(2, '0')}/${romanos[(dado.data_coleta_mes || 1) - 1]}/${dado.data_coleta_ano}`,
         tombo: dado?.hcf,
         numeroColeta: dado.numero_coleta || '-',
         especie: defineNomeCientifico(dado),
-        familia: dado.especy.familia.nome,
+        familia: dado.especy?.familia?.nome,
         autor: dado.especy?.autor?.nome || 'Não Informado',
-
     }));
 
-    // Ordena os dados formatados por ordem alfabética
     dadosFormatados.sort((a, b) => a.familia.localeCompare(b.familia));
 
     return dadosFormatados;
@@ -229,7 +232,7 @@ export function agruparPorLocal(dados) {
     const agrupado = {};
     let quantidadeTotal = 0;
 
-    dados.forEach(entradaOriginal => {
+    dados.sort((a, b) => a?.familia?.nome.localeCompare(b?.familia?.nome)).forEach(entradaOriginal => {
         const locaisColetum = entradaOriginal.locais_coletum;
         const cidade = locaisColetum?.cidade;
         const estado = cidade?.estado?.nome || 'Desconhecido';

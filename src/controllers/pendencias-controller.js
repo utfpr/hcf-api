@@ -42,7 +42,7 @@ export const listagem = (request, response, next) => {
         resultado: {},
     };
     let where = {
-        ativo: 1,
+        ativo: true,
     };
     let whereUsuario = {};
     if (status) {

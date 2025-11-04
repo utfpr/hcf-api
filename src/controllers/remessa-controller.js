@@ -507,7 +507,7 @@ export const devolverTombo = (request, response, next) => {
             transaction,
         }))
         .then(() => RetiradaExsiccata.update({
-            devolvido: 1,
+            devolvido: true,
         }, {
             where: {
                 retirada_exsiccata_id: remessaId,

@@ -29,7 +29,7 @@ import {
 export const preparaRequisicao = (request, response) => {
     const { periodicidade } = request.query;
     const proximaAtualizacao = request.query.data_proxima_atualizacao;
-    selectEstaExecutandoServico(1).then(listaExecucaoReflora => {
+    selectEstaExecutandoServico("REFLORA").then(listaExecucaoReflora => {
         if (listaExecucaoReflora.length > 0) {
             const periodicidadeBD = listaExecucaoReflora[0].dataValues.periodicidade;
             if (periodicidadeBD === 'MANUAL') {
@@ -37,7 +37,7 @@ export const preparaRequisicao = (request, response) => {
             } else if ((periodicidadeBD === 'SEMANAL') || (periodicidadeBD === '1MES') || (periodicidadeBD === '2MESES')) {
                 if (moment().format('DD/MM/YYYY') !== listaExecucaoReflora[0].dataValues.data_proxima_atualizacao) {
                     const { id } = listaExecucaoReflora[0].dataValues;
-                    atualizaTabelaConfiguracao(1, id, getHoraAtual(), null, periodicidade, proximaAtualizacao).then(() => {
+                    atualizaTabelaConfiguracao('REFLORA', id, getHoraAtual(), null, periodicidade, proximaAtualizacao).then(() => {
                         response.status(200).json(JSON.parse(' { "result": "success" } '));
                     });
                 } else {
@@ -45,14 +45,14 @@ export const preparaRequisicao = (request, response) => {
                 }
             }
         } else {
-            selectTemExecucaoServico(1).then(execucaoReflora => {
+            selectTemExecucaoServico('REFLORA').then(execucaoReflora => {
                 if (execucaoReflora.length === 0) {
-                    insereExecucao(getHoraAtual(), null, periodicidade, proximaAtualizacao, 1).then(() => {
+                    insereExecucao(getHoraAtual(), null, periodicidade, proximaAtualizacao, "REFLORA").then(() => {
                         response.status(200).json(JSON.parse(' { "result": "success" } '));
                     });
                 } else {
                     const { id } = execucaoReflora[0].dataValues;
-                    atualizaTabelaConfiguracao(1, id, getHoraAtual(), null, periodicidade, proximaAtualizacao).then(() => {
+                    atualizaTabelaConfiguracao('REFLORA', id, getHoraAtual(), null, periodicidade, proximaAtualizacao).then(() => {
                         response.status(200).json(JSON.parse(' { "result": "success" } '));
                     });
                 }
@@ -75,7 +75,7 @@ export const preparaRequisicao = (request, response) => {
  * @param {*} next, é utilizado para chamar a próxima função da pilha.
  */
 export const estaExecutando = (_, response) => {
-    selectEstaExecutandoServico(1).then(listaExecucaoReflora => {
+    selectEstaExecutandoServico("REFLORA").then(listaExecucaoReflora => {
         response.header('Access-Control-Allow-Origin', '*');
         response.header('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type');
         response.header('Access-Control-Allow-Methods', 'GET');
