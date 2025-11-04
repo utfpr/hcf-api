@@ -40,8 +40,7 @@ export class ApplyMigrationService {
       .filter(migrationFileName => !appliedMigrations.some(appliedMigration => appliedMigration.name === migrationFileName))
 
     if (!unappliedMigrations.length) {
-      // eslint-disable-next-line no-console
-      console.warn('No pending migrations to apply')
+      this.logger.warn('No pending migrations to apply')
       return
     }
 

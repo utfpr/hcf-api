@@ -36,7 +36,8 @@
   "include": [
     "src/",
     "test/",
-    "eslint.config.mts"
+    "eslint.config.mts",
+    "vitest.config.mts"
   ],
   "exclude": [
     "node_modules/",
