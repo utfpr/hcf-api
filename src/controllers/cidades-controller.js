@@ -139,7 +139,7 @@ export const listaTodosCidades = where =>
             {
                 model: models.Estado,
                 as: 'estado',
-                attributes: ['id', 'nome', 'sigla', 'codigo_telefone', 'pais_id'],
+                attributes: ['id', 'nome', 'sigla', 'pais_id'],
             },
         ],
     });

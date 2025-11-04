@@ -130,7 +130,7 @@ export default function fichaTomboController(request, response, next) {
                             model: Cidade,
                             include: {
                                 model: Estado,
-                                attributes: ['id', 'nome', 'sigla', 'codigo_telefone', 'pais_id'],
+                                attributes: ['id', 'nome', 'sigla', 'pais_id'],
                                 include: {
                                     as: 'pais',
                                     model: Pais,
