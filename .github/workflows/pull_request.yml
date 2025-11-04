@@ -38,3 +38,24 @@ jobs:
           path: coverage/
           retention-days: 7
           overwrite: true
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Run scanner
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: filesystem
+          scan-ref: .
+          # trivy-config: trivy.yaml
+          hide-progress: true
+          exit-code: 0
+      - name: Archive scan results
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-report
+          path: trivy-report.json
+          retention-days: 7
+          overwrite: true
