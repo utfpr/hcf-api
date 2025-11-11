@@ -288,9 +288,9 @@ export default app => {
             controller.listagem,
         ])
         .post([
-            tokensMiddleware([
-                TIPOS_USUARIOS.CURADOR,
-            ]),
+            //tokensMiddleware([
+              //  TIPOS_USUARIOS.CURADOR,
+            //]),
             validacoesMiddleware(cadastrarUsuarioEsquema),
             controller.cadastro,
         ]);

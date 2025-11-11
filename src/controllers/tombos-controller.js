@@ -360,13 +360,6 @@ export const cadastro = (request, response, next) => {
                 if (identificacao?.identificadores && identificacao.identificadores.length > 0) {
                     tomboData.identificadores = identificacao.identificadores;
                 }
-                const dadosComplementares = coletor_complementar?.complementares || '';
-
-                const tomboData = { ...tombo.toJSON(), complementares: dadosComplementares, colecoes_anexas_tipo: colecoesAnexas?.tipo || null, colecoes_anexas_observacoes: colecoesAnexas?.observacoes || null };
-
-                if (identificacao?.identificadores && identificacao.identificadores.length > 0) {
-                    tomboData.identificadores = identificacao.identificadores;
-                }
 
                 const dados = {
                     tombo_hcf: tombo.hcf,
@@ -656,7 +649,7 @@ export const listagem = (request, response, next) => {
         nome_cientifico: nomeCientifico, hcf, tipo, nome_popular: nomePopular, situacao,
     } = request.query;
     let where = {
-        rascunho: 0,
+        //rascunho: 0,
     };
 
     if (nomeCientifico) {
@@ -924,7 +917,6 @@ export const cadastrarColetores = (request, response, next) => {
 };
 
 export const buscarColetores = (request, response, next) => {
-    let where = {};
     let where = {};
     let limit = 10;
     const { limite, nome } = request.query;
@@ -1662,7 +1654,7 @@ export const verificarCoordenada = async (request, response, next) => {
         `;
 
         const rows = await sequelize.query(query, {
-            replacements: [longitude, latitude, cidadeId],
+            bind: [longitude, latitude, cidadeId],
             type: models.Sequelize.QueryTypes.SELECT,
         });
 
