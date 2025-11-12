@@ -110,7 +110,7 @@ export const listarCidadesEstados = async (req, res, next) => {
                         {
                             model: models.Pais,
                             as: 'pais',
-                            attributes: ['id', 'nome', 'sigla']
+                            attributes: ['id', 'nome', 'sigla'],
                         }
                     ]
                 }
