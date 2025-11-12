@@ -84,6 +84,50 @@ export const atualizarCidade = async (req, res, next) => {
     }
 };
 
+export const listarCidadesEstados = async (req, res, next) => {
+    try {
+        const { nome, estado_id: estadoId } = req.query;
+
+        const where = {};
+
+        if (nome) {
+            where.nome = { [Op.like]: `%${nome}%` };
+        }
+
+        if (estadoId) {
+            where.estado_id = estadoId;
+        }
+
+        const cidades = await Cidade.findAll({
+            attributes: ['id', 'nome'],
+            where,
+            include: [
+                {
+                    model: models.Estado,
+                    as: 'estado',
+                    attributes: ['id', 'nome', 'sigla'],
+                    include: [
+                        {
+                            model: models.Pais,
+                            as: 'pais',
+                            attributes: ['id', 'nome', 'sigla']
+                        }
+                    ]
+                }
+            ],
+            order: [
+                [sequelize.literal('LOWER(Cidade.nome)'), 'ASC'],
+                [sequelize.literal('LOWER(estado.nome)'), 'ASC']
+            ]
+        });
+
+        return res.status(200).json(cidades);
+    } catch (error) {
+        return next(error);
+    }
+};
+
+
 export const desativarCidade = async (req, res, next) => {
     try {
         const { cidadeId } = req.params;
@@ -142,6 +186,7 @@ export const listaTodosCidades = where =>
                 attributes: ['id', 'nome', 'sigla', 'pais_id'],
             },
         ],
+        order: [[sequelize.literal('LOWER(`cidades`.`nome`)'), 'ASC']],
     });
 
 export const listagem = (request, response, next) => {
