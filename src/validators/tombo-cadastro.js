@@ -95,7 +95,7 @@ export default {
     'json.localidade.local_coleta_id': {
         in: 'body',
         isInt: true,
-        isEmpty: false,
+        optional: true,
     },
     'json.paisagem.solo_id': {
         in: 'body',
