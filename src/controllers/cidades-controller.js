@@ -112,13 +112,13 @@ export const listarCidadesEstados = async (req, res, next) => {
                             as: 'pais',
                             attributes: ['id', 'nome', 'sigla'],
                         }
-                    ]
-                }
+                    ],
+                },
             ],
             order: [
                 [sequelize.literal('LOWER(Cidade.nome)'), 'ASC'],
                 [sequelize.literal('LOWER(estado.nome)'), 'ASC'],
-            ]
+            ],
         });
 
         return res.status(200).json(cidades);
@@ -126,7 +126,6 @@ export const listarCidadesEstados = async (req, res, next) => {
         return next(error);
     }
 };
-
 
 export const desativarCidade = async (req, res, next) => {
     try {
