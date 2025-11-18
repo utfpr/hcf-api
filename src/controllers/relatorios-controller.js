@@ -276,23 +276,24 @@ export const obtemDadosDoRelatorioDeColetaIntervaloDeData = async (req, res, nex
             });
         }
         whereData = {
-          [Op.and]: [
-            Sequelize.where(
-              literal(`
+            [Op.and]: [
+                Sequelize.where(
+                    literal(`
                 make_date(
                   (data_coleta_ano)::int,
                   COALESCE(NULLIF(data_coleta_mes, 0), 1)::int,
                   COALESCE(NULLIF(data_coleta_dia, 0), 1)::int
                 )
               `),
-              {
-                [Op.between]: [
-                  Sequelize.literal(`TO_DATE('${dataInicio.slice(0, 10)}', 'YYYY-MM-DD')`),
-                  Sequelize.literal(`TO_DATE('${(dataFim || new Date().toISOString().slice(0, 10))}', 'YYYY-MM-DD')`),
-                ],
-              }
-            ),
-          ],
+                    {
+                        [Op.between]: [
+                            Sequelize.literal(`TO_DATE('${dataInicio.slice(0, 10)}', 'YYYY-MM-DD')`),
+                            Sequelize.literal(`TO_DATE('${(dataFim || new Date().toISOString()
+                                .slice(0, 10))}', 'YYYY-MM-DD')`),
+                        ],
+                    }
+                ),
+            ],
         };
     }
 
@@ -388,23 +389,24 @@ export const obtemDadosDoRelatorioDeColetaPorColetorEIntervaloDeData = async (re
             });
         }
         whereData = {
-          [Op.and]: [
-            Sequelize.where(
-              literal(`
+            [Op.and]: [
+                Sequelize.where(
+                    literal(`
                 make_date(
                   (data_coleta_ano)::int,
                   COALESCE(NULLIF(data_coleta_mes, 0), 1)::int,
                   COALESCE(NULLIF(data_coleta_dia, 0), 1)::int
                 )
               `),
-              {
-                [Op.between]: [
-                  Sequelize.literal(`TO_DATE('${dataInicio.slice(0, 10)}', 'YYYY-MM-DD')`),
-                  Sequelize.literal(`TO_DATE('${(dataFim || new Date().toISOString().slice(0, 10))}', 'YYYY-MM-DD')`),
-                ],
-              }
-            ),
-          ],
+                    {
+                        [Op.between]: [
+                            Sequelize.literal(`TO_DATE('${dataInicio.slice(0, 10)}', 'YYYY-MM-DD')`),
+                            Sequelize.literal(`TO_DATE('${(dataFim || new Date().toISOString()
+                                .slice(0, 10))}', 'YYYY-MM-DD')`),
+                        ],
+                    }
+                ),
+            ],
         };
     }
 
@@ -492,40 +494,41 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
     const { limite, pagina, offset } = paginacao;
     const { local, dataInicio, dataFim } = req.query;
 
-    let whereLocal = {};
+    const whereLocal = {};
     let whereData = {};
     if (dataInicio) {
-      if (dataFim && isBefore(new Date(dataFim), new Date(dataInicio))) {
-        return res.status(codigosHttp.BAD_REQUEST).json({
-          mensagem: 'A data de fim não pode ser anterior à data de início.',
-        });
-      }
+        if (dataFim && isBefore(new Date(dataFim), new Date(dataInicio))) {
+            return res.status(codigosHttp.BAD_REQUEST).json({
+                mensagem: 'A data de fim não pode ser anterior à data de início.',
+            });
+        }
 
-      if (isBefore(new Date(), new Date(dataInicio))) {
-        return res.status(codigosHttp.BAD_REQUEST).json({
-          mensagem: 'A data de início não pode ser maior que a data atual.',
-        });
-      }
+        if (isBefore(new Date(), new Date(dataInicio))) {
+            return res.status(codigosHttp.BAD_REQUEST).json({
+                mensagem: 'A data de início não pode ser maior que a data atual.',
+            });
+        }
 
-      whereData = {
-        [Op.and]: [
-          Sequelize.where(
-            literal(`
+        whereData = {
+            [Op.and]: [
+                Sequelize.where(
+                    literal(`
               make_date(
                 (data_coleta_ano)::int,
                 COALESCE(NULLIF(data_coleta_mes, 0), 1)::int,
                 COALESCE(NULLIF(data_coleta_dia, 0), 1)::int
               )
             `),
-            {
-              [Op.between]: [
-                Sequelize.literal(`TO_DATE('${dataInicio.slice(0, 10)}', 'YYYY-MM-DD')`),
-                Sequelize.literal(`TO_DATE('${(dataFim || new Date().toISOString().slice(0, 10))}', 'YYYY-MM-DD')`),
-              ],
-            }
-          ),
-        ],
-      };
+                    {
+                        [Op.between]: [
+                            Sequelize.literal(`TO_DATE('${dataInicio.slice(0, 10)}', 'YYYY-MM-DD')`),
+                            Sequelize.literal(`TO_DATE('${(dataFim || new Date().toISOString()
+                                .slice(0, 10))}', 'YYYY-MM-DD')`),
+                        ],
+                    }
+                ),
+            ],
+        };
     }
 
     try {
@@ -587,7 +590,7 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
         const dadosFormatados = agruparPorLocal(dadosPuros);
 
         if (req.method === 'GET') {
-            res.json({
+            return res.json({
                 metadados: {
                     total: tombos.count,
                     pagina,
@@ -596,7 +599,6 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
                 resultado: dadosFormatados,
                 filtro: formataTextFilter(local, dataInicio, dataFim || new Date()),
             });
-            return;
         }
 
         try {
@@ -608,17 +610,18 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
                 });
             const readable = new Readable();
             // eslint-disable-next-line no-underscore-dangle
-            readable._read = () => { }; // Implementa o método _read (obrigatório)
-            readable.push(buffer); // Empurrar os dados binários para o stream
-            readable.push(null); // Indica o fim do fluxo de dados
+            readable._read = () => {};
+            readable.push(buffer);
+            readable.push(null);
             res.setHeader('Content-Type', 'application/pdf');
-            readable.pipe(res);
+
+            return readable.pipe(res);
         } catch (e) {
-            next(e);
+            return next(e);
         }
 
     } catch (e) {
-        next(e);
+        return next(e);
     }
 };
 
@@ -717,23 +720,24 @@ export const obtemDadosDoRelatorioDeCodigoDeBarras = async (req, res, next) => {
         }
     }
     whereData = {
-      [Op.and]: [
-        Sequelize.where(
-          literal(`
+        [Op.and]: [
+            Sequelize.where(
+                literal(`
             make_date(
               (data_coleta_ano)::int,
               COALESCE(NULLIF(data_coleta_mes, 0), 1)::int,
               COALESCE(NULLIF(data_coleta_dia, 0), 1)::int
             )
           `),
-          {
-            [Op.between]: [
-              Sequelize.literal(`TO_DATE('${dataInicio.slice(0, 10)}', 'YYYY-MM-DD')`),
-              Sequelize.literal(`TO_DATE('${(dataFim || new Date().toISOString().slice(0, 10))}', 'YYYY-MM-DD')`),
-            ],
-          }
-        ),
-      ],
+                {
+                    [Op.between]: [
+                        Sequelize.literal(`TO_DATE('${dataInicio.slice(0, 10)}', 'YYYY-MM-DD')`),
+                        Sequelize.literal(`TO_DATE('${(dataFim || new Date().toISOString()
+                            .slice(0, 10))}', 'YYYY-MM-DD')`),
+                    ],
+                }
+            ),
+        ],
     };
 
     try {
@@ -784,23 +788,24 @@ export const obtemDadosDoRelatorioDeQuantidade = async (req, res, next) => {
             });
         }
         whereData = {
-          [Op.and]: [
-            Sequelize.where(
-              literal(`
+            [Op.and]: [
+                Sequelize.where(
+                    literal(`
                 make_date(
                   (data_coleta_ano)::int,
                   COALESCE(NULLIF(data_coleta_mes, 0), 1)::int,
                   COALESCE(NULLIF(data_coleta_dia, 0), 1)::int
                 )
               `),
-              {
-                [Op.between]: [
-                  Sequelize.literal(`TO_DATE('${dataInicio.slice(0, 10)}', 'YYYY-MM-DD')`),
-                  Sequelize.literal(`TO_DATE('${(dataFim || new Date().toISOString().slice(0, 10))}', 'YYYY-MM-DD')`),
-                ],
-              }
-            ),
-          ],
+                    {
+                        [Op.between]: [
+                            Sequelize.literal(`TO_DATE('${dataInicio.slice(0, 10)}', 'YYYY-MM-DD')`),
+                            Sequelize.literal(`TO_DATE('${(dataFim || new Date().toISOString()
+                                .slice(0, 10))}', 'YYYY-MM-DD')`),
+                        ],
+                    }
+                ),
+            ],
         };
     }
 

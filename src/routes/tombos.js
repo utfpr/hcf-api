@@ -1322,10 +1322,10 @@ export default app => {
      */
     app.route('/tombos/verificarCoordenada')
         .post([
-            //tokensMiddleware([
-             //   TIPOS_USUARIOS.CURADOR,
-               // TIPOS_USUARIOS.OPERADOR,
-            //]),
+            // tokensMiddleware([
+            //   TIPOS_USUARIOS.CURADOR,
+            // TIPOS_USUARIOS.OPERADOR,
+            // ]),
             verificarCoordenada,
         ]);
-    };
+};

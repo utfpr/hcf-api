@@ -366,7 +366,6 @@ export const cadastro = (request, response, next) => {
                     usuario_id: request.usuario.id,
                     status,
                     tombo_json: JSON.stringify(tomboData),
-                    tombo_json: JSON.stringify(tomboData),
                     ativo: true,
                     identificacao: false,
                 };
@@ -649,7 +648,7 @@ export const listagem = (request, response, next) => {
         nome_cientifico: nomeCientifico, hcf, tipo, nome_popular: nomePopular, situacao,
     } = request.query;
     let where = {
-        //rascunho: 0,
+        // rascunho: 0,
     };
 
     if (nomeCientifico) {
@@ -713,7 +712,6 @@ export const listagem = (request, response, next) => {
             include: {
                 model: Coletor,
                 attributes: ['id', 'nome'],
-                required: false,
                 required: false,
             },
             where,
@@ -1572,7 +1570,6 @@ export const postCodigoBarraTombo = (request, response, next) => {
 
 export const getUltimoNumeroCodigoBarras = (request, response, next) => {
     const { emVivo } = request.params;
-    console.log('EM VIVO AQUI!', emVivo);
     Promise.resolve()
         .then(() => TomboFoto.findAll({
             where: {
