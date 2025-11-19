@@ -165,7 +165,11 @@ export const cadastrarFaseSucessional = (request, response, next) => {
                 throw new BadRequestExeption(306);
             }
         })
-        .then(() => FaseSucessional.create({ nome }, transaction));
+        .then(() => FaseSucessional.max('numero', { transaction }))
+        .then(maxNumero => {
+            const proximoNumero = (Number(maxNumero) || 0) + 1;
+            return FaseSucessional.create({ numero: proximoNumero, nome }, transaction);
+        });
 
     sequelize.transaction(callback)
         .then(faseCriada => {
