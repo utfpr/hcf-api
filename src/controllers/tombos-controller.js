@@ -648,7 +648,7 @@ export const listagem = (request, response, next) => {
         nome_cientifico: nomeCientifico, hcf, tipo, nome_popular: nomePopular, situacao,
     } = request.query;
     let where = {
-        // rascunho: 0,
+        rascunho: false,
     };
 
     if (nomeCientifico) {
@@ -959,7 +959,7 @@ export const obterTombo = async (request, response, next) => {
                 Tombo.findOne({
                     where: {
                         hcf: id,
-                        rascunho: 0,
+                        rascunho: false,
                     },
                     attributes: [
                         'data_coleta_mes',
