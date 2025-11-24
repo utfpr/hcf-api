@@ -1,12 +1,11 @@
-/* eslint-disable max-len */
+import fs from 'node:fs';
+
 import {
     transformaLog,
     leLOG,
     transformaNomeLog,
     tempoGastoLog,
 } from '../herbarium/log';
-
-const fs = require('fs');
 
 /**
  * A função todosLogs, retorna ao front end um JSON, na qual esse JSON

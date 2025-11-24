@@ -1,5 +1,5 @@
-import { renameSync, existsSync, mkdirSync } from 'fs';
-import { join, extname } from 'path';
+import { renameSync, existsSync, unlinkSync, readdirSync } from 'fs';
+import { join, parse } from 'path';
 
 import { storage } from '../config/directory';
 import BadRequestExeption from '../errors/bad-request-exception';
@@ -25,150 +25,114 @@ function apenasNumeros(string) {
     return parseInt(numsStr);
 }
 
-export const post = (request, response, next) => {
-    const { file } = request;
+const isValidImageType = file => {
+    const allowedMimeTypes = [
+        'image/jpeg',
+        'image/jpg',
+        'image/png',
+        'image/gif',
+        'image/bmp',
+        'image/webp',
+        'image/tiff',
+        'image/svg+xml',
+    ];
 
-    // Validate file exists
+    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.tiff', '.svg'];
+
+    if (!allowedMimeTypes.includes(file.mimetype)) {
+        return false;
+    }
+
+    const fileExtension = file.originalname.toLowerCase().substring(file.originalname.lastIndexOf('.'));
+    if (!allowedExtensions.includes(fileExtension)) {
+        return false;
+    }
+
+    return true;
+};
+
+export const post = (request, response, next) => {
+    const { file, body } = request;
+
     if (!file) {
         return next(new BadRequestExeption(400, 'Nenhum arquivo foi enviado'));
     }
 
-    // Additional file validation
-    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
-    const fileExtension = extname(file.originalname).toLowerCase();
-
-    if (!allowedExtensions.includes(fileExtension)) {
-        return next(new BadRequestExeption(400, 'Extensão de arquivo não permitida'));
+    if (!isValidImageType(file)) {
+        if (existsSync(file.path)) {
+            unlinkSync(file.path);
+        }
+        return response.status(400).json({
+            error: 'Apenas arquivos de imagem são permitidos (PNG, JPEG, JPG, GIF, BMP, WEBP, TIFF, SVG)',
+        });
     }
 
-    let maximoGlobalCodBarras = '';
-    const isTrueSet = (request.body.em_vivo === 'true');
+    if (!body.codigo_foto) {
+        return response.status(400).json({ error: 'Código da foto é obrigatório' });
+    }
+
+    let fotoExistente = null;
+
     const fn = transaction => Promise.resolve()
-        .then(() => TomboFoto.findAll({
+        .then(() => TomboFoto.findOne({
             where: {
-                em_vivo: isTrueSet,
+                num_barra: body.codigo_foto,
             },
-            attributes: [
-                'id',
-                'codigo_barra',
-            ],
+            transaction,
         }))
-        .then(codBarras => {
-            // const maximoCodBarras = Math.max(... codBarras.map(e => e.id));
-            if (codBarras.length > 0) {
-                let maximoCodBarras = codBarras[0];
-                for (let i = 0; i < codBarras.length; i += 1) {
-                    if (codBarras[i].id > maximoCodBarras.id) {
-                        maximoCodBarras = codBarras[i];
-                    }
+        .then(foto => {
+            fotoExistente = foto;
+            const fileName = body.codigo_foto;
+            const filePath = join(storage, fileName);
+
+            const existingFiles = readdirSync(storage);
+            const existingFile = existingFiles.find(f => {
+                const nameWithoutExt = parse(f).name;
+                return nameWithoutExt === body.codigo_foto || f === body.codigo_foto;
+            });
+
+            if (existingFile) {
+                const existingFilePath = join(storage, existingFile);
+                if (existsSync(existingFilePath)) {
+                    unlinkSync(existingFilePath);
                 }
-                maximoGlobalCodBarras = maximoCodBarras.dataValues.codigo_barra;
             }
-        })
-        .then(() => {
-            const body = pick(request.body, [
+
+            renameSync(file.path, filePath);
+
+            if (fotoExistente) {
+                return fotoExistente.update({
+                    caminho_foto: fileName,
+                }, { transaction });
+            }
+
+            const bodyData = pick(request.body, [
                 'tombo_hcf',
                 'em_vivo',
             ]);
 
-            return TomboFoto.create(body, { transaction });
-        })
-        .then(foto => {
-            if (!existsSync(storage)) {
-                // @ts-ignore
-                mkdirSync(storage, { recursive: true });
-            }
-
-            let nomeArquivo;
-            // @ts-ignore
-            maximoGlobalCodBarras = apenasNumeros(maximoGlobalCodBarras);
-            if (foto.em_vivo) {
-                nomeArquivo = `HCFV${String(maximoGlobalCodBarras + 1).padStart(8, '0')}`;
-            } else {
-                nomeArquivo = `HCF${String(maximoGlobalCodBarras + 1).padStart(9, '0')}`;
-            }
-
-            const numeroBarra = `${maximoGlobalCodBarras + 1}.${''.padEnd(6, '0')}`;
-
-            const extensao = extname(file.originalname);
-            const caminho = `${nomeArquivo}${extensao}`;
-
-            const atualizacao = {
-                ...foto,
-                codigo_barra: nomeArquivo,
-                num_barra: numeroBarra,
-                caminho_foto: caminho,
-            };
-
-            return foto.update(atualizacao, { transaction });
-        })
-        .then(foto => {
-            renameSync(file.path, join(storage, foto.caminho_foto));
-            return foto;
+            return TomboFoto.create({
+                ...bodyData,
+                num_barra: body.codigo_foto,
+                codigo_barra: body.codigo_foto,
+                caminho_foto: fileName,
+            }, { transaction });
         });
 
     return sequelize.transaction(fn)
         .then(imagem => {
-            response.status(201)
-                .json(imagem);
-        })
-        .catch(ForeignKeyConstraintError, catchForeignKeyConstraintError)
-        .catch(next);
-};
-
-export const put = (request, response, next) => {
-    const { file } = request;
-
-    const fn = transaction => Promise.resolve()
-        .then(() => {
-            const body = pick(request.body, [
-                'tombo_codBarr',
-            ]);
-            return TomboFoto.findOne({
-                where: {
-                    codigo_barra: body.tombo_codBarr,
-                },
+            response.status(201).json({
+                url: `/uploads/${imagem.caminho_foto}`,
+                codigo: body.codigo_foto,
+                message: fotoExistente ? 'Imagem atualizada com sucesso' : 'Imagem criada com sucesso',
             });
         })
-        .then(foto => {
-            if (!existsSync(storage)) {
-                // @ts-ignore
-                mkdirSync(storage, { recursive: true });
+        .catch(err => {
+            if (existsSync(file.path)) {
+                unlinkSync(file.path);
             }
-
-            let nomeArquivo;
-            // @ts-ignore
-            if (foto.em_vivo) {
-                nomeArquivo = `HCFV${String(foto.id).padStart(8, '0')}`;
-            } else {
-                nomeArquivo = `HCF${String(foto.id).padStart(9, '0')}`;
-            }
-
-            // const numeroBarra = `${foto.id}.${''.padEnd(6, '0')}`;
-
-            const extensao = extname(file.originalname);
-            const caminho = `${nomeArquivo}${extensao}`;
-
-            const atualizacao = {
-                ...foto,
-                caminho_foto: caminho,
-            };
-
-            return foto.update(atualizacao, { transaction });
-        })
-        .then(foto => {
-            renameSync(file.path, join(storage, foto.caminho_foto));
-            return foto;
+            next(err);
         });
-
-    sequelize.transaction(fn)
-        .then(imagem => {
-            response.status(201)
-                .json(imagem);
-        })
-        .catch(ForeignKeyConstraintError, catchForeignKeyConstraintError)
-        .catch(next);
-
 };
 
 export const postBarrSemFotos = (request, response, next) => {
@@ -206,7 +170,6 @@ export const postBarrSemFotos = (request, response, next) => {
         })
         .then(foto => {
             let nomeArquivo;
-            // @ts-ignore
             maximoGlobalCodBarras = apenasNumeros(maximoGlobalCodBarras);
 
             if (foto.em_vivo) {

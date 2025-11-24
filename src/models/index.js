@@ -1,5 +1,3 @@
-// @ts-ignore
-
 import { readdirSync } from 'fs';
 import { basename } from 'path';
 import Sequelize from 'sequelize';
@@ -11,7 +9,7 @@ import {
     options,
 } from '../config/database';
 
-const __basename = basename(__filename); // eslint-disable-line
+const __basename = basename(__filename);
 const sequelize = new Sequelize(database, username, password, options);
 
 const isModelFile = file => file !== __basename && /\.[jt]s$/.test(file);

@@ -122,7 +122,7 @@ export const obtemDadosDoRelatorioDeInventarioDeEspecies = async (req, res, next
                 dados: dadosFormatados,
             });
         const readable = new Readable();
-        // eslint-disable-next-line no-underscore-dangle
+
         readable._read = () => { }; // Implementa o método _read (obrigatório)
         readable.push(buffer); // Empurrar os dados binários para o stream
         readable.push(null); // Indica o fim do fluxo de dados
@@ -190,19 +190,20 @@ export const obtemDadosDoRelatorioDeColetaPorLocalEIntervaloDeData = async (req,
             where: whereData,
             include: [
                 {
+                    model: Familia,
+                    attributes: ['id', 'nome'],
+                    // required: true,
+                },
+                {
+                    model: Genero,
+                    attributes: ['id', 'nome'],
+                    // required: true,
+                },
+                {
                     model: Especie,
                     attributes: ['id', 'nome'],
-                    required: true,
+                    // required: true,
                     include: [
-                        {
-                            model: Genero,
-                            attributes: ['id', 'nome'],
-                        },
-                        {
-                            model: Familia,
-                            attributes: ['id', 'nome'],
-                            required: true,
-                        },
                         {
                             model: Autor,
                             attributes: ['id', 'nome'],
@@ -221,13 +222,15 @@ export const obtemDadosDoRelatorioDeColetaPorLocalEIntervaloDeData = async (req,
         });
 
         if (req.method === 'GET') {
+            const dadosPuros = tombos.rows.map(registro => registro.get({ plain: true }));
+
             res.json({
                 metadados: {
-                    total: tombos.count,
+                    total: dadosPuros?.length,
                     pagina,
                     limite,
                 },
-                resultado: formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData(tombos),
+                resultado: formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData(dadosPuros),
                 filtro: formataTextFilter(local, dataInicio, dataFim || new Date()),
             });
             return;
@@ -242,7 +245,7 @@ export const obtemDadosDoRelatorioDeColetaPorLocalEIntervaloDeData = async (req,
                     textoFiltro: formataTextFilter(local, dataInicio, dataFim || new Date()),
                 });
             const readable = new Readable();
-            // eslint-disable-next-line no-underscore-dangle
+
             readable._read = () => { }; // Implementa o método _read (obrigatório)
             readable.push(buffer); // Empurrar os dados binários para o stream
             readable.push(null); // Indica o fim do fluxo de dados
@@ -348,7 +351,7 @@ export const obtemDadosDoRelatorioDeColetaIntervaloDeData = async (req, res, nex
                     textoFiltro: formataTextFilter(null, dataInicio, dataFim || new Date()),
                 });
             const readable = new Readable();
-            // eslint-disable-next-line no-underscore-dangle
+
             readable._read = () => { }; // Implementa o método _read (obrigatório)
             readable.push(buffer); // Empurrar os dados binários para o stream
             readable.push(null); // Indica o fim do fluxo de dados
@@ -459,19 +462,21 @@ export const obtemDadosDoRelatorioDeColetaPorColetorEIntervaloDeData = async (re
 
         try {
             const dadosFormatados = formatarDadosParaRelatorioDeColetaPorColetorEIntervaloDeData(tombos.rows);
-            const buffer = !modelo || modelo === '1' ? await generateReport(
-                ReportColetaModelo1, {
-                    dados: dadosFormatados,
-                    total: variante === 'analitico' ? tombos.count : undefined,
-                    textoFiltro: formataTextFilterColetor(coletor || null, dataInicio, dataFim || new Date()),
-                }) : await generateReport(
-                ReportColetaModelo2, {
-                    dados: dadosFormatados,
-                    total: variante === 'analitico' ? tombos.count : undefined,
-                    textoFiltro: formataTextFilterColetor(coletor || null, dataInicio, dataFim || new Date()),
-                });
+            const buffer = !modelo || modelo === '1'
+                ? await generateReport(
+                        ReportColetaModelo1, {
+                            dados: dadosFormatados,
+                            total: variante === 'analitico' ? tombos.count : undefined,
+                            textoFiltro: formataTextFilterColetor(coletor || null, dataInicio, dataFim || new Date()),
+                        })
+                : await generateReport(
+                        ReportColetaModelo2, {
+                            dados: dadosFormatados,
+                            total: variante === 'analitico' ? tombos.count : undefined,
+                            textoFiltro: formataTextFilterColetor(coletor || null, dataInicio, dataFim || new Date()),
+                        });
             const readable = new Readable();
-            // eslint-disable-next-line no-underscore-dangle
+
             readable._read = () => { }; // Implementa o método _read (obrigatório)
             readable.push(buffer); // Empurrar os dados binários para o stream
             readable.push(null); // Indica o fim do fluxo de dados
@@ -607,7 +612,7 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
                     textoFiltro: formataTextFilter(local, dataInicio, dataFim || new Date()),
                 });
             const readable = new Readable();
-            // eslint-disable-next-line no-underscore-dangle
+
             readable._read = () => { }; // Implementa o método _read (obrigatório)
             readable.push(buffer); // Empurrar os dados binários para o stream
             readable.push(null); // Indica o fim do fluxo de dados
@@ -682,7 +687,7 @@ export const obtemDadosDoRelatorioDeFamiliasEGeneros = async (req, res, next) =>
                     dados: dadosFormatados,
                 });
             const readable = new Readable();
-            // eslint-disable-next-line no-underscore-dangle
+
             readable._read = () => { }; // Implementa o método _read (obrigatório)
             readable.push(buffer); // Empurrar os dados binários para o stream
             readable.push(null); // Indica o fim do fluxo de dados
@@ -853,7 +858,7 @@ export const obtemDadosDoRelatorioDeQuantidade = async (req, res, next) => {
                     textoFiltro: formataTextFilter(null, dataInicio, dataFim || new Date()),
                 });
             const readable = new Readable();
-            // eslint-disable-next-line no-underscore-dangle
+
             readable._read = () => { }; // Implementa o método _read (obrigatório)
             readable.push(buffer); // Empurrar os dados binários para o stream
             readable.push(null); // Indica o fim do fluxo de dados

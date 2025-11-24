@@ -1,5 +1,6 @@
 import rateLimit from 'express-rate-limit';
 
+import * as controller from '../controllers/usuarios-controller';
 import listagensMiddleware from '../middlewares/listagens-middleware';
 import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middleware';
 import validacoesMiddleware from '../middlewares/validacoes-middleware';
@@ -9,8 +10,8 @@ import cadastrarUsuarioEsquema from '../validators/usuario-cadastro';
 import desativarUsuarioEsquema from '../validators/usuario-desativa';
 import listagemUsuarioEsquema from '../validators/usuario-listagem';
 import usuarioLoginEsquema from '../validators/usuario-login';
-
-const controller = require('../controllers/usuarios-controller');
+import redefinirSenhaEsquema from '../validators/usuario-redefine-senha';
+import solicitarTrocaDeSenhaEsquema from '../validators/usuario-solicita-redefine-senha';
 
 // Rate limiting for login attempts
 const loginLimiter = rateLimit({
@@ -88,6 +89,77 @@ export default app => {
             loginLimiter,
             validacoesMiddleware(usuarioLoginEsquema),
             controller.login,
+        ]);
+
+    /**
+   * @swagger
+   * /usuarios/solicitar-redefinicao-senha:
+   *   post:
+   *     summary: Inicia o processo de reset de senha para um usuário
+   *     tags: [Usuários]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               email:
+   *                 type: string
+   *                 format: email
+   *             required:
+   *               - email
+   *           example:
+   *             email: "usuario@exemplo.com"
+   *     responses:
+   *       '204':
+   *         description: Solicitação recebida. Se o e-mail estiver cadastrado, um link para reset de senha será enviado.
+   *       '400':
+   *         $ref: '#/components/responses/BadRequest'
+   *       '500':
+   *         $ref: '#/components/responses/InternalServerError'
+   */
+    app.route('/usuarios/solicitar-redefinicao-senha')
+        .post([
+            validacoesMiddleware(solicitarTrocaDeSenhaEsquema),
+            controller.solicitarTrocaDeSenha,
+        ]);
+
+    /**
+   * @swagger
+   * /usuarios/redefinir-senha:
+   *   put:
+   *     summary: Redefine a senha do usuário usando um token válido
+   *     tags: [Usuários]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               token:
+   *                 type: string
+   *               nova_senha:
+   *                 type: string
+   *             required:
+   *               - token
+   *               - nova_senha
+   *           example:
+   *             token: "a1b2c3d4e5f6..."
+   *             nova_senha: "minhanova_senhaSuperSegura123"
+   *     responses:
+   *       '204':
+   *         description: Senha atualizada com sucesso.
+   *       '400':
+   *         $ref: '#/components/responses/BadRequest'
+   *       '500':
+   *         $ref: '#/components/responses/InternalServerError'
+   */
+    app.route('/usuarios/redefinir-senha')
+        .put([
+            validacoesMiddleware(redefinirSenhaEsquema),
+            controller.redefinirSenhaComToken,
         ]);
 
     /**

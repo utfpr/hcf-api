@@ -206,15 +206,15 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
         let dataIdentificacao = '';
         let identificationQualifier = '';
         let nomeIdentificador = '';
-        const paisNome =
-            tombo.locais_coletum && tombo.locais_coletum.cidade ? tombo.locais_coletum.cidade.estado.paise.nome : '';
-        const paisCodigo =
-            tombo.locais_coletum && tombo.locais_coletum.cidade ? tombo.locais_coletum.cidade.estado.paise.sigla : '';
-        const paranaNome =
-            tombo.locais_coletum && tombo.locais_coletum.cidade ? tombo.locais_coletum.cidade.estado.nome : '';
+        const paisNome
+            = tombo.locais_coletum && tombo.locais_coletum.cidade ? tombo.locais_coletum.cidade.estado.paise.nome : '';
+        const paisCodigo
+            = tombo.locais_coletum && tombo.locais_coletum.cidade ? tombo.locais_coletum.cidade.estado.paise.sigla : '';
+        const paranaNome
+            = tombo.locais_coletum && tombo.locais_coletum.cidade ? tombo.locais_coletum.cidade.estado.nome : '';
         const cidadeNome = tombo.locais_coletum && tombo.locais_coletum.cidade ? tombo.locais_coletum.cidade.nome : '';
-        const vegetacao =
-            tombo.locais_coletum && tombo.locais_coletum.vegetacao ? tombo.locais_coletum.vegetacao.nome : '';
+        const vegetacao
+            = tombo.locais_coletum && tombo.locais_coletum.vegetacao ? tombo.locais_coletum.vegetacao.nome : '';
         const familiaNome = tombo.familia ? tombo.familia.nome : '';
         const generoNome = tombo.genero ? tombo.genero.nome : '';
         const especieNome = tombo.especy ? tombo.especy.nome : '';
@@ -334,7 +334,7 @@ export const obterModeloDarwinCore = async (request, response, next) => {
     const limit = request.query.limit > 1000 ? 1000 : request.query.limit || 1000;
 
     const quantidadeTombos = await Tombo.count(
-        { distinct: true }
+        { distinct: true },
     );
 
     const cabecalho = colunasComoLinhaUnica();

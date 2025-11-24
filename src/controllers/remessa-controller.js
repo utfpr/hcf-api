@@ -437,7 +437,7 @@ export const exclusao = (request, response, next) => {
                             [Op.in]: tombos,
                         },
                     },
-                }
+                },
             );
         })
         .then(() => {

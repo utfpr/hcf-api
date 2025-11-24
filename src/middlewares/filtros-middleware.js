@@ -5,7 +5,7 @@ export default (request, response, next) => {
         request.query.filtros = JSON.parse(filtros);
 
     } catch (err) {
-        // console.error(err); // eslint-disable-line no-console
+        console.error(err); // eslint-disable-line no-console
         request.query.filtros = {};
 
     } finally {

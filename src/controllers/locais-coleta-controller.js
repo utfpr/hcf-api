@@ -87,9 +87,19 @@ export const cadastrarVegetacao = (request, response, next) => {
 };
 
 export const buscarRelevos = (request, response, next) => {
+    let where = {};
+
+    if (request.query.nome) {
+        where = {
+            ...where,
+            nome: { [sequelize.Op.like]: `%${request.query.nome}%` },
+        };
+    }
+
     Promise.resolve()
         .then(() => Relevo.findAndCountAll({
             attributes: ['id', 'nome'],
+            where,
             order: [['nome', 'ASC']],
         }))
         .then(relevos => {
@@ -99,9 +109,19 @@ export const buscarRelevos = (request, response, next) => {
 };
 
 export const buscarSolos = (request, response, next) => {
+    let where = {};
+
+    if (request.query.nome) {
+        where = {
+            ...where,
+            nome: { [sequelize.Op.like]: `%${request.query.nome}%` },
+        };
+    }
+
     Promise.resolve()
         .then(() => Solo.findAndCountAll({
             attributes: ['id', 'nome'],
+            where,
             order: [['nome', 'ASC']],
         }))
         .then(solos => {
@@ -111,9 +131,19 @@ export const buscarSolos = (request, response, next) => {
 };
 
 export const buscarVegetacoes = (request, response, next) => {
+    let where = {};
+
+    if (request.query.nome) {
+        where = {
+            ...where,
+            nome: { [sequelize.Op.like]: `%${request.query.nome}%` },
+        };
+    }
+
     Promise.resolve()
         .then(() => Vegetacao.findAndCountAll({
             attributes: ['id', 'nome'],
+            where,
             order: [['nome', 'ASC']],
         }))
         .then(vegetacoes => {
@@ -134,7 +164,7 @@ export const cadastrarLocalColeta = async (request, response, next) => {
 
 export const buscarLocaisColeta = async (request, response, next) => {
     try {
-        const { cidade_id: cidadeId, estado_id: estadoId, pais_id: paisId } = request.query;
+        const { cidade_id: cidadeId, estado_id: estadoId, pais_id: paisId, descricao } = request.query;
         const { limite, pagina, offset } = request.paginacao;
         const { getAll } = request.query;
 
@@ -151,6 +181,10 @@ export const buscarLocaisColeta = async (request, response, next) => {
             },
             { model: FaseSucessional },
         ];
+
+        if (descricao) {
+            where.descricao = { [sequelize.Op.like]: `%${descricao}%` };
+        }
 
         if (cidadeId) {
             where.cidade_id = cidadeId;

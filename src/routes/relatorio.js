@@ -1,8 +1,8 @@
+import * as controller from '../controllers/relatorios-controller';
 import listagensMiddleware from '../middlewares/listagens-middleware';
 import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middleware';
 
 /// relatorio/inventario-especies
-const controller = require('../controllers/relatorios-controller');
 
 /**
 * @swagger

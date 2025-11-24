@@ -1,11 +1,11 @@
+import { Op } from 'sequelize';
+
 import pick from '~/helpers/pick';
 
 import BadRequestException from '../errors/bad-request-exception';
 import models from '../models';
 import codigos from '../resources/codigos-http';
 import verifyRecaptcha from '../utils/verify-recaptcha';
-
-const { Op } = require('sequelize');
 
 const { Cidade, LocalColeta, Tombo, Reino, Familia, Subfamilia, Genero, Especie, Subespecie, Variedade, sequelize } = models;
 
@@ -139,7 +139,7 @@ export const listaTodosCidades = where =>
             {
                 model: models.Estado,
                 as: 'estado',
-                attributes: ['id', 'nome', 'sigla', 'codigo_telefone', 'pais_id'],
+                attributes: ['id', 'nome', 'sigla', 'pais_id'],
             },
         ],
     });
@@ -147,9 +147,17 @@ export const listaTodosCidades = where =>
 export const listagem = (request, response, next) => {
     let where = {};
 
-    if (request.query.id !== undefined) {
+    if (request.query.estado_id !== undefined) {
         where = {
-            estado_id: request.query.id,
+            ...where,
+            estado_id: request.query.estado_id,
+        };
+    }
+
+    if (request.query.nome) {
+        where = {
+            ...where,
+            nome: { [Op.like]: `%${request.query.nome}%` },
         };
     }
 
@@ -380,13 +388,13 @@ export const buscarPontosTaxonomiaComFiltros = async (req, res, next) => {
         } = req.query;
 
         if (
-            !nomeReino &&
-            !nomeFamilia &&
-            !nomeSubFamilia &&
-            !nomeGenero &&
-            !nomeEspecie &&
-            !nomeSubEspecie &&
-            !nomeVariedade
+            !nomeReino
+            && !nomeFamilia
+            && !nomeSubFamilia
+            && !nomeGenero
+            && !nomeEspecie
+            && !nomeSubEspecie
+            && !nomeVariedade
         ) {
             return res
                 .status(400)

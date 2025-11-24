@@ -12,14 +12,6 @@ export default {
             options: [{ min: 3 }],
         },
     },
-    codigo_telefone: {
-        in: 'body',
-        optional: true,
-        isString: true,
-        isLength: {
-            options: [{ min: 1, max: 5 }],
-        },
-    },
     pais_id: {
         in: 'body',
         optional: true,

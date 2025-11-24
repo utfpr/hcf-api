@@ -208,7 +208,7 @@ export const excluirFamilia = (request, response, next) => {
                         id,
                     },
                     transaction,
-                })
+                }),
             )
             .then(familiaEncontrada => {
                 if (!familiaEncontrada) {
@@ -219,7 +219,7 @@ export const excluirFamilia = (request, response, next) => {
                 Promise.all([
                     Genero.count({ where: { familia_id: id }, transaction }),
                     Tombo.count({ where: { familia_id: id }, transaction }),
-                ])
+                ]),
             )
             .then(([generosCount, tombosCount]) => {
                 if (generosCount > 0 || tombosCount > 0) {
@@ -272,7 +272,8 @@ export const cadastrarSubfamilia = (request, response, next) => {
 
             return familiaEncontrada;
         })
-        .then(() => Subfamilia.create({ nome,
+        .then(() => Subfamilia.create({
+            nome,
             familia_id: familiaId,
         }, transaction));
     sequelize.transaction(callback)
@@ -311,10 +312,16 @@ export const buscarSubfamilia = async (req, res, next) => {
             }
         }
 
-        const familiaWhere = {};
-        if (familiaNomeFiltro) {
-            familiaWhere.nome = { [Op.like]: `%${familiaNomeFiltro}%` };
-        }
+        const include = [
+            {
+                model: Familia,
+                attributes: ['id', 'nome'],
+                where: familiaNomeFiltro ? { nome: { [Op.like]: `%${familiaNomeFiltro}%` } } : undefined,
+                required: true,
+                include: [{ model: Reino, attributes: ['id', 'nome'] }],
+            },
+            { model: Autor, attributes: ['id', 'nome'], as: 'autor' },
+        ];
 
         const { count, rows } = await Subfamilia.findAndCountAll({
             attributes: ['id', 'nome'],
@@ -322,10 +329,7 @@ export const buscarSubfamilia = async (req, res, next) => {
             order: orderClause,
             limit: parseInt(limite, 10),
             offset: parseInt(offset, 10),
-            include: [
-                { model: Familia, attributes: ['id', 'nome'], where: familiaWhere },
-                { model: Autor, attributes: ['id', 'nome'], as: 'autor' },
-            ],
+            include,
         });
 
         return res.status(codigos.LISTAGEM).json({
@@ -352,7 +356,7 @@ export const excluirSubfamilia = (request, response, next) => {
                         id,
                     },
                     transaction,
-                })
+                }),
             )
             .then(encontrado => {
                 if (!encontrado) {
@@ -360,7 +364,7 @@ export const excluirSubfamilia = (request, response, next) => {
                 }
             })
             .then(() =>
-                Promise.all([Tombo.count({ where: { sub_familia_id: id }, transaction })])
+                Promise.all([Tombo.count({ where: { sub_familia_id: id }, transaction })]),
             )
             .then(([tombosCount]) => {
                 if (tombosCount > 0) {
@@ -457,7 +461,8 @@ export const cadastrarGenero = (request, response, next) => {
 
             return familiaEncontrada;
         })
-        .then(() => Genero.create({ nome,
+        .then(() => Genero.create({
+            nome,
             familia_id: familiaId,
         }, transaction));
     sequelize.transaction(callback)
@@ -484,8 +489,15 @@ export const buscarGeneros = async (request, response, next) => {
         if (genero) where.nome = { [Op.like]: `%${genero}%` };
         if (familiaId) where.familia_id = familiaId;
 
-        const familiaWhere = {};
-        if (familiaNome) familiaWhere.nome = { [Op.like]: `%${familiaNome}%` };
+        const include = [
+            {
+                model: Familia,
+                attributes: ['id', 'nome'],
+                where: familiaNome ? { nome: { [Op.like]: `%${familiaNome}%` } } : undefined,
+                required: true,
+                include: [{ model: Reino, attributes: ['id', 'nome'] }],
+            },
+        ];
 
         const result = await Genero.findAndCountAll({
             attributes: ['id', 'nome'],
@@ -493,9 +505,7 @@ export const buscarGeneros = async (request, response, next) => {
             limit: limite,
             offset,
             where,
-            include: [
-                { model: Familia, attributes: ['id', 'nome'], where: familiaWhere },
-            ],
+            include,
         });
 
         return response.status(codigos.LISTAGEM).json({
@@ -519,7 +529,7 @@ export const excluirGeneros = (request, response, next) => {
                         id,
                     },
                     transaction,
-                })
+                }),
             )
             .then(generoEncontrado => {
                 if (!generoEncontrado) {
@@ -530,7 +540,7 @@ export const excluirGeneros = (request, response, next) => {
                 Promise.all([
                     Especie.count({ where: { genero_id: id }, transaction }),
                     Tombo.count({ where: { genero_id: id }, transaction }),
-                ])
+                ]),
             )
             .then(([especiesCount, tombosCount]) => {
                 if (especiesCount > 0 || tombosCount > 0) {
@@ -651,7 +661,7 @@ export const cadastrarEspecie = (request, response, next) => {
                 familia_id: genero.familia_id,
                 autor_id: autorId,
             },
-            transaction
+            transaction,
         ));
     sequelize.transaction(callback)
         .then(especieCriada => {
@@ -681,11 +691,25 @@ export const buscarEspecies = async (request, response, next) => {
         if (especie) where.nome = { [Op.like]: `%${especie}%` };
         if (generoId) where.genero_id = generoId;
 
-        const familiaWhere = {};
-        if (familiaNome) familiaWhere.nome = { [Op.like]: `%${familiaNome}%` };
-
-        const generoWhere = {};
-        if (generoNome) generoWhere.nome = { [Op.like]: `%${generoNome}%` };
+        const include = [
+            {
+                model: Genero,
+                attributes: ['id', 'nome'],
+                where: generoNome ? { nome: { [Op.like]: `%${generoNome}%` } } : undefined,
+                required: true,
+                include: [{
+                    model: Familia,
+                    attributes: ['id', 'nome'],
+                    where: familiaNome ? { nome: { [Op.like]: `%${familiaNome}%` } } : undefined,
+                    required: true,
+                    include: [{
+                        model: Reino,
+                        attributes: ['id', 'nome'],
+                    }],
+                }],
+            },
+            { model: Autor, attributes: ['id', 'nome'], as: 'autor' },
+        ];
 
         const result = await Especie.findAndCountAll({
             attributes: ['id', 'nome'],
@@ -693,11 +717,7 @@ export const buscarEspecies = async (request, response, next) => {
             limit: limite,
             offset,
             where,
-            include: [
-                { model: Familia, attributes: ['id', 'nome'], where: familiaWhere },
-                { model: Genero, attributes: ['id', 'nome'], where: generoWhere },
-                { model: Autor, attributes: ['id', 'nome'], as: 'autor' },
-            ],
+            include,
         });
 
         return response.status(codigos.LISTAGEM).json({
@@ -721,7 +741,7 @@ export const excluirEspecies = (request, response, next) => {
                         id,
                     },
                     transaction,
-                })
+                }),
             )
             .then(encontrado => {
                 if (!encontrado) {
@@ -733,7 +753,7 @@ export const excluirEspecies = (request, response, next) => {
                     Subespecie.count({ where: { especie_id: id }, transaction }),
                     Variedade.count({ where: { especie_id: id }, transaction }),
                     Tombo.count({ where: { especie_id: id }, transaction }),
-                ])
+                ]),
             )
             .then(([subEspeciesCount, variedadesCount, tombosCount]) => {
                 if (subEspeciesCount > 0 || variedadesCount > 0 || tombosCount > 0) {
@@ -903,14 +923,36 @@ export const buscarSubespecies = async (request, response, next) => {
         if (subespecie) where.nome = { [Op.like]: `%${subespecie}%` };
         if (especieId) where.especie_id = especieId;
 
-        const familiaWhere = {};
-        if (familiaNome) familiaWhere.nome = { [Op.like]: `%${familiaNome}%` };
-
-        const generoWhere = {};
-        if (generoNome) generoWhere.nome = { [Op.like]: `%${generoNome}%` };
-
-        const especieWhere = {};
-        if (especieNome) especieWhere.nome = { [Op.like]: `%${especieNome}%` };
+        const include = [
+            {
+                model: Especie,
+                attributes: ['id', 'nome'],
+                where: especieNome ? { nome: { [Op.like]: `%${especieNome}%` } } : undefined,
+                required: true,
+                as: 'especie',
+                include: [{
+                    model: Genero,
+                    attributes: ['id', 'nome'],
+                    where: generoNome ? { nome: { [Op.like]: `%${generoNome}%` } } : undefined,
+                    required: true,
+                    include: [{
+                        model: Familia,
+                        attributes: ['id', 'nome'],
+                        where: familiaNome ? { nome: { [Op.like]: `%${familiaNome}%` } } : undefined,
+                        required: true,
+                        include: [{
+                            model: Reino,
+                            attributes: ['id', 'nome'],
+                        }],
+                    }],
+                }],
+            },
+            {
+                model: Autor,
+                attributes: ['id', 'nome'],
+                as: 'autor',
+            },
+        ];
 
         const result = await Subespecie.findAndCountAll({
             attributes: ['id', 'nome'],
@@ -918,12 +960,7 @@ export const buscarSubespecies = async (request, response, next) => {
             limit: limite,
             offset,
             where,
-            include: [
-                { model: Familia, attributes: ['id', 'nome'], where: familiaWhere },
-                { model: Genero, attributes: ['id', 'nome'], where: generoWhere },
-                { model: Especie, attributes: ['id', 'nome'], where: especieWhere, as: 'especie' },
-                { model: Autor, attributes: ['id', 'nome'], as: 'autor' },
-            ],
+            include,
         });
 
         return response.status(codigos.LISTAGEM).json({
@@ -947,7 +984,7 @@ export const excluirSubespecies = (request, response, next) => {
                         id,
                     },
                     transaction,
-                })
+                }),
             )
             .then(encontrado => {
                 if (!encontrado) {
@@ -955,7 +992,7 @@ export const excluirSubespecies = (request, response, next) => {
                 }
             })
             .then(() =>
-                Promise.all([Tombo.count({ where: { sub_especie_id: id }, transaction })])
+                Promise.all([Tombo.count({ where: { sub_especie_id: id }, transaction })]),
             )
             .then(([tombosCount]) => {
                 if (tombosCount > 0) {
@@ -1104,7 +1141,7 @@ export const cadastrarVariedade = (request, response, next) => {
                 familia_id: especie.familia_id,
                 autor_id: autorId,
             },
-            transaction
+            transaction,
         ));
     sequelize.transaction(callback)
         .then(variedadeCriada => {
@@ -1136,14 +1173,36 @@ export const buscarVariedades = async (request, response, next) => {
         if (variedade) where.nome = { [Op.like]: `%${variedade}%` };
         if (especieId) where.especie_id = especieId;
 
-        const familiaWhere = {};
-        if (familiaNome) familiaWhere.nome = { [Op.like]: `%${familiaNome}%` };
-
-        const generoWhere = {};
-        if (generoNome) generoWhere.nome = { [Op.like]: `%${generoNome}%` };
-
-        const especieWhere = {};
-        if (especieNome) especieWhere.nome = { [Op.like]: `%${especieNome}%` };
+        const include = [
+            {
+                model: Especie,
+                attributes: ['id', 'nome'],
+                where: especieNome ? { nome: { [Op.like]: `%${especieNome}%` } } : undefined,
+                required: true,
+                as: 'especie',
+                include: [{
+                    model: Genero,
+                    attributes: ['id', 'nome'],
+                    where: generoNome ? { nome: { [Op.like]: `%${generoNome}%` } } : undefined,
+                    required: true,
+                    include: [{
+                        model: Familia,
+                        attributes: ['id', 'nome'],
+                        where: familiaNome ? { nome: { [Op.like]: `%${familiaNome}%` } } : undefined,
+                        required: true,
+                        include: [{
+                            model: Reino,
+                            attributes: ['id', 'nome'],
+                        }],
+                    }],
+                }],
+            },
+            {
+                model: Autor,
+                attributes: ['id', 'nome'],
+                as: 'autor',
+            },
+        ];
 
         const result = await Variedade.findAndCountAll({
             attributes: ['id', 'nome'],
@@ -1151,12 +1210,7 @@ export const buscarVariedades = async (request, response, next) => {
             limit: limite,
             offset,
             where,
-            include: [
-                { model: Familia, attributes: ['id', 'nome'], where: familiaWhere },
-                { model: Genero, attributes: ['id', 'nome'], where: generoWhere },
-                { model: Especie, attributes: ['id', 'nome'], where: especieWhere, as: 'especie' },
-                { model: Autor, attributes: ['id', 'nome'], as: 'autor' },
-            ],
+            include,
         });
 
         return response.status(codigos.LISTAGEM).json({
@@ -1343,7 +1397,7 @@ export const excluirAutores = (request, response, next) => {
                         id,
                     },
                     transaction,
-                })
+                }),
             )
             .then(encontrado => {
                 if (!encontrado) {
@@ -1355,7 +1409,7 @@ export const excluirAutores = (request, response, next) => {
                     Subespecie.count({ where: { autor_id: id }, transaction }),
                     Especie.count({ where: { autor_id: id }, transaction }),
                     Variedade.count({ where: { autor_id: id }, transaction }),
-                ])
+                ]),
             )
             .then(([subEspeciesCount, especiesCount, variedadesCount]) => {
                 if (subEspeciesCount > 0 || especiesCount > 0 || variedadesCount > 0) {
@@ -1368,7 +1422,7 @@ export const excluirAutores = (request, response, next) => {
                         id,
                     },
                     transaction,
-                })
+                }),
             );
 
     sequelize
@@ -1420,7 +1474,7 @@ export const listagem = (request, response, next) => {
             .then(resultadoCount => {
                 let count = 0;
                 if (Array.isArray(resultadoCount) && resultadoCount.length > 0) {
-                    count = resultadoCount[0].count; // eslint-disable-line
+                    count = resultadoCount[0].count;
                 }
 
                 const retorno = { count };
