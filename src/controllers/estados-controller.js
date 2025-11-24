@@ -76,7 +76,7 @@ export const listagem = async (req, res, next) => {
         }
 
         if (nome) {
-            where.nome = { [Op.like]: `%${nome}%` };
+            where.nome = { [op.iLike]: `%${nome}%` };
         }
 
         const estados = await Estado.findAll({

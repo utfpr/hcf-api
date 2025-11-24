@@ -157,7 +157,7 @@ export const listagem = (request, response, next) => {
     if (request.query.nome) {
         where = {
             ...where,
-            nome: { [Op.like]: `%${request.query.nome}%` },
+            nome: { [op.iLike]: `%${request.query.nome}%` },
         };
     }
 
@@ -240,7 +240,7 @@ export const ListaTodosOsTombosComLocalizacao = async (req, res, next) => {
 
         if (search) {
             queryOptions.where.hcf = {
-                [Op.like]: `%${search}%`,
+                [op.iLike]: `%${search}%`,
             };
         }
 
@@ -523,7 +523,7 @@ export const buscarPontosPorNomePopular = async (req, res, next) => {
             where: {
                 latitude: { [Op.ne]: null },
                 longitude: { [Op.ne]: null },
-                nomes_populares: { [Op.like]: `%${nomePopular}%` },
+                nomes_populares: { [op.iLike]: `%${nomePopular}%` },
             },
             attributes: ['hcf', 'latitude', 'longitude', 'nomes_populares'],
         });

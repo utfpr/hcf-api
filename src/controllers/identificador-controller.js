@@ -42,7 +42,7 @@ export const listaIdentificadores = async (req, res, next) => {
         if (id) {
             where.id = id;
         } else if (nome) {
-            where.nome = { [Op.like]: `%${nome}%` };
+            where.nome = { [op.iLike]: `%${nome}%` };
         }
 
         const result = await Identificador.findAndCountAll({
