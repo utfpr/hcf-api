@@ -23,6 +23,7 @@ interface Registro {
   }
   latitude: number | null;
   longitude: number | null;
+  autor?: string;
 }
 
 interface LocaisColeta {
@@ -41,9 +42,10 @@ interface RelacaoLocaisColetaProps {
   dados: LocaisColeta[];
   total?: number;
   textoFiltro?: string;
+  showCoord?: boolean;
 }
 
-function RelacaoLocaisColeta({ dados, total, textoFiltro }: RelacaoLocaisColetaProps) {
+function RelacaoLocaisColeta({ dados, total, textoFiltro, showCoord = false }: RelacaoLocaisColetaProps) {
   const renderTotalizador = (geral: boolean, qtd?: number, qtdEspecies?: number, qtdGeneros?: number, qtdFamilias?: number) => {
     return (
       <div style={{ marginTop: '1em', borderTop: '1px solid #000', paddingTop: '0.5em' }}>
@@ -97,8 +99,9 @@ function RelacaoLocaisColeta({ dados, total, textoFiltro }: RelacaoLocaisColetaP
             <th>Data Coleta</th>
             <th>Família</th>
             <th>Espécie</th>
-            <th>Latitude</th>
-            <th>Longitude</th>
+            <th>Autor</th>
+            {showCoord && <th>Latitude</th>}
+            {showCoord && <th>Longitude</th>}
             <th style={{ textAlign: 'right' }}>Nº do Tombo</th>
           </tr>
         </thead>
@@ -111,8 +114,9 @@ function RelacaoLocaisColeta({ dados, total, textoFiltro }: RelacaoLocaisColetaP
                 <td>{criaData(item)}</td>
                 <td>{familia?.nome}</td>
                 <td style={{ fontStyle: 'italic' }}>{genero?.nome} {especy?.nome}</td>
-                <td>{cordenadas.latitude}</td>
-                <td>{cordenadas.longitude}</td>
+                <td>{item.autor}</td>
+                {showCoord && <td>{cordenadas.latitude}</td>}
+                {showCoord && <td>{cordenadas.longitude}</td>}
                 <td style={{ textAlign: 'right' }}>{item.hcf}</td>
               </tr>
             )
