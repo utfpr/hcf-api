@@ -533,7 +533,13 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
                 {
                     model: Especie,
                     attributes: ['id', 'nome'],
-                    // required: true,
+                    include: [
+                        {
+                            model: Autor,
+                            attributes: ['id', 'nome'],
+                            as: 'autor',
+                        },
+                    ],
                 },
                 {
                     model: LocalColeta,

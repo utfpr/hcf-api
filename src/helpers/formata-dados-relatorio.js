@@ -253,6 +253,7 @@ export function agruparPorLocal(dados) {
         const entrada = {
             ...entradaOriginal,
             coordenadasFormatadas,
+            autor: entradaOriginal.especy?.autor?.nome || 'Não Informado',
         };
 
         if (!agrupado[chave]) {
