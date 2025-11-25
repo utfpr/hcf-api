@@ -21,7 +21,8 @@ interface Registro {
   genero: {
     nome: string;
   }
-  coordenadasFormatadas: string;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 interface LocaisColeta {
@@ -57,13 +58,31 @@ function RelacaoLocaisColeta({ dados, total, textoFiltro }: RelacaoLocaisColetaP
     return `${data_coleta_dia}/${romanoMeses[data_coleta_mes - 1]}/${data_coleta_ano}`;
   }
 
+  const converteDecimalParaDMS = (decimal: number | null, isLatitude = true) => {
+    if (decimal === null || decimal === undefined) {
+      return '';
+    }
+
+    const abs = Math.abs(decimal);
+    const graus = Math.floor(abs);
+    const minutosDecimal = (abs - graus) * 60;
+    const minutos = Math.floor(minutosDecimal);
+    const segundos = ((minutosDecimal - minutos) * 60).toFixed(2);
+
+    let hemisferio;
+    if (isLatitude) {
+      hemisferio = decimal >= 0 ? 'N' : 'S';
+    } else {
+      hemisferio = decimal >= 0 ? 'E' : 'W';
+    }
+
+    return `${graus}° ${minutos}' ${segundos}" ${hemisferio}`;
+  };
+
   const obtemCordenadas = (registro: Registro) => {
-    const { coordenadasFormatadas } = registro;
-    if (!coordenadasFormatadas) return { latitude: '', longitude: '' };
-    const [latitude, longitude] = coordenadasFormatadas.split(',');
     return {
-      latitude: latitude ? latitude.trim() : '',
-      longitude: longitude ? longitude.trim() : ''
+      latitude: registro.latitude ? converteDecimalParaDMS(registro.latitude, true) : '',
+      longitude: registro.longitude ? converteDecimalParaDMS(registro.longitude, false) : ''
     };
   }
 

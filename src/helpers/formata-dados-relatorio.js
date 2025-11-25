@@ -244,15 +244,12 @@ export function agruparPorLocal(dados) {
         const municipio = cidade?.nome || 'Desconhecido';
         const local = locaisColetum?.descricao?.trim() || 'Local não informado';
 
-        const coordenadasFormatadas = cidade
-            ? formatarCoordenadas(cidade.latitude, cidade.longitude)
-            : 'Coordenadas indisponíveis';
-
         const chave = `${estado} > ${municipio} > ${local}`;
 
         const entrada = {
             ...entradaOriginal,
-            coordenadasFormatadas,
+            latitude: cidade?.latitude || null,
+            longitude: cidade?.longitude || null,
             autor: entradaOriginal.especy?.autor?.nome || 'Não Informado',
         };
 
@@ -262,7 +259,8 @@ export function agruparPorLocal(dados) {
                 estadoSigla,
                 municipio,
                 local,
-                coordenadas: coordenadasFormatadas,
+                latitude: cidade?.latitude || null,
+                longitude: cidade?.longitude || null,
                 quantidadeRegistros: 0,
                 registros: [],
             };
