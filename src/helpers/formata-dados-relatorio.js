@@ -269,15 +269,53 @@ export function agruparPorLocal(dados) {
         agrupado[chave].registros.push(entrada);
         agrupado[chave].quantidadeRegistros += 1;
         quantidadeTotal += 1;
-    });
 
-    // Transforma o objeto em um array
-    const locais = Object.values(agrupado);
+      });
+      
+      // Transforma o objeto em um array
+      const locais = Object.values(agrupado);
+      
+      const locaisComResumo = adicionarResumoTaxonomicoPorLocal(locais);
 
     return {
-        locais, // agora é um array
+        locais: locaisComResumo,
         quantidadeTotal,
     };
+}
+
+export function adicionarResumoTaxonomicoPorLocal(locaisAgrupados) {
+  return locaisAgrupados.map((local) => {
+    const familias = new Set();
+    const generos = new Set();
+    const especies = new Set();
+
+    for (const reg of local.registros) {
+      // família
+      const familiaId = reg.familia_id ?? reg.familia?.id;
+      if (familiaId != null) {
+        familias.add(familiaId);
+      }
+
+      // gênero
+      const generoId = reg.genero_id ?? reg.genero?.id;
+      if (generoId != null) {
+        generos.add(generoId);
+      }
+
+      // espécie
+      const especieId = reg.especie_id ?? reg.especy?.id;
+      if (especieId != null) {
+        especies.add(especieId);
+      }
+    }
+
+    return {
+      ...local,
+      quantidadeFamilias: familias.size,
+      quantidadeGeneros: generos.size,
+      quantidadeEspecies: especies.size,
+    };
+  });
 }
 
 export function agruparPorGenero(dados) {

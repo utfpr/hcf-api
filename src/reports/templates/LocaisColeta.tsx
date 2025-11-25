@@ -32,6 +32,9 @@ interface LocaisColeta {
   local: string;
   registros: Registro[];
   quantidadeRegistros: number;
+  quantidadeEspecies?: number;
+  quantidadeGeneros?: number;
+  quantidadeFamilias?: number;
 }
 
 interface RelacaoLocaisColetaProps {
@@ -41,10 +44,10 @@ interface RelacaoLocaisColetaProps {
 }
 
 function RelacaoLocaisColeta({ dados, total, textoFiltro }: RelacaoLocaisColetaProps) {
-  const renderTotalizador = (geral: boolean, qtd?: number) => {
+  const renderTotalizador = (geral: boolean, qtd?: number, qtdEspecies?: number, qtdGeneros?: number, qtdFamilias?: number) => {
     return (
       <div style={{ marginTop: '1em', borderTop: '1px solid #000', paddingTop: '0.5em' }}>
-        Total {geral ? 'geral' : 'do local'}: {geral ? total : qtd}
+        Total {geral ? 'geral' : 'do local'}: {geral ? total : qtd} {!geral ? `(Famílias: ${qtdFamilias || 0}, Gêneros: ${qtdGeneros || 0}, Espécies: ${qtdEspecies || 0})`: ''}
       </div>
     )
   }
@@ -134,7 +137,7 @@ function RelacaoLocaisColeta({ dados, total, textoFiltro }: RelacaoLocaisColetaP
           </div>
         </div>
         {renderTable(item.registros)}
-        {renderTotalizador(false, item.quantidadeRegistros)}
+        {renderTotalizador(false, item.quantidadeRegistros, item.quantidadeEspecies, item.quantidadeGeneros, item.quantidadeFamilias)}
       </div>
     )
   }
