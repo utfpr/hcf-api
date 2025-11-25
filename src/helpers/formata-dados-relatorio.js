@@ -228,7 +228,15 @@ export function agruparPorLocal(dados) {
     const agrupado = {};
     let quantidadeTotal = 0;
 
-    dados.sort((a, b) => a?.familia?.nome.localeCompare(b?.familia?.nome)).forEach(entradaOriginal => {
+    dados.sort((a, b) => {
+      const familia = a?.familia?.nome.localeCompare(b?.familia?.nome);
+      if (familia !== 0) return familia;
+
+      const genero = a?.genero?.nome.localeCompare(b?.genero?.nome);
+      if (genero !== 0) return genero;
+
+      return a?.especy?.nome.localeCompare(b?.especy?.nome);
+    }).forEach(entradaOriginal => {
         const locaisColetum = entradaOriginal.locais_coletum;
         const cidade = locaisColetum?.cidade;
         const estado = cidade?.estado?.nome || 'Desconhecido';
