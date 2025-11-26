@@ -103,24 +103,24 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
                 model: TomboFoto,
             },
             {
-                model: LocalColeta,
+                model: Cidade,
+                attributes: {
+                    exclude: ['updated_at', 'created_at'],
+                },
                 include: [
                     {
-                        model: Cidade,
-                        attributes: {
-                            exclude: ['updated_at', 'created_at'],
-                        },
+                        model: Estado,
                         include: [
                             {
-                                model: Estado,
-                                include: [
-                                    {
-                                        model: Pais,
-                                    },
-                                ],
+                                model: Pais,
                             },
                         ],
                     },
+                ],
+            },
+            {
+                model: LocalColeta,
+                include: [
                     {
                         model: FaseSucessional,
                         attributes: {
@@ -206,13 +206,10 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
         let dataIdentificacao = '';
         let identificationQualifier = '';
         let nomeIdentificador = '';
-        const paisNome
-            = tombo.locais_coletum && tombo.locais_coletum.cidade ? tombo.locais_coletum.cidade.estado.paise.nome : '';
-        const paisCodigo
-            = tombo.locais_coletum && tombo.locais_coletum.cidade ? tombo.locais_coletum.cidade.estado.paise.sigla : '';
-        const paranaNome
-            = tombo.locais_coletum && tombo.locais_coletum.cidade ? tombo.locais_coletum.cidade.estado.nome : '';
-        const cidadeNome = tombo.locais_coletum && tombo.locais_coletum.cidade ? tombo.locais_coletum.cidade.nome : '';
+        const paisNome = tombo?.cidade?.estado?.paise?.nome ?? '';
+        const paisCodigo = tombo?.cidade?.estado?.paise?.sigla ?? '';
+        const paranaNome = tombo?.cidade?.estado?.nome ?? '';
+        const cidadeNome = tombo?.cidade?.nome ?? '';
         const vegetacao
             = tombo.locais_coletum && tombo.locais_coletum.vegetacao ? tombo.locais_coletum.vegetacao.nome : '';
         const familiaNome = tombo.familia ? tombo.familia.nome : '';
