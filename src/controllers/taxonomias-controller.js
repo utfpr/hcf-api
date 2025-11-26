@@ -1362,27 +1362,57 @@ export const buscarAutores = async (request, response, next) => {
         }
 
         const { limite, pagina, offset } = request.paginacao;
-        const { autor } = request.query;
         const { orderClause } = request.ordenacao;
+
+        let { autor } = request.query;
+
+        if (autor) {
+            try {
+                autor = autor.replace(/\+/g, ' ');
+                autor = decodeURIComponent(autor);
+            } catch (e) {
+                throw new BadRequestExeption(513);
+            }
+        }
 
         const where = {};
         if (autor) where.nome = { [Op.like]: `%${autor}%` };
 
+        const autorEscapado = autor ? autor.replace(/'/g, "''") : null;
+        const prioridadeLiteral = autor
+            ? Sequelize.literal(`
+                CASE
+                    WHEN LOWER(TRIM(BOTH FROM nome)) = LOWER('${autorEscapado}') THEN 4
+                    WHEN LOWER(TRIM(BOTH FROM nome)) LIKE LOWER('${autorEscapado}%') THEN 3
+                    WHEN LOWER(TRIM(BOTH FROM nome)) LIKE LOWER('(${autorEscapado}%') THEN 2
+                    WHEN LOWER(TRIM(BOTH FROM nome)) LIKE LOWER('%${autorEscapado}%') THEN 1
+                    ELSE 0
+                END
+            `)
+            : null;
+
+        const order = [
+            ...(autor ? [[prioridadeLiteral, 'DESC']] : []),
+            ...orderClause
+        ];
+
         const result = await Autor.findAndCountAll({
             attributes: ['id', 'nome', 'iniciais'],
-            order: orderClause,
+            order,
             limit: limite,
             offset,
-            where,
+            where
         });
 
         return response.status(codigos.LISTAGEM).json({
             metadados: { total: result.count, pagina, limite },
-            resultado: result.rows,
+            resultado: result.rows
         });
+
     } catch (err) {
         next(err);
     }
+
     return true;
 };
 
