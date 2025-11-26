@@ -1365,8 +1365,34 @@ export const aprovarPendencia = async (alteracao, hcf, transaction) => {
             if (!localColeta) {
                 throw new BadRequestExeption(404);
             }
+
+            const cidadeRefId = (alteracao.cidade_id !== undefined)
+                ? alteracao.cidade_id
+                : tomboAtual.cidade_id;
+
+            if (cidadeRefId !== undefined && cidadeRefId !== null) {
+                if (localColeta.cidade_id !== cidadeRefId) {
+                    throw new BadRequestExeption(535);
+                }
+            }
         }
         updateTombo.local_coleta_id = alteracao.local_coleta_id;
+    }
+
+    if (alteracao.cidade_id !== undefined) {
+        if (alteracao.cidade_id !== null) {
+            const cidade = await Cidade.findOne({
+                where: { id: alteracao.cidade_id },
+                transaction,
+                raw: true,
+                nest: true,
+            });
+
+            if (!cidade) {
+                throw new BadRequestExeption(404);
+            }
+        }
+        updateTombo.cidade_id = alteracao.cidade_id;
     }
 
     if (alteracao.descricao !== undefined) {

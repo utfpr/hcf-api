@@ -24,6 +24,7 @@ function associate(modelos) {
         TomboFoto,
         TomboIdentificador,
         Identificador,
+        Cidade,
         FaseSucessional,
     } = modelos;
 
@@ -130,6 +131,10 @@ function associate(modelos) {
 
     Tombo.belongsTo(ColecaoAnexa, {
         foreignKey: 'colecao_anexa_id',
+    });
+
+    Tombo.belongsTo(Cidade, {
+        foreignKey: 'cidade_id',
     });
 
     Tombo.belongsTo(FaseSucessional, {
@@ -280,6 +285,10 @@ export default (Sequelize, DataTypes) => {
         },
         unicata: {
             type: DataTypes.BOOLEAN,
+            allowNull: true,
+        },
+        cidade_id: {
+            type: DataTypes.INTEGER,
             allowNull: true,
         },
     };

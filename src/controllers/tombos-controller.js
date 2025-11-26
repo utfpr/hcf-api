@@ -121,8 +121,23 @@ export const cadastro = (request, response, next) => {
                 return undefined;
             })
             .then(() => {
+                if (!localidade?.cidade_id) {
+                    throw new BadRequestExeption(534);
+                }
+                return Cidade.findOne({
+                    where: { id: localidade.cidade_id },
+                    transaction,
+                });
+            })
+            .then(cidade => {
+                if (!cidade) {
+                    throw new BadRequestExeption(534);
+                }
+                return undefined;
+            })
+            .then(() => {
                 if (!localidade?.local_coleta_id) {
-                    throw new BadRequestExeption(400);
+                    return undefined;
                 }
                 return LocalColeta.findOne({
                     where: {
@@ -132,8 +147,13 @@ export const cadastro = (request, response, next) => {
                 });
             })
             .then(localColeta => {
-                if (!localColeta) {
-                    throw new BadRequestExeption(533);
+                if (localidade?.local_coleta_id) {
+                    if (!localColeta) {
+                        throw new BadRequestExeption(533);
+                    }
+                    if (localColeta.cidade_id !== localidade.cidade_id) {
+                        throw new BadRequestExeption(535);
+                    }
                 }
                 return undefined;
             })
@@ -283,13 +303,17 @@ export const cadastro = (request, response, next) => {
                     data_coleta_mes: principal.data_coleta.mes,
                     data_coleta_ano: principal.data_coleta.ano,
                     numero_coleta: principal.numero_coleta,
-                    local_coleta_id: localidade.local_coleta_id,
+                    cidade_id: localidade.cidade_id,
                     coletor_id: coletor,
                     data_tombo: parseDataTombo(principal.data_tombo),
                 };
 
                 if (paisagem?.descricao) {
                     jsonTombo.descricao = paisagem.descricao;
+                }
+
+                if (localidade.local_coleta_id) {
+                    jsonTombo.local_coleta_id = localidade.local_coleta_id;
                 }
 
                 if (observacoes) {
@@ -519,6 +543,9 @@ function alteracaoCuradorouOperador(request, response, transaction) {
 
     const altitude = body?.localidade?.altitude;
     if (altitude !== undefined) update.altitude = altitude;
+
+    const cidadeId = body?.localidade?.cidade_id;
+    if (cidadeId !== undefined) update.cidade_id = cidadeId;
 
     const localColeta = body?.localidade?.local_coleta_id;
     if (localColeta !== undefined) update.local_coleta_id = localColeta;
@@ -1016,21 +1043,21 @@ export const obterTombo = async (request, response, next) => {
                             },
                         },
                         {
-                            model: LocalColeta,
+                            model: Cidade,
                             include: [
                                 {
-                                    model: Cidade,
+                                    model: Estado,
                                     include: [
                                         {
-                                            model: Estado,
-                                            include: [
-                                                {
-                                                    model: Pais,
-                                                },
-                                            ],
+                                            model: Pais,
                                         },
                                     ],
                                 },
+                            ],
+                        },
+                        {
+                            model: LocalColeta,
+                            include: [
                                 {
                                     model: FaseSucessional,
                                     attributes: {
@@ -1107,9 +1134,9 @@ export const obterTombo = async (request, response, next) => {
                 resposta = {
                     herbarioInicial: tombo.herbario !== null ? tombo.herbario?.id : '',
                     tipoInicial: tombo.tipo !== null ? tombo.tipo?.id : '',
-                    paisInicial: tombo.locais_coletum.cidade?.estado?.paise !== null ? tombo.locais_coletum.cidade?.estado?.paise?.id : '',
-                    estadoInicial: tombo.locais_coletum.cidade?.estado !== null ? tombo.locais_coletum.cidade?.estado?.id : '',
-                    cidadeInicial: tombo.locais_coletum.cidade !== null ? tombo.locais_coletum?.cidade?.id : '',
+                    paisInicial: tombo.cidade?.estado?.paise?.id ?? '',
+                    estadoInicial: tombo.cidade?.estado?.id ?? '',
+                    cidadeInicial: tombo.cidade !== null ? tombo.cidade?.id : tombo.cidade_id ?? '',
                     reinoInicial: tombo.reino !== null ? tombo.reino?.id : '',
                     familiaInicial: tombo.familia !== null ? tombo.familia?.id : '',
                     subfamiliaInicial: tombo.sub_familia !== null ? tombo.sub_familia?.id : '',
@@ -1147,10 +1174,10 @@ export const obterTombo = async (request, response, next) => {
                         long_min: tombo.longitude !== null ? converteDecimalParaGMSMinutos(tombo.longitude, false) : '',
                         long_sec: tombo.longitude !== null ? converteDecimalParaGMSSegundos(tombo.longitude, false) : '',
                         altitude: tombo.altitude !== null ? tombo.altitude : '',
-                        cidade: tombo.locais_coletum !== null && tombo.locais_coletum.cidade !== null ? tombo.locais_coletum?.cidade?.nome : '',
-                        estado: tombo.locais_coletum !== null && tombo.locais_coletum.cidade !== null ? tombo.locais_coletum.cidade?.estado?.nome : '',
-                        pais: tombo.locais_coletum !== null && tombo.locais_coletum.cidade !== null ? tombo.locais_coletum.cidade.estado?.paise?.nome : '',
-                        complemento: tombo.locais_coletum?.complemento !== null ? tombo.locais_coletum?.complemento : '',
+                        cidade: tombo.cidade?.nome ?? '',
+                        estado: tombo.cidade?.estado?.nome ?? '',
+                        pais: tombo.cidade?.estado?.paise?.nome ?? '',
+                        complemento: tombo.complemento !== null ? tombo.complemento : '',
                     },
                     local_coleta: {
                         id: tombo.locais_coletum !== null ? tombo.locais_coletum?.id : '',
@@ -1236,7 +1263,7 @@ export const obterTombo = async (request, response, next) => {
             .then(() =>
                 Estado.findAll({
                     where: {
-                        pais_id: dadosTombo.locais_coletum.cidade?.estado?.paise?.id,
+                        pais_id: dadosTombo.cidade.estado?.paise?.id,
                     },
                 }),
             )
@@ -1245,7 +1272,7 @@ export const obterTombo = async (request, response, next) => {
             .then(() =>
                 Cidade.findAll({
                     where: {
-                        estado_id: dadosTombo.locais_coletum.cidade?.estado?.id,
+                        estado_id: dadosTombo.cidade.estado?.id,
                     },
                 }),
             )

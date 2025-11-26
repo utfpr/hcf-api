@@ -251,7 +251,7 @@ export const buscarLocaisColeta = async (request, response, next) => {
         const queryOptions = {
             where,
             include,
-            order: [['id', 'DESC']],
+            order: [[sequelize.literal('LOWER(descricao)'), 'ASC']],
         };
 
         if (getAll !== 'true') {
@@ -287,9 +287,11 @@ export const buscarLocalColetaPorId = async (request, response, next) => {
         const localColeta = await LocalColeta.findOne({
             where: { id },
             include: [
-                { model: Cidade,
+                {
+                    model: Cidade,
                     include: [
-                        { model: Estado,
+                        {
+                            model: Estado,
                             include: [
                                 Pais,
                             ],
