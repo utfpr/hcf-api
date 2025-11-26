@@ -110,11 +110,17 @@ tfoot {
 .grupoLocalColeta {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 1rem;
 }
 
-.grupoLocalColeta div {
-  width: calc(33%); /* 33% menos 2.5rem de espaçamento das margens */
+.grupoLocalColeta div:first-child {
+  display: flex;
+  gap: 0.5rem;
+  width: calc(40);
+}
+
+.grupoLocalColeta div:last-child {
+  width: calc(60);
 }
 
 .grupoLocalColeta div h1 {

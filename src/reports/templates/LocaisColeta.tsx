@@ -93,7 +93,7 @@ function RelacaoLocaisColeta({ dados, total, textoFiltro, showCoord = false }: R
 
   const renderTable = (registros: Registro[]) => {
     return (
-      <table>
+      <table style={{ fontSize: showCoord ? '0.9em' : '1.1em' }}>
         <thead>
           <tr>
             <th>Data Coleta</th>
@@ -132,8 +132,6 @@ function RelacaoLocaisColeta({ dados, total, textoFiltro, showCoord = false }: R
         <div key={item.local} className="grupoLocalColeta">
           <div>
             <h1>UF.: {item.estadoSigla}</h1>
-          </div>
-          <div>
             <h1>Município: {item.municipio}</h1>
           </div>
           <div>
