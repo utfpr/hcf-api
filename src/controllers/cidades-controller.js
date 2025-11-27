@@ -91,7 +91,7 @@ export const listarCidadesEstados = async (req, res, next) => {
         const where = {};
 
         if (nome) {
-            where.nome = { [Op.like]: `%${nome}%` };
+            where.nome = { [Op.iLike]: `%${nome}%` };
         }
 
         if (estadoId) {
@@ -201,7 +201,7 @@ export const listagem = (request, response, next) => {
     if (request.query.nome) {
         where = {
             ...where,
-            nome: { [op.iLike]: `%${request.query.nome}%` },
+            nome: { [Op.iLike]: `%${request.query.nome}%` },
         };
     }
 
@@ -284,7 +284,7 @@ export const ListaTodosOsTombosComLocalizacao = async (req, res, next) => {
 
         if (search) {
             queryOptions.where.hcf = {
-                [op.iLike]: `%${search}%`,
+                [Op.iLike]: `%${search}%`,
             };
         }
 
@@ -567,7 +567,7 @@ export const buscarPontosPorNomePopular = async (req, res, next) => {
             where: {
                 latitude: { [Op.ne]: null },
                 longitude: { [Op.ne]: null },
-                nomes_populares: { [op.iLike]: `%${nomePopular}%` },
+                nomes_populares: { [Op.iLike]: `%${nomePopular}%` },
             },
             attributes: ['hcf', 'latitude', 'longitude', 'nomes_populares'],
         });

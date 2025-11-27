@@ -311,21 +311,21 @@ export const listagem = (request, response, next) => {
     if (nome) {
         where = {
             ...where,
-            nome: { [op.iLike]: `%${nome}%` },
+            nome: { [Op.iLike]: `%${nome}%` },
         };
     }
 
     if (email) {
         where = {
             ...where,
-            email: { [op.iLike]: `%${email}%` },
+            email: { [Op.iLike]: `%${email}%` },
         };
     }
 
     if (sigla) {
         where = {
             ...where,
-            sigla: { [op.iLike]: `%${sigla}%` },
+            sigla: { [Op.iLike]: `%${sigla}%` },
         };
     }
 

@@ -58,7 +58,7 @@ export const listagem = (request, response, next) => {
     }
     if (nomeUsuario) {
         whereUsuario = {
-            nome: { [op.iLike]: `%${nomeUsuario}%` },
+            nome: { [Op.iLike]: `%${nomeUsuario}%` },
         };
     }
     const callback = transaction => Promise.resolve()

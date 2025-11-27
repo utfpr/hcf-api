@@ -680,7 +680,7 @@ export const listagem = (request, response, next) => {
     if (nomeCientifico) {
         where = {
             ...where,
-            nome_cientifico: { [op.iLike]: `%${nomeCientifico}%` },
+            nome_cientifico: { [Op.iLike]: `%${nomeCientifico}%` },
         };
     }
 
@@ -701,7 +701,7 @@ export const listagem = (request, response, next) => {
     if (nomePopular) {
         where = {
             ...where,
-            nomes_populares: { [op.iLike]: `%${nomePopular}%` },
+            nomes_populares: { [Op.iLike]: `%${nomePopular}%` },
         };
     }
 
@@ -952,7 +952,7 @@ export const buscarColetores = (request, response, next) => {
     if (nome) {
         where = {
             ...where,
-            nome: { [op.iLike]: `%${nome}%` },
+            nome: { [Op.iLike]: `%${nome}%` },
         };
     }
 
@@ -1467,7 +1467,7 @@ export const getNumeroTombo = (request, response, next) => {
     Promise.resolve()
         .then(() => Tombo.findAll({
             where: {
-                hcf: { [op.iLike]: `%${id}%` },
+                hcf: { [Op.iLike]: `%${id}%` },
             },
             attributes: [
                 'hcf',

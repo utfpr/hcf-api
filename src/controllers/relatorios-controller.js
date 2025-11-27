@@ -99,7 +99,7 @@ export const obtemDadosDoRelatorioDeInventarioDeEspecies = async (req, res, next
             nomeFamilia: `%${familia}%`,
         };
         where = {
-            nome: { [op.iLike]: `%${familia}%` },
+            nome: { [Op.iLike]: `%${familia}%` },
         };
     }
 
@@ -150,7 +150,7 @@ export const obtemDadosDoRelatorioDeColetaPorLocalEIntervaloDeData = async (req,
     let whereData = {};
     if (local) {
         whereLocal = {
-            descricao: { [op.iLike]: `%${local}%` },
+            descricao: { [Op.iLike]: `%${local}%` },
         };
     }
 
@@ -376,7 +376,7 @@ export const obtemDadosDoRelatorioDeColetaPorColetorEIntervaloDeData = async (re
     let whereData = {};
     if (coletor) {
         whereColetor = {
-            nome: { [op.iLike]: `%${coletor}%` },
+            nome: { [Op.iLike]: `%${coletor}%` },
         };
     }
     if (dataInicio) {
@@ -636,7 +636,7 @@ export const obtemDadosDoRelatorioDeFamiliasEGeneros = async (req, res, next) =>
     let where = {};
     if (familia) {
         where = {
-            nome: { [op.iLike]: `%${familia}%` },
+            nome: { [Op.iLike]: `%${familia}%` },
         };
     }
 

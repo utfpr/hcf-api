@@ -104,7 +104,7 @@ export const buscarReinos = async (request, response, next) => {
 
         let where;
         if (reino) {
-            where = { nome: { [op.iLike]: `%${reino}%` } };
+            where = { nome: { [Op.iLike]: `%${reino}%` } };
         }
         if (reinoId) {
             where = { ...where, reino_id: reinoId };
@@ -143,7 +143,7 @@ export const buscarFamilias = async (request, response, next) => {
         const { familia, reino_id: reinoId } = request.query;
 
         const where = {};
-        if (familia) where.nome = { [op.iLike]: `%${familia}%` };
+        if (familia) where.nome = { [Op.iLike]: `%${familia}%` };
         if (reinoId) where.reino_id = reinoId;
 
         const result = await Familia.findAndCountAll({
@@ -303,7 +303,7 @@ export const buscarSubfamilia = async (req, res, next) => {
 
         const where = {};
         if (nomeFiltro) {
-            where.nome = { [op.iLike]: `%${nomeFiltro}%` };
+            where.nome = { [Op.iLike]: `%${nomeFiltro}%` };
         }
         if (familiaIdRaw) {
             const familiaId = parseInt(familiaIdRaw, 10);
@@ -316,7 +316,7 @@ export const buscarSubfamilia = async (req, res, next) => {
             {
                 model: Familia,
                 attributes: ['id', 'nome'],
-                where: familiaNomeFiltro ? { nome: { [op.iLike]: `%${familiaNomeFiltro}%` } } : undefined,
+                where: familiaNomeFiltro ? { nome: { [Op.iLike]: `%${familiaNomeFiltro}%` } } : undefined,
                 required: true,
                 include: [{ model: Reino, attributes: ['id', 'nome'] }],
             },
@@ -486,14 +486,14 @@ export const buscarGeneros = async (request, response, next) => {
         const { genero, familia_id: familiaId, familia_nome: familiaNome } = request.query;
 
         const where = {};
-        if (genero) where.nome = { [op.iLike]: `%${genero}%` };
+        if (genero) where.nome = { [Op.iLike]: `%${genero}%` };
         if (familiaId) where.familia_id = familiaId;
 
         const include = [
             {
                 model: Familia,
                 attributes: ['id', 'nome'],
-                where: familiaNome ? { nome: { [op.iLike]: `%${familiaNome}%` } } : undefined,
+                where: familiaNome ? { nome: { [Op.iLike]: `%${familiaNome}%` } } : undefined,
                 required: true,
                 include: [{ model: Reino, attributes: ['id', 'nome'] }],
             },
@@ -688,19 +688,19 @@ export const buscarEspecies = async (request, response, next) => {
         } = request.query;
 
         const where = {};
-        if (especie) where.nome = { [op.iLike]: `%${especie}%` };
+        if (especie) where.nome = { [Op.iLike]: `%${especie}%` };
         if (generoId) where.genero_id = generoId;
 
         const include = [
             {
                 model: Genero,
                 attributes: ['id', 'nome'],
-                where: generoNome ? { nome: { [op.iLike]: `%${generoNome}%` } } : undefined,
+                where: generoNome ? { nome: { [Op.iLike]: `%${generoNome}%` } } : undefined,
                 required: true,
                 include: [{
                     model: Familia,
                     attributes: ['id', 'nome'],
-                    where: familiaNome ? { nome: { [op.iLike]: `%${familiaNome}%` } } : undefined,
+                    where: familiaNome ? { nome: { [Op.iLike]: `%${familiaNome}%` } } : undefined,
                     required: true,
                     include: [{
                         model: Reino,
@@ -920,25 +920,25 @@ export const buscarSubespecies = async (request, response, next) => {
         } = request.query;
 
         const where = {};
-        if (subespecie) where.nome = { [op.iLike]: `%${subespecie}%` };
+        if (subespecie) where.nome = { [Op.iLike]: `%${subespecie}%` };
         if (especieId) where.especie_id = especieId;
 
         const include = [
             {
                 model: Especie,
                 attributes: ['id', 'nome'],
-                where: especieNome ? { nome: { [op.iLike]: `%${especieNome}%` } } : undefined,
+                where: especieNome ? { nome: { [Op.iLike]: `%${especieNome}%` } } : undefined,
                 required: true,
                 as: 'especie',
                 include: [{
                     model: Genero,
                     attributes: ['id', 'nome'],
-                    where: generoNome ? { nome: { [op.iLike]: `%${generoNome}%` } } : undefined,
+                    where: generoNome ? { nome: { [Op.iLike]: `%${generoNome}%` } } : undefined,
                     required: true,
                     include: [{
                         model: Familia,
                         attributes: ['id', 'nome'],
-                        where: familiaNome ? { nome: { [op.iLike]: `%${familiaNome}%` } } : undefined,
+                        where: familiaNome ? { nome: { [Op.iLike]: `%${familiaNome}%` } } : undefined,
                         required: true,
                         include: [{
                             model: Reino,
@@ -1170,25 +1170,25 @@ export const buscarVariedades = async (request, response, next) => {
         } = request.query;
 
         const where = {};
-        if (variedade) where.nome = { [op.iLike]: `%${variedade}%` };
+        if (variedade) where.nome = { [Op.iLike]: `%${variedade}%` };
         if (especieId) where.especie_id = especieId;
 
         const include = [
             {
                 model: Especie,
                 attributes: ['id', 'nome'],
-                where: especieNome ? { nome: { [op.iLike]: `%${especieNome}%` } } : undefined,
+                where: especieNome ? { nome: { [Op.iLike]: `%${especieNome}%` } } : undefined,
                 required: true,
                 as: 'especie',
                 include: [{
                     model: Genero,
                     attributes: ['id', 'nome'],
-                    where: generoNome ? { nome: { [op.iLike]: `%${generoNome}%` } } : undefined,
+                    where: generoNome ? { nome: { [Op.iLike]: `%${generoNome}%` } } : undefined,
                     required: true,
                     include: [{
                         model: Familia,
                         attributes: ['id', 'nome'],
-                        where: familiaNome ? { nome: { [op.iLike]: `%${familiaNome}%` } } : undefined,
+                        where: familiaNome ? { nome: { [Op.iLike]: `%${familiaNome}%` } } : undefined,
                         required: true,
                         include: [{
                             model: Reino,
@@ -1366,7 +1366,7 @@ export const buscarAutores = async (request, response, next) => {
         const { orderClause } = request.ordenacao;
 
         const where = {};
-        if (autor) where.nome = { [op.iLike]: `%${autor}%` };
+        if (autor) where.nome = { [Op.iLike]: `%${autor}%` };
 
         const result = await Autor.findAndCountAll({
             attributes: ['id', 'nome', 'iniciais'],

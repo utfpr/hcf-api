@@ -123,7 +123,7 @@ export const listagem = (request, response, next) => {
 
     if (nome) {
         where.nome = {
-            [op.iLike]: `%${nome}%`,
+            [Op.iLike]: `%${nome}%`,
         };
     }
     if (tipo) {
@@ -131,12 +131,12 @@ export const listagem = (request, response, next) => {
     }
     if (email) {
         where.email = {
-            [op.iLike]: `%${email}%`,
+            [Op.iLike]: `%${email}%`,
         };
     }
     if (telefone) {
         where.telefone = {
-            [op.iLike]: `%${telefone}%`,
+            [Op.iLike]: `%${telefone}%`,
         };
     }
     Promise.resolve()
@@ -261,7 +261,7 @@ export const obtemColetores = (request, response, next) => {
             attributes: ['id', 'nome'],
             order: [['nome', 'ASC']],
             where: {
-                nome: { [op.iLike]: `%${nome}%` },
+                nome: { [Op.iLike]: `%${nome}%` },
             },
             limit: 10,
         }))
@@ -279,7 +279,7 @@ export const obtemIdentificadores = (request, response, next) => {
             attributes: ['id', 'nome'],
             order: [['nome', 'ASC']],
             where: {
-                nome: { [op.iLike]: `%${nome}%` },
+                nome: { [Op.iLike]: `%${nome}%` },
             },
             limit: 10,
         }))
