@@ -57,7 +57,7 @@ export const cadastro = (request, response, next) => {
             return Tombo.findAndCountAll({
                 where: {
                     [Op.or]: hcf,
-                    rascunho: 0,
+                    rascunho: false,
                     situacao: 'REGULAR',
                 },
                 transaction,
@@ -156,7 +156,7 @@ export const listagem = (request, response, next) => {
     if (numTombo) {
         whereTombo = {
             hcf: numTombo,
-            rascunho: 0,
+            rascunho: false,
         };
     }
     Promise.resolve()
@@ -292,7 +292,7 @@ export const alteracao = (request, response, next) => {
             return Tombo.findAndCountAll({
                 where: {
                     [Op.or]: hcf,
-                    rascunho: 0,
+                    rascunho: false,
                     situacao: 'REGULAR',
                 },
                 transaction,
@@ -437,7 +437,7 @@ export const exclusao = (request, response, next) => {
                             [Op.in]: tombos,
                         },
                     },
-                }
+                },
             );
         })
         .then(() => {
@@ -488,7 +488,7 @@ export const devolverTombo = (request, response, next) => {
         .then(() => Tombo.findOne({
             where: {
                 hcf,
-                rascunho: 0,
+                rascunho: false,
                 situacao: 'EMPRESTIMO',
             },
             transaction,

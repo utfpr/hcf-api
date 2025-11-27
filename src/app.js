@@ -27,33 +27,34 @@ app.use(helmet({
     crossOriginEmbedderPolicy: false, // Disable for file uploads
 }));
 
-// CORS configuration
-const corsOptions = {
-    origin(origin, callback) {
-        // Allow requests with no origin (mobile apps, curl, etc.)
-        if (!origin) return callback(null, true);
+// // CORS configuration
+// const corsOptions = {
+//     origin(origin, callback) {
+//         // Allow requests with no origin (mobile apps, curl, etc.)
+//         if (!origin) return callback(null, true);
 
-        const allowedOrigins = [
-            'http://localhost:3000',
-            'http://localhost:3001',
-            'http://localhost:5173',
-            'https://hcf.cm.utfpr.edu.br',
-            'https://dev.hcf.cm.utfpr.edu.br',
-            'https://api.dev.hcf.cm.utfpr.edu.br',
-        ];
+//         const allowedOrigins = [
+//             'http://localhost:3000',
+//             'http://localhost:3001',
+//             'http://localhost:5173',
+//             'https://hcf.cm.utfpr.edu.br',
+//             'https://dev.hcf.cm.utfpr.edu.br',
+//             'https://api.dev.hcf.cm.utfpr.edu.br',
+//         ];
 
-        if (allowedOrigins.includes(origin)) {
-            return callback(null, true);
-        }
-        return callback(new Error('Not allowed by CORS'));
+//         if (allowedOrigins.includes(origin)) {
+//             return callback(null, true);
+//         }
+//         return callback(new Error('Not allowed by CORS'));
 
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-};
+//     },
+//     credentials: true,
+//     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+//     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+// };
+// app.use(cors(corsOptions));
 
-app.use(cors(corsOptions));
+app.use(cors());
 
 // Rate limiting
 const limiter = rateLimit({
@@ -81,6 +82,18 @@ app.use('/assets', express.static(assets));
 
 app.get('/reports/:fileName', reportPreview);
 app.post('/reports/:fileName', generatePreview);
+
+app.use(
+    '/uploads',
+    express.static(upload, {
+        index: false,
+        redirect: false,
+        setHeaders: res => {
+            res.setHeader('Cache-Control', 'public, max-age=2592000, immutable');
+            res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+        },
+    }),
+);
 
 app.use('/api', routes);
 

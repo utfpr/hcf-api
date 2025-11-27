@@ -8,6 +8,7 @@
     "module": "es2020",
     "strict": true,
     "skipLibCheck": true,
+    "noUnusedLocals": true,
     "allowJs": true,
     "removeComments": true,
     "moduleResolution": "node",
@@ -20,6 +21,9 @@
     "outDir": "./dist",
     "baseUrl": ".",
     "paths": {
+      "@/*": [
+        "./src/*"
+      ],
       "~/*": [
         "./src/*"
       ],
@@ -32,7 +36,8 @@
   "include": [
     "src/",
     "test/",
-    "database/"
+    "eslint.config.mts",
+    "vitest.config.mts"
   ],
   "exclude": [
     "node_modules/",

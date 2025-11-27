@@ -1,11 +1,11 @@
+import { Op } from 'sequelize';
+
 import pick from '~/helpers/pick';
 
 import BadRequestException from '../errors/bad-request-exception';
 import models from '../models';
 import codigos from '../resources/codigos-http';
 import verifyRecaptcha from '../utils/verify-recaptcha';
-
-const { Op } = require('sequelize');
 
 const { Cidade, LocalColeta, Tombo, Reino, Familia, Subfamilia, Genero, Especie, Subespecie, Variedade, sequelize } = models;
 
@@ -84,6 +84,49 @@ export const atualizarCidade = async (req, res, next) => {
     }
 };
 
+export const listarCidadesEstados = async (req, res, next) => {
+    try {
+        const { nome, estado_id: estadoId } = req.query;
+
+        const where = {};
+
+        if (nome) {
+            where.nome = { [Op.iLike]: `%${nome}%` };
+        }
+
+        if (estadoId) {
+            where.estado_id = estadoId;
+        }
+
+        const cidades = await Cidade.findAll({
+            attributes: ['id', 'nome'],
+            where,
+            include: [
+                {
+                    model: models.Estado,
+                    as: 'estado',
+                    attributes: ['id', 'nome', 'sigla'],
+                    include: [
+                        {
+                            model: models.Pais,
+                            as: 'pais',
+                            attributes: ['id', 'nome', 'sigla'],
+                        },
+                    ],
+                },
+            ],
+            order: [
+                [sequelize.literal('LOWER(Cidade.nome)'), 'ASC'],
+                [sequelize.literal('LOWER(estado.nome)'), 'ASC'],
+            ],
+        });
+
+        return res.status(200).json(cidades);
+    } catch (error) {
+        return next(error);
+    }
+};
+
 export const desativarCidade = async (req, res, next) => {
     try {
         const { cidadeId } = req.params;
@@ -139,17 +182,26 @@ export const listaTodosCidades = where =>
             {
                 model: models.Estado,
                 as: 'estado',
-                attributes: ['id', 'nome', 'sigla', 'codigo_telefone', 'pais_id'],
+                attributes: ['id', 'nome', 'sigla', 'pais_id'],
             },
         ],
+        order: [[sequelize.literal('LOWER(`cidades`.`nome`)'), 'ASC']],
     });
 
 export const listagem = (request, response, next) => {
     let where = {};
 
-    if (request.query.id !== undefined) {
+    if (request.query.estado_id !== undefined) {
         where = {
-            estado_id: request.query.id,
+            ...where,
+            estado_id: request.query.estado_id,
+        };
+    }
+
+    if (request.query.nome) {
+        where = {
+            ...where,
+            nome: { [Op.iLike]: `%${request.query.nome}%` },
         };
     }
 
@@ -232,7 +284,7 @@ export const ListaTodosOsTombosComLocalizacao = async (req, res, next) => {
 
         if (search) {
             queryOptions.where.hcf = {
-                [Op.like]: `%${search}%`,
+                [Op.iLike]: `%${search}%`,
             };
         }
 
@@ -380,13 +432,13 @@ export const buscarPontosTaxonomiaComFiltros = async (req, res, next) => {
         } = req.query;
 
         if (
-            !nomeReino &&
-            !nomeFamilia &&
-            !nomeSubFamilia &&
-            !nomeGenero &&
-            !nomeEspecie &&
-            !nomeSubEspecie &&
-            !nomeVariedade
+            !nomeReino
+            && !nomeFamilia
+            && !nomeSubFamilia
+            && !nomeGenero
+            && !nomeEspecie
+            && !nomeSubEspecie
+            && !nomeVariedade
         ) {
             return res
                 .status(400)
@@ -515,7 +567,7 @@ export const buscarPontosPorNomePopular = async (req, res, next) => {
             where: {
                 latitude: { [Op.ne]: null },
                 longitude: { [Op.ne]: null },
-                nomes_populares: { [Op.like]: `%${nomePopular}%` },
+                nomes_populares: { [Op.iLike]: `%${nomePopular}%` },
             },
             attributes: ['hcf', 'latitude', 'longitude', 'nomes_populares'],
         });

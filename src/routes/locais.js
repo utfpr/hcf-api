@@ -1,12 +1,11 @@
 import listagensMiddleware from '~/middlewares/listagens-middleware';
 
+import * as controller from '../controllers/locais-coleta-controller';
 import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middleware';
 import validacoesMiddleware from '../middlewares/validacoes-middleware';
 import localColetaCadastroEsquema from '../validators/localColeta-cadastro';
 import localColetaListagemEsquema from '../validators/localColeta-listagem';
 import nomeEsquema from '../validators/nome-obrigatorio';
-
-const controller = require('../controllers/locais-coleta-controller');
 
 /**
  * @swagger
@@ -57,6 +56,12 @@ export default app => {
      *   get:
      *     summary: Lista todos os solos
      *     tags: [Locais]
+     *     parameters:
+     *       - in: query
+     *         name: nome
+     *         schema:
+     *           type: string
+     *         description: Filtrar por nome do solo
      *     responses:
      *       200:
      *         description: Lista de solos
@@ -131,6 +136,12 @@ export default app => {
      *   get:
      *     summary: Lista todos os relevos
      *     tags: [Locais]
+     *     parameters:
+     *       - in: query
+     *         name: nome
+     *         schema:
+     *           type: string
+     *         description: Filtrar por nome do relevo
      *     responses:
      *       200:
      *         description: Lista de relevos
@@ -205,6 +216,12 @@ export default app => {
      *   get:
      *     summary: Lista todas as vegetações
      *     tags: [Locais]
+     *     parameters:
+     *       - in: query
+     *         name: nome
+     *         schema:
+     *           type: string
+     *         description: Filtrar por nome da vegetação
      *     responses:
      *       200:
      *         description: Lista de vegetações

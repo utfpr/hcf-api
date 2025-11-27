@@ -41,7 +41,7 @@ export const formatarDadosParaRealtorioDeInventarioDeEspecies = dados => {
 const defineNomeCientifico = dado => {
     let nomeCientifico;
     const nomeEspecie = dado?.especy?.nome;
-    const nomeGenero = dado?.especy?.genero?.nome;
+    const nomeGenero = dado?.genero?.nome;
     if (nomeGenero && nomeEspecie) {
         nomeCientifico = `${nomeGenero} ${nomeEspecie}`;
     } else if (nomeGenero) {
@@ -57,20 +57,15 @@ const defineNomeCientifico = dado => {
 
 export const formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData = dados => {
     const romanos = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
-
-    // garante array
-    const arr = Array.isArray(dados) ? dados : (dados?.rows ?? []);
-    if (!Array.isArray(arr)) return [];
-
-    const dadosFormatados = arr.map(dado => ({
+    const dadosFormatados = dados.map(dado => ({
         local: dado.locais_coletum?.complemento
             ? `${dado.locais_coletum.descricao} ${dado.locais_coletum.complemento}`
             : dado.locais_coletum?.descricao,
-        data: `${String(dado.data_coleta_dia).padStart(2, '0')}/${romanos[(dado.data_coleta_mes || 1) - 1]}/${dado.data_coleta_ano}`,
+        data: `${String(dado.data_coleta_dia).padStart(2, '0')}/${romanos[dado.data_coleta_mes - 1]}/${dado.data_coleta_ano}`,
         tombo: dado?.hcf,
         numeroColeta: dado.numero_coleta || '-',
         especie: defineNomeCientifico(dado),
-        familia: dado.especy?.familia?.nome,
+        familia: dado?.familia?.nome || 'Não Informada',
         autor: dado.especy?.autor?.nome || 'Não Informado',
     }));
 

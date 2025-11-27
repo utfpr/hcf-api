@@ -1,7 +1,7 @@
 import path from 'path'
 import puppeteer from 'puppeteer'
 import React, { ComponentType } from 'react'
-import { renderToStaticMarkup, renderToString } from 'react-dom/server'
+import { renderToStaticMarkup } from 'react-dom/server'
 
 const generateFullHtmlOutput = (content: string, title: string = 'HCF') => `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -15,13 +15,13 @@ const generateFullHtmlOutput = (content: string, title: string = 'HCF') => `<!DO
 </body>
 </html>`
 
-export async function generateReport<P extends React.Attributes>(Component: ComponentType<P>, props: P, opcoes?: { titulo?: string }) {
-  const { titulo = 'HCF' } = opcoes || {}
+export async function generateReport<P extends React.Attributes>(Component: ComponentType<P>, props: P, options?: { titulo?: string }) {
+  const { titulo = 'HCF' } = options || {}
 
   const htmlContent = generateFullHtmlOutput(renderToStaticMarkup(<Component {...props} />),
     titulo
   )
-  
+
   const browser = await puppeteer.launch({
     headless: true,
     executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,

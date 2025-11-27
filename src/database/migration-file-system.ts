@@ -15,7 +15,6 @@ export async function run(knex: Knex): Promise<void> {
 `
 
 export class MigrationFileSystem {
-
   private readonly knex: Knex
   private readonly migrationsPath: string
 
@@ -24,7 +23,7 @@ export class MigrationFileSystem {
     this.migrationsPath = dependencies.migrationsPath
   }
 
-  async createMigrationFile(name: string): Promise<string> {
+  createMigrationFile(name: string): string {
     const timestamp = new Date().toISOString()
       .substring(0, 19) // 2025-04-12T16:39:06.000Z => 20250412163906
       .replace(/\D/g, '')
@@ -37,7 +36,7 @@ export class MigrationFileSystem {
     return upFilePath
   }
 
-  async listMigrationFiles(): Promise<string[]> {
+  listMigrationFiles(): string[] {
     const files = fs.readdirSync(this.migrationsPath)
     return files
       .filter(file => /\.[jt]s$/.test(file))
@@ -50,9 +49,9 @@ export class MigrationFileSystem {
 
     let migrationModule: { run: (knex: Knex) => Promise<void> }
     if (fs.existsSync(`${filePathWithoutExtension}.ts`)) {
-      migrationModule = await import(`${filePathWithoutExtension}.ts`)
+      migrationModule = await import(`${filePathWithoutExtension}.ts`) as { run: (knex: Knex) => Promise<void> }
     } else if (fs.existsSync(`${filePathWithoutExtension}.js`)) {
-      migrationModule = await import(`${filePathWithoutExtension}.js`)
+      migrationModule = await import(`${filePathWithoutExtension}.js`) as { run: (knex: Knex) => Promise<void> }
     } else {
       throw new Error(`Migration file ${name} not found`)
     }
@@ -64,5 +63,4 @@ export class MigrationFileSystem {
     const migration = await this.importMigrationModule(name)
     await migration.run(this.knex)
   }
-
 }
