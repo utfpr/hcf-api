@@ -22,7 +22,7 @@ import { preparaExecucao } from '../main';
 export function agendaComparacaoSpeciesLink(nomeArquivo, response) {
     selectTemExecucaoServico('SPECIESLINK').then(execucaoSpeciesLink => {
         if (execucaoSpeciesLink.length === 0) {
-            insereExecucaoSpeciesLink(getHoraAtual(), null, nomeArquivo, 'SPECIESLINK');
+            insereExecucaoSpeciesLink(getHoraAtual(), null, nomeArquivo, "SPECIESLINK");
             response.status(200).json(JSON.parse(' { "result": "success" } '));
         } else {
             const horaFim = execucaoSpeciesLink[0].dataValues.hora_fim;
