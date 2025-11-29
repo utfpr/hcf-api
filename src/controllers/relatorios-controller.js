@@ -497,7 +497,7 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
     const { limite, pagina, offset } = paginacao;
     const { local, dataInicio, dataFim } = req.query;
 
-    let whereLocal = {};
+    const whereLocal = {};
     let whereData = {};
     if (dataInicio) {
       if (dataFim && isBefore(new Date(dataFim), new Date(dataInicio))) {
@@ -592,7 +592,7 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
         const dadosFormatados = agruparPorLocal(dadosPuros);
 
         if (req.method === 'GET') {
-            res.json({
+            return res.json({
                 metadados: {
                     total: tombos.count,
                     pagina,
@@ -601,7 +601,6 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
                 resultado: dadosFormatados,
                 filtro: formataTextFilter(local, dataInicio, dataFim || new Date()),
             });
-            return;
         }
 
         try {
@@ -617,13 +616,14 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
             readable.push(buffer); // Empurrar os dados binários para o stream
             readable.push(null); // Indica o fim do fluxo de dados
             res.setHeader('Content-Type', 'application/pdf');
-            readable.pipe(res);
+
+            return readable.pipe(res);
         } catch (e) {
-            next(e);
+            return next(e);
         }
 
     } catch (e) {
-        next(e);
+        return next(e);
     }
 };
 
