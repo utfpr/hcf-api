@@ -8,21 +8,26 @@ import { fileURLToPath } from 'url'
 import wkx from 'wkx'
 
 interface MunicipioIBGE {
-  id: number;
-  nome: string;
-  nome_normalizado: string;
+  id: number
+  nome: string
+  nome_normalizado: string
+}
+
+interface MunicipioIBGEResponse {
+  id: number
+  nome: string
 }
 
 interface Cidade {
-  id: number;
-  nome: string;
-  pol_wkb: Buffer | null;
+  id: number
+  nome: string
+  pol_wkb: Buffer | null
 }
 
 interface ResultadoProcessamento {
-  inserido: number;
-  atualizado: number;
-  erro: number;
+  inserido: number
+  atualizado: number
+  erro: number
 }
 
 const currentFilename = fileURLToPath(import.meta.url)
@@ -40,9 +45,9 @@ const {
   DATABASE_URL
 } = process.env
 
-const connectionString =
-  DATABASE_URL ||
-  `postgresql://${PG_USERNAME}:${PG_PASSWORD}@${PG_HOST}:${PG_PORT}/${PG_DATABASE}`
+const connectionString
+  = DATABASE_URL
+    || `postgresql://${PG_USERNAME}:${PG_PASSWORD}@${PG_HOST}:${PG_PORT}/${PG_DATABASE}`
 
 function isValidConnectionString(cs: string | undefined): boolean {
   return typeof cs === 'string' && cs.length > 0 && !/undefined/.test(cs)
@@ -53,8 +58,8 @@ if (!isValidConnectionString(connectionString)) {
 }
 
 const API_IBGE_MUNICIPIOS = 'https://servicodados.ibge.gov.br/api/v1/localidades/municipios'
-const API_IBGE_POLYGON =
-  'https://servicodados.ibge.gov.br/api/v3/malhas/municipios/{codigo_ibge}?formato=application/vnd.geo+json&qualidade=minima'
+const API_IBGE_POLYGON
+  = 'https://servicodados.ibge.gov.br/api/v3/malhas/municipios/{codigo_ibge}?formato=application/vnd.geo+json&qualidade=minima'
 
 const MAX_CONCURRENCY = 10
 const REQUEST_DELAY_MS = 150
@@ -70,8 +75,8 @@ function delay(ms: number): Promise<void> {
 }
 
 async function carregarListaMunicipios(): Promise<MunicipioIBGE[]> {
-  const resp = await axios.get(API_IBGE_MUNICIPIOS, { timeout: 30000 })
-  return resp.data.map((m: any) => ({
+  const resp = await axios.get<MunicipioIBGEResponse[]>(API_IBGE_MUNICIPIOS, { timeout: 30000 })
+  return resp.data.map((m: MunicipioIBGEResponse) => ({
     id: m.id,
     nome: m.nome,
     nome_normalizado: removerAcentos(m.nome.toLowerCase())
@@ -92,7 +97,7 @@ async function obterPoligonoIbge(codigoIbge: number): Promise<Buffer> {
   })
 
   const txt = Buffer.from(resp.data).toString('utf-8')
-  const geojson = JSON.parse(txt)
+  const geojson = JSON.parse(txt) as { features: Array<{ geometry: unknown }> }
 
   if (!geojson?.features?.length) {
     throw new Error(`GeoJSON vazio para codigo ${codigoIbge}`)
@@ -112,22 +117,30 @@ async function processarCidade(
   municipios: MunicipioIBGE[],
   cidade: Cidade
 ): Promise<ResultadoProcessamento> {
-  const { id, nome, pol_wkb: polWkb } = cidade
+  const {
+    id, nome, pol_wkb: polWkb
+  } = cidade
 
   if (nome === 'Não Informado') {
-    return { inserido: 0, atualizado: 0, erro: 0 }
+    return {
+      inserido: 0, atualizado: 0, erro: 0
+    }
   }
 
   const codigoIbge = obterCodigoIbge(nome, municipios)
   if (!codigoIbge) {
-    return { inserido: 0, atualizado: 0, erro: 1 }
+    return {
+      inserido: 0, atualizado: 0, erro: 1
+    }
   }
 
   let polBytes: Buffer
   try {
     polBytes = await obterPoligonoIbge(codigoIbge)
   } catch {
-    return { inserido: 0, atualizado: 0, erro: 1 }
+    return {
+      inserido: 0, atualizado: 0, erro: 1
+    }
   }
 
   const sql = `
@@ -144,12 +157,20 @@ async function processarCidade(
     const result = await client.query(sql, [polBytes, id])
     if (result && result.rowCount && result.rowCount > 0) {
       return polWkb
-        ? { inserido: 0, atualizado: 1, erro: 0 }
-        : { inserido: 1, atualizado: 0, erro: 0 }
+        ? {
+            inserido: 0, atualizado: 1, erro: 0
+          }
+        : {
+            inserido: 1, atualizado: 0, erro: 0
+          }
     }
-    return { inserido: 0, atualizado: 0, erro: 0 }
+    return {
+      inserido: 0, atualizado: 0, erro: 0
+    }
   } catch {
-    return { inserido: 0, atualizado: 0, erro: 1 }
+    return {
+      inserido: 0, atualizado: 0, erro: 1
+    }
   }
 }
 
