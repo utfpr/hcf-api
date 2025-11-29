@@ -1,18 +1,22 @@
 import { Knex } from 'knex'
 
+import { Logger } from '@/library/logger'
+
 interface Dependencies {
   knex: Knex
   tableName: string
+  logger: Logger
 }
 
 export class MigrationRepository {
-
   private readonly knex: Knex
   private readonly tableName: string
+  private readonly logger: Logger
 
   constructor(readonly dependencies: Dependencies) {
     this.knex = dependencies.knex
     this.tableName = dependencies.tableName
+    this.logger = dependencies.logger
   }
 
   async ensureMigrationTableExists(): Promise<void> {
@@ -31,8 +35,7 @@ export class MigrationRepository {
   }
 
   async applyMigration(name: string): Promise<void> {
-    console.info(`Applying migration ${name}`) // eslint-disable-line no-console
+    this.logger.info(`Applying migration ${name}`)
     await this.knex(this.tableName).insert({ name, applied_at: new Date() })
   }
-
 }

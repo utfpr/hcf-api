@@ -688,14 +688,14 @@ const comparaDoisTombosOperador = (tombo, tomboAlterado) => {
                 parametros.push(insereNoParametro('1', 'Coleções anexas tipo', tombo.colecoes_anexa.tipo, tomboAlterado.colecoes_anexas.tipo));
             }
             if (tombo.colecoes_anexa.observacoes !== tomboAlterado.colecoes_anexas.observacoes) {
-                // eslint-disable-next-line
+
                 parametros.push(
                     insereNoParametro(
                         '2',
                         'Coleções anexas observacoes',
                         tombo.colecoes_anexa.observacoes,
-                        tomboAlterado.colecoes_anexas.observacoes
-                    )
+                        tomboAlterado.colecoes_anexas.observacoes,
+                    ),
                 );
             }
         } else {
@@ -716,14 +716,14 @@ const comparaDoisTombosOperador = (tombo, tomboAlterado) => {
 
     if (tomboAlterado.coletores) {
         const colAlt = tomboAlterado.coletores;
-        for (let i = 0; i < colAlt.length; i++) { // eslint-disable-line
+        for (let i = 0; i < colAlt.length; i++) {
             coletoresAlt += ` ${colAlt[i].nome} `;
         }
         novo = coletoresAlt;
     }
     if (tombo.coletores) {
         const colOrig = tombo.coletores;
-        for (let i = 0; i < colOrig.length; i++) { // eslint-disable-line
+        for (let i = 0; i < colOrig.length; i++) {
             if (colOrig[i].tombos_coletores.principal) {
                 coletorPrincipalOrig = {
                     id: colOrig[i].id,
@@ -1365,8 +1365,34 @@ export const aprovarPendencia = async (alteracao, hcf, transaction) => {
             if (!localColeta) {
                 throw new BadRequestExeption(404);
             }
+
+            const cidadeRefId = (alteracao.cidade_id !== undefined)
+                ? alteracao.cidade_id
+                : tomboAtual.cidade_id;
+
+            if (cidadeRefId !== undefined && cidadeRefId !== null) {
+                if (localColeta.cidade_id !== cidadeRefId) {
+                    throw new BadRequestExeption(535);
+                }
+            }
         }
         updateTombo.local_coleta_id = alteracao.local_coleta_id;
+    }
+
+    if (alteracao.cidade_id !== undefined) {
+        if (alteracao.cidade_id !== null) {
+            const cidade = await Cidade.findOne({
+                where: { id: alteracao.cidade_id },
+                transaction,
+                raw: true,
+                nest: true,
+            });
+
+            if (!cidade) {
+                throw new BadRequestExeption(404);
+            }
+        }
+        updateTombo.cidade_id = alteracao.cidade_id;
     }
 
     if (alteracao.descricao !== undefined) {
@@ -1573,7 +1599,7 @@ export const visualizarComJsonNome = (alteracao, hcf, transaction) => new Promis
         transaction,
     })
         .then(tombos => {
-            // eslint-disable-next-line
+
             var jsonRetorno = [];
             if (tombos.especy) {
                 if (alteracao.especie_nome) {
@@ -2127,7 +2153,7 @@ export function aceitarPendencia(request, response, next) {
         });
     sequelize.transaction(callback)
         .then(() => {
-            // eslint-disable-next-line no-underscore-dangle
+
             response.status(codigos.CADASTRO_SEM_RETORNO).send();
         })
         .catch(next);

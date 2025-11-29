@@ -2,6 +2,8 @@ import { program } from 'commander'
 import createKnex from 'knex'
 import path from 'node:path'
 
+import { ConsoleLogger } from '@/infrastructure/logger'
+
 import { ApplyMigrationService } from './apply-migration-service'
 import { CreateMigrationService } from './create-migration-service'
 import { MigrationFileSystem } from './migration-file-system'
@@ -27,16 +29,22 @@ const migrationKnex = createKnex({
   }
 })
 
-const migrationFileSystem = new MigrationFileSystem({ knex: migrationKnex, migrationsPath: path.join(__dirname, 'migration') })
-const migrationDataSource = new MigrationRepository({ knex: migrationKnex, tableName: 'migrations' })
+const logger = new ConsoleLogger()
 
-async function createMigration(name: string) {
+const migrationFileSystem = new MigrationFileSystem({ knex: migrationKnex, migrationsPath: path.join(__dirname, 'migration') })
+const migrationDataSource = new MigrationRepository({
+  knex: migrationKnex, tableName: 'migrations', logger
+})
+
+function createMigration(name: string) {
   const createMigrationService = new CreateMigrationService({ migrationFileSystem })
-  await createMigrationService.execute(name)
+  createMigrationService.execute(name)
 }
 
 async function applyMigrations() {
-  const applyMigrationsService = new ApplyMigrationService({ migrationFileSystem, migrationRepository: migrationDataSource })
+  const applyMigrationsService = new ApplyMigrationService({
+    migrationFileSystem, migrationRepository: migrationDataSource, logger
+  })
   await applyMigrationsService.execute()
   await migrationKnex.destroy()
 }

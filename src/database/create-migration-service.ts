@@ -5,15 +5,13 @@ interface Dependencies {
 }
 
 export class CreateMigrationService {
-
   private readonly migrationFileSystem: MigrationFileSystem
 
   constructor(readonly dependencies: Dependencies) {
     this.migrationFileSystem = dependencies.migrationFileSystem
   }
 
-  async execute(name: string): Promise<string> {
+  execute(name: string): string {
     return this.migrationFileSystem.createMigrationFile(name)
   }
-
 }

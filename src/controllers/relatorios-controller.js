@@ -122,7 +122,7 @@ export const obtemDadosDoRelatorioDeInventarioDeEspecies = async (req, res, next
                 dados: dadosFormatados,
             });
         const readable = new Readable();
-        // eslint-disable-next-line no-underscore-dangle
+
         readable._read = () => { }; // Implementa o método _read (obrigatório)
         readable.push(buffer); // Empurrar os dados binários para o stream
         readable.push(null); // Indica o fim do fluxo de dados
@@ -169,9 +169,9 @@ export const obtemDadosDoRelatorioDeColetaPorLocalEIntervaloDeData = async (req,
                 // Transforma os valores em uma data e compara com o intervalo
                 Sequelize.where(
                     literal(
-                        "STR_TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes, 2, '0'), '-', LPAD(data_coleta_dia, 2, '0')), '%Y-%m-%d')"
+                        "STR_TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes, 2, '0'), '-', LPAD(data_coleta_dia, 2, '0')), '%Y-%m-%d')",
                     ),
-                    { [Op.between]: [dataInicio, dataFim || new Date()] }
+                    { [Op.between]: [dataInicio, dataFim || new Date()] },
                 ),
             ],
         };
@@ -183,19 +183,20 @@ export const obtemDadosDoRelatorioDeColetaPorLocalEIntervaloDeData = async (req,
             where: whereData,
             include: [
                 {
+                    model: Familia,
+                    attributes: ['id', 'nome'],
+                    // required: true,
+                },
+                {
+                    model: Genero,
+                    attributes: ['id', 'nome'],
+                    // required: true,
+                },
+                {
                     model: Especie,
                     attributes: ['id', 'nome'],
-                    required: true,
+                    // required: true,
                     include: [
-                        {
-                            model: Genero,
-                            attributes: ['id', 'nome'],
-                        },
-                        {
-                            model: Familia,
-                            attributes: ['id', 'nome'],
-                            required: true,
-                        },
                         {
                             model: Autor,
                             attributes: ['id', 'nome'],
@@ -214,13 +215,15 @@ export const obtemDadosDoRelatorioDeColetaPorLocalEIntervaloDeData = async (req,
         });
 
         if (req.method === 'GET') {
+            const dadosPuros = tombos.rows.map(registro => registro.get({ plain: true }));
+
             res.json({
                 metadados: {
-                    total: tombos.count,
+                    total: dadosPuros?.length,
                     pagina,
                     limite,
                 },
-                resultado: formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData(tombos),
+                resultado: formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData(dadosPuros),
                 filtro: formataTextFilter(local, dataInicio, dataFim || new Date()),
             });
             return;
@@ -235,7 +238,7 @@ export const obtemDadosDoRelatorioDeColetaPorLocalEIntervaloDeData = async (req,
                     textoFiltro: formataTextFilter(local, dataInicio, dataFim || new Date()),
                 });
             const readable = new Readable();
-            // eslint-disable-next-line no-underscore-dangle
+
             readable._read = () => { }; // Implementa o método _read (obrigatório)
             readable.push(buffer); // Empurrar os dados binários para o stream
             readable.push(null); // Indica o fim do fluxo de dados
@@ -273,9 +276,9 @@ export const obtemDadosDoRelatorioDeColetaIntervaloDeData = async (req, res, nex
                 // Transforma os valores em uma data e compara com o intervalo
                 Sequelize.where(
                     literal(
-                        "STR_TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes, 2, '0'), '-', LPAD(data_coleta_dia, 2, '0')), '%Y-%m-%d')"
+                        "STR_TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes, 2, '0'), '-', LPAD(data_coleta_dia, 2, '0')), '%Y-%m-%d')",
                     ),
-                    { [Op.between]: [dataInicio, dataFim || new Date()] }
+                    { [Op.between]: [dataInicio, dataFim || new Date()] },
                 ),
             ],
         };
@@ -333,7 +336,7 @@ export const obtemDadosDoRelatorioDeColetaIntervaloDeData = async (req, res, nex
                     textoFiltro: formataTextFilter(null, dataInicio, dataFim || new Date()),
                 });
             const readable = new Readable();
-            // eslint-disable-next-line no-underscore-dangle
+
             readable._read = () => { }; // Implementa o método _read (obrigatório)
             readable.push(buffer); // Empurrar os dados binários para o stream
             readable.push(null); // Indica o fim do fluxo de dados
@@ -377,9 +380,9 @@ export const obtemDadosDoRelatorioDeColetaPorColetorEIntervaloDeData = async (re
                 // Transforma os valores em uma data e compara com o intervalo
                 Sequelize.where(
                     literal(
-                        "STR_TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes, 2, '0'), '-', LPAD(data_coleta_dia, 2, '0')), '%Y-%m-%d')"
+                        "STR_TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes, 2, '0'), '-', LPAD(data_coleta_dia, 2, '0')), '%Y-%m-%d')",
                     ),
-                    { [Op.between]: [dataInicio, dataFim || new Date()] }
+                    { [Op.between]: [dataInicio, dataFim || new Date()] },
                 ),
             ],
         };
@@ -436,19 +439,21 @@ export const obtemDadosDoRelatorioDeColetaPorColetorEIntervaloDeData = async (re
 
         try {
             const dadosFormatados = formatarDadosParaRelatorioDeColetaPorColetorEIntervaloDeData(tombos.rows);
-            const buffer = !modelo || modelo === '1' ? await generateReport(
-                ReportColetaModelo1, {
-                    dados: dadosFormatados,
-                    total: variante === 'analitico' ? tombos.count : undefined,
-                    textoFiltro: formataTextFilterColetor(coletor || null, dataInicio, dataFim || new Date()),
-                }) : await generateReport(
-                ReportColetaModelo2, {
-                    dados: dadosFormatados,
-                    total: variante === 'analitico' ? tombos.count : undefined,
-                    textoFiltro: formataTextFilterColetor(coletor || null, dataInicio, dataFim || new Date()),
-                });
+            const buffer = !modelo || modelo === '1'
+                ? await generateReport(
+                        ReportColetaModelo1, {
+                            dados: dadosFormatados,
+                            total: variante === 'analitico' ? tombos.count : undefined,
+                            textoFiltro: formataTextFilterColetor(coletor || null, dataInicio, dataFim || new Date()),
+                        })
+                : await generateReport(
+                        ReportColetaModelo2, {
+                            dados: dadosFormatados,
+                            total: variante === 'analitico' ? tombos.count : undefined,
+                            textoFiltro: formataTextFilterColetor(coletor || null, dataInicio, dataFim || new Date()),
+                        });
             const readable = new Readable();
-            // eslint-disable-next-line no-underscore-dangle
+
             readable._read = () => { }; // Implementa o método _read (obrigatório)
             readable.push(buffer); // Empurrar os dados binários para o stream
             readable.push(null); // Indica o fim do fluxo de dados
@@ -492,9 +497,9 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
                 // Transforma os valores em uma data e compara com o intervalo
                 Sequelize.where(
                     literal(
-                        "STR_TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes, 2, '0'), '-', LPAD(data_coleta_dia, 2, '0')), '%Y-%m-%d')"
+                        "STR_TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes, 2, '0'), '-', LPAD(data_coleta_dia, 2, '0')), '%Y-%m-%d')",
                     ),
-                    { [Op.between]: [dataInicio, dataFim || new Date()] }
+                    { [Op.between]: [dataInicio, dataFim || new Date()] },
                 ),
             ],
         };
@@ -502,24 +507,33 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
 
     try {
         const tombos = await Tombo.findAndCountAll({
-            attributes: ['hcf', 'numero_coleta', 'nome_cientifico', 'data_coleta_ano', 'data_coleta_mes', 'data_coleta_dia'],
+            attributes: [
+                'hcf',
+                'numero_coleta',
+                'familia_id',
+                'especie_id',
+                'genero_id',
+                'nome_cientifico',
+                'data_coleta_ano',
+                'data_coleta_mes',
+                'data_coleta_dia',
+            ],
             where: whereData,
             include: [
                 {
+                    model: Familia,
+                    attributes: ['id', 'nome'],
+                    // required: true,
+                },
+                {
+                    model: Genero,
+                    attributes: ['id', 'nome'],
+                    // required: true,
+                },
+                {
                     model: Especie,
                     attributes: ['id', 'nome'],
-                    required: true,
-                    include: [
-                        {
-                            model: Genero,
-                            attributes: ['id', 'nome'],
-                        },
-                        {
-                            model: Familia,
-                            attributes: ['id', 'nome'],
-                            required: true,
-                        },
-                    ],
+                    // required: true,
                 },
                 {
                     model: LocalColeta,
@@ -570,7 +584,7 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
                     textoFiltro: formataTextFilter(local, dataInicio, dataFim || new Date()),
                 });
             const readable = new Readable();
-            // eslint-disable-next-line no-underscore-dangle
+
             readable._read = () => { }; // Implementa o método _read (obrigatório)
             readable.push(buffer); // Empurrar os dados binários para o stream
             readable.push(null); // Indica o fim do fluxo de dados
@@ -645,7 +659,7 @@ export const obtemDadosDoRelatorioDeFamiliasEGeneros = async (req, res, next) =>
                     dados: dadosFormatados,
                 });
             const readable = new Readable();
-            // eslint-disable-next-line no-underscore-dangle
+
             readable._read = () => { }; // Implementa o método _read (obrigatório)
             readable.push(buffer); // Empurrar os dados binários para o stream
             readable.push(null); // Indica o fim do fluxo de dados
@@ -684,9 +698,9 @@ export const obtemDadosDoRelatorioDeCodigoDeBarras = async (req, res, next) => {
             // Transforma os valores em uma data e compara com o intervalo
             Sequelize.where(
                 literal(
-                    "STR_TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes, 2, '0'), '-', LPAD(data_coleta_dia, 2, '0')), '%Y-%m-%d')"
+                    "STR_TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes, 2, '0'), '-', LPAD(data_coleta_dia, 2, '0')), '%Y-%m-%d')",
                 ),
-                { [Op.between]: [dataInicio, dataFim || new Date()] }
+                { [Op.between]: [dataInicio, dataFim || new Date()] },
             ),
         ],
     };
@@ -743,9 +757,9 @@ export const obtemDadosDoRelatorioDeQuantidade = async (req, res, next) => {
                 // Transforma os valores em uma data e compara com o intervalo
                 Sequelize.where(
                     literal(
-                        "STR_TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes, 2, '0'), '-', LPAD(data_coleta_dia, 2, '0')), '%Y-%m-%d')"
+                        "STR_TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes, 2, '0'), '-', LPAD(data_coleta_dia, 2, '0')), '%Y-%m-%d')",
                     ),
-                    { [Op.between]: [dataInicio, dataFim || new Date()] }
+                    { [Op.between]: [dataInicio, dataFim || new Date()] },
                 ),
             ],
         };
@@ -800,7 +814,7 @@ export const obtemDadosDoRelatorioDeQuantidade = async (req, res, next) => {
                     textoFiltro: formataTextFilter(null, dataInicio, dataFim || new Date()),
                 });
             const readable = new Readable();
-            // eslint-disable-next-line no-underscore-dangle
+
             readable._read = () => { }; // Implementa o método _read (obrigatório)
             readable.push(buffer); // Empurrar os dados binários para o stream
             readable.push(null); // Indica o fim do fluxo de dados

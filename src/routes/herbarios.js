@@ -1,3 +1,4 @@
+import * as controller from '../controllers/herbarios-controller';
 import listagensMiddleware from '../middlewares/listagens-middleware';
 import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middleware';
 import validacoesMiddleware from '../middlewares/validacoes-middleware';
@@ -5,8 +6,6 @@ import atualizarHerbarioEsquema from '../validators/herbario-atualiza';
 import cadastrarHerbarioEsquema from '../validators/herbario-cadastro';
 import desativarHerbarioEsquema from '../validators/herbario-desativa';
 import listagemHerbarioEsquema from '../validators/herbario-listagem';
-
-const controller = require('../controllers/herbarios-controller');
 
 /**
  * @swagger
@@ -192,9 +191,6 @@ export default app => {
          *                                     type: integer
          *                                   nome:
          *                                     type: string
-         *                                   codigo_telefone:
-         *                                     type: string
-         *                                     nullable: true
          *                                   paise:
          *                                     type: object
          *                                     properties:

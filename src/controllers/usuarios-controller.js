@@ -1,7 +1,9 @@
+import nodemailer from 'nodemailer';
+
 import { UserRegistrationDTO } from '../dtos/UserRegistrationDTO';
 import BadRequestExeption from '../errors/bad-request-exception';
 import { comparaSenha, gerarSenha } from '../helpers/senhas';
-import { constroiPayloadUsuario, geraTokenUsuario } from '../helpers/tokens';
+import { constroiPayloadUsuario, geraTokenResetSenha, geraTokenUsuario } from '../helpers/tokens';
 import models from '../models';
 import codigos from '../resources/codigos-http';
 
@@ -100,7 +102,7 @@ export const recuperarSenha = (request, response, next) => {
                     where: {
                         id: usuario.id,
                     },
-                }
+                },
             );
         })
         .then(retorno => {
@@ -314,6 +316,89 @@ export const atualizarSenha = (request, response, next) => {
             response.status(codigos.EDITAR_SEM_RETORNO).send();
         })
         .catch(next);
+};
+
+export const solicitarTrocaDeSenha = async (request, response, next) => {
+    const { email } = request.body;
+    try {
+        const user = await encontraUsuarioAtivoPorEmail(email);
+        if (user) {
+            const token = geraTokenResetSenha();
+            const dataExpiracao = new Date();
+            dataExpiracao.setMinutes(dataExpiracao.getMinutes() + 45);
+
+            await Usuario.update(
+                { token_troca_senha: token, token_troca_senha_expiracao: dataExpiracao },
+                { where: { id: user.id } },
+            );
+
+            const transporter = nodemailer.createTransport({
+                host: process.env.SMTP_HOST,
+                port: process.env.SMTP_PORT,
+                secure: false,
+                auth: {
+                    user: process.env.SMTP_USER,
+                    pass: process.env.SMTP_PASS,
+                },
+            });
+
+            const link = `${process.env.URL_PAINEL}reset-senha?token=${token}`;
+            await transporter.sendMail({
+                from: process.env.SMTP_FROM || '"Sistema HCF" <no-reply@hcf.com>',
+                to: email,
+                subject: 'Redefinição de senha',
+                html: `
+          <p>Olá ${user.nome},</p>
+          <p>Você solicitou uma redefinição de senha.</p>
+          <p>Não compartilhe esse link.</p>
+          <p>Clique no link abaixo para criar uma nova senha token válido por 45 minutos.</p>
+          <a href="${link}">${link}</a>
+        `,
+            });
+        }
+
+        return response.status(codigos.EDITAR_SEM_RETORNO).send();
+    } catch (err) {
+        return next(err);
+    }
+};
+
+export const redefinirSenhaComToken = async (request, response, next) => {
+    const { token, nova_senha: novaSennha } = request.body;
+
+    try {
+        if (!token || !novaSennha) {
+            throw new BadRequestExeption(400, 'Token e nova senha são obrigatórios.');
+        }
+
+        const user = await Usuario.findOne({
+            where: {
+                token_troca_senha: token,
+                token_troca_senha_expiracao: { [Op.gt]: new Date() },
+            },
+        });
+
+        if (!user) {
+            return response.status(400).json({
+                mensagem: 'Token inválido ou expirado.',
+            });
+
+        }
+
+        const novaSenhaHash = gerarSenha(novaSennha);
+        await Usuario.update(
+            {
+                senha: novaSenhaHash,
+                token_troca_senha: null,
+                token_troca_senha_expiracao: null,
+            },
+            { where: { id: user.id } },
+        );
+
+        return response.status(codigos.EDITAR_SEM_RETORNO).send();
+    } catch (err) {
+        return next(err);
+    }
 };
 
 export default {};

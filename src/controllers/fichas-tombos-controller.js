@@ -2,6 +2,7 @@ import moment from 'moment-timezone';
 import path from 'path';
 
 import { converteDecimalParaGMSSinal } from '~/helpers/coordenadas';
+
 // import identificador from '~/routes/identificador';
 
 import formataColunasSeparadas from '../helpers/formata-colunas-separadas';
@@ -129,7 +130,7 @@ export default function fichaTomboController(request, response, next) {
                             model: Cidade,
                             include: {
                                 model: Estado,
-                                attributes: ['id', 'nome', 'sigla', 'codigo_telefone', 'pais_id'],
+                                attributes: ['id', 'nome', 'sigla', 'pais_id'],
                                 include: {
                                     as: 'pais',
                                     model: Pais,
@@ -232,7 +233,6 @@ export default function fichaTomboController(request, response, next) {
             //     ],
             // });
 
-            // eslint-disable-next-line max-len
             const coletores = `${!!tombo?.coletore?.nome !== false ? tombo?.coletore?.nome?.concat(' ') : ''}${tombo?.coletor_complementar ? tombo.coletor_complementar?.complementares : ''}`;
 
             const localColeta = tombo.local_coleta;
@@ -244,18 +244,18 @@ export default function fichaTomboController(request, response, next) {
             const dataTombo = new Date(tombo.data_tombo);
             const romanoDataTombo = (`${dataTombo.getDate()}/${romanos[dataTombo.getMonth()]}/${dataTombo.getFullYear()}`);
 
-            const identificador = tombo.identificadores?.[0]?.nome &&
-              tombo.identificadores?.[0]?.nome.toLowerCase() !== 'não-identificado' ?
-                tombo.identificadores?.[0]?.nome : '' || '';
+            const identificador = tombo.identificadores?.[0]?.nome
+                && tombo.identificadores?.[0]?.nome.toLowerCase() !== 'não-identificado'
+                ? tombo.identificadores?.[0]?.nome
+                : '';
 
             const romanoDataIdentificacao = formataDataIdentificacao(
                 tombo?.data_identificacao_dia,
                 tombo?.data_identificacao_mes,
                 tombo?.data_identificacao_ano,
-                romanos
+                romanos,
             );
 
-            // eslint-disable-next-line max-len
             const romanoDataColeta = (`${tombo.data_coleta_dia}/${romanos[tombo.data_coleta_mes - 1]}/${tombo.data_coleta_ano}`);
 
             const parametros = {
@@ -290,7 +290,7 @@ export default function fichaTomboController(request, response, next) {
                     data_identificacao: formataColunasSeparadas(
                         identificacao.data_identificacao_dia,
                         identificacao.data_identificacao_mes,
-                        identificacao.data_identificacao_ano
+                        identificacao.data_identificacao_ano,
                     ),
                 },
 

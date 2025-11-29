@@ -1,10 +1,9 @@
+import * as controller from '../controllers/estados-controller';
 import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middleware';
 import validacoesMiddleware from '../middlewares/validacoes-middleware';
 import atualizarEstadoEsquema from '../validators/estado-atualiza';
 import cadastrarEstadoEsquema from '../validators/estado-cadastro';
 import desativarEstadoEsquema from '../validators/estado-desativa';
-
-const controller = require('../controllers/estados-controller');
 
 /**
  * @swagger
@@ -27,8 +26,6 @@ export default app => {
      *             type: object
      *             properties:
      *               nome:
-     *                 type: string
-     *               codigo_telefone:
      *                 type: string
      *               pais_id:
      *                 type: integer
@@ -91,8 +88,6 @@ export default app => {
      *             type: object
      *             properties:
      *               nome:
-     *                 type: string
-     *               codigo_telefone:
      *                 type: string
      *               pais_id:
      *                 type: integer

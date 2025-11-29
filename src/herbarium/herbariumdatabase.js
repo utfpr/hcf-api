@@ -1,5 +1,5 @@
 /* Evita o warning de excendo o tamanho da linha */
-/* eslint-disable max-len */
+
 import Q from 'q';
 import Sequelize from 'sequelize';
 import throttledQueue from 'throttled-queue';
@@ -172,7 +172,7 @@ export function atualizaTabelaConfiguracao(idServico, idExecucao, horaInicio, ho
                 periodicidade: periodicidadeUsuario,
                 data_proxima_atualizacao: proximaAtualizacao,
             },
-            { where: { id: idExecucao } }
+            { where: { id: idExecucao } },
         ).then(() => {
             promessa.resolve();
         });
@@ -187,7 +187,7 @@ export function atualizaTabelaConfiguracao(idServico, idExecucao, horaInicio, ho
             periodicidade: periodicidadeUsuario,
             data_proxima_atualizacao: proximaAtualizacao,
         },
-        { where: { id: idExecucao } }
+        { where: { id: idExecucao } },
     ).then(() => {
         promessa.resolve();
     });
@@ -210,7 +210,7 @@ export function atualizaFimTabelaConfiguracao(idExecucao, horaTerminou) {
     const promessa = Q.defer();
     tabelaConfiguracao.update(
         { hora_fim: horaTerminou },
-        { where: { id: idExecucao } }
+        { where: { id: idExecucao } },
     ).then(() => {
         promessa.resolve();
     });
@@ -237,7 +237,7 @@ export function atualizaNomeArquivoSpeciesLink(idExecucao, horaInicio, nomeArqui
             hora_fim: null,
             nome_arquivo: nomeArquivo,
         },
-        { where: { id: idExecucao } }
+        { where: { id: idExecucao } },
     ).then(() => {
         promessa.resolve();
     });
@@ -261,7 +261,7 @@ export function atualizaHoraFimSpeciesLink(idExecucao, horaFim) {
         {
             hora_fim: horaFim,
         },
-        { where: { id: idExecucao } }
+        { where: { id: idExecucao } },
     ).then(() => {
         promessa.resolve();
     });
@@ -426,7 +426,7 @@ export function atualizaTabelaReflora(codBarra, json, valorJaRequisitou) {
     const tabelaReflora = modeloReflora(conexao, Sequelize);
     tabelaReflora.update(
         { tombo_json: json, ja_requisitou: valorJaRequisitou },
-        { where: { cod_barra: codBarra } }
+        { where: { cod_barra: codBarra } },
     );
 }
 
@@ -457,7 +457,7 @@ export function atualizaTabelaSpecieslink(codBarra, json, valorJaRequisitou) {
     const tabelaSpecieslink = modeloSpecieslink(conexao, Sequelize);
     tabelaSpecieslink.update(
         { tombo_json: json, ja_requisitou: valorJaRequisitou },
-        { where: { cod_barra: codBarra } }
+        { where: { cod_barra: codBarra } },
     );
 }
 
@@ -484,7 +484,7 @@ export function atualizaJaComparouTabelaReflora(codBarra) {
     const tabelaReflora = modeloReflora(conexao, Sequelize);
     tabelaReflora.update(
         { ja_comparou: true },
-        { where: { cod_barra: codBarra } }
+        { where: { cod_barra: codBarra } },
     );
 }
 
@@ -499,7 +499,7 @@ export function atualizaJaComparouTabelaSpecieslink(codBarra) {
     const tabelaSpecieslink = modeloSpecieslink(conexao, Sequelize);
     tabelaSpecieslink.update(
         { ja_comparou: true },
-        { where: { cod_barra: codBarra } }
+        { where: { cod_barra: codBarra } },
     );
 }
 

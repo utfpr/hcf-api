@@ -1,5 +1,5 @@
 /* Evita o warning de excendo o tamanho da linha */
-/* eslint-disable max-len */
+
 import Q from 'q';
 
 import {
@@ -97,7 +97,8 @@ export function ehIgualFamilia(idFamilia, nomeFamiliaHerbarioVirtual) {
         if (ehNuloEhIndefinidoEhVazio(nomeFamiliaBd) && !ehNuloEhIndefinidoEhVazio(nomeFamiliaHerbarioVirtual)) {
             promessa.resolve(nomeFamiliaHerbarioVirtual);
             return promessa.promise;
-        } if (!ehNuloEhIndefinidoEhVazio(nomeFamiliaBd) && ehNuloEhIndefinidoEhVazio(nomeFamiliaHerbarioVirtual)) {
+        }
+        if (!ehNuloEhIndefinidoEhVazio(nomeFamiliaBd) && ehNuloEhIndefinidoEhVazio(nomeFamiliaHerbarioVirtual)) {
             promessa.resolve(-1);
             return promessa.promise;
         }
@@ -148,7 +149,8 @@ export function ehIgualGenero(idGenero, nomeGeneroHerbarioVirtual) {
         if (ehNuloEhIndefinidoEhVazio(nomeGeneroBd) && !ehNuloEhIndefinidoEhVazio(nomeGeneroHerbarioVirtual)) {
             promessa.resolve(nomeGeneroHerbarioVirtual);
             return promessa.promise;
-        } if (!ehNuloEhIndefinidoEhVazio(nomeGeneroBd) && ehNuloEhIndefinidoEhVazio(nomeGeneroHerbarioVirtual)) {
+        }
+        if (!ehNuloEhIndefinidoEhVazio(nomeGeneroBd) && ehNuloEhIndefinidoEhVazio(nomeGeneroHerbarioVirtual)) {
             promessa.resolve(-1);
             return promessa.promise;
         }
@@ -199,7 +201,8 @@ export function ehIgualEspecie(idEspecie, nomeEspecieHerbarioVirtual) {
         if (ehNuloEhIndefinidoEhVazio(nomeEspecieBd) && !ehNuloEhIndefinidoEhVazio(nomeEspecieHerbarioVirtual)) {
             promessa.resolve(nomeEspecieHerbarioVirtual);
             return promessa.promise;
-        } if (!ehNuloEhIndefinidoEhVazio(nomeEspecieBd) && ehNuloEhIndefinidoEhVazio(nomeEspecieHerbarioVirtual)) {
+        }
+        if (!ehNuloEhIndefinidoEhVazio(nomeEspecieBd) && ehNuloEhIndefinidoEhVazio(nomeEspecieHerbarioVirtual)) {
             promessa.resolve(-1);
             return promessa.promise;
         }
@@ -250,7 +253,8 @@ export function ehIgualSubespecie(idSubespecie, nomeSubespecieHerbarioVirtual) {
         if (ehNuloEhIndefinidoEhVazio(nomeSubespecieBd) && !ehNuloEhIndefinidoEhVazio(nomeSubespecieHerbarioVirtual)) {
             promessa.resolve(nomeSubespecieHerbarioVirtual);
             return promessa.promise;
-        } if (!ehNuloEhIndefinidoEhVazio(nomeSubespecieBd) && ehNuloEhIndefinidoEhVazio(nomeSubespecieHerbarioVirtual)) {
+        }
+        if (!ehNuloEhIndefinidoEhVazio(nomeSubespecieBd) && ehNuloEhIndefinidoEhVazio(nomeSubespecieHerbarioVirtual)) {
             promessa.resolve(-1);
             return promessa.promise;
         }
@@ -301,7 +305,8 @@ export function ehIgualVariedade(idVariedade, nomeVariedadeHerbarioVirtual) {
         if (ehNuloEhIndefinidoEhVazio(nomeVariedadeBd) && !ehNuloEhIndefinidoEhVazio(nomeVariedadeHerbarioVirtual)) {
             promessa.resolve(nomeVariedadeHerbarioVirtual);
             return promessa.promise;
-        } if (!ehNuloEhIndefinidoEhVazio(nomeVariedadeBd) && ehNuloEhIndefinidoEhVazio(nomeVariedadeHerbarioVirtual)) {
+        }
+        if (!ehNuloEhIndefinidoEhVazio(nomeVariedadeBd) && ehNuloEhIndefinidoEhVazio(nomeVariedadeHerbarioVirtual)) {
             promessa.resolve(-1);
             return promessa.promise;
         }
