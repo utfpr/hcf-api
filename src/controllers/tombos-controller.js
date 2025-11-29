@@ -1,5 +1,3 @@
-/* eslint-disable quotes */
-// @ts-nocheck
 import { ForeignKeyConstraintError } from 'sequelize';
 
 import { padronizarNomeDarwincore } from '~/helpers/padroniza-nome-darwincore';
@@ -45,7 +43,7 @@ export const cadastro = (request, response, next) => {
         paisagem,
         identificacao,
         coletor,
-        // eslint-disable-next-line @typescript-eslint/naming-convention
+
         coletor_complementar,
         colecoes_anexas: colecoesAnexas,
         observacoes,
@@ -123,8 +121,23 @@ export const cadastro = (request, response, next) => {
                 return undefined;
             })
             .then(() => {
+                if (!localidade?.cidade_id) {
+                    throw new BadRequestExeption(534);
+                }
+                return Cidade.findOne({
+                    where: { id: localidade.cidade_id },
+                    transaction,
+                });
+            })
+            .then(cidade => {
+                if (!cidade) {
+                    throw new BadRequestExeption(534);
+                }
+                return undefined;
+            })
+            .then(() => {
                 if (!localidade?.local_coleta_id) {
-                    throw new BadRequestExeption(400);
+                    return undefined;
                 }
                 return LocalColeta.findOne({
                     where: {
@@ -134,8 +147,13 @@ export const cadastro = (request, response, next) => {
                 });
             })
             .then(localColeta => {
-                if (!localColeta) {
-                    throw new BadRequestExeption(533);
+                if (localidade?.local_coleta_id) {
+                    if (!localColeta) {
+                        throw new BadRequestExeption(533);
+                    }
+                    if (localColeta.cidade_id !== localidade.cidade_id) {
+                        throw new BadRequestExeption(535);
+                    }
                 }
                 return undefined;
             })
@@ -285,13 +303,17 @@ export const cadastro = (request, response, next) => {
                     data_coleta_mes: principal.data_coleta.mes,
                     data_coleta_ano: principal.data_coleta.ano,
                     numero_coleta: principal.numero_coleta,
-                    local_coleta_id: localidade.local_coleta_id,
+                    cidade_id: localidade.cidade_id,
                     coletor_id: coletor,
                     data_tombo: parseDataTombo(principal.data_tombo),
                 };
 
                 if (paisagem?.descricao) {
                     jsonTombo.descricao = paisagem.descricao;
+                }
+
+                if (localidade.local_coleta_id) {
+                    jsonTombo.local_coleta_id = localidade.local_coleta_id;
                 }
 
                 if (observacoes) {
@@ -329,7 +351,7 @@ export const cadastro = (request, response, next) => {
                 if (taxonomia) {
                     jsonTombo = {
                         ...jsonTombo,
-                        // eslint-disable-next-line max-len
+
                         ...pick(taxonomia, ['nome_cientifico', 'variedade_id', 'especie_id', 'genero_id', 'familia_id', 'sub_familia_id', 'sub_especie_id']),
                     };
                 }
@@ -521,6 +543,9 @@ function alteracaoCuradorouOperador(request, response, transaction) {
     const altitude = body?.localidade?.altitude;
     if (altitude !== undefined) update.altitude = altitude;
 
+    const cidadeId = body?.localidade?.cidade_id;
+    if (cidadeId !== undefined) update.cidade_id = cidadeId;
+
     const localColeta = body?.localidade?.local_coleta_id;
     if (localColeta !== undefined) update.local_coleta_id = localColeta;
 
@@ -588,7 +613,8 @@ function alteracaoCuradorouOperador(request, response, transaction) {
                         transaction,
                     }))
                     .then(() => alteracaoCriada.toJSON());
-            } if (request.usuario.tipo_usuario_id !== 2) {
+            }
+            if (request.usuario.tipo_usuario_id !== 2) {
                 throw new BadRequestExeption(421);
             }
             return alteracaoCriada.toJSON();
@@ -599,7 +625,8 @@ export function alteracao(request, response, next) {
     return sequelize.transaction(transaction => {
         if (request.usuario.tipo_usuario_id === 3) {
             return alteracaoIdentificador(request, transaction);
-        } if (request.usuario.tipo_usuario_id === 1 || request.usuario.tipo_usuario_id === 2) {
+        }
+        if (request.usuario.tipo_usuario_id === 1 || request.usuario.tipo_usuario_id === 2) {
             return alteracaoCuradorouOperador(request, response, transaction);
         }
         throw new BadRequestExeption(421);
@@ -865,7 +892,7 @@ export const cadastrarTipo = (request, response, next) => {
             {
                 nome: request.body.nome,
             },
-            transaction
+            transaction,
         ));
     sequelize.transaction(callback)
         .then(() => {
@@ -1009,21 +1036,21 @@ export const obterTombo = async (request, response, next) => {
                             },
                         },
                         {
-                            model: LocalColeta,
+                            model: Cidade,
                             include: [
                                 {
-                                    model: Cidade,
+                                    model: Estado,
                                     include: [
                                         {
-                                            model: Estado,
-                                            include: [
-                                                {
-                                                    model: Pais,
-                                                },
-                                            ],
+                                            model: Pais,
                                         },
                                     ],
                                 },
+                            ],
+                        },
+                        {
+                            model: LocalColeta,
+                            include: [
                                 {
                                     model: FaseSucessional,
                                     attributes: {
@@ -1088,7 +1115,7 @@ export const obterTombo = async (request, response, next) => {
                             },
                         },
                     ],
-                })
+                }),
             )
             .then(tombo => {
                 if (!tombo) {
@@ -1100,9 +1127,9 @@ export const obterTombo = async (request, response, next) => {
                 resposta = {
                     herbarioInicial: tombo.herbario !== null ? tombo.herbario?.id : '',
                     tipoInicial: tombo.tipo !== null ? tombo.tipo?.id : '',
-                    paisInicial: tombo.locais_coletum.cidade?.estado?.paise !== null ? tombo.locais_coletum.cidade?.estado?.paise?.id : '',
-                    estadoInicial: tombo.locais_coletum.cidade?.estado !== null ? tombo.locais_coletum.cidade?.estado?.id : '',
-                    cidadeInicial: tombo.locais_coletum.cidade !== null ? tombo.locais_coletum?.cidade?.id : '',
+                    paisInicial: tombo.cidade?.estado?.paise?.id ?? '',
+                    estadoInicial: tombo.cidade?.estado?.id ?? '',
+                    cidadeInicial: tombo.cidade !== null ? tombo.cidade?.id : tombo.cidade_id ?? '',
                     reinoInicial: tombo.reino !== null ? tombo.reino?.id : '',
                     familiaInicial: tombo.familia !== null ? tombo.familia?.id : '',
                     subfamiliaInicial: tombo.sub_familia !== null ? tombo.sub_familia?.id : '',
@@ -1120,9 +1147,9 @@ export const obterTombo = async (request, response, next) => {
             tombo.locais_coletum !== null && tombo.locais_coletum?.fase_sucessional !== null ? tombo.locais_coletum?.fase_sucessional?.numero : '',
                     coletor: tombo.coletore
                         ? {
-                            id: tombo.coletore?.id,
-                            nome: tombo.coletore?.nome,
-                        }
+                                id: tombo.coletore?.id,
+                                nome: tombo.coletore?.nome,
+                            }
                         : null,
                     colecaoInicial: tombo.colecoes_anexa !== null ? tombo.colecoes_anexa?.tipo : '',
                     complementoInicial: tombo.localizacao !== null && tombo.localizacao !== undefined ? tombo.localizacao?.complemento : '',
@@ -1146,10 +1173,10 @@ export const obterTombo = async (request, response, next) => {
                         long_min: tombo.longitude !== null ? converteDecimalParaGMSMinutos(tombo.longitude, false) : '',
                         long_sec: tombo.longitude !== null ? converteDecimalParaGMSSegundos(tombo.longitude, false) : '',
                         altitude: tombo.altitude !== null ? tombo.altitude : '',
-                        cidade: tombo.locais_coletum !== null && tombo.locais_coletum.cidade !== null ? tombo.locais_coletum?.cidade?.nome : '',
-                        estado: tombo.locais_coletum !== null && tombo.locais_coletum.cidade !== null ? tombo.locais_coletum.cidade?.estado?.nome : '',
-                        pais: tombo.locais_coletum !== null && tombo.locais_coletum.cidade !== null ? tombo.locais_coletum.cidade.estado?.paise?.nome : '',
-                        complemento: tombo.locais_coletum?.complemento !== null ? tombo.locais_coletum?.complemento : '',
+                        cidade: tombo.cidade?.nome ?? '',
+                        estado: tombo.cidade?.estado?.nome ?? '',
+                        pais: tombo.cidade?.estado?.paise?.nome ?? '',
+                        complemento: tombo.complemento !== null ? tombo.complemento : '',
                     },
                     local_coleta: {
                         id: tombo.locais_coletum !== null ? tombo.locais_coletum?.id : '',
@@ -1236,27 +1263,27 @@ export const obterTombo = async (request, response, next) => {
             .then(() =>
                 Estado.findAll({
                     where: {
-                        pais_id: dadosTombo.locais_coletum.cidade?.estado?.paise?.id,
+                        pais_id: dadosTombo.cidade.estado?.paise?.id,
                     },
-                })
+                }),
             )
-        // eslint-disable-next-line no-return-assign
+
             .then(estados => (resposta.estados = estados))
             .then(() =>
                 Cidade.findAll({
                     where: {
-                        estado_id: dadosTombo.locais_coletum.cidade?.estado?.id,
+                        estado_id: dadosTombo.cidade.estado?.id,
                     },
-                })
+                }),
             )
-        // eslint-disable-next-line no-return-assign
+
             .then(cidades => (resposta.cidades = cidades))
             .then(() =>
                 Familia.findAll({
                     where: {
                         id: dadosTombo.familia?.id,
                     },
-                })
+                }),
             )
             .then(familias => {
                 resposta.familias = familias;
@@ -1382,7 +1409,7 @@ export const obterTombo = async (request, response, next) => {
                         identificacao: true,
                     },
                     order: [['created_at', 'DESC']],
-                })
+                }),
             )
             .then(alter => {
                 if (alter) {
@@ -1395,14 +1422,13 @@ export const obterTombo = async (request, response, next) => {
                         tombo_hcf: id,
                     },
                     attributes: ['id', 'caminho_foto', 'em_vivo'],
-                })
+                }),
             )
             .then(fotos => {
                 const formatoFotos = [];
                 const fotosExsicata = [];
                 const fotosEmVivo = [];
 
-                // eslint-disable-next-line no-plusplus
                 for (let i = 0; i < fotos.length; i++) {
                     if (!fotos[i].em_vivo) {
                         fotosExsicata.push({
@@ -1425,7 +1451,7 @@ export const obterTombo = async (request, response, next) => {
                         id: foto.id,
                         original: foto.caminho_foto,
                         thumbnail: foto.caminho_foto,
-                    })
+                    }),
                 );
                 resposta.fotos = formatoFotos;
                 response.status(codigos.BUSCAR_UM_ITEM).json(resposta);
@@ -1464,7 +1490,7 @@ export const getNumeroColetor = (request, response, next) => {
                     coletor_id: idColetor,
                 },
                 attributes: ['hcf', 'numero_coleta'],
-            })
+            }),
         )
         .then(tombos => {
             response.status(codigos.BUSCAR_UM_ITEM).json(tombos);

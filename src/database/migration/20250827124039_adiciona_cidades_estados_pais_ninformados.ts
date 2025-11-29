@@ -1,5 +1,3 @@
-/* eslint-disable */
-
 import { Knex } from 'knex'
 
 export async function run(knex: Knex): Promise<void> {

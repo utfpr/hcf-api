@@ -12,8 +12,10 @@ const {
     Sequelize,
 } = models;
 
+const { Op } = Sequelize;
+
 export const cadastrarEstado = (req, res, next) => {
-    const { nome, sigla, codigo_telefone: codigoTelefone, pais_id: paisId } = req.body;
+    const { nome, sigla, pais_id: paisId } = req.body;
 
     const callback = async transaction => {
         const estadoConflitante = await Estado.findOne({
@@ -22,7 +24,6 @@ export const cadastrarEstado = (req, res, next) => {
                 [Sequelize.Op.or]: [
                     { nome },
                     { sigla },
-                    { codigo_telefone: codigoTelefone },
                 ],
             },
             transaction,
@@ -32,7 +33,6 @@ export const cadastrarEstado = (req, res, next) => {
             let campoDuplicado = '';
             if (estadoConflitante.nome === nome) campoDuplicado = 'nome';
             else if (estadoConflitante.sigla === sigla) campoDuplicado = 'UF';
-            else if (estadoConflitante.codigo_telefone === codigoTelefone) campoDuplicado = 'código de telefone';
 
             return res.status(400).json({
                 error: {
@@ -44,8 +44,8 @@ export const cadastrarEstado = (req, res, next) => {
         }
 
         const estadoCriado = await Estado.create(
-            { nome, sigla, codigo_telefone: codigoTelefone, pais_id: paisId },
-            { transaction }
+            { nome, sigla, pais_id: paisId },
+            { transaction },
         );
 
         return estadoCriado;
@@ -68,17 +68,22 @@ export const cadastrarEstado = (req, res, next) => {
 export const listagem = async (req, res, next) => {
     try {
         const paisId = req.query.pais_id ? parseInt(req.query.pais_id, 10) : undefined;
+        const { nome } = req.query;
 
         const where = {};
         if (!Number.isNaN(paisId) && paisId !== undefined) {
             where.pais_id = paisId;
         }
 
+        if (nome) {
+            where.nome = { [Op.like]: `%${nome}%` };
+        }
+
         const estados = await Estado.findAll({
             attributes: { exclude: ['created_at', 'updated_at'] },
             include: [{ model: Pais, as: 'pais', attributes: ['id', 'nome', 'sigla'] }],
             where,
-            order: [['id', 'DESC']],
+            order: [[sequelize.literal('LOWER(`estados`.`nome`)'), 'ASC']],
         });
 
         return res.status(codigos.LISTAGEM).json(estados);
@@ -106,7 +111,7 @@ export const encontrarEstado = async (req, res, next) => {
 export const atualizarEstado = async (req, res, next) => {
     try {
         const { estadoId } = req.params;
-        const dados = pick(req.body, ['nome', 'sigla', 'codigo_telefone', 'pais_id']);
+        const dados = pick(req.body, ['nome', 'sigla', 'pais_id']);
 
         const estadoAtual = await Estado.findOne({ where: { id: estadoId } });
         if (!estadoAtual) {
@@ -120,7 +125,6 @@ export const atualizarEstado = async (req, res, next) => {
                 [Sequelize.Op.or]: [
                     { nome: dados.nome },
                     { sigla: dados.sigla },
-                    { codigo_telefone: dados.codigo_telefone },
                 ],
             },
         });
@@ -129,7 +133,6 @@ export const atualizarEstado = async (req, res, next) => {
             let campoDuplicado = '';
             if (estadoConflitante.nome === dados.nome) campoDuplicado = 'nome';
             else if (estadoConflitante.sigla === dados.sigla) campoDuplicado = 'UF';
-            else if (estadoConflitante.codigo_telefone === dados.codigo_telefone) campoDuplicado = 'código de telefone';
 
             return res.status(400).json({
                 error: {
@@ -144,7 +147,7 @@ export const atualizarEstado = async (req, res, next) => {
 
         const estadoAtualizado = await Estado.findOne({
             where: { id: estadoId },
-            attributes: ['id', 'nome', 'sigla', 'codigo_telefone', 'pais_id'],
+            attributes: ['id', 'nome', 'sigla', 'pais_id'],
             include: [{ model: Pais, as: 'pais', attributes: ['id', 'nome', 'sigla'] }],
         });
 

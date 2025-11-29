@@ -17,6 +17,7 @@
             {
                 "cwd": "babelrc",
                 "alias": {
+                    "@": "./src",
                     "~": "./src"
                 }
             }

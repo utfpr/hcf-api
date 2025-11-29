@@ -230,6 +230,15 @@
               <% if (tombo && tombo.descricao) { %>
                   <%- tombo.descricao %>
               <% } %>
+              <% if (tombo.solo) { %>
+                  - Solo: <%- tombo.solo.nome %>
+              <% } %>
+              <% if (tombo.relevo) { %>
+                  - Relevo: <%- tombo.relevo.nome %>
+              <% } %>
+              <% if (tombo.vegetacao) { %>
+                  - Vegetação: <%- tombo.vegetacao.nome %>
+              <% } %>
               <% if (tombo && tombo.latitude) { %>
                   - Latitude: <%- tombo.latitude %>
               <% } %>
@@ -238,15 +247,6 @@
               <% } %>
               <% if (tombo && tombo.altitude) { %>
                   - Altitude: <%- tombo.altitude %>m
-              <% } %>
-              <% if (localColeta && localColeta.solo) { %>
-                  - Solo: <%- localColeta.solo.nome %>
-              <% } %>
-              <% if (localColeta && localColeta.relevo) { %>
-                  - Relevo: <%- localColeta.relevo.nome %>
-              <% } %>
-              <% if (localColeta && localColeta.vegetaco) { %>
-                  - Vegetação: <%- localColeta.vegetaco.nome %>
               <% } %>
               <% if (localColeta && localColeta.fase_sucessional) { %>
                   - Fase sucessional: <%- localColeta.fase_sucessional.nome %>
@@ -278,34 +278,17 @@
 
                 <% if (!!fotos[0]['id'] && imprimir !== '0') { %>
                   <div class="flex center-end">
-                    <svg id="<%- 'code128_' + fotos[0]['id'] %>"></svg>
+                    <svg id="<%- 'code128_' + fotos[0]['id'] %>" data-codigo-barras="<%- codigo_barras_selecionado %>"></svg>
                   </div>
                 <% } %>
               </div>
             </div>
             </div>
         </div>
-        <% if (!!fotos[0]['id'] && imprimir !== '0') { %>
-          <script>
-            window.addEventListener('load', () => {
-              const id = "<%- '#code128_' + fotos[0]['id'] %>";
-              const cbarra = "<%- codigo_barras_selecionado %>";
-              JsBarcode(id, cbarra, { margin: 0, width: 1.4, height: 40, fontSize: 10 });
-            });
-          </script>
-        <% } %>
         <% fichaIndex++; %>
       <% } %>
       <script src="/assets/js/jsbarcode.code128.min.js"></script>
-      <script>
-        function onPageLoaded() {
-          if (!/standalone/.test(window.location.href)) {
-            window.print();
-          }
-        }
-
-        window.addEventListener('load', onPageLoaded);
-      </script>
+      <script src="/assets/js/ficha-tombo.js"></script>
     </body>
   </head>
 </html>

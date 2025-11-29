@@ -1,6 +1,8 @@
+import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 
 import { secret, expires } from '../config/security';
+import UnauthorizedException from '../errors/unauthorized-exception';
 
 export const geraTokenUsuario = json => {
     const token = jwt.sign(json, secret, {
@@ -9,8 +11,16 @@ export const geraTokenUsuario = json => {
 
     return token;
 };
-
-export const decodificaTokenUsuario = token => jwt.verify(token, secret);
+export const decodificaTokenUsuario = token => {
+    try {
+        return jwt.verify(token, secret);
+    } catch (err) {
+        if (err.name === 'TokenExpiredError') {
+            throw err;
+        }
+        throw new UnauthorizedException(401);
+    }
+};
 
 export const constroiPayloadUsuario = usuario => {
     const { id, nome, email, tipo_usuario_id: tipoUsuarioId } = usuario;
@@ -22,5 +32,7 @@ export const constroiPayloadUsuario = usuario => {
         tipo_usuario_id: tipoUsuarioId,
     };
 };
+
+export const geraTokenResetSenha = () => crypto.randomBytes(32).toString('hex');
 
 export default {};

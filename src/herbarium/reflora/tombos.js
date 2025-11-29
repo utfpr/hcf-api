@@ -1,5 +1,5 @@
 /* Evita o warning de excendo o tamanho da linha */
-/* eslint-disable max-len */
+
 import Q from 'q';
 import throttledQueue from 'throttled-queue';
 
