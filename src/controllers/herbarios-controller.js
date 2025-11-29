@@ -61,8 +61,6 @@ export const buscarHerbario = (request, response, next) => {
     Promise.resolve()
         .then(() => listaTodosHerbariosAtivos(1, 0, where))
         .then(herbario => {
-            // eslint-disable-next-line
-            // eslint-disable-next-line prefer-destructuring
             retorno.herbario = herbario.rows[0];
             if (retorno.count === 0) {
                 throw new NotFoundExeption(60);
@@ -73,7 +71,7 @@ export const buscarHerbario = (request, response, next) => {
                 exclude: ['updated_at', 'created_at'],
             },
         }))
-        // eslint-disable-next-line no-return-assign
+
         .then(paises => retorno.paises = paises)
         .then(() => {
             if (retorno.herbario.endereco) {
@@ -88,7 +86,7 @@ export const buscarHerbario = (request, response, next) => {
             }
             return [];
         })
-        // eslint-disable-next-line no-return-assign
+
         .then(estados => retorno.estados = estados)
         .then(() => {
             if (retorno.herbario.endereco) {
@@ -103,7 +101,7 @@ export const buscarHerbario = (request, response, next) => {
             }
             return [];
         })
-        // eslint-disable-next-line no-return-assign
+
         .then(cidades => retorno.cidades = cidades)
         .then(() => {
             response.status(codigos.LISTAGEM).json(retorno);
@@ -313,21 +311,21 @@ export const listagem = (request, response, next) => {
     if (nome) {
         where = {
             ...where,
-            nome: { [Op.like]: `%${nome}%` },
+            nome: { [Op.iLike]: `%${nome}%` },
         };
     }
 
     if (email) {
         where = {
             ...where,
-            email: { [Op.like]: `%${email}%` },
+            email: { [Op.iLike]: `%${email}%` },
         };
     }
 
     if (sigla) {
         where = {
             ...where,
-            sigla: { [Op.like]: `%${sigla}%` },
+            sigla: { [Op.iLike]: `%${sigla}%` },
         };
     }
 

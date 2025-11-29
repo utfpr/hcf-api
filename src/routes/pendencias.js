@@ -1,7 +1,6 @@
+import * as controller from '../controllers/pendencias-controller';
 import listagensMiddleware from '../middlewares/listagens-middleware';
 import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middleware';
-
-const controller = require('../controllers/pendencias-controller');
 
 /**
  * @swagger

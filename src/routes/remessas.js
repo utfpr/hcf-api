@@ -1,7 +1,6 @@
+import * as controller from '../controllers/remessa-controller';
 import listagensMiddleware from '../middlewares/listagens-middleware';
 import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middleware';
-
-const controller = require('../controllers/remessa-controller');
 
 /**
 * @swagger

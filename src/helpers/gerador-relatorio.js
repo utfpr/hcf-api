@@ -55,7 +55,8 @@ const tableFormato2 = dados => `
                     <div class="col-xs-4"></div>
                     <div class="col-xs-4"></div>
                 </div>
-                ${dado.especies.length > 0 ? `
+                ${dado.especies.length > 0
+                    ? `
                     <table class='table striped'>
                         <thead>
                             <tr>
@@ -72,7 +73,8 @@ const tableFormato2 = dados => `
                             `).join('')}
                         </tbody>
                     </table>
-                ` : '<p style="font-size: 12px; text-align: center;">Nenhuma espécie encontrada</p>'}
+                `
+                    : '<p style="font-size: 12px; text-align: center;">Nenhuma espécie encontrada</p>'}
             </div>
             <br/>
         `).join('')}
@@ -108,7 +110,8 @@ const template1 = (tipoDoRelatorio, textoFiltro, data, dados, tableFormato, adic
         ${header(tipoDoRelatorio, textoFiltro, data)}
         ${tableFormato === 1 ? tableFormato1(dados) : ''}
         ${tableFormato === 2 ? tableFormato2(dados) : ''}
-        ${adicionarTotalizador ? `
+        ${adicionarTotalizador
+            ? `
             <div class="row" style="border-top: 1px solid black; padding-top: 5px;">
                 <div class="col-xs-4">
                     <p style="font-size: 16px;"><b>Total: </b>${total}</p>
@@ -116,7 +119,8 @@ const template1 = (tipoDoRelatorio, textoFiltro, data, dados, tableFormato, adic
                 <div class="col-xs-4"></div>
                 <div class="col-xs-4"></div>
             </div>
-        ` : ''}
+        `
+            : ''}
     </body>
     </html>`;
 
@@ -134,7 +138,7 @@ const gerarRelatorioPDF = async (res, {
 
     wkhtmltopdf(
         template1(tipoDoRelatorio, textoFiltro, data, dados, tableFormato, adicionarTotalizador, total),
-        { pageSize: 'A4', encoding: 'utf-8' }
+        { pageSize: 'A4', encoding: 'utf-8' },
     ).pipe(res);
 };
 const gerarRelatorioVendas2 = () => {};
