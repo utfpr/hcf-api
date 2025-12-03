@@ -1,3 +1,4 @@
+import limparEspacos from '@/helpers/limpa-espaco';
 import BadRequestExeption from '../errors/bad-request-exception';
 import models from '../models';
 import codigos from '../resources/codigos-http';
@@ -9,7 +10,8 @@ const {
 } = models;
 // ////////////////////FAMILIA///////////////////////////
 export const cadastrarFamilia = (request, response, next) => {
-    const { nome, reinoId } = request.body;
+    let { nome, reinoId } = request.body;
+    nome = limparEspacos(nome);
 
     const callback = transaction => Promise.resolve()
         .then(() => Familia.findOne({
@@ -35,7 +37,8 @@ export const cadastrarFamilia = (request, response, next) => {
 };
 
 export const cadastrarReino = (request, response, next) => {
-    const { nome } = request.body;
+    let { nome } = request.body;
+    nome = limparEspacos(nome);
 
     const callback = transaction => Promise.resolve()
         .then(() => Reino.findOne({
@@ -62,7 +65,8 @@ export const cadastrarReino = (request, response, next) => {
 
 export const editarReino = (request, response, next) => {
     const id = request.params.reino_id;
-    const { nome } = request.body;
+    let { nome } = request.body;
+    nome = limparEspacos(nome);
 
     const callback = transaction => Promise.resolve()
         .then(() => Reino.findOne({
@@ -167,7 +171,8 @@ export const buscarFamilias = async (request, response, next) => {
 
 export const editarFamilia = (request, response, next) => {
     const id = request.params.familia_id;
-    const { nome } = request.body;
+    let { nome } = request.body;
+    nome = limparEspacos(nome);
 
     const callback = transaction => Promise.resolve()
         .then(() => Familia.findOne({
@@ -244,8 +249,8 @@ export const excluirFamilia = (request, response, next) => {
 };
 // /////////////////////SUBFAMILIA/////////////////////////
 export const cadastrarSubfamilia = (request, response, next) => {
-    const { nome, familia_id: familiaId } = request.body;
-
+    let { nome, familia_id: familiaId } = request.body;
+    nome = limparEspacos(nome);
     const callback = transaction => Promise.resolve()
         .then(() => Subfamilia.findOne({
             where: {
@@ -389,7 +394,8 @@ export const excluirSubfamilia = (request, response, next) => {
 };
 
 export const editarSubfamilia = (request, response, next) => {
-    const { nome, familia_id: familiaId } = request.body;
+    let { nome, familia_id: familiaId } = request.body;
+    nome = limparEspacos(nome);
     const subfamiliaId = parseInt(request.params.subfamilia_id);
 
     const callback = transaction => Promise.resolve()
@@ -433,8 +439,8 @@ export const editarSubfamilia = (request, response, next) => {
 
 // //////////////////////GENERO/////////////////////
 export const cadastrarGenero = (request, response, next) => {
-    const { nome, familia_id: familiaId } = request.body;
-
+    let { nome, familia_id: familiaId } = request.body;
+    nome = limparEspacos(nome);
     const callback = transaction => Promise.resolve()
         .then(() => Genero.findOne({
             where: {
@@ -565,7 +571,8 @@ export const excluirGeneros = (request, response, next) => {
 };
 
 export const editarGenero = (request, response, next) => {
-    const { nome, familia_id: familiaId } = request.body;
+    let { nome, familia_id: familiaId } = request.body;
+    nome = limparEspacos(nome);
     const generoId = parseInt(request.params.genero_id);
 
     const callback = transaction => Promise.resolve()
@@ -608,8 +615,8 @@ export const editarGenero = (request, response, next) => {
 };
 // ///////////////////////ESPECIE////////////////////////////
 export const cadastrarEspecie = (request, response, next) => {
-    const { nome, genero_id: generoId, autor_id: autorId } = request.body;
-
+    let { nome, genero_id: generoId, autor_id: autorId } = request.body;
+    nome = limparEspacos(nome);
     const callback = transaction => Promise.resolve()
         .then(() => {
             if (!autorId) {
@@ -778,7 +785,8 @@ export const excluirEspecies = (request, response, next) => {
 };
 
 export const editarEspecie = (request, response, next) => {
-    const { nome, genero_id: generoId, autor_id: autorId } = request.body;
+    let { nome, genero_id: generoId, autor_id: autorId } = request.body;
+    nome = limparEspacos(nome);
     const especieId = parseInt(request.params.especie_id);
 
     const callback = transaction => Promise.resolve()
@@ -840,8 +848,8 @@ export const editarEspecie = (request, response, next) => {
 };
 // ////////////////////SUBESPECIE///////////////////////////
 export const cadastrarSubespecie = (request, response, next) => {
-    const { nome, especie_id: especieId, autor_id: autorId } = request.body;
-
+    let { nome, especie_id: especieId, autor_id: autorId } = request.body;
+    nome = limparEspacos(nome);
     const callback = transaction => Promise.resolve()
         .then(() => {
             if (!autorId) {
@@ -1017,7 +1025,8 @@ export const excluirSubespecies = (request, response, next) => {
 };
 
 export const editarSubespecie = (request, response, next) => {
-    const { nome, especie_id: especieId, autor_id: autorId } = request.body;
+    let { nome, especie_id: especieId, autor_id: autorId } = request.body;
+    nome = limparEspacos(nome);
     const subespecieId = parseInt(request.params.subespecie_id);
 
     const callback = transaction => Promise.resolve()
@@ -1087,8 +1096,8 @@ export const editarSubespecie = (request, response, next) => {
 
 // //////////////////////VARIEDADE/////////////////////////////
 export const cadastrarVariedade = (request, response, next) => {
-    const { nome, especie_id: especieId, autor_id: autorId } = request.body;
-
+    let { nome, especie_id: especieId, autor_id: autorId } = request.body;
+    nome = limparEspacos(nome);
     const callback = transaction => Promise.resolve()
         .then(() => {
             if (!autorId) {
@@ -1260,7 +1269,8 @@ export const excluirVariedades = (request, response, next) => {
 };
 
 export const editarVariedade = (request, response, next) => {
-    const { nome, especie_id: especieId, autor_id: autorId } = request.body;
+    let { nome, especie_id: especieId, autor_id: autorId } = request.body;
+    nome = limparEspacos(nome);
     const variedadeId = parseInt(request.params.variedade_id);
 
     const callback = transaction => Promise.resolve()
@@ -1330,8 +1340,9 @@ export const editarVariedade = (request, response, next) => {
 
 // //////////////////AUTORES//////////////////
 export const cadastrarAutores = (request, response, next) => {
-    const { nome, iniciais } = request.body;
-
+    let { nome, iniciais } = request.body;
+    nome = limparEspacos(nome);
+    iniciais = limparEspacos(iniciais);
     const callback = transaction => Promise.resolve()
         .then(() => Autor.findOne({
             where: {
@@ -1370,7 +1381,7 @@ export const buscarAutores = async (request, response, next) => {
             try {
                 autor = autor.replace(/\+/g, ' ');
                 autor = decodeURIComponent(autor);
-            } catch (e) {
+            } catch {
                 throw new BadRequestExeption(513);
             }
         }
@@ -1464,7 +1475,9 @@ export const excluirAutores = (request, response, next) => {
 };
 
 export const editarAutores = (request, response, next) => {
-    const { nome, iniciais } = request.body;
+    let { nome, iniciais } = request.body;
+    nome = limparEspacos(nome);
+    iniciais = limparEspacos(iniciais)
     const autorId = parseInt(request.params.autor_id);
 
     const callback = transaction => Promise.resolve()

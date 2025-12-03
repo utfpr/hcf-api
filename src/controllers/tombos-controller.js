@@ -13,6 +13,7 @@ import models from '../models';
 import codigos from '../resources/codigos-http';
 import verifyRecaptcha from '../utils/verify-recaptcha';
 import { aprovarPendencia } from './pendencias-controller';
+import limparEspacos from '@/helpers/limpa-espaco';
 
 const {
     Solo, Relevo, Cidade, Estado, Vegetacao, FaseSucessional, Pais, Tipo, LocalColeta, Familia, sequelize,
@@ -137,7 +138,7 @@ export const cadastro = (request, response, next) => {
                 }
                 return undefined;
             })
-        // //////////////CRIA COLECOES ANEXAS///////////
+            // //////////////CRIA COLECOES ANEXAS///////////
             .then(() => {
                 if (colecoesAnexas) {
                     const object = pick(colecoesAnexas, ['tipo', 'observacoes']);
@@ -154,7 +155,7 @@ export const cadastro = (request, response, next) => {
                 }
                 return undefined;
             })
-        // ///////// VALIDA A TAXONOMIA E A INSERE NO NOME CIENTIFICO //////////
+            // ///////// VALIDA A TAXONOMIA E A INSERE NO NOME CIENTIFICO //////////
             .then(() => {
                 if (taxonomia && taxonomia.familia_id) {
                     return Familia.findOne({
@@ -276,7 +277,7 @@ export const cadastro = (request, response, next) => {
                 }
                 return undefined;
             })
-        // /////////// CADASTRA TOMBO /////////////
+            // /////////// CADASTRA TOMBO /////////////
             .then(() => {
                 let jsonTombo = {
                     data_coleta_dia: principal.data_coleta.dia,
@@ -339,7 +340,7 @@ export const cadastro = (request, response, next) => {
                 }
                 return Tombo.create(jsonTombo, { transaction });
             })
-        // //////////// CADASTRA A ALTERACAO ///////////
+            // //////////// CADASTRA A ALTERACAO ///////////
             .then(tombo => {
                 if (!tombo) {
                     throw new BadRequestExeption(408);
@@ -385,7 +386,7 @@ export const cadastro = (request, response, next) => {
                     return alteracaoTomboCriado;
                 });
             })
-        // /////////////// CADASTRA O INDETIFICADOR ///////////////
+            // /////////////// CADASTRA O INDETIFICADOR ///////////////
             .then(alteracaoTomboCriado => {
                 if (!alteracaoTomboCriado) {
                     throw new BadRequestExeption(409);
@@ -849,11 +850,11 @@ export const getDadosCadTombo = (request, response, next) => {
 };
 
 export const cadastrarTipo = (request, response, next) => {
+    let { nome } = request.body;
+    nome = limparEspacos(nome);
     const callback = transaction => Promise.resolve()
         .then(() => Tipo.findOne({
-            where: {
-                nome: request.body.nome,
-            },
+            where: { nome },
             transaction,
         }))
         .then(tipoEncontrado => {
@@ -861,12 +862,7 @@ export const cadastrarTipo = (request, response, next) => {
                 throw new BadRequestExeption(412);
             }
         })
-        .then(() => Tipo.create(
-            {
-                nome: request.body.nome,
-            },
-            transaction,
-        ));
+        .then(() => Tipo.create({ nome }, transaction));
     sequelize.transaction(callback)
         .then(() => {
             response.status(codigos.CADASTRO_SEM_RETORNO).send();
@@ -886,12 +882,13 @@ export const buscarTipos = (request, response, next) => {
 };
 
 export const cadastrarColetores = (request, response, next) => {
+    let { nome, email } = request.body;
+    nome = limparEspacos(nome);
+    email = limparEspacos(email);
+
     const callback = transaction => Promise.resolve()
         .then(() => Coletor.findOne({
-            where: {
-                nome: request.body.nome,
-                email: request.body.email,
-            },
+            where: { nome, email },
             transaction,
         }))
         .then(coletorEncontrado => {
@@ -899,10 +896,7 @@ export const cadastrarColetores = (request, response, next) => {
                 throw new BadRequestExeption(413);
             }
         })
-        .then(() => Coletor.create({
-            nome: request.body.nome,
-            email: request.body.email,
-        }, transaction));
+        .then(() => Coletor.create({ nome, email }, transaction));
     sequelize.transaction(callback)
         .then(coletor => {
             if (!coletor) {
@@ -1117,12 +1111,12 @@ export const obterTombo = async (request, response, next) => {
                     idVegetacaoInicial: tombo.vegetaco !== null ? tombo.vegetaco?.id : '',
                     vegetacaoInicial: tombo.vegetaco !== null ? tombo.vegetaco?.nome : '',
                     faseInicial:
-            tombo.locais_coletum !== null && tombo.locais_coletum?.fase_sucessional !== null ? tombo.locais_coletum?.fase_sucessional?.numero : '',
+                        tombo.locais_coletum !== null && tombo.locais_coletum?.fase_sucessional !== null ? tombo.locais_coletum?.fase_sucessional?.numero : '',
                     coletor: tombo.coletore
                         ? {
-                                id: tombo.coletore?.id,
-                                nome: tombo.coletore?.nome,
-                            }
+                            id: tombo.coletore?.id,
+                            nome: tombo.coletore?.nome,
+                        }
                         : null,
                     colecaoInicial: tombo.colecoes_anexa !== null ? tombo.colecoes_anexa?.tipo : '',
                     complementoInicial: tombo.localizacao !== null && tombo.localizacao !== undefined ? tombo.localizacao?.complemento : '',
@@ -1158,7 +1152,7 @@ export const obterTombo = async (request, response, next) => {
                         relevo: tombo.relevo !== null ? tombo.relevo?.nome : '',
                         vegetacao: tombo.vegetaco !== null ? tombo.vegetaco?.nome : '',
                         fase_sucessional:
-                  tombo.locais_coletum !== null && tombo.locais_coletum?.fase_sucessional !== null ? tombo.locais_coletum?.fase_sucessional : '',
+                            tombo.locais_coletum !== null && tombo.locais_coletum?.fase_sucessional !== null ? tombo.locais_coletum?.fase_sucessional : '',
                     },
                     taxonomia: {
                         nome_cientifico: tombo.nome_cientifico !== null ? tombo.nome_cientifico : '',

@@ -6,6 +6,7 @@ import { comparaSenha, gerarSenha } from '../helpers/senhas';
 import { constroiPayloadUsuario, geraTokenResetSenha, geraTokenUsuario } from '../helpers/tokens';
 import models from '../models';
 import codigos from '../resources/codigos-http';
+import limparEspacos from '../helpers/limpa-espaco';
 
 const {
     Sequelize: { Op }, Usuario, TipoUsuario, Coletor, Identificador,
@@ -157,7 +158,11 @@ export const listagem = (request, response, next) => {
 
 export const cadastro = (request, response, next) => {
     const { body } = request;
-
+    let { email, nome } = request.body;
+    email = limparEspacos(email);
+    nome = limparEspacos(nome);
+    request.body.email = email;
+    request.body.nome = nome;
     Promise.resolve()
         .then(() => encontraUsuarioAtivoPorEmail(body.email))
         .then(usuario => {
@@ -179,6 +184,9 @@ export const cadastro = (request, response, next) => {
 
 export const editar = (request, response, next) => {
     const { body, params } = request;
+    let { email, nome } = body;
+    if (email) body.email = limparEspacos(email);
+    if (nome) body.nome = limparEspacos(nome);
     const usuarioId = parseInt(params.usuario_id);
     Promise.resolve()
         .then(() => encontraUsuarioAtivoPorEmail(body.email))

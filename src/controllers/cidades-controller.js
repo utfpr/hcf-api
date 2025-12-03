@@ -1,5 +1,5 @@
 import { Op } from 'sequelize';
-
+import limparEspacos from '../helpers/limpa-espaco';
 import pick from '~/helpers/pick';
 
 import BadRequestException from '../errors/bad-request-exception';
@@ -10,8 +10,8 @@ import verifyRecaptcha from '../utils/verify-recaptcha';
 const { Cidade, LocalColeta, Tombo, Reino, Familia, Subfamilia, Genero, Especie, Subespecie, Variedade, sequelize } = models;
 
 export const cadastrarCidade = (req, res, next) => {
-    const { nome, estado_id: estadoId, latitude, longitude } = req.body;
-
+    let { nome, estado_id: estadoId, latitude, longitude } = req.body;
+    nome = limparEspacos(nome);
     const callback = async transaction => {
         const cidadeEncontrada = await Cidade.findOne({
             where: { nome, estado_id: estadoId },
@@ -47,7 +47,10 @@ export const cadastrarCidade = (req, res, next) => {
 export const atualizarCidade = async (req, res, next) => {
     try {
         const { cidadeId } = req.params;
-        const dados = pick(req.body, ['nome', 'estado_id', 'latitude', 'longitude']);
+        let dados = pick(req.body, ['nome', 'estado_id', 'latitude', 'longitude']);
+        if (dados.nome) {
+            dados.nome = limparEspacos(dados.nome);
+        }
         const cidadeAtual = await Cidade.findOne({ where: { id: cidadeId } });
         if (!cidadeAtual) {
             return res.status(404).json({

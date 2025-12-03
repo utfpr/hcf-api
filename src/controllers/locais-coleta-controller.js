@@ -1,5 +1,5 @@
 import pick from '~/helpers/pick';
-
+import limparEspacos from '../helpers/limpa-espaco';
 import BadRequestExeption from '../errors/bad-request-exception';
 import models from '../models';
 import codigos from '../resources/codigos-http';
@@ -9,8 +9,8 @@ const {
 } = models;
 
 export const cadastrarSolo = (request, response, next) => {
-    const { nome } = request.body;
-
+    let { nome } = request.body;
+    if (nome) nome = limparEspacos(nome);
     const callback = transaction => Promise.resolve()
         .then(() => Solo.findOne({
             where: {
@@ -35,7 +35,8 @@ export const cadastrarSolo = (request, response, next) => {
 };
 
 export const cadastrarRelevo = (request, response, next) => {
-    const { nome } = request.body;
+    let { nome } = request.body;
+    if (nome) nome = limparEspacos(nome);
 
     const callback = transaction => Promise.resolve()
         .then(() => Relevo.findOne({
@@ -61,7 +62,8 @@ export const cadastrarRelevo = (request, response, next) => {
 };
 
 export const cadastrarVegetacao = (request, response, next) => {
-    const { nome } = request.body;
+    let { nome } = request.body;
+    if (nome) nome = limparEspacos(nome);
 
     const callback = transaction => Promise.resolve()
         .then(() => Vegetacao.findOne({
@@ -236,9 +238,11 @@ export const buscarLocalColetaPorId = async (request, response, next) => {
         const localColeta = await LocalColeta.findOne({
             where: { id },
             include: [
-                { model: Cidade,
+                {
+                    model: Cidade,
                     include: [
-                        { model: Estado,
+                        {
+                            model: Estado,
                             include: [
                                 Pais,
                             ],
@@ -266,7 +270,6 @@ export const atualizarLocalColeta = async (request, response, next) => {
     try {
         const { id } = request.params;
         const dados = pick(request.body, ['descricao', 'complemento', 'cidade_id', 'fase_sucessional_id']);
-
         const [updated] = await LocalColeta.update(dados, {
             where: { id },
         });
