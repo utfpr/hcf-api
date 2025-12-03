@@ -1,7 +1,8 @@
 import { Op } from 'sequelize';
+
+import BadRequestException from '../errors/bad-request-exception';
 import limparEspacos from '../helpers/limpa-espaco';
 import pick from '~/helpers/pick';
-import BadRequestException from '../errors/bad-request-exception';
 import models from '../models';
 import codigos from '../resources/codigos-http';
 import verifyRecaptcha from '../utils/verify-recaptcha';

@@ -1,5 +1,6 @@
-import limparEspacos from '@/helpers/limpa-espaco';
 import BadRequestExeption from '../errors/bad-request-exception';
+
+import limparEspacos from '@/helpers/limpa-espaco';
 import models from '../models';
 import codigos from '../resources/codigos-http';
 import listaTaxonomiasSQL from '../resources/sqls/lista-taxonomias';

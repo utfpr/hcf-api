@@ -106,7 +106,7 @@ export const desativaColetor = async (req, res, next) => {
 
         if (tombosAssociados > 0) {
             throw new BadRequestException(
-                'Coletor não pode ser excluído porque possui dependentes.'
+                'Coletor não pode ser excluído porque possui dependentes.',
             );
         }
 
