@@ -1,4 +1,5 @@
 import BadRequestException from '../errors/bad-request-exception';
+import limparEspacos from '../helpers/limpa-espaco';
 import models from '../models';
 import codigos from '../resources/codigos-http';
 
@@ -6,6 +7,7 @@ const { Identificador, Sequelize: { Op } } = models;
 
 export const cadastraIdentificador = async (req, res, next) => {
     try {
+        if (req.body.nome) req.body.nome = limparEspacos(req.body.nome);
         const identificador = await Identificador.create(req.body);
         res.status(codigos.CADASTRO_RETORNO).json(identificador);
     } catch (error) {
@@ -34,7 +36,8 @@ export const encontradaIdentificador = async (req, res, next) => {
 
 export const listaIdentificadores = async (req, res, next) => {
     try {
-        const { id, nome } = req.query;
+        let { id, nome } = req.query;
+        if (nome) nome = limparEspacos(nome);
         const { limite, pagina } = req.paginacao;
         const offset = (pagina - 1) * limite;
 
@@ -69,6 +72,7 @@ export const listaIdentificadores = async (req, res, next) => {
 
 export const atualizaIdentificador = async (req, res, next) => {
     try {
+        if (req.body.nome) req.body.nome = limparEspacos(req.body.nome);
         const { id } = req.params;
         const [updated] = await Identificador.update(req.body, {
             where: { id },
