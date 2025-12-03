@@ -1,12 +1,11 @@
 import nodemailer from 'nodemailer';
-
 import { UserRegistrationDTO } from '../dtos/UserRegistrationDTO';
 import BadRequestExeption from '../errors/bad-request-exception';
+import limparEspacos from '../helpers/limpa-espaco';
 import { comparaSenha, gerarSenha } from '../helpers/senhas';
 import { constroiPayloadUsuario, geraTokenResetSenha, geraTokenUsuario } from '../helpers/tokens';
 import models from '../models';
 import codigos from '../resources/codigos-http';
-import limparEspacos from '../helpers/limpa-espaco';
 
 const {
     Sequelize: { Op }, Usuario, TipoUsuario, Coletor, Identificador,

@@ -1,7 +1,7 @@
 import BadRequestException from '../errors/bad-request-exception';
+import limparEspacos from '../helpers/limpa-espaco';
 import models from '../models';
 import codigos from '../resources/codigos-http';
-import limparEspacos from '../helpers/limpa-espaco';
 
 const { Coletor, Sequelize: { Op } } = models;
 

@@ -1,9 +1,9 @@
 import BadRequestExeption from '../errors/bad-request-exception';
 import NotFoundExeption from '../errors/not-found-exception';
+import limparEspacos from '../helpers/limpa-espaco';
 import omit from '../helpers/omit';
 import models from '../models';
 import codigos from '../resources/codigos-http';
-import limparEspacos from '../helpers/limpa-espaco';
 
 const {
     sequelize,

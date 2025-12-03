@@ -1404,7 +1404,7 @@ export const buscarAutores = async (request, response, next) => {
 
         const order = [
             ...(autor ? [[prioridadeLiteral, 'DESC']] : []),
-            ...orderClause
+            ...orderClause,
         ];
 
         const result = await Autor.findAndCountAll({
@@ -1412,12 +1412,12 @@ export const buscarAutores = async (request, response, next) => {
             order,
             limit: limite,
             offset,
-            where
+            where,
         });
 
         return response.status(codigos.LISTAGEM).json({
             metadados: { total: result.count, pagina, limite },
-            resultado: result.rows
+            resultado: result.rows,
         });
 
     } catch (err) {
@@ -1477,7 +1477,7 @@ export const excluirAutores = (request, response, next) => {
 export const editarAutores = (request, response, next) => {
     let { nome, iniciais } = request.body;
     nome = limparEspacos(nome);
-    iniciais = limparEspacos(iniciais)
+    iniciais = limparEspacos(iniciais);
     const autorId = parseInt(request.params.autor_id);
 
     const callback = transaction => Promise.resolve()
