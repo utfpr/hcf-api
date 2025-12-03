@@ -20,7 +20,7 @@ export async function run(knex: Knex): Promise<void> {
     { table: 'cidades', columns: ['nome'] },
     { table: 'estados', columns: ['nome', 'sigla'] },
     { table: 'paises', columns: ['nome', 'sigla'] },
-    { table: 'tipos', columns: ['nome'] },
+    { table: 'tipos', columns: ['nome'] }
   ]
 
   for (const item of updates) {
