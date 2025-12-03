@@ -1,21 +1,14 @@
 import { ForeignKeyConstraintError } from 'sequelize';
 
 import { padronizarNomeDarwincore } from '~/helpers/padroniza-nome-darwincore';
-import limparEspacos from '@/helpers/limpa-espaco';
 
 import BadRequestExeption from '../errors/bad-request-exception';
 import NotFoundException from '../errors/not-found-exception';
-
 import {
-    converteParaDecimal,
-    converteDecimalParaGraus,
-    converteDecimalParaGMSGrau,
-    converteDecimalParaGMSMinutos,
-    converteDecimalParaGMSSegundos,
+    converteParaDecimal, converteDecimalParaGraus, converteDecimalParaGMSGrau, converteDecimalParaGMSMinutos, converteDecimalParaGMSSegundos,
 } from '../helpers/coordenadas';
 import pick from '../helpers/pick';
 import { converteInteiroParaRomano } from '../helpers/tombo';
-
 import models from '../models';
 import codigos from '../resources/codigos-http';
 import verifyRecaptcha from '../utils/verify-recaptcha';
@@ -128,8 +121,23 @@ export const cadastro = (request, response, next) => {
                 return undefined;
             })
             .then(() => {
+                if (!localidade?.cidade_id) {
+                    throw new BadRequestExeption(534);
+                }
+                return Cidade.findOne({
+                    where: { id: localidade.cidade_id },
+                    transaction,
+                });
+            })
+            .then(cidade => {
+                if (!cidade) {
+                    throw new BadRequestExeption(534);
+                }
+                return undefined;
+            })
+            .then(() => {
                 if (!localidade?.local_coleta_id) {
-                    throw new BadRequestExeption(400);
+                    return undefined;
                 }
                 return LocalColeta.findOne({
                     where: {
@@ -139,12 +147,17 @@ export const cadastro = (request, response, next) => {
                 });
             })
             .then(localColeta => {
-                if (!localColeta) {
-                    throw new BadRequestExeption(533);
+                if (localidade?.local_coleta_id) {
+                    if (!localColeta) {
+                        throw new BadRequestExeption(533);
+                    }
+                    if (localColeta.cidade_id !== localidade.cidade_id) {
+                        throw new BadRequestExeption(535);
+                    }
                 }
                 return undefined;
             })
-            // //////////////CRIA COLECOES ANEXAS///////////
+        // //////////////CRIA COLECOES ANEXAS///////////
             .then(() => {
                 if (colecoesAnexas) {
                     const object = pick(colecoesAnexas, ['tipo', 'observacoes']);
@@ -161,7 +174,7 @@ export const cadastro = (request, response, next) => {
                 }
                 return undefined;
             })
-            // ///////// VALIDA A TAXONOMIA E A INSERE NO NOME CIENTIFICO //////////
+        // ///////// VALIDA A TAXONOMIA E A INSERE NO NOME CIENTIFICO //////////
             .then(() => {
                 if (taxonomia && taxonomia.familia_id) {
                     return Familia.findOne({
@@ -283,20 +296,24 @@ export const cadastro = (request, response, next) => {
                 }
                 return undefined;
             })
-            // /////////// CADASTRA TOMBO /////////////
+        // /////////// CADASTRA TOMBO /////////////
             .then(() => {
                 let jsonTombo = {
                     data_coleta_dia: principal.data_coleta.dia,
                     data_coleta_mes: principal.data_coleta.mes,
                     data_coleta_ano: principal.data_coleta.ano,
                     numero_coleta: principal.numero_coleta,
-                    local_coleta_id: localidade.local_coleta_id,
+                    cidade_id: localidade.cidade_id,
                     coletor_id: coletor,
                     data_tombo: parseDataTombo(principal.data_tombo),
                 };
 
                 if (paisagem?.descricao) {
                     jsonTombo.descricao = paisagem.descricao;
+                }
+
+                if (localidade.local_coleta_id) {
+                    jsonTombo.local_coleta_id = localidade.local_coleta_id;
                 }
 
                 if (observacoes) {
@@ -346,7 +363,7 @@ export const cadastro = (request, response, next) => {
                 }
                 return Tombo.create(jsonTombo, { transaction });
             })
-            // //////////// CADASTRA A ALTERACAO ///////////
+        // //////////// CADASTRA A ALTERACAO ///////////
             .then(tombo => {
                 if (!tombo) {
                     throw new BadRequestExeption(408);
@@ -392,7 +409,7 @@ export const cadastro = (request, response, next) => {
                     return alteracaoTomboCriado;
                 });
             })
-            // /////////////// CADASTRA O INDETIFICADOR ///////////////
+        // /////////////// CADASTRA O INDETIFICADOR ///////////////
             .then(alteracaoTomboCriado => {
                 if (!alteracaoTomboCriado) {
                     throw new BadRequestExeption(409);
@@ -525,6 +542,9 @@ function alteracaoCuradorouOperador(request, response, transaction) {
 
     const altitude = body?.localidade?.altitude;
     if (altitude !== undefined) update.altitude = altitude;
+
+    const cidadeId = body?.localidade?.cidade_id;
+    if (cidadeId !== undefined) update.cidade_id = cidadeId;
 
     const localColeta = body?.localidade?.local_coleta_id;
     if (localColeta !== undefined) update.local_coleta_id = localColeta;
@@ -856,11 +876,11 @@ export const getDadosCadTombo = (request, response, next) => {
 };
 
 export const cadastrarTipo = (request, response, next) => {
-    let { nome } = request.body;
-    nome = limparEspacos(nome);
     const callback = transaction => Promise.resolve()
         .then(() => Tipo.findOne({
-            where: { nome },
+            where: {
+                nome: request.body.nome,
+            },
             transaction,
         }))
         .then(tipoEncontrado => {
@@ -868,7 +888,12 @@ export const cadastrarTipo = (request, response, next) => {
                 throw new BadRequestExeption(412);
             }
         })
-        .then(() => Tipo.create({ nome }, transaction));
+        .then(() => Tipo.create(
+            {
+                nome: request.body.nome,
+            },
+            transaction,
+        ));
     sequelize.transaction(callback)
         .then(() => {
             response.status(codigos.CADASTRO_SEM_RETORNO).send();
@@ -888,13 +913,12 @@ export const buscarTipos = (request, response, next) => {
 };
 
 export const cadastrarColetores = (request, response, next) => {
-    let { nome, email } = request.body;
-    nome = limparEspacos(nome);
-    email = limparEspacos(email);
-
     const callback = transaction => Promise.resolve()
         .then(() => Coletor.findOne({
-            where: { nome, email },
+            where: {
+                nome: request.body.nome,
+                email: request.body.email,
+            },
             transaction,
         }))
         .then(coletorEncontrado => {
@@ -902,7 +926,10 @@ export const cadastrarColetores = (request, response, next) => {
                 throw new BadRequestExeption(413);
             }
         })
-        .then(() => Coletor.create({ nome, email }, transaction));
+        .then(() => Coletor.create({
+            nome: request.body.nome,
+            email: request.body.email,
+        }, transaction));
     sequelize.transaction(callback)
         .then(coletor => {
             if (!coletor) {
@@ -1009,21 +1036,21 @@ export const obterTombo = async (request, response, next) => {
                             },
                         },
                         {
-                            model: LocalColeta,
+                            model: Cidade,
                             include: [
                                 {
-                                    model: Cidade,
+                                    model: Estado,
                                     include: [
                                         {
-                                            model: Estado,
-                                            include: [
-                                                {
-                                                    model: Pais,
-                                                },
-                                            ],
+                                            model: Pais,
                                         },
                                     ],
                                 },
+                            ],
+                        },
+                        {
+                            model: LocalColeta,
+                            include: [
                                 {
                                     model: FaseSucessional,
                                     attributes: {
@@ -1100,9 +1127,9 @@ export const obterTombo = async (request, response, next) => {
                 resposta = {
                     herbarioInicial: tombo.herbario !== null ? tombo.herbario?.id : '',
                     tipoInicial: tombo.tipo !== null ? tombo.tipo?.id : '',
-                    paisInicial: tombo.locais_coletum.cidade?.estado?.paise !== null ? tombo.locais_coletum.cidade?.estado?.paise?.id : '',
-                    estadoInicial: tombo.locais_coletum.cidade?.estado !== null ? tombo.locais_coletum.cidade?.estado?.id : '',
-                    cidadeInicial: tombo.locais_coletum.cidade !== null ? tombo.locais_coletum?.cidade?.id : '',
+                    paisInicial: tombo.cidade?.estado?.paise?.id ?? '',
+                    estadoInicial: tombo.cidade?.estado?.id ?? '',
+                    cidadeInicial: tombo.cidade !== null ? tombo.cidade?.id : tombo.cidade_id ?? '',
                     reinoInicial: tombo.reino !== null ? tombo.reino?.id : '',
                     familiaInicial: tombo.familia !== null ? tombo.familia?.id : '',
                     subfamiliaInicial: tombo.sub_familia !== null ? tombo.sub_familia?.id : '',
@@ -1117,12 +1144,12 @@ export const obterTombo = async (request, response, next) => {
                     idVegetacaoInicial: tombo.vegetaco !== null ? tombo.vegetaco?.id : '',
                     vegetacaoInicial: tombo.vegetaco !== null ? tombo.vegetaco?.nome : '',
                     faseInicial:
-                        tombo.locais_coletum !== null && tombo.locais_coletum?.fase_sucessional !== null ? tombo.locais_coletum?.fase_sucessional?.numero : '',
+            tombo.locais_coletum !== null && tombo.locais_coletum?.fase_sucessional !== null ? tombo.locais_coletum?.fase_sucessional?.numero : '',
                     coletor: tombo.coletore
                         ? {
-                            id: tombo.coletore?.id,
-                            nome: tombo.coletore?.nome,
-                        }
+                                id: tombo.coletore?.id,
+                                nome: tombo.coletore?.nome,
+                            }
                         : null,
                     colecaoInicial: tombo.colecoes_anexa !== null ? tombo.colecoes_anexa?.tipo : '',
                     complementoInicial: tombo.localizacao !== null && tombo.localizacao !== undefined ? tombo.localizacao?.complemento : '',
@@ -1146,10 +1173,10 @@ export const obterTombo = async (request, response, next) => {
                         long_min: tombo.longitude !== null ? converteDecimalParaGMSMinutos(tombo.longitude, false) : '',
                         long_sec: tombo.longitude !== null ? converteDecimalParaGMSSegundos(tombo.longitude, false) : '',
                         altitude: tombo.altitude !== null ? tombo.altitude : '',
-                        cidade: tombo.locais_coletum !== null && tombo.locais_coletum.cidade !== null ? tombo.locais_coletum?.cidade?.nome : '',
-                        estado: tombo.locais_coletum !== null && tombo.locais_coletum.cidade !== null ? tombo.locais_coletum.cidade?.estado?.nome : '',
-                        pais: tombo.locais_coletum !== null && tombo.locais_coletum.cidade !== null ? tombo.locais_coletum.cidade.estado?.paise?.nome : '',
-                        complemento: tombo.locais_coletum?.complemento !== null ? tombo.locais_coletum?.complemento : '',
+                        cidade: tombo.cidade?.nome ?? '',
+                        estado: tombo.cidade?.estado?.nome ?? '',
+                        pais: tombo.cidade?.estado?.paise?.nome ?? '',
+                        complemento: tombo.complemento !== null ? tombo.complemento : '',
                     },
                     local_coleta: {
                         id: tombo.locais_coletum !== null ? tombo.locais_coletum?.id : '',
@@ -1158,7 +1185,7 @@ export const obterTombo = async (request, response, next) => {
                         relevo: tombo.relevo !== null ? tombo.relevo?.nome : '',
                         vegetacao: tombo.vegetaco !== null ? tombo.vegetaco?.nome : '',
                         fase_sucessional:
-                            tombo.locais_coletum !== null && tombo.locais_coletum?.fase_sucessional !== null ? tombo.locais_coletum?.fase_sucessional : '',
+                  tombo.locais_coletum !== null && tombo.locais_coletum?.fase_sucessional !== null ? tombo.locais_coletum?.fase_sucessional : '',
                     },
                     taxonomia: {
                         nome_cientifico: tombo.nome_cientifico !== null ? tombo.nome_cientifico : '',
@@ -1236,7 +1263,7 @@ export const obterTombo = async (request, response, next) => {
             .then(() =>
                 Estado.findAll({
                     where: {
-                        pais_id: dadosTombo.locais_coletum.cidade?.estado?.paise?.id,
+                        pais_id: dadosTombo.cidade.estado?.paise?.id,
                     },
                 }),
             )
@@ -1245,7 +1272,7 @@ export const obterTombo = async (request, response, next) => {
             .then(() =>
                 Cidade.findAll({
                     where: {
-                        estado_id: dadosTombo.locais_coletum.cidade?.estado?.id,
+                        estado_id: dadosTombo.cidade.estado?.id,
                     },
                 }),
             )
