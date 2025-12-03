@@ -1,11 +1,13 @@
 import { Op } from 'sequelize';
 
+import pick from '~/helpers/pick';
+
 import BadRequestException from '../errors/bad-request-exception';
 import limparEspacos from '../helpers/limpa-espaco';
-import pick from '~/helpers/pick';
 import models from '../models';
 import codigos from '../resources/codigos-http';
 import verifyRecaptcha from '../utils/verify-recaptcha';
+
 const { Cidade, LocalColeta, Tombo, Reino, Familia, Subfamilia, Genero, Especie, Subespecie, Variedade, sequelize } = models;
 
 export const cadastrarCidade = (req, res, next) => {

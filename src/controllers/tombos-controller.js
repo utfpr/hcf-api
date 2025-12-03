@@ -1,6 +1,11 @@
 import { ForeignKeyConstraintError } from 'sequelize';
 
 import { padronizarNomeDarwincore } from '~/helpers/padroniza-nome-darwincore';
+import limparEspacos from '@/helpers/limpa-espaco';
+
+import BadRequestExeption from '../errors/bad-request-exception';
+import NotFoundException from '../errors/not-found-exception';
+
 import {
     converteParaDecimal,
     converteDecimalParaGraus,
@@ -8,12 +13,8 @@ import {
     converteDecimalParaGMSMinutos,
     converteDecimalParaGMSSegundos,
 } from '../helpers/coordenadas';
-import limparEspacos from '@/helpers/limpa-espaco';
 import pick from '../helpers/pick';
 import { converteInteiroParaRomano } from '../helpers/tombo';
-
-import BadRequestExeption from '../errors/bad-request-exception';
-import NotFoundException from '../errors/not-found-exception';
 
 import models from '../models';
 import codigos from '../resources/codigos-http';
