@@ -1447,6 +1447,22 @@ export const aprovarPendencia = async (alteracao, hcf, transaction) => {
         updateTombo.vegetacao_id = alteracao.vegetacao_id;
     }
 
+    if (alteracao.fase_sucessional_id !== undefined) {
+        if (alteracao.fase_sucessional_id !== null) {
+            const faseSucessional = await FaseSucessional.findOne({
+                where: { numero: alteracao.fase_sucessional_id },
+                transaction,
+                raw: true,
+                nest: true,
+            });
+
+            if (!faseSucessional) {
+                throw new BadRequestExeption(404);
+            }
+        }
+        updateTombo.fase_sucessional_id = alteracao.fase_sucessional_id;
+    }
+
     if (alteracao.coletor_id !== undefined) {
         if (alteracao.coletor_id !== null) {
             const coletor = await Coletor.findOne({
@@ -1876,7 +1892,7 @@ export async function visualizar(request, response, next) {
                 { model: Variedade }, { model: Especie }, { model: Familia },
                 { model: Subfamilia }, { model: Genero }, { model: Subespecie },
                 { model: Herbario }, { model: Tipo }, { model: Coletor }, { model: ColetorComplementar, as: 'coletor_complementar' },
-                { model: Solo }, { model: Relevo }, { model: Vegetacao }, { model: ColecaoAnexa },
+                { model: Solo }, { model: Relevo }, { model: Vegetacao }, { model: ColecaoAnexa }, { model: FaseSucessional },
                 {
                     model: LocalColeta,
                     as: 'locais_coletum',
@@ -2051,6 +2067,11 @@ export async function visualizar(request, response, next) {
             addRetorno('23', 'Vegetação', antigoVegetacao, parametros.vegetacao?.nome || '');
         }
 
+        if (parametros.fase_sucessional_id !== undefined) {
+            const antigoFaseSucessional = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.fase_sucessional?.nome || '');
+            addRetorno('24', 'Fase Sucessional', antigoFaseSucessional, parametros.fase_sucessional_id);
+        }
+
         if (parametros.identificadores !== undefined) {
             const identificadoresAtuais = await TomboIdentificador.findAll({
                 attributes: ['tombo_hcf', 'identificador_id', 'ordem'],
@@ -2065,37 +2086,37 @@ export async function visualizar(request, response, next) {
             const nomesAntigos = identificadoresAtuais.map(ident => ident.identificadore?.nome || '').join(', ');
             const antigoIdentificadores = (alteracaoAprovada || ehRascunho) ? '' : nomesAntigos;
 
-            addRetorno('24', 'Identificadores', antigoIdentificadores, nomesNovos);
+            addRetorno('25', 'Identificadores', antigoIdentificadores, nomesNovos);
         }
 
         if (parametros.data_identificacao_dia !== undefined) {
             const antigoDataIdentDia = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.data_identificacao_dia || '');
-            addRetorno('25', 'Data de identificação dia', antigoDataIdentDia, parametros.data_identificacao_dia);
+            addRetorno('26', 'Data de identificação dia', antigoDataIdentDia, parametros.data_identificacao_dia);
         }
 
         if (parametros.data_identificacao_mes !== undefined) {
             const antigoDataIdentMes = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.data_identificacao_mes || '');
-            addRetorno('26', 'Data de identificação mês', antigoDataIdentMes, parametros.data_identificacao_mes);
+            addRetorno('27', 'Data de identificação mês', antigoDataIdentMes, parametros.data_identificacao_mes);
         }
 
         if (parametros.data_identificacao_ano !== undefined) {
             const antigoDataIdentAno = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.data_identificacao_ano || '');
-            addRetorno('27', 'Data de identificação ano', antigoDataIdentAno, parametros.data_identificacao_ano);
+            addRetorno('28', 'Data de identificação ano', antigoDataIdentAno, parametros.data_identificacao_ano);
         }
 
         if (objetoAlterado.colecoes_anexas_tipo !== undefined) {
             const antigoTipoColecao = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.colecoes_anexa?.tipo || '');
-            addRetorno('28', 'Tipo - Coleção Anexa', antigoTipoColecao, objetoAlterado.colecoes_anexas_tipo);
+            addRetorno('29', 'Tipo - Coleção Anexa', antigoTipoColecao, objetoAlterado.colecoes_anexas_tipo);
         }
 
         if (parametros.colecoes_anexas_observacoes !== undefined) {
             const antigoObsColecao = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.colecoes_anexa?.observacoes || '');
-            addRetorno('29', 'Observações - Coleção Anexa', antigoObsColecao, parametros.colecoes_anexas_observacoes);
+            addRetorno('30', 'Observações - Coleção Anexa', antigoObsColecao, parametros.colecoes_anexas_observacoes);
         }
 
         if (parametros.observacoes !== undefined) {
             const antigoObservacoes = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.observacao || '');
-            addRetorno('30', 'Observações', antigoObservacoes, parametros.observacoes);
+            addRetorno('31', 'Observações', antigoObservacoes, parametros.observacoes);
         }
 
         if (parametros.unicata !== undefined) {
@@ -2107,7 +2128,7 @@ export async function visualizar(request, response, next) {
             }
 
             const unicataNovo = parametros.unicata ? 'Unicata' : 'Duplicata';
-            addRetorno('31', 'Tipo de Exsicata', unicataAntigo, unicataNovo);
+            addRetorno('32', 'Tipo de Exsicata', unicataAntigo, unicataNovo);
         }
 
         const jsonRender = {

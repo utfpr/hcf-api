@@ -352,6 +352,7 @@ export const cadastro = (request, response, next) => {
                     jsonTombo.solo_id = paisagem.solo_id;
                     jsonTombo.relevo_id = paisagem.relevo_id;
                     jsonTombo.vegetacao_id = paisagem.vegetacao_id;
+                    jsonTombo.fase_sucessional_id = paisagem.fase_sucessional_id;
                 }
                 jsonTombo = {
                     ...jsonTombo,
@@ -1045,6 +1046,12 @@ export const obterTombo = async (request, response, next) => {
                             },
                         },
                         {
+                            model: FaseSucessional,
+                            attributes: {
+                                exclude: ['updated_at', 'created_at'],
+                            },
+                        },
+                        {
                             model: Cidade,
                             include: [
                                 {
@@ -1152,14 +1159,8 @@ export const obterTombo = async (request, response, next) => {
                     relevoInicial: tombo.relevo !== null ? tombo.relevo?.nome : '',
                     idVegetacaoInicial: tombo.vegetaco !== null ? tombo.vegetaco?.id : '',
                     vegetacaoInicial: tombo.vegetaco !== null ? tombo.vegetaco?.nome : '',
-                    faseInicial:
-            tombo.locais_coletum !== null && tombo.locais_coletum?.fase_sucessional !== null ? tombo.locais_coletum?.fase_sucessional?.numero : '',
-                    coletor: tombo.coletore
-                        ? {
-                                id: tombo.coletore?.id,
-                                nome: tombo.coletore?.nome,
-                            }
-                        : null,
+                    idFaseInicial: tombo.fase_sucessional !== null ? tombo.fase_sucessional?.numero : '',
+                    faseInicial: tombo.fase_sucessional !== null ? tombo.fase_sucessional?.nome : '',
                     colecaoInicial: tombo.colecoes_anexa !== null ? tombo.colecoes_anexa?.tipo : '',
                     complementoInicial: tombo.localizacao !== null && tombo.localizacao !== undefined ? tombo.localizacao?.complemento : '',
                     hcf: tombo.hcf,
@@ -1193,8 +1194,7 @@ export const obterTombo = async (request, response, next) => {
                         solo: tombo.solo !== null ? tombo.solo?.nome : '',
                         relevo: tombo.relevo !== null ? tombo.relevo?.nome : '',
                         vegetacao: tombo.vegetaco !== null ? tombo.vegetaco?.nome : '',
-                        fase_sucessional:
-                  tombo.locais_coletum !== null && tombo.locais_coletum?.fase_sucessional !== null ? tombo.locais_coletum?.fase_sucessional : '',
+                        fase_sucessional: tombo.fase_sucessional !== null ? tombo.fase_sucessional?.nome : '',
                     },
                     taxonomia: {
                         nome_cientifico: tombo.nome_cientifico !== null ? tombo.nome_cientifico : '',
