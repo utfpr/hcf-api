@@ -1,7 +1,10 @@
+# generated
 dist/
+coverage/
+node_modules/
+
 uploads/
 mysql/data/
-node_modules/
 reports/data/fs.journal
 reports/data/fs.version
 reports/data/profiles
