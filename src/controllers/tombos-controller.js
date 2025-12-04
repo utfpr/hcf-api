@@ -299,14 +299,23 @@ export const cadastro = (request, response, next) => {
         // /////////// CADASTRA TOMBO /////////////
             .then(() => {
                 let jsonTombo = {
-                    data_coleta_dia: principal.data_coleta.dia,
-                    data_coleta_mes: principal.data_coleta.mes,
-                    data_coleta_ano: principal.data_coleta.ano,
                     numero_coleta: principal.numero_coleta,
                     cidade_id: localidade.cidade_id,
                     coletor_id: coletor,
                     data_tombo: parseDataTombo(principal.data_tombo),
                 };
+
+                if (principal.data_coleta) {
+                    if (principal.data_coleta.dia) {
+                        jsonTombo.data_coleta_dia = principal.data_coleta.dia;
+                    }
+                    if (principal.data_coleta.mes) {
+                        jsonTombo.data_coleta_mes = principal.data_coleta.mes;
+                    }
+                    if (principal.data_coleta.ano) {
+                        jsonTombo.data_coleta_ano = principal.data_coleta.ano;
+                    }
+                }
 
                 if (paisagem?.descricao) {
                     jsonTombo.descricao = paisagem.descricao;
