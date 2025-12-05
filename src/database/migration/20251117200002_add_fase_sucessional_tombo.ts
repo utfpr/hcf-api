@@ -19,19 +19,18 @@ export async function run(knex: Knex): Promise<void> {
     }
 
     const fases = [
-      'Estágio Inicial',
-      'Estágio Médio',
-      'Estágio Avançado'
+      { nome: 'Estágio Inicial', numero: 7 },
+      { nome: 'Estágio Médio', numero: 8 },
+      { nome: 'Estágio Avançado', numero: 9 }
     ]
 
     const existentes = await trx<FaseRow>('fase_sucessional')
       .select('nome')
-      .whereIn('nome', fases)
+      .whereIn('nome', fases.map(f => f.nome))
 
     const existentesSet = new Set<string>((existentes ?? []).map(r => r.nome))
     const paraInserir = fases
-      .filter(nome => !existentesSet.has(nome))
-      .map(nome => ({ nome }))
+      .filter(fase => !existentesSet.has(fase.nome))
 
     if (paraInserir.length > 0) {
       await trx('fase_sucessional').insert(paraInserir)
