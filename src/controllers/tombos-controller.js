@@ -1164,6 +1164,12 @@ export const obterTombo = async (request, response, next) => {
                     colecaoInicial: tombo.colecoes_anexa !== null ? tombo.colecoes_anexa?.tipo : '',
                     complementoInicial: tombo.localizacao !== null && tombo.localizacao !== undefined ? tombo.localizacao?.complemento : '',
                     hcf: tombo.hcf,
+                    coletor: tombo.coletore
+                        ? {
+                                id: tombo.coletore?.id,
+                                nome: tombo.coletore?.nome,
+                            }
+                        : null,
                     situacao: tombo.situacao,
                     data_tombo: tombo.data_tombo,
                     observacao: tombo.observacao !== null ? tombo.observacao : '',
