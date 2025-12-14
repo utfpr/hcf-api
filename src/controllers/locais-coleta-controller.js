@@ -155,6 +155,57 @@ export const buscarVegetacoes = (request, response, next) => {
         .catch(next);
 };
 
+export const cadastrarFaseSucessional = (request, response, next) => {
+    const { nome } = request.body;
+
+    const callback = transaction => Promise.resolve()
+        .then(() => FaseSucessional.findOne({
+            where: { nome },
+            transaction,
+        }))
+        .then(faseEncontrada => {
+            if (faseEncontrada) {
+                throw new BadRequestExeption(306);
+            }
+        })
+        .then(() => FaseSucessional.max('numero', { transaction }))
+        .then(maxNumero => {
+            const proximoNumero = (Number(maxNumero) || 0) + 1;
+            return FaseSucessional.create({ numero: proximoNumero, nome }, transaction);
+        });
+
+    sequelize.transaction(callback)
+        .then(faseCriada => {
+            if (!faseCriada) {
+                throw new BadRequestExeption(307);
+            }
+            response.status(codigos.CADASTRO_SEM_RETORNO).send();
+        })
+        .catch(next);
+};
+
+export const buscarFasesSucessionais = (request, response, next) => {
+    let where = {};
+
+    if (request.query.nome) {
+        where = {
+            ...where,
+            nome: { [sequelize.Op.like]: `%${request.query.nome}%` },
+        };
+    }
+
+    Promise.resolve()
+        .then(() => FaseSucessional.findAndCountAll({
+            attributes: ['numero', 'nome'],
+            where,
+            order: [['nome', 'ASC']],
+        }))
+        .then(fases => {
+            response.status(codigos.LISTAGEM).json(fases.rows);
+        })
+        .catch(next);
+};
+
 export const cadastrarLocalColeta = async (request, response, next) => {
     try {
         const dados = pick(request.body, ['descricao', 'complemento', 'cidade_id', 'fase_sucessional_id']);
@@ -203,7 +254,7 @@ export const buscarLocaisColeta = async (request, response, next) => {
         const queryOptions = {
             where,
             include,
-            order: [['id', 'DESC']],
+            order: [[sequelize.literal('LOWER(descricao)'), 'ASC']],
         };
 
         if (getAll !== 'true') {
