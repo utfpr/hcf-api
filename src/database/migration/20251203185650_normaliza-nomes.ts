@@ -2,7 +2,7 @@ import { Knex } from 'knex'
 
 export async function run(knex: Knex): Promise<void> {
   const clean = (col: string) =>
-    knex.raw(`TRIM(REGEXP_REPLACE(${col}, '\\s+', ' '))`)
+    knex.raw(`TRIM(REGEXP_REPLACE(${col}, '\\\\s+', ' '))`)
 
   const updates: { table: string; columns: string[] }[] = [
     { table: 'autores', columns: ['nome'] },
