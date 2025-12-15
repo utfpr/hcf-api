@@ -28,31 +28,67 @@ import {
 export const preparaRequisicao = (request, response) => {
     const { periodicidade } = request.query;
     const proximaAtualizacao = request.query.data_proxima_atualizacao;
+
     selectEstaExecutandoServico(1).then(listaExecucaoReflora => {
         if (listaExecucaoReflora.length > 0) {
-            const periodicidadeBD = listaExecucaoReflora[0].dataValues.periodicidade;
+            const execucao = listaExecucaoReflora[0].dataValues;
+            const periodicidadeBD = execucao.periodicidade;
+
             if (periodicidadeBD === 'MANUAL') {
-                response.status(200).json(JSON.parse(' { "result": "failed" } '));
-            } else if ((periodicidadeBD === 'SEMANAL') || (periodicidadeBD === '1MES') || (periodicidadeBD === '2MESES')) {
-                if (moment().format('DD/MM/YYYY') !== listaExecucaoReflora[0].dataValues.data_proxima_atualizacao) {
-                    const { id } = listaExecucaoReflora[0].dataValues;
-                    atualizaTabelaConfiguracao(1, id, getHoraAtual(), null, periodicidade, proximaAtualizacao).then(() => {
-                        response.status(200).json(JSON.parse(' { "result": "success" } '));
+                response.status(200).json({ result: 'failed' });
+                return;
+            }
+
+            if (
+                periodicidadeBD === 'SEMANAL' ||
+                periodicidadeBD === '1MES' ||
+                periodicidadeBD === '2MESES'
+            ) {
+                const dataProximaAtualizacao = execucao.data_proxima_atualizacao;
+
+                // comparação correta usando DATETIME
+                const podeExecutar =
+                    !dataProximaAtualizacao ||
+                    moment().isAfter(moment(dataProximaAtualizacao), 'day');
+
+                if (podeExecutar) {
+                    atualizaTabelaConfiguracao(
+                        1,
+                        execucao.id,
+                        getHoraAtual(),
+                        null,
+                        periodicidade,
+                        proximaAtualizacao
+                    ).then(() => {
+                        response.status(200).json({ result: 'success' });
                     });
                 } else {
-                    response.status(200).json(JSON.parse(' { "result": "failed" } '));
+                    response.status(200).json({ result: 'failed' });
                 }
             }
         } else {
             selectTemExecucaoServico(1).then(execucaoReflora => {
                 if (execucaoReflora.length === 0) {
-                    insereExecucao(getHoraAtual(), null, periodicidade, proximaAtualizacao, 1).then(() => {
-                        response.status(200).json(JSON.parse(' { "result": "success" } '));
+                    insereExecucao(
+                        getHoraAtual(),
+                        null,
+                        periodicidade,
+                        proximaAtualizacao,
+                        1
+                    ).then(() => {
+                        response.status(200).json({ result: 'success' });
                     });
                 } else {
-                    const { id } = execucaoReflora[0].dataValues;
-                    atualizaTabelaConfiguracao(1, id, getHoraAtual(), null, periodicidade, proximaAtualizacao).then(() => {
-                        response.status(200).json(JSON.parse(' { "result": "success" } '));
+                    const execucao = execucaoReflora[0].dataValues;
+                    atualizaTabelaConfiguracao(
+                        1,
+                        execucao.id,
+                        getHoraAtual(),
+                        null,
+                        periodicidade,
+                        proximaAtualizacao
+                    ).then(() => {
+                        response.status(200).json({ result: 'success' });
                     });
                 }
             });
@@ -78,21 +114,42 @@ export const estaExecutando = (_, response) => {
         response.header('Access-Control-Allow-Origin', '*');
         response.header('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type');
         response.header('Access-Control-Allow-Methods', 'GET');
+
         if (listaExecucaoReflora.length > 0) {
-            const { periodicidade } = listaExecucaoReflora[0].dataValues;
+            const execucao = listaExecucaoReflora[0].dataValues;
+            const { periodicidade } = execucao;
+
             if (periodicidade === 'MANUAL') {
-                response.status(200).json(JSON.parse(' { "executando": true, "periodicidade": " " } '));
-            } else if ((periodicidade === 'SEMANAL') || (periodicidade === '1MES') || (periodicidade === '2MESES')) {
-                if (moment().format('DD/MM/YYYY') !== listaExecucaoReflora[0].dataValues.data_proxima_atualizacao) {
-                    response.status(200).json(JSON.parse(` { "executando": false, "periodicidade": "${periodicidade}" } `));
-                } else {
-                    response.status(200).json(JSON.parse(` { "executando": true, "periodicidade": "${periodicidade}" } `));
-                }
+                response.status(200).json({
+                    executando: true,
+                    periodicidade: ' ',
+                });
+                return;
+            }
+
+            if (
+                periodicidade === 'SEMANAL' ||
+                periodicidade === '1MES' ||
+                periodicidade === '2MESES'
+            ) {
+                const dataProximaAtualizacao = execucao.data_proxima_atualizacao;
+
+                const executando =
+                    dataProximaAtualizacao &&
+                    !moment().isAfter(moment(dataProximaAtualizacao), 'day');
+
+                response.status(200).json({
+                    executando,
+                    periodicidade,
+                });
             }
         } else {
-            response.status(200).json(JSON.parse(' { "executando": false, "periodicidade": " " } '));
+            response.status(200).json({
+                executando: false,
+                periodicidade: ' ',
+            });
         }
     });
 };
 
-export default { };
+export default {};

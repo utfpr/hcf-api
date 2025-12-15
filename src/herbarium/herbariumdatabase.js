@@ -131,11 +131,25 @@ export function selectEstaExecutandoServico(idServico) {
 export function insereExecucao(horaAtual, horaFim, periodicidadeUsuario, proximaAtualizacao, servicoUsuario) {
     const tabelaConfiguracao = modeloConfiguracao(conexao, Sequelize);
     const promessa = Q.defer();
+    const horaInicioFormatada = typeof horaAtual === 'string'
+        ? horaAtual
+        : horaAtual.toISOString().substring(11, 19);
+
+    const horaFimFormatada = horaFim
+        ? (typeof horaFim === 'string'
+            ? horaFim
+            : horaFim.toISOString().substring(11, 19))
+        : null;
+
+    const proximaAtualizacaoISO = proximaAtualizacao
+        ? new Date(proximaAtualizacao)
+        : null;
+
     tabelaConfiguracao.create({
-        hora_inicio: horaAtual,
-        hora_fim: horaFim,
+        hora_inicio: horaInicioFormatada,
+        hora_fim: horaFimFormatada,
         periodicidade: periodicidadeUsuario,
-        data_proxima_atualizacao: proximaAtualizacao,
+        data_proxima_atualizacao: proximaAtualizacaoISO,
         nome_arquivo: null,
         servico: servicoUsuario,
     }).then(() => {
@@ -161,38 +175,50 @@ export function insereExecucao(horaAtual, horaFim, periodicidadeUsuario, proxima
  * @return promessa.promise, como é assíncrono ele só retorna quando resolver, ou seja,
  * quando terminar de realizar a atualização.
  */
-export function atualizaTabelaConfiguracao(idServico, idExecucao, horaInicio, horaFim, periodicidadeUsuario, proximaAtualizacao) {
-    if (idServico === 1) {
-        const tabelaConfiguracaoReflora = modeloConfiguracao(conexao, Sequelize);
-        const promessa = Q.defer();
-        tabelaConfiguracaoReflora.update(
-            {
-                hora_inicio: horaInicio,
-                hora_fim: horaFim,
-                periodicidade: periodicidadeUsuario,
-                data_proxima_atualizacao: proximaAtualizacao,
-            },
-            { where: { id: idExecucao } },
-        ).then(() => {
-            promessa.resolve();
-        });
-        return promessa.promise;
-    }
-    const tabelaConfiguracaoSpeciesLink = modeloConfiguracao(conexao, Sequelize);
+export function atualizaTabelaConfiguracao(
+    idServico,
+    idExecucao,
+    horaInicio,
+    horaFim,
+    periodicidadeUsuario,
+    proximaAtualizacao
+) {
+    const tabelaConfiguracao = modeloConfiguracao(conexao, Sequelize);
     const promessa = Q.defer();
-    tabelaConfiguracaoSpeciesLink.update(
+
+    // Normaliza hora_inicio
+    const horaInicioFormatada =
+        horaInicio instanceof Date
+            ? horaInicio.toISOString().substring(11, 19)
+            : horaInicio;
+
+    // Normaliza hora_fim
+    const horaFimFormatada =
+        horaFim
+            ? (horaFim instanceof Date
+                ? horaFim.toISOString().substring(11, 19)
+                : horaFim)
+            : null;
+
+    // Normaliza data_proxima_atualizacao (ISO)
+    const proximaAtualizacaoISO =
+        proximaAtualizacao
+            ? new Date(proximaAtualizacao)
+            : null;
+
+    tabelaConfiguracao.update(
         {
-            hora_inicio: horaInicio,
-            hora_fim: horaFim,
+            hora_inicio: horaInicioFormatada,
+            hora_fim: horaFimFormatada,
             periodicidade: periodicidadeUsuario,
-            data_proxima_atualizacao: proximaAtualizacao,
+            data_proxima_atualizacao: proximaAtualizacaoISO,
         },
         { where: { id: idExecucao } },
     ).then(() => {
         promessa.resolve();
     });
-    return promessa.promise;
 
+    return promessa.promise;
 }
 
 /**
