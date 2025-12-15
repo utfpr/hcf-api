@@ -40,16 +40,15 @@ export const preparaRequisicao = (request, response) => {
             }
 
             if (
-                periodicidadeBD === 'SEMANAL' ||
-                periodicidadeBD === '1MES' ||
-                periodicidadeBD === '2MESES'
+                periodicidadeBD === 'SEMANAL'
+                || periodicidadeBD === '1MES'
+                || periodicidadeBD === '2MESES'
             ) {
                 const dataProximaAtualizacao = execucao.data_proxima_atualizacao;
 
-                // comparação correta usando DATETIME
                 const podeExecutar =
-                    !dataProximaAtualizacao ||
-                    moment().isAfter(moment(dataProximaAtualizacao), 'day');
+                    !dataProximaAtualizacao
+                    || moment().isAfter(moment(dataProximaAtualizacao), 'day');
 
                 if (podeExecutar) {
                     atualizaTabelaConfiguracao(
@@ -58,7 +57,7 @@ export const preparaRequisicao = (request, response) => {
                         getHoraAtual(),
                         null,
                         periodicidade,
-                        proximaAtualizacao
+                        proximaAtualizacao,
                     ).then(() => {
                         response.status(200).json({ result: 'success' });
                     });
@@ -74,7 +73,7 @@ export const preparaRequisicao = (request, response) => {
                         null,
                         periodicidade,
                         proximaAtualizacao,
-                        1
+                        1,
                     ).then(() => {
                         response.status(200).json({ result: 'success' });
                     });
@@ -86,7 +85,7 @@ export const preparaRequisicao = (request, response) => {
                         getHoraAtual(),
                         null,
                         periodicidade,
-                        proximaAtualizacao
+                        proximaAtualizacao,
                     ).then(() => {
                         response.status(200).json({ result: 'success' });
                     });
@@ -128,15 +127,15 @@ export const estaExecutando = (_, response) => {
             }
 
             if (
-                periodicidade === 'SEMANAL' ||
-                periodicidade === '1MES' ||
-                periodicidade === '2MESES'
+                periodicidade === 'SEMANAL'
+                || periodicidade === '1MES'
+                || periodicidade === '2MESES'
             ) {
                 const dataProximaAtualizacao = execucao.data_proxima_atualizacao;
 
                 const executando =
-                    dataProximaAtualizacao &&
-                    !moment().isAfter(moment(dataProximaAtualizacao), 'day');
+                    dataProximaAtualizacao
+                    && !moment().isAfter(moment(dataProximaAtualizacao), 'day');
 
                 response.status(200).json({
                     executando,
