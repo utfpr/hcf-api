@@ -6,6 +6,7 @@ import {
     atualizaTabelaConfiguracao,
     selectEstaExecutandoServico,
 } from '../herbarium/herbariumdatabase';
+
 import {
     getHoraAtual,
 } from '../herbarium/log';
@@ -47,8 +48,8 @@ export const preparaRequisicao = (request, response) => {
                 const dataProximaAtualizacao = execucao.data_proxima_atualizacao;
 
                 const podeExecutar
-                    = !dataProximaAtualizacao
-                    || moment().isAfter(moment(dataProximaAtualizacao), 'day');
+                        = !dataProximaAtualizacao
+                        || moment().isAfter(moment(dataProximaAtualizacao), 'day');
 
                 if (podeExecutar) {
                     atualizaTabelaConfiguracao(
@@ -79,6 +80,7 @@ export const preparaRequisicao = (request, response) => {
                     });
                 } else {
                     const execucao = execucaoReflora[0].dataValues;
+
                     atualizaTabelaConfiguracao(
                         1,
                         execucao.id,
@@ -134,8 +136,8 @@ export const estaExecutando = (_, response) => {
                 const dataProximaAtualizacao = execucao.data_proxima_atualizacao;
 
                 const executando
-                    = dataProximaAtualizacao
-                    && !moment().isAfter(moment(dataProximaAtualizacao), 'day');
+                        = !!dataProximaAtualizacao
+                        && !moment().isAfter(moment(dataProximaAtualizacao), 'day');
 
                 response.status(200).json({
                     executando,
