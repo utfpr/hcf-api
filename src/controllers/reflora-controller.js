@@ -46,8 +46,8 @@ export const preparaRequisicao = (request, response) => {
             ) {
                 const dataProximaAtualizacao = execucao.data_proxima_atualizacao;
 
-                const podeExecutar =
-                    !dataProximaAtualizacao
+                const podeExecutar
+                    = !dataProximaAtualizacao
                     || moment().isAfter(moment(dataProximaAtualizacao), 'day');
 
                 if (podeExecutar) {
@@ -133,8 +133,8 @@ export const estaExecutando = (_, response) => {
             ) {
                 const dataProximaAtualizacao = execucao.data_proxima_atualizacao;
 
-                const executando =
-                    dataProximaAtualizacao
+                const executando
+                    = dataProximaAtualizacao
                     && !moment().isAfter(moment(dataProximaAtualizacao), 'day');
 
                 response.status(200).json({
