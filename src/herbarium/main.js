@@ -139,10 +139,9 @@ function ehPossivelFazerComparacao(nomeArquivo, idServico) {
 export function preparaExecucao(existeExecucao, idServico) {
     const promessa = Q.defer();
     const horaInicio = existeExecucao.dataValues.hora_inicio;
-    const horaInicioFormatada =
-        horaInicio instanceof Date
-            ? horaInicio.toISOString().substring(11, 19) // HH:mm:ss
-            : horaInicio;
+    const horaInicioFormatada = horaInicio instanceof Date
+        ? horaInicio.toISOString().substring(11, 19) // HH:mm:ss
+        : horaInicio;
     const nomeArquivo = processaNomeLog(horaInicioFormatada);
     ehPossivelFazerComparacao(nomeArquivo, idServico).then(() => {
         const { id } = existeExecucao.dataValues;

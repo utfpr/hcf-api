@@ -135,15 +135,9 @@ export function insereExecucao(horaAtual, horaFim, periodicidadeUsuario, proxima
         ? horaAtual
         : horaAtual.toISOString().substring(11, 19);
 
-    const horaFimFormatada = horaFim
-        ? (typeof horaFim === 'string'
-            ? horaFim
-            : horaFim.toISOString().substring(11, 19))
-        : null;
+    const horaFimFormatada = horaFim ? (typeof horaFim === 'string' ? horaFim : horaFim.toISOString().substring(11, 19)) : null;
 
-    const proximaAtualizacaoISO = proximaAtualizacao
-        ? new Date(proximaAtualizacao)
-        : null;
+    const proximaAtualizacaoISO = proximaAtualizacao ? new Date(proximaAtualizacao) : null;
 
     tabelaConfiguracao.create({
         hora_inicio: horaInicioFormatada,
@@ -181,30 +175,23 @@ export function atualizaTabelaConfiguracao(
     horaInicio,
     horaFim,
     periodicidadeUsuario,
-    proximaAtualizacao
+    proximaAtualizacao,
 ) {
     const tabelaConfiguracao = modeloConfiguracao(conexao, Sequelize);
     const promessa = Q.defer();
 
     // Normaliza hora_inicio
-    const horaInicioFormatada =
-        horaInicio instanceof Date
-            ? horaInicio.toISOString().substring(11, 19)
-            : horaInicio;
+    const horaInicioFormatada = horaInicio instanceof Date
+        ? horaInicio.toISOString().substring(11, 19)
+        : horaInicio;
 
     // Normaliza hora_fim
-    const horaFimFormatada =
-        horaFim
-            ? (horaFim instanceof Date
-                ? horaFim.toISOString().substring(11, 19)
-                : horaFim)
-            : null;
+    const horaFimFormatada = horaFim ? (horaFim instanceof Date ? horaFim.toISOString().substring(11, 19) : horaFim) : null;
 
     // Normaliza data_proxima_atualizacao (ISO)
-    const proximaAtualizacaoISO =
-        proximaAtualizacao
-            ? new Date(proximaAtualizacao)
-            : null;
+    const proximaAtualizacaoISO = proximaAtualizacao
+        ? new Date(proximaAtualizacao)
+        : null;
 
     tabelaConfiguracao.update(
         {

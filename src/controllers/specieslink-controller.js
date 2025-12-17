@@ -6,7 +6,6 @@ import {
     atualizaTabelaConfiguracao,
     selectEstaExecutandoServico,
 } from '../herbarium/herbariumdatabase';
-
 import {
     getHoraAtual,
 } from '../herbarium/log';
