@@ -31,11 +31,26 @@ export default {
             options: validaDataTombo,
         },
     },
-    'json.principal.data_coleta': {
+    'json.principal.data_coleta.dia': {
         in: 'body',
-        custom: {
-            options: validaData,
+        optional: {
+            options: { nullable: true },
         },
+        isInt: true,
+    },
+    'json.principal.data_coleta.mes': {
+        in: 'body',
+        optional: {
+            options: { nullable: true },
+        },
+        isInt: true,
+    },
+    'json.principal.data_coleta.ano': {
+        in: 'body',
+        optional: {
+            options: { nullable: true },
+        },
+        isInt: true,
     },
     'json.principal.tipo_id': {
         in: 'body',
@@ -112,7 +127,7 @@ export default {
         optional: true,
         isInt: true,
     },
-    'json.paisagem.fase_sucessional': {
+    'json.paisagem.fase_sucessional_id': {
         in: 'body',
         optional: true,
         isInt: true,

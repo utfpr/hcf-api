@@ -495,7 +495,7 @@ export const obtemDadosDoRelatorioDeColetaPorColetorEIntervaloDeData = async (re
 export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
     const { paginacao } = req;
     const { limite, pagina, offset } = paginacao;
-    const { local, dataInicio, dataFim } = req.query;
+    const { local, dataInicio, dataFim, showCoord } = req.query;
 
     let whereLocal = {};
     let whereData = {};
@@ -561,7 +561,13 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
                 {
                     model: Especie,
                     attributes: ['id', 'nome'],
-                    // required: true,
+                    include: [
+                        {
+                            model: Autor,
+                            attributes: ['id', 'nome'],
+                            as: 'autor',
+                        },
+                    ],
                 },
                 {
                     model: LocalColeta,
@@ -610,6 +616,7 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
                     dados: dadosFormatados.locais,
                     total: dadosFormatados?.quantidadeTotal || 0,
                     textoFiltro: formataTextFilter(local, dataInicio, dataFim || new Date()),
+                    showCoord: showCoord === 'true',
                 });
             const readable = new Readable();
 
