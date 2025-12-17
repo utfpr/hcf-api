@@ -116,8 +116,8 @@ export const listarCidadesEstados = async (req, res, next) => {
                 },
             ],
             order: [
-                [sequelize.literal('LOWER(Cidade.nome)'), 'ASC'],
-                [sequelize.literal('LOWER(estado.nome)'), 'ASC'],
+                [sequelize.fn('LOWER', sequelize.col('cidades.nome')), 'ASC'],
+                [sequelize.fn('LOWER', sequelize.col('estado.nome')), 'ASC'],
             ],
         });
 
@@ -185,7 +185,7 @@ export const listaTodosCidades = where =>
                 attributes: ['id', 'nome', 'sigla', 'pais_id'],
             },
         ],
-        order: [[sequelize.literal('LOWER(`cidades`.`nome`)'), 'ASC']],
+        order: [[sequelize.fn('LOWER', sequelize.col('cidades.nome')), 'ASC']],
     });
 
 export const listagem = (request, response, next) => {

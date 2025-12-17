@@ -251,7 +251,7 @@ export const buscarLocaisColeta = async (request, response, next) => {
         const queryOptions = {
             where,
             include,
-            order: [[sequelize.literal('LOWER(descricao)'), 'ASC']],
+            order: [[sequelize.fn('LOWER', sequelize.col('descricao')), 'ASC']],
         };
 
         if (getAll !== 'true') {

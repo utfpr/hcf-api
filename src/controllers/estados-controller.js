@@ -83,7 +83,7 @@ export const listagem = async (req, res, next) => {
             attributes: { exclude: ['created_at', 'updated_at'] },
             include: [{ model: Pais, as: 'pais', attributes: ['id', 'nome', 'sigla'] }],
             where,
-            order: [[sequelize.literal('LOWER(`estados`.`nome`)'), 'ASC']],
+            order: [[sequelize.fn('LOWER', sequelize.col('estados.nome')), 'ASC']],
         });
 
         return res.status(codigos.LISTAGEM).json(estados);
