@@ -1,7 +1,7 @@
 import parser from 'body-parser';
 import cors from 'cors';
 import express from 'express';
-import rateLimit from 'express-rate-limit';
+// import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
@@ -57,21 +57,21 @@ app.use(helmet({
 app.use(cors());
 
 // Rate limiting
-const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 500, // Limit each IP to 100 requests per windowMs
-    message: {
-        error: {
-            code: 429,
-            message: 'Muitas requisições. Tente novamente em 15 minutos.',
-        },
-    },
-    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-});
+// const limiter = rateLimit({
+//     windowMs: 15 * 60 * 1000, // 15 minutes
+//     max: 500, // Limit each IP to 100 requests per windowMs
+//     message: {
+//         error: {
+//             code: 429,
+//             message: 'Muitas requisições. Tente novamente em 15 minutos.',
+//         },
+//     },
+//     standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+//     legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+// });
 
 // Apply rate limiting to all requests
-app.use(limiter);
+// app.use(limiter);
 
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(parser.json());
