@@ -242,9 +242,9 @@ export function agruparPorLocal(dados) {
 
         const entrada = {
             ...entradaOriginal,
-            latitude: cidade?.latitude || null,
-            longitude: cidade?.longitude || null,
-            autor: entradaOriginal.especy?.autor?.nome || 'Não Informado',
+            latitude: entradaOriginal?.latitude || null,
+            longitude: entradaOriginal?.longitude || null,
+            autor: entradaOriginal.especy?.autor?.nome || '',
         };
 
         if (!agrupado[chave]) {
@@ -253,8 +253,8 @@ export function agruparPorLocal(dados) {
                 estadoSigla,
                 municipio,
                 local,
-                latitude: cidade?.latitude || null,
-                longitude: cidade?.longitude || null,
+                latitude: entradaOriginal?.latitude || null,
+                longitude: entradaOriginal?.longitude || null,
                 quantidadeRegistros: 0,
                 registros: [],
             };
