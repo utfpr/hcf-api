@@ -517,6 +517,8 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
                 'data_coleta_ano',
                 'data_coleta_mes',
                 'data_coleta_dia',
+                'latitude',
+                'longitude',
             ],
             where: whereData,
             include: [

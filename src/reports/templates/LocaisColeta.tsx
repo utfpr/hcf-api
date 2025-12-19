@@ -93,13 +93,13 @@ function RelacaoLocaisColeta({ dados, total, textoFiltro, showCoord = false }: R
 
   const renderTable = (registros: Registro[]) => {
     return (
-      <table style={{ fontSize: showCoord ? '0.9em' : '1.1em' }}>
+      <table>
         <thead>
           <tr>
             <th>Data Coleta</th>
             <th>Família</th>
             <th>Espécie</th>
-            <th>Autor</th>
+            {/* <th>Autor</th> */}
             {showCoord && <th>Latitude</th>}
             {showCoord && <th>Longitude</th>}
             <th style={{ textAlign: 'right' }}>Nº do Tombo</th>
@@ -113,8 +113,7 @@ function RelacaoLocaisColeta({ dados, total, textoFiltro, showCoord = false }: R
               <tr key={`${i}-${item.hcf}`}>
                 <td>{criaData(item)}</td>
                 <td>{familia?.nome}</td>
-                <td style={{ fontStyle: 'italic' }}>{genero?.nome} {especy?.nome}</td>
-                <td>{item.autor}</td>
+                <td style={{ display: 'flex', gap: 10 }}><div style={{ fontStyle: 'italic', display: 'flex', alignItems: 'center', width: 'fit-content' }}>{genero?.nome} {especy?.nome}</div> {item.autor}</td>
                 {showCoord && <td>{cordenadas.latitude}</td>}
                 {showCoord && <td>{cordenadas.longitude}</td>}
                 <td style={{ textAlign: 'right' }}>{item.hcf}</td>
