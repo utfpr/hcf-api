@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import axios from 'axios'
 import dotenv from 'dotenv'
 import pLimit from 'p-limit'
@@ -183,7 +182,7 @@ async function main(): Promise<void> {
 
   try {
     const { rows: cidades } = await client.query<Cidade>(
-      'SELECT id, nome, ST_AsBinary(poligono) AS pol_wkb FROM public.cidades;'
+      'SELECT c.id, c.nome, ST_AsBinary(c.poligono) AS pol_wkb FROM public.cidades c JOIN public.estados e ON c.estado_id = e.id WHERE e.pais_id = 76;'
     )
 
     const tarefas = cidades.map(c =>
