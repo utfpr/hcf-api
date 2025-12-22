@@ -200,9 +200,16 @@
               <div>
                 <b class="fs-14">Identificador:</b> <%- identificador %>
               </div>
-              <div>
-                <b class="fs-14">Data:</b> <%- romano_data_identificacao %>
-              </div>
+              <% if (romano_data_identificacao) { %>
+                <div>
+                  <b class="fs-14">Data:</b> <%- romano_data_identificacao %>
+                </div>
+              <% } %>
+              <% if (!romano_data_identificacao) { %>
+                <div>
+                  <b class="fs-14" style="margin-right: 6.5rem;">Data:</b>
+                </div>
+              <% } %>
             </div>
             <div>
               <b class="fs-14">Local de Coleta:</b>
@@ -210,7 +217,7 @@
                   <%- localColeta.complemento %>
               <% } %>
               <% if (localColeta && localColeta.descricao) { %>
-                  - <%- localColeta.descricao %>
+                  <%- localColeta.descricao %>
               <% } %>
               <% if (cidade && cidade.nome) { %>
                   - <%- cidade.nome %>
@@ -236,8 +243,8 @@
               <% if (tombo.relevo) { %>
                   - Relevo: <%- tombo.relevo.nome %>
               <% } %>
-              <% if (tombo.vegetacao) { %>
-                  - Vegetação: <%- tombo.vegetacao.nome %>
+              <% if (tombo.vegetaco) { %>
+                  - Vegetação: <%- tombo.vegetaco.nome %>
               <% } %>
               <% if (tombo && tombo.latitude) { %>
                   - Latitude: <%- tombo.latitude %>
