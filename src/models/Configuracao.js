@@ -1,27 +1,16 @@
-function associate(/* modelos */) {
+function associate(/* models */) {
+    // não há associações para este model
 }
 
-/**
-CREATE TABLE `configuracao` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `hora_inicio` varchar(19) NOT NULL,
-  `hora_fim` varchar(19) DEFAULT NULL,
-  `periodicidade` enum('MANUAL','SEMANAL','1MES','2MESES') DEFAULT NULL,
-  `data_proxima_atualizacao` varchar(10) DEFAULT NULL,
-  `nome_arquivo` varchar(50) DEFAULT NULL,
-  `servico` enum('REFLORA','SPECIESLINK') DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET='latin1';
- */
 export default (Sequelize, DataTypes) => {
 
     const attributes = {
         hora_inicio: {
-            type: DataTypes.STRING(19),
+            type: DataTypes.TIME,
             allowNull: false,
         },
         hora_fim: {
-            type: DataTypes.STRING(19),
+            type: DataTypes.TIME,
             allowNull: true,
         },
         periodicidade: {
@@ -30,7 +19,7 @@ export default (Sequelize, DataTypes) => {
             allowNull: true,
         },
         data_proxima_atualizacao: {
-            type: DataTypes.STRING(10),
+            type: DataTypes.DATE,
             allowNull: true,
         },
         nome_arquivo: {
@@ -45,7 +34,6 @@ export default (Sequelize, DataTypes) => {
 
     const options = {
         freezeTableName: false,
-        // Disabilita o created_at e updated_at
         timestamps: false,
         tableName: 'configuracao',
     };
