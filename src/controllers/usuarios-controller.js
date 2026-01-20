@@ -342,7 +342,7 @@ export const solicitarTrocaDeSenha = async (request, response, next) => {
                 },
             });
 
-            const link = `${process.env.URL_BASE_TROCA_DE_SENHA}?token=${token}`;
+            const link = `${process.env.PAINEL_BASE_URL}/alterar-senha?token=${token}`;
             await transporter.sendMail({
                 from: process.env.SMTP_FROM || '"Sistema Herbário" <no-reply@hcf.com>',
                 to: email,
