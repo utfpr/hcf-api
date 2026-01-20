@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+
 import { UserRegistrationDTO } from '../dtos/UserRegistrationDTO';
 import BadRequestExeption from '../errors/bad-request-exception';
 import limparEspacos from '../helpers/limpa-espaco';
