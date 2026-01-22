@@ -1,7 +1,7 @@
 import moment from 'moment-timezone';
 import path from 'path';
 
-import { converteDecimalParaGMSSinal } from '~/helpers/coordenadas';
+import { converteDecimalParaGrausMinutosSegundos } from '~/helpers/coordenadas';
 
 // import identificador from '~/routes/identificador';
 
@@ -256,8 +256,8 @@ export default function fichaTomboController(request, response, next) {
                 tombo: {
                     ...tombo,
                     coletores,
-                    latitude: tombo.latitude && converteDecimalParaGMSSinal(tombo.latitude, true),
-                    longitude: tombo.longitude && converteDecimalParaGMSSinal(tombo.longitude, true),
+                    latitude: tombo.latitude && converteDecimalParaGrausMinutosSegundos(tombo.latitude, true, true),
+                    longitude: tombo.longitude && converteDecimalParaGrausMinutosSegundos(tombo.longitude, false, true),
                     data_tombo: formataDataSaida(tombo.data_tombo),
                     data_coleta: formataColunasSeparadas(tombo.data_coleta_dia, tombo.data_coleta_mes, tombo.data_coleta_ano),
                 },
