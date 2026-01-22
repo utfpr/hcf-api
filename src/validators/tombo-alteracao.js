@@ -150,7 +150,7 @@ export default {
         },
         isInt: true,
     },
-    'json.paisagem.fase_sucessional': {
+    'json.paisagem.fase_sucessional_id': {
         in: 'body',
         optional: {
             options: { nullable: true },

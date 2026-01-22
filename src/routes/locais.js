@@ -254,7 +254,76 @@ export default app => {
         .get([
             controller.buscarVegetacoes,
         ]);
-
+    /**
+     * @swagger
+     * /fases-sucessionais:
+     *   post:
+     *     summary: Cadastra uma nova fase sucessional
+     *     tags: [Locais]
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               nome:
+     *                 type: string
+     *                 description: Nome da fase sucessional
+     *             required:
+     *               - nome
+     *     responses:
+     *       201:
+     *         description: Fase sucessional cadastrada com sucesso
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
+     *   get:
+     *     summary: Lista todas as fases sucessionais
+     *     tags: [Locais]
+     *     parameters:
+     *       - in: query
+     *         name: nome
+     *         schema:
+     *           type: string
+     *         description: Filtrar por nome da fase sucessional
+     *     responses:
+     *       200:
+     *         description: Lista de fases sucessionais
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                 type: object
+     *                 properties:
+     *                   numero:
+     *                     type: integer
+     *                   nome:
+     *                     type: string
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
+     */
+    app.route('/fases-sucessionais')
+        .post([
+            tokensMiddleware([
+                TIPOS_USUARIOS.CURADOR, TIPOS_USUARIOS.OPERADOR,
+            ]),
+            validacoesMiddleware(nomeEsquema),
+            controller.cadastrarFaseSucessional,
+        ])
+        .get([
+            controller.buscarFasesSucessionais,
+        ]);
     /**
      * @swagger
      * /locais-coleta:

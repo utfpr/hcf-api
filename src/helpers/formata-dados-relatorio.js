@@ -217,17 +217,19 @@ export function agruparPorFamiliaGeneroEspecie(dados) {
     return resultado;
 }
 
-function formatarCoordenadas(lat, lon) {
-    const latDir = lat >= 0 ? 'N' : 'S';
-    const lonDir = lon >= 0 ? 'E' : 'W';
-    return `${Math.abs(lat).toFixed(4)}° ${latDir}, ${Math.abs(lon).toFixed(4)}° ${lonDir}`;
-}
-
 export function agruparPorLocal(dados) {
     const agrupado = {};
     let quantidadeTotal = 0;
 
-    dados.sort((a, b) => a?.familia?.nome.localeCompare(b?.familia?.nome)).forEach(entradaOriginal => {
+    dados.sort((a, b) => {
+        const familia = a?.familia?.nome.localeCompare(b?.familia?.nome);
+        if (familia !== 0) return familia;
+
+        const genero = a?.genero?.nome.localeCompare(b?.genero?.nome);
+        if (genero !== 0) return genero;
+
+        return a?.especy?.nome.localeCompare(b?.especy?.nome);
+    }).forEach(entradaOriginal => {
         const locaisColetum = entradaOriginal.locais_coletum;
         const cidade = locaisColetum?.cidade;
         const estado = cidade?.estado?.nome || 'Desconhecido';
@@ -235,15 +237,13 @@ export function agruparPorLocal(dados) {
         const municipio = cidade?.nome || 'Desconhecido';
         const local = locaisColetum?.descricao?.trim() || 'Local não informado';
 
-        const coordenadasFormatadas = cidade
-            ? formatarCoordenadas(cidade.latitude, cidade.longitude)
-            : 'Coordenadas indisponíveis';
-
         const chave = `${estado} > ${municipio} > ${local}`;
 
         const entrada = {
             ...entradaOriginal,
-            coordenadasFormatadas,
+            latitude: entradaOriginal?.latitude || null,
+            longitude: entradaOriginal?.longitude || null,
+            autor: entradaOriginal.especy?.autor?.nome || '',
         };
 
         if (!agrupado[chave]) {
@@ -252,7 +252,8 @@ export function agruparPorLocal(dados) {
                 estadoSigla,
                 municipio,
                 local,
-                coordenadas: coordenadasFormatadas,
+                latitude: entradaOriginal?.latitude || null,
+                longitude: entradaOriginal?.longitude || null,
                 quantidadeRegistros: 0,
                 registros: [],
             };
@@ -261,15 +262,53 @@ export function agruparPorLocal(dados) {
         agrupado[chave].registros.push(entrada);
         agrupado[chave].quantidadeRegistros += 1;
         quantidadeTotal += 1;
+
     });
 
     // Transforma o objeto em um array
     const locais = Object.values(agrupado);
 
+    const locaisComResumo = adicionarResumoTaxonomicoPorLocal(locais);
+
     return {
-        locais, // agora é um array
+        locais: locaisComResumo,
         quantidadeTotal,
     };
+}
+
+export function adicionarResumoTaxonomicoPorLocal(locaisAgrupados) {
+    return locaisAgrupados.map(local => {
+        const familias = new Set();
+        const generos = new Set();
+        const especies = new Set();
+
+        for (const reg of local.registros) {
+            // família
+            const familiaId = reg.familia_id ?? reg.familia?.id;
+            if (familiaId != null) {
+                familias.add(familiaId);
+            }
+
+            // gênero
+            const generoId = reg.genero_id ?? reg.genero?.id;
+            if (generoId != null) {
+                generos.add(generoId);
+            }
+
+            // espécie
+            const especieId = reg.especie_id ?? reg.especy?.id;
+            if (especieId != null) {
+                especies.add(especieId);
+            }
+        }
+
+        return {
+            ...local,
+            quantidadeFamilias: familias.size,
+            quantidadeGeneros: generos.size,
+            quantidadeEspecies: especies.size,
+        };
+    });
 }
 
 export function agruparPorGenero(dados) {
