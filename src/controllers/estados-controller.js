@@ -1,6 +1,7 @@
 import pick from '~/helpers/pick';
 
 import BadRequestException from '../errors/bad-request-exception';
+import limparEspacos from '../helpers/limpa-espaco';
 import models from '../models';
 import codigos from '../resources/codigos-http';
 
@@ -15,7 +16,9 @@ const {
 const { Op } = Sequelize;
 
 export const cadastrarEstado = (req, res, next) => {
-    const { nome, sigla, pais_id: paisId } = req.body;
+    let { nome, sigla, pais_id: paisId } = req.body;
+    nome = limparEspacos(nome);
+    sigla = limparEspacos(sigla);
 
     const callback = async transaction => {
         const estadoConflitante = await Estado.findOne({
@@ -40,7 +43,6 @@ export const cadastrarEstado = (req, res, next) => {
                     mensagem: `Já existe um estado com este ${campoDuplicado} neste país.`,
                 },
             });
-
         }
 
         const estadoCriado = await Estado.create(
@@ -68,15 +70,15 @@ export const cadastrarEstado = (req, res, next) => {
 export const listagem = async (req, res, next) => {
     try {
         const paisId = req.query.pais_id ? parseInt(req.query.pais_id, 10) : undefined;
-        const { nome } = req.query;
+        const nomeQuery = req.query.nome ? limparEspacos(req.query.nome) : undefined;
 
         const where = {};
         if (!Number.isNaN(paisId) && paisId !== undefined) {
             where.pais_id = paisId;
         }
 
-        if (nome) {
-            where.nome = { [Op.iLike]: `%${nome}%` };
+        if (nomeQuery) {
+            where.nome = { [Op.like]: `%${nomeQuery}%` };
         }
 
         const estados = await Estado.findAll({
@@ -112,6 +114,8 @@ export const atualizarEstado = async (req, res, next) => {
     try {
         const { estadoId } = req.params;
         const dados = pick(req.body, ['nome', 'sigla', 'pais_id']);
+        if (dados.nome) dados.nome = limparEspacos(dados.nome);
+        if (dados.sigla) dados.sigla = limparEspacos(dados.sigla);
 
         const estadoAtual = await Estado.findOne({ where: { id: estadoId } });
         if (!estadoAtual) {

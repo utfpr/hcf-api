@@ -1,5 +1,6 @@
 import BadRequestExeption from '../errors/bad-request-exception';
 import NotFoundExeption from '../errors/not-found-exception';
+import limparEspacos from '../helpers/limpa-espaco';
 import omit from '../helpers/omit';
 import models from '../models';
 import codigos from '../resources/codigos-http';
@@ -113,10 +114,19 @@ export const cadastro = (request, response, next) => {
     const callback = transaction => Promise.resolve()
         .then(() => {
             const { herbario } = request.body;
-            const where = {
-                email: herbario.email,
-            };
 
+            if (herbario.nome) herbario.nome = limparEspacos(herbario.nome);
+            if (herbario.sigla) herbario.sigla = limparEspacos(herbario.sigla);
+            if (herbario.email) herbario.email = limparEspacos(herbario.email);
+
+            const { endereco } = request.body;
+            Object.keys(endereco).forEach(campo => {
+                if (typeof endereco[campo] === 'string') {
+                    endereco[campo] = limparEspacos(endereco[campo]);
+                }
+            });
+
+            const where = { email: herbario.email };
             return Herbario.findOne({ where, transaction });
         })
         .then(herbario => {
@@ -136,9 +146,7 @@ export const cadastro = (request, response, next) => {
             return Herbario.create(herbario, { transaction });
         })
         .then(herbario => {
-            const where = {
-                id: herbario.id,
-            };
+            const where = { id: herbario.id };
 
             return Herbario.findOne({
                 transaction,
@@ -149,8 +157,7 @@ export const cadastro = (request, response, next) => {
 
     sequelize.transaction(callback)
         .then(herbario => {
-            response.status(201)
-                .json(herbario);
+            response.status(201).json(herbario);
         })
         .catch(ForeignKeyConstraintError, catchForeignKeyConstraintError)
         .catch(next);
@@ -172,12 +179,18 @@ export const editar = (request, response, next) => {
             }
 
             const endereco = omit(request.body.endereco, ['id']);
+            Object.keys(endereco).forEach(campo => {
+                if (typeof endereco[campo] === 'string') {
+                    endereco[campo] = limparEspacos(endereco[campo]);
+                }
+            });
 
             const where = {
                 id: herbario.endereco_id,
             };
 
             if (herbario.endereco_id === null) {
+
                 const localizacao = await Endereco.create(endereco, { transaction });
 
                 const dados = {
@@ -185,10 +198,18 @@ export const editar = (request, response, next) => {
                     endereco_id: localizacao.id,
                 };
 
+                if (dados.nome) dados.nome = limparEspacos(dados.nome);
+                if (dados.sigla) dados.sigla = limparEspacos(dados.sigla);
+                if (dados.email) dados.email = limparEspacos(dados.email);
+
                 return herbario.update(dados, { transaction });
             }
 
             const dados = omit(request.body.herbario, ['id', 'endereco_id']);
+
+            if (dados.nome) dados.nome = limparEspacos(dados.nome);
+            if (dados.sigla) dados.sigla = limparEspacos(dados.sigla);
+            if (dados.email) dados.email = limparEspacos(dados.email);
 
             await Endereco.update(endereco, { where, transaction });
 
@@ -209,8 +230,7 @@ export const editar = (request, response, next) => {
 
     sequelize.transaction(callback)
         .then(herbario => {
-            response.status(200)
-                .json(herbario);
+            response.status(200).json(herbario);
         })
         .catch(ForeignKeyConstraintError, catchForeignKeyConstraintError)
         .catch(next);

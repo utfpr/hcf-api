@@ -144,3 +144,40 @@ export const converteDecimalParaGMSSinal = (decimal, isLat) => {
 
     return result;
 };
+
+export const converteDecimalParaGrausMinutosSegundos = (gDec, ehLat, formatada) => {
+    let graus;
+    let minutos;
+    let aux;
+    let segundos;
+    let direcao;
+
+    graus = parseInt(gDec);
+    aux = (graus - gDec) * 60;
+    minutos = parseInt(aux);
+    aux = (aux - minutos) * 60;
+    segundos = aux;
+
+    if (ehLat) {
+        // Eixo X
+        if (graus < 0) direcao = 'W';
+        else direcao = 'E';
+    } else {
+        // Eixo Y
+        if (graus >= 0) direcao = 'N';
+        else direcao = 'S';
+    }
+
+    if (formatada) {
+        return `${Math.abs(graus)}°${Math.abs(minutos)}'${Math.abs(segundos).toFixed(2)
+            .replace('.', ',')}" ${direcao}`;
+    }
+
+    return {
+        graus: Math.abs(graus),
+        minutos: Math.abs(minutos),
+        segundos: Math.abs(segundos).toFixed(2)
+            .replace('.', ','),
+        direcao,
+    };
+};

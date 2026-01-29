@@ -545,6 +545,8 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
                 'data_coleta_ano',
                 'data_coleta_mes',
                 'data_coleta_dia',
+                'latitude',
+                'longitude',
             ],
             where: whereData,
             include: [
@@ -615,7 +617,7 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
                 ReportLocalColeta, {
                     dados: dadosFormatados.locais,
                     total: dadosFormatados?.quantidadeTotal || 0,
-                    textoFiltro: formataTextFilter(local, dataInicio, dataFim || new Date()),
+                    textoFiltro: formataTextFilter(undefined, dataInicio, dataFim || new Date()),
                     showCoord: showCoord === 'true',
                 });
             const readable = new Readable();
