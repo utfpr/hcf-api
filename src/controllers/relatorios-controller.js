@@ -478,7 +478,7 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
     let whereData = {};
     if (local) {
         whereLocal = {
-            descricao: { [Op.like]: `%${local}%` },
+            id: local,
         };
     }
     if (dataInicio) {
