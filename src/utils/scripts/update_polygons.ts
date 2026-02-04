@@ -60,7 +60,7 @@ const API_IBGE_MUNICIPIOS = 'https://servicodados.ibge.gov.br/api/v1/localidades
 const API_IBGE_POLYGON
   = 'https://servicodados.ibge.gov.br/api/v3/malhas/municipios/{codigo_ibge}?formato=application/vnd.geo+json&qualidade=minima'
 
-const MAX_CONCURRENCY = 10
+const MAX_CONCURRENCY = 5
 const REQUEST_DELAY_MS = 150
 
 function removerAcentos(str: string): string {
@@ -185,7 +185,7 @@ async function main(): Promise<void> {
       'SELECT c.id, c.nome, ST_AsBinary(c.poligono) AS pol_wkb FROM public.cidades c JOIN public.estados e ON c.estado_id = e.id WHERE e.pais_id = 76;'
     )
 
-    const tarefas = cidades.map(c =>
+    const tarefas = cidades.map((c: Cidade) =>
       limit(async () => {
         const res = await processarCidade(client, municipios, c)
         await delay(REQUEST_DELAY_MS)
