@@ -1610,7 +1610,6 @@ export const postCodigoBarraTombo = (request, response, next) => {
 
 export const getUltimoNumeroCodigoBarras = (request, response, next) => {
     const { emVivo } = request.params;
-    console.log('EM VIVO AQUI!', emVivo);
     Promise.resolve()
         .then(() => TomboFoto.findAll({
             where: {

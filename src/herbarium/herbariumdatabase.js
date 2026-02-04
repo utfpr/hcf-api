@@ -186,7 +186,7 @@ export function atualizaTabelaConfiguracao(idServico, idExecucao, horaInicio, ho
         });
         return promessa.promise;
     }
-    const tabelaConfiguracaoSpeciesLink = modeloConfiguracao(conexao, Sequelize);
+    const tabelaConfiguracao = modeloConfiguracao(conexao, Sequelize);
     const promessa = Q.defer();
 
     // Normaliza hora_inicio
