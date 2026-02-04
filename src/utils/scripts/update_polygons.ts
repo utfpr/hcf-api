@@ -185,7 +185,7 @@ async function main(): Promise<void> {
       'SELECT c.id, c.nome, ST_AsBinary(c.poligono) AS pol_wkb FROM public.cidades c JOIN public.estados e ON c.estado_id = e.id WHERE e.pais_id = 76;'
     )
 
-    const tarefas = cidades.map((c: Cidade) =>
+    const tarefas = cidades.map(c =>
       limit(async () => {
         const res = await processarCidade(client, municipios, c)
         await delay(REQUEST_DELAY_MS)
