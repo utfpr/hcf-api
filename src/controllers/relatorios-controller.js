@@ -499,6 +499,11 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
 
     let whereLocal = {};
     let whereData = {};
+    if (local) {
+        whereLocal = {
+            id: local,
+        };
+    }
     if (dataInicio) {
         if (dataFim && isBefore(new Date(dataFim), new Date(dataInicio))) {
             return res.status(codigosHttp.BAD_REQUEST).json({
