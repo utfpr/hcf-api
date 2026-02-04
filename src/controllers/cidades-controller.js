@@ -3,6 +3,7 @@ import { Op } from 'sequelize';
 import pick from '~/helpers/pick';
 
 import BadRequestException from '../errors/bad-request-exception';
+import limparEspacos from '../helpers/limpa-espaco';
 import models from '../models';
 import codigos from '../resources/codigos-http';
 import verifyRecaptcha from '../utils/verify-recaptcha';
@@ -10,8 +11,8 @@ import verifyRecaptcha from '../utils/verify-recaptcha';
 const { Cidade, LocalColeta, Tombo, Reino, Familia, Subfamilia, Genero, Especie, Subespecie, Variedade, sequelize } = models;
 
 export const cadastrarCidade = (req, res, next) => {
-    const { nome, estado_id: estadoId, latitude, longitude } = req.body;
-
+    let { nome, estado_id: estadoId, latitude, longitude } = req.body;
+    nome = limparEspacos(nome);
     const callback = async transaction => {
         const cidadeEncontrada = await Cidade.findOne({
             where: { nome, estado_id: estadoId },
@@ -29,7 +30,7 @@ export const cadastrarCidade = (req, res, next) => {
 
         const cidadeCriada = await Cidade.create(
             { nome, estado_id: estadoId, latitude, longitude },
-            { transaction }
+            { transaction },
         );
 
         return cidadeCriada;
@@ -47,7 +48,10 @@ export const cadastrarCidade = (req, res, next) => {
 export const atualizarCidade = async (req, res, next) => {
     try {
         const { cidadeId } = req.params;
-        const dados = pick(req.body, ['nome', 'estado_id', 'latitude', 'longitude']);
+        let dados = pick(req.body, ['nome', 'estado_id', 'latitude', 'longitude']);
+        if (dados.nome) {
+            dados.nome = limparEspacos(dados.nome);
+        }
         const cidadeAtual = await Cidade.findOne({ where: { id: cidadeId } });
         if (!cidadeAtual) {
             return res.status(404).json({
@@ -116,8 +120,8 @@ export const listarCidadesEstados = async (req, res, next) => {
                 },
             ],
             order: [
-                [sequelize.literal('LOWER(Cidade.nome)'), 'ASC'],
-                [sequelize.literal('LOWER(estado.nome)'), 'ASC'],
+                [sequelize.fn('LOWER', sequelize.col('cidades.nome')), 'ASC'],
+                [sequelize.fn('LOWER', sequelize.col('estado.nome')), 'ASC'],
             ],
         });
 
@@ -185,7 +189,7 @@ export const listaTodosCidades = where =>
                 attributes: ['id', 'nome', 'sigla', 'pais_id'],
             },
         ],
-        order: [[sequelize.literal('LOWER(`cidades`.`nome`)'), 'ASC']],
+        order: [[sequelize.fn('LOWER', sequelize.col('cidades.nome')), 'ASC']],
     });
 
 export const listagem = (request, response, next) => {

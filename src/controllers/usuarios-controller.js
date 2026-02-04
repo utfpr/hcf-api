@@ -2,6 +2,7 @@ import nodemailer from 'nodemailer';
 
 import { UserRegistrationDTO } from '../dtos/UserRegistrationDTO';
 import BadRequestExeption from '../errors/bad-request-exception';
+import limparEspacos from '../helpers/limpa-espaco';
 import { comparaSenha, gerarSenha } from '../helpers/senhas';
 import { constroiPayloadUsuario, geraTokenResetSenha, geraTokenUsuario } from '../helpers/tokens';
 import models from '../models';
@@ -157,7 +158,11 @@ export const listagem = (request, response, next) => {
 
 export const cadastro = (request, response, next) => {
     const { body } = request;
-
+    let { email, nome } = request.body;
+    email = limparEspacos(email);
+    nome = limparEspacos(nome);
+    request.body.email = email;
+    request.body.nome = nome;
     Promise.resolve()
         .then(() => encontraUsuarioAtivoPorEmail(body.email))
         .then(usuario => {
@@ -179,6 +184,9 @@ export const cadastro = (request, response, next) => {
 
 export const editar = (request, response, next) => {
     const { body, params } = request;
+    let { email, nome } = body;
+    if (email) body.email = limparEspacos(email);
+    if (nome) body.nome = limparEspacos(nome);
     const usuarioId = parseInt(params.usuario_id);
     Promise.resolve()
         .then(() => encontraUsuarioAtivoPorEmail(body.email))
@@ -342,9 +350,9 @@ export const solicitarTrocaDeSenha = async (request, response, next) => {
                 },
             });
 
-            const link = `${process.env.URL_PAINEL}reset-senha?token=${token}`;
+            const link = `${process.env.PAINEL_BASE_URL}/alterar-senha?token=${token}`;
             await transporter.sendMail({
-                from: process.env.SMTP_FROM || '"Sistema HCF" <no-reply@hcf.com>',
+                from: process.env.SMTP_FROM || '"Sistema Herbário" <no-reply@hcf.com>',
                 to: email,
                 subject: 'Redefinição de senha',
                 html: `

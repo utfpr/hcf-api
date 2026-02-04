@@ -5,4 +5,6 @@ export default {
     303: 'Erro ao cadastrar este relevo',
     304: 'Vegetacao já cadastrada.',
     305: 'Erro ao cadastrar a vegetacao',
+    306: 'Fase sucessional já cadastrada.',
+    307: 'Erro ao cadastrar a fase sucessional',
 };

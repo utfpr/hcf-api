@@ -25,6 +25,7 @@ function associate(modelos) {
         TomboIdentificador,
         Identificador,
         Cidade,
+        FaseSucessional,
     } = modelos;
 
     Tombo.hasMany(TomboFoto, {
@@ -134,6 +135,10 @@ function associate(modelos) {
 
     Tombo.belongsTo(Cidade, {
         foreignKey: 'cidade_id',
+    });
+
+    Tombo.belongsTo(FaseSucessional, {
+        foreignKey: 'fase_sucessional_id',
     });
 }
 
@@ -259,6 +264,18 @@ export default (Sequelize, DataTypes) => {
             allowNull: true,
         },
         solo_id: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
+        relevo_id: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
+        vegetacao_id: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
+        fase_sucessional_id: {
             type: DataTypes.INTEGER,
             allowNull: true,
         },
