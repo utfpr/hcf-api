@@ -181,11 +181,12 @@ async function main(): Promise<void> {
   const limit = pLimit(MAX_CONCURRENCY)
 
   try {
-    const { rows: cidades } = await client.query<Cidade>(
+    const result = await client.query<Cidade>(
       'SELECT c.id, c.nome, ST_AsBinary(c.poligono) AS pol_wkb FROM public.cidades c JOIN public.estados e ON c.estado_id = e.id WHERE e.pais_id = 76;'
     )
+    const cidades = result.rows
 
-    const tarefas = cidades.map(c =>
+    const tarefas = cidades.map((c: Cidade) =>
       limit(async () => {
         const res = await processarCidade(client, municipios, c)
         await delay(REQUEST_DELAY_MS)
