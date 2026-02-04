@@ -134,7 +134,7 @@ function RelacaoLocaisColeta({ dados, total, textoFiltro, showCoord = false }: R
             <h1>Município: {item.municipio}</h1>
           </div>
           <div>
-            <h1>Local: {item.local}</h1>
+            <h1 className="longText">Local: {item.local}</h1>
           </div>
         </div>
         {renderTable(item.registros)}
