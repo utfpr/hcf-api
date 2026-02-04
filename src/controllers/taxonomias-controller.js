@@ -238,7 +238,7 @@ export const excluirFamilia = (request, response, next) => {
                         id,
                     },
                     transaction,
-                })
+                }),
             );
 
     sequelize
@@ -383,7 +383,7 @@ export const excluirSubfamilia = (request, response, next) => {
                         id,
                     },
                     transaction,
-                })
+                }),
             );
 
     sequelize
@@ -560,7 +560,7 @@ export const excluirGeneros = (request, response, next) => {
                         id,
                     },
                     transaction,
-                })
+                }),
             );
 
     sequelize
@@ -774,7 +774,7 @@ export const excluirEspecies = (request, response, next) => {
                         id,
                     },
                     transaction,
-                })
+                }),
             );
 
     sequelize
@@ -1014,7 +1014,7 @@ export const excluirSubespecies = (request, response, next) => {
                         id,
                     },
                     transaction,
-                })
+                }),
             );
 
     sequelize
@@ -1249,7 +1249,7 @@ export const excluirVariedades = (request, response, next) => {
             }
         })
         .then(() =>
-            Promise.all([Tombo.count({ where: { variedade_id: id }, transaction })])
+            Promise.all([Tombo.count({ where: { variedade_id: id }, transaction })]),
         )
         .then(([tombosCount]) => {
             if (tombosCount > 0) {

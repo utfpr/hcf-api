@@ -26,7 +26,7 @@ import {
 export const preparaRequisicao = (request, response) => {
     const { periodicidade } = request.query;
     const proximaAtualizacao = request.query.data_proxima_atualizacao;
-    selectEstaExecutandoServico("SPECIESLINK").then(listaExecucaoSpecieslink => {
+    selectEstaExecutandoServico('SPECIESLINK').then(listaExecucaoSpecieslink => {
         if (listaExecucaoSpecieslink.length > 0) {
             const execucao = listaExecucaoSpecieslink[0].dataValues;
             const periodicidadeBD = execucao.periodicidade;
@@ -46,7 +46,7 @@ export const preparaRequisicao = (request, response) => {
         } else {
             selectTemExecucaoServico('SPECIESLINK').then(execucaoSpecieslink => {
                 if (execucaoSpecieslink.length === 0) {
-                    insereExecucao(getHoraAtual(), null, periodicidade, proximaAtualizacao, "SPECIESLINK").then(() => {
+                    insereExecucao(getHoraAtual(), null, periodicidade, proximaAtualizacao, 'SPECIESLINK').then(() => {
                         response.status(200).json(JSON.parse(' { "result": "success" } '));
                     });
                 } else {
@@ -71,7 +71,7 @@ export const preparaRequisicao = (request, response) => {
  * @param {*} response resposta enviada ao front end
  */
 export const estaExecutando = (_, response) => {
-    selectEstaExecutandoServico("SPECIESLINK").then(listaExecucaoSpecieslink => {
+    selectEstaExecutandoServico('SPECIESLINK').then(listaExecucaoSpecieslink => {
         response.header('Access-Control-Allow-Origin', '*');
         response.header('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type');
         response.header('Access-Control-Allow-Methods', 'GET');

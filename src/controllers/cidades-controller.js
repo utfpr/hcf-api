@@ -30,7 +30,7 @@ export const cadastrarCidade = (req, res, next) => {
 
         const cidadeCriada = await Cidade.create(
             { nome, estado_id: estadoId, latitude, longitude },
-            { transaction }
+            { transaction },
         );
 
         return cidadeCriada;
