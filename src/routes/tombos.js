@@ -8,7 +8,7 @@ import {
     desativar, obterTombo, cadastrarTipo, buscarTipos, cadastrarColetores, buscarColetores,
     alteracao, getNumeroColetor, getUltimoNumeroTombo, getCodigoBarraTombo,
     editarCodigoBarra, getUltimoNumeroCodigoBarras, postCodigoBarraTombo,
-    getUltimoCodigoBarra, deletarCodigoBarras,
+    getUltimoCodigoBarra, deletarCodigoBarras,listagemTombosPorIdentificador
 } from '../controllers/tombos-controller';
 import exportarTombosController from '../controllers/tombos-exportacoes-controller';
 import criaJsonMiddleware from '../middlewares/json-middleware';
@@ -738,6 +738,12 @@ export default app => {
         .get([
             listagensMiddleware,
             obterTombo,
+        ]);
+
+    app.route('/tombos/identificadores/:identificador_id')
+        .get([
+            listagensMiddleware,
+            listagemTombosPorIdentificador,
         ]);
 
     /**

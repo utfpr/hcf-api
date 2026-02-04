@@ -763,6 +763,57 @@ export const listagem = (request, response, next) => {
         .catch(next);
 };
 
+export async function listagemTombosPorIdentificador(request, response, next) {
+  try {
+    const { pagina, limite, offset } = request.paginacao;
+    const { identificador_id } = request.params;
+
+    const retorno = {
+      metadados: { total: 0, pagina, limite },
+      tombos: [],
+    };
+
+    const result = await Tombo.findAndCountAll({
+      distinct: true, // importante por causa do join N:N
+      attributes: [
+        "hcf",
+        "nomes_populares",
+        "nome_cientifico",
+        "data_coleta_dia",
+        "data_coleta_mes",
+        "data_coleta_ano",
+        "created_at",
+      ],
+      include: [
+        {
+          model: Identificador,
+          as: "identificadores",
+          attributes: [],
+          through: { attributes: [] },
+          where: { id: identificador_id },
+          required: true,
+        },
+        {
+          model: Coletor,
+          attributes: ["id", "nome"],
+          required: false,
+        },
+      ],
+      order: [["hcf", "DESC"]],
+      limit: limite,
+      offset,
+      subQuery: false,
+    });
+
+    retorno.metadados.total = result.count;
+    retorno.tombos = result.rows;
+
+    return response.status(codigos.LISTAGEM).json(retorno);
+  } catch (error) {
+    return next(error);
+  }
+}
+
 export const getDadosCadTombo = (request, response, next) => {
     const retorno = {};
     const callback = transaction => Promise.resolve()
