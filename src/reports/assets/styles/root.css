@@ -109,8 +109,8 @@ tfoot {
 
 .grupoLocalColeta {
   display: flex;
-  align-items: center;
   gap: 1rem;
+  width: 100%;
 }
 
 .grupoLocalColeta div:first-child {
@@ -124,10 +124,17 @@ tfoot {
 }
 
 .grupoLocalColeta div h1 {
-  white-space: nowrap;         /* impede quebra de linha */
-  overflow: hidden;            /* esconde o que ultrapassa */
+  white-space: nowrap; 
+  overflow: hidden;        
   text-overflow: ellipsis;  
   text-align: left;
+}
+
+.grupoLocalColeta div h1.longText { 
+  text-align: left;
+  word-break: break-word;
+  max-width: 100%;
+  white-space: normal;
 }
 
 .grade-imagens {

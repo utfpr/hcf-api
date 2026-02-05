@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+
 import { UserRegistrationDTO } from '../dtos/UserRegistrationDTO';
 import BadRequestExeption from '../errors/bad-request-exception';
 import limparEspacos from '../helpers/limpa-espaco';
@@ -349,9 +350,9 @@ export const solicitarTrocaDeSenha = async (request, response, next) => {
                 },
             });
 
-            const link = `${process.env.URL_PAINEL}reset-senha?token=${token}`;
+            const link = `${process.env.PAINEL_BASE_URL}/alterar-senha?token=${token}`;
             await transporter.sendMail({
-                from: process.env.SMTP_FROM || '"Sistema HCF" <no-reply@hcf.com>',
+                from: process.env.SMTP_FROM || '"Sistema Herbário" <no-reply@hcf.com>',
                 to: email,
                 subject: 'Redefinição de senha',
                 html: `
