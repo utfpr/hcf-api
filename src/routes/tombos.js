@@ -8,7 +8,7 @@ import {
     desativar, obterTombo, cadastrarTipo, buscarTipos, cadastrarColetores, buscarColetores,
     alteracao, getNumeroColetor, getUltimoNumeroTombo, getCodigoBarraTombo,
     editarCodigoBarra, getUltimoNumeroCodigoBarras, postCodigoBarraTombo,
-    getUltimoCodigoBarra, deletarCodigoBarras,listagemTombosPorIdentificador
+    getUltimoCodigoBarra, deletarCodigoBarras, listagemTombosPorIdentificador,
 } from '../controllers/tombos-controller';
 import exportarTombosController from '../controllers/tombos-exportacoes-controller';
 import criaJsonMiddleware from '../middlewares/json-middleware';
