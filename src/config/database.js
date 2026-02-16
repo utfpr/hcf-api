@@ -9,7 +9,7 @@ export const password = PG_PASSWORD;
 export const options = {
     dialect: 'postgres',
     host: PG_HOST,
-    port: parseInt(PG_PORT) || 3306,
+    port: parseInt(PG_PORT) || 5432,
     logging: true,
 
     define: {

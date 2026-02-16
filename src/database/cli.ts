@@ -12,9 +12,9 @@ import { MigrationRepository } from './migration-repository'
 const {
   PG_DATABASE,
   PG_HOST,
-  PG_PORT = '3306',
-  PG_USERNAME,
-  PG_PASSWORD
+  PG_PORT = '5432',
+  PG_MIGRATION_USERNAME,
+  PG_MIGRATION_PASSWORD
 } = process.env
 
 const migrationKnex = createKnex({
@@ -23,8 +23,8 @@ const migrationKnex = createKnex({
     database: PG_DATABASE,
     host: PG_HOST,
     port: parseInt(PG_PORT),
-    user: PG_USERNAME,
-    password: PG_PASSWORD,
+    user: PG_MIGRATION_USERNAME,
+    password: PG_MIGRATION_PASSWORD,
     multipleStatements: true
   }
 })
