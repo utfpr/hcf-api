@@ -56,7 +56,6 @@ const obterModeloSPlinkerLotes = async (limit, offset, request, response) => {
             'especie_id',
             'genero_id',
             'familia_id',
-            'reino_id',
             'sub_familia_id',
             'sub_especie_id',
             'colecao_anexa_id',
@@ -97,10 +96,12 @@ const obterModeloSPlinkerLotes = async (limit, offset, request, response) => {
                 model: TomboFoto,
             },
             {
-                model: Reino,
-            },
-            {
                 model: Familia,
+                include: [
+                    {
+                        model: Reino,
+                    },
+                ],
             },
             {
                 model: Genero,
@@ -133,7 +134,7 @@ const obterModeloSPlinkerLotes = async (limit, offset, request, response) => {
     });
 
     tombos.forEach(tombo => {
-        const kingdom = tombo.reino?.nome || '  ';
+        const kingdom = tombo.familia?.reino?.nome || '  ';
         const family = tombo.familia?.nome || ' ';
         const genus = tombo.genero?.nome || ' ';
         const species = tombo.especy?.nome || ' ';
@@ -219,9 +220,7 @@ export const obterModeloSPLinker = async (request, response, next) => {
 
     const limit = request.query.limit > 1000 ? 1000 : request.query.limit || 1000;
 
-    const quantidadeTombos = await Tombo.count(
-        { distinct: true },
-    );
+    const quantidadeTombos = await Tombo.count({ col: 'hcf' });
 
     response.set({
         'Content-Type': 'text/plain',
