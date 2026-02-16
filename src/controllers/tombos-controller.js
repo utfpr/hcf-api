@@ -398,7 +398,7 @@ export const cadastro = (request, response, next) => {
                     status,
                     tombo_json: JSON.stringify(tomboData),
                     ativo: true,
-                    identificacao: 0,
+                    identificacao: false,
                 };
                 tomboCriado = tombo;
 
@@ -487,7 +487,7 @@ function alteracaoIdentificador(request, transaction) {
             status: 'ESPERANDO',
             tombo_json: JSON.stringify(update),
             ativo: true,
-            identificacao: 1,
+            identificacao: true,
         }, { transaction }))
         .then(alteracaoIdent => {
             if (request.usuario.tipo_usuario_id === 3) {
@@ -613,7 +613,7 @@ function alteracaoCuradorouOperador(request, response, transaction) {
         status: 'ESPERANDO',
         tombo_json: JSON.stringify(update),
         ativo: true,
-        identificacao: 1,
+        identificacao: true,
     }, { transaction })
         .then(alteracaoCriada => {
             if (request.usuario.tipo_usuario_id === 1) {
@@ -684,13 +684,13 @@ export const listagem = (request, response, next) => {
         nome_cientifico: nomeCientifico, hcf, tipo, nome_popular: nomePopular, situacao,
     } = request.query;
     let where = {
-        rascunho: 0,
+        rascunho: false,
     };
 
     if (nomeCientifico) {
         where = {
             ...where,
-            nome_cientifico: { [Op.like]: `%${nomeCientifico}%` },
+            nome_cientifico: { [Op.iLike]: `%${nomeCientifico}%` },
         };
     }
 
@@ -711,7 +711,7 @@ export const listagem = (request, response, next) => {
     if (nomePopular) {
         where = {
             ...where,
-            nomes_populares: { [Op.like]: `%${nomePopular}%` },
+            nomes_populares: { [Op.iLike]: `%${nomePopular}%` },
         };
     }
 
@@ -1013,7 +1013,7 @@ export const buscarColetores = (request, response, next) => {
     if (nome) {
         where = {
             ...where,
-            nome: { [Op.like]: `%${nome}%` },
+            nome: { [Op.iLike]: `%${nome}%` },
         };
     }
 
@@ -1046,7 +1046,7 @@ export const obterTombo = async (request, response, next) => {
                 Tombo.findOne({
                     where: {
                         hcf: id,
-                        rascunho: 0,
+                        rascunho: false,
                     },
                     attributes: [
                         'data_coleta_mes',
@@ -1533,7 +1533,7 @@ export const getNumeroTombo = (request, response, next) => {
     Promise.resolve()
         .then(() => Tombo.findAll({
             where: {
-                hcf: { [Op.like]: `%${id}%` },
+                hcf: { [Op.iLike]: `%${id}%` },
             },
             attributes: [
                 'hcf',
@@ -1722,6 +1722,38 @@ export const editarCodigoBarra = (request, response, next) => {
             response.status(codigos.EDITAR_SEM_RETORNO).send();
         })
         .catch(next);
+};
+
+export const verificarCoordenada = async (request, response, next) => {
+    try {
+        const { cidade_id: cidadeId, latitude, longitude } = request.body;
+
+        if (!cidadeId || !latitude || !longitude) {
+            return response.status(400).json({ error: 'Parâmetros Inválidos' });
+        }
+
+        const query = `
+            SELECT ST_Contains(
+                poligono,
+                ST_SetSRID(ST_POINT($1, $2), 4674)
+            ) AS dentro
+            FROM cidades
+            WHERE id = $3;
+        `;
+
+        const rows = await sequelize.query(query, {
+            bind: [longitude, latitude, cidadeId],
+            type: models.Sequelize.QueryTypes.SELECT,
+        });
+
+        if (!rows || rows.length === 0) {
+            return response.status(404).json({ error: 'Cidade não encontrada' });
+        }
+
+        return response.json({ dentro: rows[0].dentro });
+    } catch (err) {
+        return next(err);
+    }
 };
 
 export default {};

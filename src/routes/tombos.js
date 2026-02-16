@@ -8,7 +8,7 @@ import {
     desativar, obterTombo, cadastrarTipo, buscarTipos, cadastrarColetores, buscarColetores,
     alteracao, getNumeroColetor, getUltimoNumeroTombo, getCodigoBarraTombo,
     editarCodigoBarra, getUltimoNumeroCodigoBarras, postCodigoBarraTombo,
-    getUltimoCodigoBarra, deletarCodigoBarras, listagemTombosPorIdentificador,
+    verificarCoordenada, getUltimoCodigoBarra, deletarCodigoBarras, listagemTombosPorIdentificador,
 } from '../controllers/tombos-controller';
 import exportarTombosController from '../controllers/tombos-exportacoes-controller';
 import criaJsonMiddleware from '../middlewares/json-middleware';
@@ -1278,4 +1278,55 @@ export default app => {
      */
     app.route('/pontosPorNomeCientifico')
         .get(buscarPontosPorNomeCientifico);
+    /**
+     * @swagger
+     * /tombos/verificarCoordenada:
+     *   post:
+     *     summary: Verifica se a coordenada (latitude/longitude) está dentro do polígono da cidade informada
+     *     tags: [Tombos]
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               cidade_id:
+     *                 type: integer
+     *                 description: ID da cidade a ser verificada
+     *               latitude:
+     *                 type: number
+     *                 format: float
+     *                 description: Latitude em coordenadas decimais
+     *               longitude:
+     *                 type: number
+     *                 format: float
+     *                 description: Longitude em coordenadas decimais
+     *             required:
+     *               - cidade_id
+     *               - latitude
+     *               - longitude
+     *     responses:
+     *       200:
+     *         description: Retorna objeto com campo "dentro" indicando se o ponto está dentro do polígono
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 dentro:
+     *                   type: boolean
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
+     */
+    app.route('/tombos/verificarCoordenada')
+        .post([
+            verificarCoordenada,
+        ]);
 };

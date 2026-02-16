@@ -95,7 +95,7 @@ export const listarCidadesEstados = async (req, res, next) => {
         const where = {};
 
         if (nome) {
-            where.nome = { [Op.like]: `%${nome}%` };
+            where.nome = { [Op.iLike]: `%${nome}%` };
         }
 
         if (estadoId) {
@@ -120,8 +120,8 @@ export const listarCidadesEstados = async (req, res, next) => {
                 },
             ],
             order: [
-                [sequelize.literal('LOWER(Cidade.nome)'), 'ASC'],
-                [sequelize.literal('LOWER(estado.nome)'), 'ASC'],
+                [sequelize.fn('LOWER', sequelize.col('cidades.nome')), 'ASC'],
+                [sequelize.fn('LOWER', sequelize.col('estado.nome')), 'ASC'],
             ],
         });
 
@@ -189,7 +189,7 @@ export const listaTodosCidades = where =>
                 attributes: ['id', 'nome', 'sigla', 'pais_id'],
             },
         ],
-        order: [[sequelize.literal('LOWER(`cidades`.`nome`)'), 'ASC']],
+        order: [[sequelize.fn('LOWER', sequelize.col('cidades.nome')), 'ASC']],
     });
 
 export const listagem = (request, response, next) => {
@@ -205,7 +205,7 @@ export const listagem = (request, response, next) => {
     if (request.query.nome) {
         where = {
             ...where,
-            nome: { [Op.like]: `%${request.query.nome}%` },
+            nome: { [Op.iLike]: `%${request.query.nome}%` },
         };
     }
 
@@ -288,7 +288,7 @@ export const ListaTodosOsTombosComLocalizacao = async (req, res, next) => {
 
         if (search) {
             queryOptions.where.hcf = {
-                [Op.like]: `%${search}%`,
+                [Op.iLike]: `%${search}%`,
             };
         }
 
@@ -571,7 +571,7 @@ export const buscarPontosPorNomePopular = async (req, res, next) => {
             where: {
                 latitude: { [Op.ne]: null },
                 longitude: { [Op.ne]: null },
-                nomes_populares: { [Op.like]: `%${nomePopular}%` },
+                nomes_populares: { [Op.iLike]: `%${nomePopular}%` },
             },
             attributes: ['hcf', 'latitude', 'longitude', 'nomes_populares'],
         });
