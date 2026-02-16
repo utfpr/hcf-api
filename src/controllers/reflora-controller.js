@@ -19,66 +19,33 @@ import {
 export const preparaRequisicao = (request, response) => {
     const { periodicidade } = request.query;
     const proximaAtualizacao = request.query.data_proxima_atualizacao;
-
-    selectEstaExecutandoServico(1).then(listaExecucaoReflora => {
+    selectEstaExecutandoServico('REFLORA').then(listaExecucaoReflora => {
         if (listaExecucaoReflora.length > 0) {
             const execucao = listaExecucaoReflora[0].dataValues;
             const { periodicidade: periodicidadeBD } = execucao;
 
             if (periodicidadeBD === 'MANUAL') {
-                response.status(200).json({ result: 'failed' });
-                return;
-            }
-
-            if (
-                periodicidadeBD === 'SEMANAL'
-                || periodicidadeBD === '1MES'
-                || periodicidadeBD === '2MESES'
-            ) {
-                const { data_proxima_atualizacao: dataProximaAtualizacao } = execucao;
-
-                const podeExecutar = !dataProximaAtualizacao
-                    || moment().isAfter(moment(dataProximaAtualizacao), 'day');
-
-                if (podeExecutar) {
-                    atualizaTabelaConfiguracao(
-                        1,
-                        execucao.id,
-                        getHoraAtual(),
-                        null,
-                        periodicidade,
-                        proximaAtualizacao,
-                    ).then(() => {
-                        response.status(200).json({ result: 'success' });
+                response.status(200).json(JSON.parse(' { "result": "failed" } '));
+            } else if ((periodicidadeBD === 'SEMANAL') || (periodicidadeBD === '1MES') || (periodicidadeBD === '2MESES')) {
+                if (moment().format('DD/MM/YYYY') !== listaExecucaoReflora[0].dataValues.data_proxima_atualizacao) {
+                    const { id } = listaExecucaoReflora[0].dataValues;
+                    atualizaTabelaConfiguracao('REFLORA', id, getHoraAtual(), null, periodicidade, proximaAtualizacao).then(() => {
+                        response.status(200).json(JSON.parse(' { "result": "success" } '));
                     });
                 } else {
                     response.status(200).json({ result: 'failed' });
                 }
             }
         } else {
-            selectTemExecucaoServico(1).then(execucaoReflora => {
+            selectTemExecucaoServico('REFLORA').then(execucaoReflora => {
                 if (execucaoReflora.length === 0) {
-                    insereExecucao(
-                        getHoraAtual(),
-                        null,
-                        periodicidade,
-                        proximaAtualizacao,
-                        1,
-                    ).then(() => {
-                        response.status(200).json({ result: 'success' });
+                    insereExecucao(getHoraAtual(), null, periodicidade, proximaAtualizacao, 'REFLORA').then(() => {
+                        response.status(200).json(JSON.parse(' { "result": "success" } '));
                     });
                 } else {
-                    const execucao = execucaoReflora[0].dataValues;
-
-                    atualizaTabelaConfiguracao(
-                        1,
-                        execucao.id,
-                        getHoraAtual(),
-                        null,
-                        periodicidade,
-                        proximaAtualizacao,
-                    ).then(() => {
-                        response.status(200).json({ result: 'success' });
+                    const { id } = execucaoReflora[0].dataValues;
+                    atualizaTabelaConfiguracao('REFLORA', id, getHoraAtual(), null, periodicidade, proximaAtualizacao).then(() => {
+                        response.status(200).json(JSON.parse(' { "result": "success" } '));
                     });
                 }
             });
@@ -91,7 +58,7 @@ export const preparaRequisicao = (request, response) => {
  * de execução do Reflora.
  */
 export const estaExecutando = (_, response) => {
-    selectEstaExecutandoServico(1).then(listaExecucaoReflora => {
+    selectEstaExecutandoServico('REFLORA').then(listaExecucaoReflora => {
         response.header('Access-Control-Allow-Origin', '*');
         response.header('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type');
         response.header('Access-Control-Allow-Methods', 'GET');

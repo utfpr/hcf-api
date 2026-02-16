@@ -95,7 +95,7 @@ export const buscarRelevos = (request, response, next) => {
     if (request.query.nome) {
         where = {
             ...where,
-            nome: { [sequelize.Op.like]: `%${request.query.nome}%` },
+            nome: { [sequelize.Op.iLike]: `%${request.query.nome}%` },
         };
     }
 
@@ -117,7 +117,7 @@ export const buscarSolos = (request, response, next) => {
     if (request.query.nome) {
         where = {
             ...where,
-            nome: { [sequelize.Op.like]: `%${request.query.nome}%` },
+            nome: { [sequelize.Op.iLike]: `%${request.query.nome}%` },
         };
     }
 
@@ -139,7 +139,7 @@ export const buscarVegetacoes = (request, response, next) => {
     if (request.query.nome) {
         where = {
             ...where,
-            nome: { [sequelize.Op.like]: `%${request.query.nome}%` },
+            nome: { [sequelize.Op.iLike]: `%${request.query.nome}%` },
         };
     }
 
@@ -237,7 +237,7 @@ export const buscarLocaisColeta = async (request, response, next) => {
         ];
 
         if (descricao) {
-            where.descricao = { [sequelize.Op.like]: `%${descricao}%` };
+            where.descricao = { [sequelize.Op.iLike]: `%${descricao}%` };
         }
 
         if (cidadeId) {
@@ -254,7 +254,7 @@ export const buscarLocaisColeta = async (request, response, next) => {
         const queryOptions = {
             where,
             include,
-            order: [[sequelize.literal('LOWER(descricao)'), 'ASC']],
+            order: [[sequelize.fn('LOWER', sequelize.col('descricao')), 'ASC']],
         };
 
         if (getAll !== 'true') {

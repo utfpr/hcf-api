@@ -42,7 +42,7 @@ export const listagem = (request, response, next) => {
         resultado: {},
     };
     let where = {
-        ativo: 1,
+        ativo: true,
     };
     let whereUsuario = {};
     if (status) {
@@ -58,7 +58,7 @@ export const listagem = (request, response, next) => {
     }
     if (nomeUsuario) {
         whereUsuario = {
-            nome: { [Op.like]: `%${nomeUsuario}%` },
+            nome: { [Op.iLike]: `%${nomeUsuario}%` },
         };
     }
     const callback = transaction => Promise.resolve()
@@ -688,7 +688,6 @@ const comparaDoisTombosOperador = (tombo, tomboAlterado) => {
                 parametros.push(insereNoParametro('1', 'Coleções anexas tipo', tombo.colecoes_anexa.tipo, tomboAlterado.colecoes_anexas.tipo));
             }
             if (tombo.colecoes_anexa.observacoes !== tomboAlterado.colecoes_anexas.observacoes) {
-
                 parametros.push(
                     insereNoParametro(
                         '2',
@@ -1615,7 +1614,6 @@ export const visualizarComJsonNome = (alteracao, hcf, transaction) => new Promis
         transaction,
     })
         .then(tombos => {
-
             var jsonRetorno = [];
             if (tombos.especy) {
                 if (alteracao.especie_nome) {

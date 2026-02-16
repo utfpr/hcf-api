@@ -20,7 +20,7 @@ export const listagem = (request, response, next) => {
     if (request.query.nome) {
         where = {
             ...where,
-            nome: { [Op.like]: `%${request.query.nome}%` },
+            nome: { [Op.iLike]: `%${request.query.nome}%` },
         };
     }
 

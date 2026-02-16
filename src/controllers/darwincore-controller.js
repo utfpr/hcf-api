@@ -52,7 +52,7 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
         limit,
         offset,
         where: {
-            rascunho: 0,
+            rascunho: false,
         },
         attributes: [
             'data_coleta_mes',
