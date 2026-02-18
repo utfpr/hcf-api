@@ -398,7 +398,7 @@ export const cadastro = (request, response, next) => {
                     status,
                     tombo_json: JSON.stringify(tomboData),
                     ativo: true,
-                    identificacao: false,
+                    identificacao: 1,
                 };
                 tomboCriado = tombo;
 
@@ -487,7 +487,7 @@ function alteracaoIdentificador(request, transaction) {
             status: 'ESPERANDO',
             tombo_json: JSON.stringify(update),
             ativo: true,
-            identificacao: true,
+            identificacao: 1,
         }, { transaction }))
         .then(alteracaoIdent => {
             if (request.usuario.tipo_usuario_id === 3) {
@@ -613,7 +613,7 @@ function alteracaoCuradorouOperador(request, response, transaction) {
         status: 'ESPERANDO',
         tombo_json: JSON.stringify(update),
         ativo: true,
-        identificacao: true,
+        identificacao: 1,
     }, { transaction })
         .then(alteracaoCriada => {
             if (request.usuario.tipo_usuario_id === 1) {
@@ -1472,7 +1472,7 @@ export const obterTombo = async (request, response, next) => {
                     where: {
                         tombo_hcf: dadosTombo.hcf,
                         status: 'APROVADO',
-                        identificacao: true,
+                        identificacao: 1,
                     },
                     order: [['created_at', 'DESC']],
                 }),
