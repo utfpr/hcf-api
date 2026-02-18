@@ -58,7 +58,7 @@ export const listagem = (request, response, next) => {
     }
     if (nomeUsuario) {
         whereUsuario = {
-            nome: { [Op.like]: `%${nomeUsuario}%` },
+            nome: { [Op.iLike]: `%${nomeUsuario}%` },
         };
     }
     const callback = transaction => Promise.resolve()
@@ -113,7 +113,7 @@ export const desativar = (request, response, next) => {
     const callback = transaction => Promise.resolve()
         .then(() => Alteracao.findOne({
             where: {
-                ativo: true,
+                ativo: 1,
                 id,
             },
             transaction,
@@ -123,7 +123,7 @@ export const desativar = (request, response, next) => {
                 throw new BadRequestExeption(800);
             }
             return Alteracao.update({
-                ativo: false,
+                ativo: 0,
             }, {
                 where: {
                     id,
@@ -688,7 +688,6 @@ const comparaDoisTombosOperador = (tombo, tomboAlterado) => {
                 parametros.push(insereNoParametro('1', 'Coleções anexas tipo', tombo.colecoes_anexa.tipo, tomboAlterado.colecoes_anexas.tipo));
             }
             if (tombo.colecoes_anexa.observacoes !== tomboAlterado.colecoes_anexas.observacoes) {
-
                 parametros.push(
                     insereNoParametro(
                         '2',
@@ -1480,7 +1479,7 @@ export const aprovarPendencia = async (alteracao, hcf, transaction) => {
         updateTombo.coletor_id = alteracao.coletor_id;
     }
 
-    updateTombo.rascunho = false;
+    updateTombo.rascunho = 0;
 
     if (Object.keys(updateTombo).length > 0) {
         await Tombo.update(updateTombo, {
@@ -1574,7 +1573,7 @@ export const aprovarPendencia = async (alteracao, hcf, transaction) => {
     }
 
     const tomboFinal = await Tombo.findOne({
-        where: { hcf, ativo: true },
+        where: { hcf, ativo: 1 },
         transaction,
         raw: true,
         nest: true,
@@ -1615,7 +1614,6 @@ export const visualizarComJsonNome = (alteracao, hcf, transaction) => new Promis
         transaction,
     })
         .then(tombos => {
-
             var jsonRetorno = [];
             if (tombos.especy) {
                 if (alteracao.especie_nome) {
@@ -1740,7 +1738,7 @@ export async function visualizar(request, response, next) {
     try {
         const id = request.params.pendencia_id;
         const alteracao = await Alteracao.findOne({
-            where: { ativo: true, id },
+            where: { ativo: 1, id },
         });
 
         if (!alteracao) {
@@ -2153,14 +2151,14 @@ export function aceitarPendencia(request, response, next) {
             status,
         }, {
             where: {
-                ativo: true,
+                ativo: 1,
                 id,
             },
             transaction,
         }))
         .then(() => Alteracao.findOne({
             where: {
-                ativo: true,
+                ativo: 1,
                 id,
             },
             transaction,

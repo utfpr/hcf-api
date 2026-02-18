@@ -169,14 +169,23 @@ export function insereExecucao(horaAtual, horaFim, periodicidadeUsuario, proxima
  * @return promessa.promise, como é assíncrono ele só retorna quando resolver, ou seja,
  * quando terminar de realizar a atualização.
  */
-export function atualizaTabelaConfiguracao(
-    idServico,
-    idExecucao,
-    horaInicio,
-    horaFim,
-    periodicidadeUsuario,
-    proximaAtualizacao,
-) {
+export function atualizaTabelaConfiguracao(idServico, idExecucao, horaInicio, horaFim, periodicidadeUsuario, proximaAtualizacao) {
+    if (idServico === 'REFLORA') {
+        const tabelaConfiguracaoReflora = modeloConfiguracao(conexao, Sequelize);
+        const promessa = Q.defer();
+        tabelaConfiguracaoReflora.update(
+            {
+                hora_inicio: horaInicio,
+                hora_fim: horaFim,
+                periodicidade: periodicidadeUsuario,
+                data_proxima_atualizacao: proximaAtualizacao,
+            },
+            { where: { id: idExecucao } },
+        ).then(() => {
+            promessa.resolve();
+        });
+        return promessa.promise;
+    }
     const tabelaConfiguracao = modeloConfiguracao(conexao, Sequelize);
     const promessa = Q.defer();
 
@@ -331,7 +340,7 @@ export function insereTabelaReflora(tabelaReflora, listaCodBarra) {
             tabelaReflora.create({
                 cod_barra: codBarra.dataValues.codigo_barra,
                 tombo_json: null,
-                ja_requisitou: false,
+                ja_requisitou: 0,
                 nro_requisicoes: 3,
             }).then(() => {
                 if (index === listaCodBarra.length - 1) {
@@ -364,7 +373,7 @@ export function insereTabelaSpecieslink(tabelaSpecieslink, listaCodBarra) {
             tabelaSpecieslink.create({
                 cod_barra: codBarra.dataValues.codigo_barra,
                 tombo_json: null,
-                ja_requisitou: false,
+                ja_requisitou: 0,
                 nro_requisicoes: 3,
             }).then(() => {
                 if (index === listaCodBarra.length - 1) {
@@ -391,7 +400,7 @@ export function selectUmCodBarra() {
         attributes: ['cod_barra'],
         where: {
             [Sequelize.Op.and]:
-                [{ nro_requisicoes: { [Sequelize.Op.ne]: 0 } }, { ja_requisitou: false }],
+                [{ nro_requisicoes: { [Sequelize.Op.ne]: 0 } }, { ja_requisitou: 0 }],
         },
         limit: 1,
     }).then(codBarra => {
@@ -415,7 +424,7 @@ export function selectUmCodBarraSpecieslink() {
         attributes: ['cod_barra'],
         where: {
             [Sequelize.Op.and]:
-                [{ nro_requisicoes: { [Sequelize.Op.ne]: 0 } }, { ja_requisitou: false }],
+                [{ nro_requisicoes: { [Sequelize.Op.ne]: 0 } }, { ja_requisitou: 0 }],
         },
         limit: 1,
     }).then(codBarra => {
@@ -427,13 +436,13 @@ export function selectUmCodBarraSpecieslink() {
 /**
  * A função atualizaTabelaReflora, ele pega a resposta da requisição do Reflora e salva
  * esse registro equivalente ao seu código de barra. Além disso, troca o valor
- * da coluna ja_requisitou de false para true na qual representa que já foi conseguido
+ * da coluna ja_requisitou de 0 para 1 na qual representa que já foi conseguido
  * a resposta da requisiçã odo Reflora.
  * @param {*} codBarra, é o código de barra na qual é necessário para colocar
  * a resposta da requisição no registro correto.
  * @param {*} json, é o JSON com a resposta vinda da requisição do Reflora.
  * @param {*} valorJaRequisitou, é o valor utilizado para marcar que já foi feita
- * a requisição, sendo false que não feito e true que foi feito a requisição.
+ * a requisição, sendo 0 que não feito e 1 que foi feito a requisição.
  */
 export function atualizaTabelaReflora(codBarra, json, valorJaRequisitou) {
     const tabelaReflora = modeloReflora(conexao, Sequelize);
@@ -458,13 +467,13 @@ export function decrementaTabelaReflora(codBarra) {
 /**
  * A função atualizaTabelaSpecieslink, ele pega a resposta da requisição do Specieslink e salva
  * esse registro equivalente ao seu código de barra. Além disso, troca o valor
- * da coluna ja_requisitou de false para true na qual representa que já foi conseguido
+ * da coluna ja_requisitou de 0 para 1 na qual representa que já foi conseguido
  * a resposta da requisiçã odo Specieslink.
  * @param {*} codBarra, é o código de barra na qual é necessário para colocar
  * a resposta da requisição no registro correto.
  * @param {*} json, é o JSON com a resposta vinda da requisição do Specieslink.
  * @param {*} valorJaRequisitou, é o valor utilizado para marcar que já foi feita
- * a requisição, sendo false que não feito e true que foi feito a requisição.
+ * a requisição, sendo 0 que não feito e 1 que foi feito a requisição.
  */
 export function atualizaTabelaSpecieslink(codBarra, json, valorJaRequisitou) {
     const tabelaSpecieslink = modeloSpecieslink(conexao, Sequelize);
@@ -496,7 +505,7 @@ export function decrementaTabelaSpecieslink(codBarra) {
 export function atualizaJaComparouTabelaReflora(codBarra) {
     const tabelaReflora = modeloReflora(conexao, Sequelize);
     tabelaReflora.update(
-        { ja_comparou: true },
+        { ja_comparou: 1 },
         { where: { cod_barra: codBarra } },
     );
 }
@@ -511,7 +520,7 @@ export function atualizaJaComparouTabelaReflora(codBarra) {
 export function atualizaJaComparouTabelaSpecieslink(codBarra) {
     const tabelaSpecieslink = modeloSpecieslink(conexao, Sequelize);
     tabelaSpecieslink.update(
-        { ja_comparou: true },
+        { ja_comparou: 1 },
         { where: { cod_barra: codBarra } },
     );
 }
@@ -531,7 +540,7 @@ export function selectUmaInformacaoSpecieslink() {
         attributes: ['cod_barra', 'tombo_json'],
         where: {
             [Sequelize.Op.and]:
-                [{ ja_comparou: false }, { ja_requisitou: true }],
+                [{ ja_comparou: 0 }, { ja_requisitou: 1 }],
         },
         limit: 1,
     }).then(informacaoSpecieslink => {
@@ -556,7 +565,7 @@ export function selectUmaInformacaoReflora() {
         attributes: ['cod_barra', 'tombo_json'],
         where: {
             [Sequelize.Op.and]:
-                [{ ja_comparou: false }, { ja_requisitou: true }],
+                [{ ja_comparou: 0 }, { ja_requisitou: 1 }],
         },
         limit: 1,
     }).then(informacaoReflora => {
@@ -787,7 +796,7 @@ export function insereAlteracaoSugerida(idUsuario, statusAlteracao, idTombo, tom
             status: statusAlteracao,
             tombo_hcf: idTombo,
             tombo_json: tomboJson,
-            identificacao: true,
+            identificacao: 1,
             data_identificacao_dia: diaIdentificacao,
             data_identificacao_mes: mesIdentificacao,
             data_identificacao_ano: anoIdentificacao,
