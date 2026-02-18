@@ -19,11 +19,11 @@ export default (Sequelize, DataTypes) => {
         },
         ja_comparou: {
             type: DataTypes.BOOLEAN,
-            defaultValue: false,
+            defaultValue: 0,
         },
         ja_requisitou: {
             type: DataTypes.BOOLEAN,
-            defaultValue: false,
+            defaultValue: 0,
         },
         nro_requisicoes: {
             type: DataTypes.INTEGER,

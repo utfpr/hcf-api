@@ -369,7 +369,7 @@ export const cadastro = (request, response, next) => {
                     jsonTombo.colecao_anexa_id = colecoesAnexas.id;
                 }
                 if (request.usuario.tipo_usuario_id === 2 || request.usuario.tipo_usuario_id === 3) {
-                    jsonTombo.rascunho = true;
+                    jsonTombo.rascunho = 1;
                 }
                 return Tombo.create(jsonTombo, { transaction });
             })
@@ -397,7 +397,7 @@ export const cadastro = (request, response, next) => {
                     usuario_id: request.usuario.id,
                     status,
                     tombo_json: JSON.stringify(tomboData),
-                    ativo: true,
+                    ativo: 1,
                     identificacao: 1,
                 };
                 tomboCriado = tombo;
@@ -486,7 +486,7 @@ function alteracaoIdentificador(request, transaction) {
             usuario_id: request.usuario.id,
             status: 'ESPERANDO',
             tombo_json: JSON.stringify(update),
-            ativo: true,
+            ativo: 1,
             identificacao: 1,
         }, { transaction }))
         .then(alteracaoIdent => {
@@ -612,7 +612,7 @@ function alteracaoCuradorouOperador(request, response, transaction) {
         usuario_id: request.usuario.id,
         status: 'ESPERANDO',
         tombo_json: JSON.stringify(update),
-        ativo: true,
+        ativo: 1,
         identificacao: 1,
     }, { transaction })
         .then(alteracaoCriada => {
@@ -665,11 +665,11 @@ export const desativar = (request, response, next) => {
             }
 
             const where = {
-                ativo: true,
+                ativo: 1,
                 hcf: params.tombo_id,
             };
 
-            return Tombo.update({ ativo: false }, { where });
+            return Tombo.update({ ativo: 0 }, { where });
         })
         .then(() => {
             response.status(204)
@@ -684,7 +684,7 @@ export const listagem = (request, response, next) => {
         nome_cientifico: nomeCientifico, hcf, tipo, nome_popular: nomePopular, situacao,
     } = request.query;
     let where = {
-        rascunho: false,
+        rascunho: 0,
     };
 
     if (nomeCientifico) {
@@ -1046,7 +1046,7 @@ export const obterTombo = async (request, response, next) => {
                 Tombo.findOne({
                     where: {
                         hcf: id,
-                        rascunho: false,
+                        rascunho: 0,
                     },
                     attributes: [
                         'data_coleta_mes',
@@ -1639,7 +1639,7 @@ export const postCodigoBarraTombo = (request, response, next) => {
 
             const payload = {
                 tombo_hcf: hcf,
-                em_vivo: true,
+                em_vivo: 1,
                 codigo_barra: formattedCodigoBarra,
                 num_barra: codigoBarra,
                 caminho_foto: null,

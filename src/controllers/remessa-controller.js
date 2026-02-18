@@ -57,7 +57,7 @@ export const cadastro = (request, response, next) => {
             return Tombo.findAndCountAll({
                 where: {
                     [Op.or]: hcf,
-                    rascunho: false,
+                    rascunho: 0,
                     situacao: 'REGULAR',
                 },
                 transaction,
@@ -156,7 +156,7 @@ export const listagem = (request, response, next) => {
     if (numTombo) {
         whereTombo = {
             hcf: numTombo,
-            rascunho: false,
+            rascunho: 0,
         };
     }
     Promise.resolve()
@@ -292,7 +292,7 @@ export const alteracao = (request, response, next) => {
             return Tombo.findAndCountAll({
                 where: {
                     [Op.or]: hcf,
-                    rascunho: false,
+                    rascunho: 0,
                     situacao: 'REGULAR',
                 },
                 transaction,
@@ -488,7 +488,7 @@ export const devolverTombo = (request, response, next) => {
         .then(() => Tombo.findOne({
             where: {
                 hcf,
-                rascunho: false,
+                rascunho: 0,
                 situacao: 'EMPRESTIMO',
             },
             transaction,
@@ -507,7 +507,7 @@ export const devolverTombo = (request, response, next) => {
             transaction,
         }))
         .then(() => RetiradaExsiccata.update({
-            devolvido: true,
+            devolvido: 1,
         }, {
             where: {
                 retirada_exsiccata_id: remessaId,

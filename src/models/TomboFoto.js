@@ -44,7 +44,7 @@ export default (Sequelize, DataTypes) => {
         em_vivo: {
             type: DataTypes.BOOLEAN,
             allowNull: false,
-            defaultValue: false,
+            defaultValue: 0,
         },
     };
 
