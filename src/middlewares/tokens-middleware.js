@@ -21,8 +21,9 @@ export default (tipoUsuarioPermitido = []) =>
             }
 
             const usuario = decodificaTokenUsuario(token);
+            usuario.tipo_usuario_id = Number(usuario.tipo_usuario_id);
 
-            const estaPermitido = !Array.isArray(tipoUsuarioPermitido) || tipoUsuarioPermitido.length < 1 || tipoUsuarioPermitido.includes(Number(usuario.tipo_usuario_id));
+            const estaPermitido = !Array.isArray(tipoUsuarioPermitido) || tipoUsuarioPermitido.length < 1 || tipoUsuarioPermitido.includes(usuario.tipo_usuario_id);
 
             if (!estaPermitido) {
                 throw new ForbiddenException(102);
