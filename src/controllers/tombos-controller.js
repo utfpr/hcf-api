@@ -151,7 +151,7 @@ export const cadastro = (request, response, next) => {
                     if (!localColeta) {
                         throw new BadRequestExeption(533);
                     }
-                    if (localColeta.cidade_id !== localidade.cidade_id) {
+                    if (Number(localColeta.cidade_id) !== Number(localidade.cidade_id)) {
                         throw new BadRequestExeption(535);
                     }
                 }
