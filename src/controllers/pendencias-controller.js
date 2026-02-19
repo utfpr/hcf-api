@@ -1370,7 +1370,7 @@ export const aprovarPendencia = async (alteracao, hcf, transaction) => {
                 : tomboAtual.cidade_id;
 
             if (cidadeRefId !== undefined && cidadeRefId !== null) {
-                if (localColeta.cidade_id !== cidadeRefId) {
+                if (Number(localColeta.cidade_id) !== Number(cidadeRefId)) {
                     throw new BadRequestExeption(535);
                 }
             }
@@ -1573,7 +1573,7 @@ export const aprovarPendencia = async (alteracao, hcf, transaction) => {
     }
 
     const tomboFinal = await Tombo.findOne({
-        where: { hcf, ativo: 1 },
+        where: { hcf, ativo: true },
         transaction,
         raw: true,
         nest: true,
