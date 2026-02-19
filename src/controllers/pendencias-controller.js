@@ -42,7 +42,7 @@ export const listagem = (request, response, next) => {
         resultado: {},
     };
     let where = {
-        ativo: true,
+        ativo: 1,
     };
     let whereUsuario = {};
     if (status) {
@@ -113,7 +113,7 @@ export const desativar = (request, response, next) => {
     const callback = transaction => Promise.resolve()
         .then(() => Alteracao.findOne({
             where: {
-                ativo: true,
+                ativo: 1,
                 id,
             },
             transaction,
@@ -123,7 +123,7 @@ export const desativar = (request, response, next) => {
                 throw new BadRequestExeption(800);
             }
             return Alteracao.update({
-                ativo: false,
+                ativo: 0,
             }, {
                 where: {
                     id,
@@ -1370,7 +1370,7 @@ export const aprovarPendencia = async (alteracao, hcf, transaction) => {
                 : tomboAtual.cidade_id;
 
             if (cidadeRefId !== undefined && cidadeRefId !== null) {
-                if (localColeta.cidade_id !== cidadeRefId) {
+                if (Number(localColeta.cidade_id) !== Number(cidadeRefId)) {
                     throw new BadRequestExeption(535);
                 }
             }
@@ -1738,7 +1738,7 @@ export async function visualizar(request, response, next) {
     try {
         const id = request.params.pendencia_id;
         const alteracao = await Alteracao.findOne({
-            where: { ativo: true, id },
+            where: { ativo: 1, id },
         });
 
         if (!alteracao) {
@@ -2151,14 +2151,14 @@ export function aceitarPendencia(request, response, next) {
             status,
         }, {
             where: {
-                ativo: true,
+                ativo: 1,
                 id,
             },
             transaction,
         }))
         .then(() => Alteracao.findOne({
             where: {
-                ativo: true,
+                ativo: 1,
                 id,
             },
             transaction,

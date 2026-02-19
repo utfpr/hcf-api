@@ -796,7 +796,7 @@ export function insereAlteracaoSugerida(idUsuario, statusAlteracao, idTombo, tom
             status: statusAlteracao,
             tombo_hcf: idTombo,
             tombo_json: tomboJson,
-            identificacao: true,
+            identificacao: 1,
             data_identificacao_dia: diaIdentificacao,
             data_identificacao_mes: mesIdentificacao,
             data_identificacao_ano: anoIdentificacao,
