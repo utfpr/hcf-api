@@ -24,7 +24,7 @@ export default (Sequelize, DataTypes) => {
         },
         principal: {
             type: DataTypes.BOOLEAN,
-            defaultValue: 0,
+            defaultValue: false,
         },
     };
 
