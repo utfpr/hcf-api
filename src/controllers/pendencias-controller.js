@@ -1479,7 +1479,7 @@ export const aprovarPendencia = async (alteracao, hcf, transaction) => {
         updateTombo.coletor_id = alteracao.coletor_id;
     }
 
-    updateTombo.rascunho = 0;
+    updateTombo.rascunho = false;
 
     if (Object.keys(updateTombo).length > 0) {
         await Tombo.update(updateTombo, {
