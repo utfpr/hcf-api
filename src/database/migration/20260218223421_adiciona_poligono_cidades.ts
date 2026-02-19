@@ -1,6 +1,8 @@
 import { Knex } from 'knex'
 
 export async function run(knex: Knex): Promise<void> {
+  await knex.raw('CREATE EXTENSION IF NOT EXISTS postgis')
+
   const hasColumn = await knex.schema.hasColumn('cidades', 'poligono')
   if (!hasColumn) {
     await knex.raw(`
