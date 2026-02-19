@@ -55,9 +55,9 @@ function jsonTemErro(respostaReflora) {
  * A função salvaRespostaReflora, verifica se o que foi retornado é uma mensagem de erro, e
  * se for é adicionado no log, juntamente com o código de barra e o erro. Caso não seja essa mensagem
  * é verifica se o JSON é o JSON de erro ou não. Se for o JSON com erro, eu guardo no banco de dados
- * e o ja_requisitou fica igual a zero (O ja_requisitou quando é 0 significa que não foi feita a requisição,
- * caso seja 1 é que foi feito a requisição). Caso seja o JSON esperado, eu guardo ele no banco de
- * dados e valor da coluna ja_requisitou fica igual a 1.
+ * e o ja_requisitou fica igual a zero (O ja_requisitou quando é false significa que não foi feita a requisição,
+ * caso seja true é que foi feito a requisição). Caso seja o JSON esperado, eu guardo ele no banco de
+ * dados e valor da coluna ja_requisitou fica igual a true.
  * @param {*} nomeArquivo, é o nome do arquivo aonde será escrito as mensagens de erros, caso ela ocorra.
  * @param {*} codBarra, é o código de barra do tombo que foi feito a requisição no Reflora.
  * @param {*} error, é o erro que pode ser retornado pela tentativa de requisição.
@@ -68,9 +68,9 @@ export function salvaRespostaReflora(nomeArquivo, codBarra, error, response, bod
     // if ((error !== null) && (error.code !== null)) {
     if (!error && response.statusCode === 200 && error === null) {
         if (jsonTemErro(body)) {
-            atualizaTabelaReflora(codBarra, body, 0);
+            atualizaTabelaReflora(codBarra, body, false);
         } else {
-            atualizaTabelaReflora(codBarra, body, 1);
+            atualizaTabelaReflora(codBarra, body, true);
         }
     } else {
         escreveLOG(`reflora/${nomeArquivo}`, `Falha na requisição do código de barra {${codBarra}} que foi ${error}`);
