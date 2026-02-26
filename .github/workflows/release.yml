@@ -1,0 +1,65 @@
+name: Date Release
+
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # important to fetch all tags
+
+      - name: Generate version based on date
+        id: version
+        run: |
+          BASE_VERSION=$(date -u +'%Y.%-m.%-d')
+          echo "Base version: $BASE_VERSION"
+
+          # Fetch tags
+          git fetch --tags
+
+          # Find existing tags for today
+          MATCHING_TAGS=$(git tag -l "${BASE_VERSION}*")
+
+          if [ -z "$MATCHING_TAGS" ]; then
+            FINAL_VERSION=$BASE_VERSION
+          else
+            # Extract numeric suffixes
+            MAX_SUFFIX=$(echo "$MATCHING_TAGS" \
+              | grep -E "^${BASE_VERSION}-[0-9]+$" \
+              | sed -E "s/^${BASE_VERSION}-//" \
+              | sort -n \
+              | tail -n 1)
+
+            if [ -z "$MAX_SUFFIX" ]; then
+              FINAL_VERSION="${BASE_VERSION}-1"
+            else
+              NEXT=$((MAX_SUFFIX + 1))
+              FINAL_VERSION="${BASE_VERSION}-${NEXT}"
+            fi
+          fi
+
+          echo "Final version: $FINAL_VERSION"
+          echo "version=$FINAL_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create tag
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git tag ${{ steps.version.outputs.version }}
+          git push origin ${{ steps.version.outputs.version }}
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          name: ${{ steps.version.outputs.version }}

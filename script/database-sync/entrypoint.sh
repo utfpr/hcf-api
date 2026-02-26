@@ -1,6 +1,6 @@
 #!/bin/sh
 
-echo "Configuring cron job with schedule: $CRON_SCHEDULE (timezone: $TZ)"
+echo "Configuring cron job with schedule: $CRON_SCHEDULE ($TZ)"
 
 # ensure environment variables are passed to the cron job
 printenv | grep -E "^SYNC_" >> /etc/environment
