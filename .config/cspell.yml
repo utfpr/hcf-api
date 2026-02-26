@@ -1,6 +1,7 @@
 language: en,pt-BR
 words:
   - postgresql
+  - postgres
   - herbario
   - distro
   - caprover
