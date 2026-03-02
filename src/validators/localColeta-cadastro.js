@@ -5,11 +5,7 @@ export default {
         notEmpty: true,
         errorMessage: 'Descrição é obrigatória.',
     },
-    complemento: {
-        in: ['body'],
-        isString: true,
-        optional: true,
-    },
+
     cidade_id: {
         in: ['body'],
         isInt: true,
