@@ -213,7 +213,7 @@ export const obtemDadosDoRelatorioDeColetaPorLocalEIntervaloDeData = async (req,
                 },
                 {
                     model: LocalColeta,
-                    attributes: ['id', 'descricao', 'complemento'],
+                    attributes: ['id', 'descricao'],
                     where: whereLocal,
                     required: true,
                 },
@@ -578,7 +578,7 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
                 },
                 {
                     model: LocalColeta,
-                    attributes: ['id', 'descricao', 'complemento'],
+                    attributes: ['id', 'descricao'],
                     where: whereLocal,
                     required: true,
                     include: {

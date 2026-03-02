@@ -35,10 +35,7 @@ export default (Sequelize, DataTypes) => {
             type: DataTypes.TEXT,
             allowNull: true,
         },
-        complemento: {
-            type: DataTypes.TEXT,
-            allowNull: true,
-        },
+
         cidade_id: {
             type: DataTypes.INTEGER,
             allowNull: true,
