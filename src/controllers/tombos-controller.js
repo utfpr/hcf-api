@@ -17,7 +17,7 @@ import { aprovarPendencia } from './pendencias-controller';
 const {
     Solo, Relevo, Cidade, Estado, Vegetacao, FaseSucessional, Pais, Tipo, LocalColeta, Familia, sequelize,
     Genero, Subfamilia, Autor, Coletor, Variedade, Subespecie, TomboFoto, Identificador,
-    ColecaoAnexa, Especie, Herbario, Tombo, Alteracao, TomboIdentificador, ColetorComplementar, Sequelize: { Op },
+    ColecaoAnexa, Especie, Herbario, Tombo, Alteracao, TomboIdentificador, ColetorComplementar, Sequelize: { Op, fn, col },
 } = models;
 
 function parseDataTombo(valor) {
@@ -1551,15 +1551,20 @@ export const getNumeroColetor = (request, response, next) => {
 
     Promise.resolve()
         .then(() =>
-            Tombo.findAll({
+            Tombo.findOne({
                 where: {
                     coletor_id: idColetor,
                 },
-                attributes: ['hcf', 'numero_coleta'],
+                attributes: [
+                    [fn('MAX', col('numero_coleta')), 'max_numero_coleta'],
+                ],
+                raw: true,
             }),
         )
-        .then(tombos => {
-            response.status(codigos.BUSCAR_UM_ITEM).json(tombos);
+        .then(resultado => {
+            const maxNumero = resultado?.max_numero_coleta;
+            const proximoNumero = maxNumero ? Number(maxNumero) + 1 : 1;
+            response.status(codigos.BUSCAR_UM_ITEM).json({ proximo_numero_coleta: proximoNumero });
         })
         .catch(next);
 };
