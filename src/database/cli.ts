@@ -10,21 +10,21 @@ import { MigrationFileSystem } from './migration-file-system'
 import { MigrationRepository } from './migration-repository'
 
 const {
-  MYSQL_DATABASE,
-  MYSQL_HOST,
-  MYSQL_PORT = '3306',
-  MYSQL_MIGRATION_USERNAME,
-  MYSQL_MIGRATION_PASSWORD
+  PG_DATABASE,
+  PG_HOST,
+  PG_PORT = '5432',
+  PG_MIGRATION_USERNAME,
+  PG_MIGRATION_PASSWORD
 } = process.env
 
 const migrationKnex = createKnex({
-  client: 'mysql2',
+  client: 'postgres',
   connection: {
-    database: MYSQL_DATABASE,
-    host: MYSQL_HOST,
-    port: parseInt(MYSQL_PORT),
-    user: MYSQL_MIGRATION_USERNAME,
-    password: MYSQL_MIGRATION_PASSWORD,
+    database: PG_DATABASE,
+    host: PG_HOST,
+    port: parseInt(PG_PORT),
+    user: PG_MIGRATION_USERNAME,
+    password: PG_MIGRATION_PASSWORD,
     multipleStatements: true
   }
 })

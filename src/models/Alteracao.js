@@ -41,11 +41,11 @@ export default (Sequelize, DataTypes) => {
             allowNull: false,
         },
         ativo: {
-            type: DataTypes.BOOLEAN,
+            type: DataTypes.SMALLINT,
             allowNull: true,
         },
         identificacao: {
-            type: DataTypes.BOOLEAN,
+            type: DataTypes.SMALLINT,
             allowNull: true,
         },
     };

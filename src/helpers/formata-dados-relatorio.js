@@ -69,7 +69,6 @@ export const formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData = dados 
         autor: dado.especy?.autor?.nome || 'Não Informado',
     }));
 
-    // Ordena os dados formatados por ordem alfabética
     dadosFormatados.sort((a, b) => a.familia.localeCompare(b.familia));
 
     return dadosFormatados;

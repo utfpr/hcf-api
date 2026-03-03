@@ -1,14 +1,16 @@
-const { MYSQL_DATABASE, MYSQL_USERNAME, MYSQL_PASSWORD, MYSQL_HOST, MYSQL_PORT } = process.env;
+const {
+    PG_DATABASE, PG_USERNAME, PG_PASSWORD, PG_HOST, PG_PORT,
+} = process.env;
 
-export const database = MYSQL_DATABASE;
-export const username = MYSQL_USERNAME;
-export const password = MYSQL_PASSWORD;
+export const database = PG_DATABASE;
+export const username = PG_USERNAME;
+export const password = PG_PASSWORD;
 
 export const options = {
-    dialect: 'mysql',
-    host: MYSQL_HOST,
-    port: parseInt(MYSQL_PORT) || 3306,
-    logging: false,
+    dialect: 'postgres',
+    host: PG_HOST,
+    port: parseInt(PG_PORT) || 5432,
+    logging: true,
 
     define: {
         freezeTableName: true,

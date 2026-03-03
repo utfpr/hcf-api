@@ -99,7 +99,7 @@ export const obtemDadosDoRelatorioDeInventarioDeEspecies = async (req, res, next
             nomeFamilia: `%${familia}%`,
         };
         where = {
-            nome: { [Op.like]: `%${familia}%` },
+            nome: { [Op.iLike]: `%${familia}%` },
         };
     }
 
@@ -150,9 +150,18 @@ export const obtemDadosDoRelatorioDeColetaPorLocalEIntervaloDeData = async (req,
     let whereData = {};
     if (local) {
         whereLocal = {
-            descricao: { [Op.like]: `%${local}%` },
+            descricao: { [Op.iLike]: `%${local}%` },
         };
     }
+
+    const dateExpr = literal(`
+      make_date(
+        (data_coleta_ano)::int,
+        COALESCE(NULLIF(data_coleta_mes, 0), 1)::int,
+        COALESCE(NULLIF(data_coleta_dia, 0), 1)::int
+      )::timestamp
+    `);
+
     if (dataInicio) {
         if (dataFim && isBefore(new Date(dataFim), new Date(dataInicio))) {
             res.status(codigosHttp.BAD_REQUEST).json({
@@ -168,10 +177,8 @@ export const obtemDadosDoRelatorioDeColetaPorLocalEIntervaloDeData = async (req,
             [Op.and]: [
                 // Transforma os valores em uma data e compara com o intervalo
                 Sequelize.where(
-                    literal(
-                        "STR_TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes, 2, '0'), '-', LPAD(data_coleta_dia, 2, '0')), '%Y-%m-%d')",
-                    ),
-                    { [Op.between]: [dataInicio, dataFim || new Date()] },
+                    dateExpr,
+                    { [Op.between]: [dataInicio, dataFim ?? new Date()] },
                 ),
             ],
         };
@@ -273,12 +280,20 @@ export const obtemDadosDoRelatorioDeColetaIntervaloDeData = async (req, res, nex
         }
         whereData = {
             [Op.and]: [
-                // Transforma os valores em uma data e compara com o intervalo
                 Sequelize.where(
-                    literal(
-                        "STR_TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes, 2, '0'), '-', LPAD(data_coleta_dia, 2, '0')), '%Y-%m-%d')",
-                    ),
-                    { [Op.between]: [dataInicio, dataFim || new Date()] },
+                    literal(`
+                make_date(
+                  (data_coleta_ano)::int,
+                  COALESCE(NULLIF(data_coleta_mes, 0), 1)::int,
+                  COALESCE(NULLIF(data_coleta_dia, 0), 1)::int
+                )
+              `),
+                    {
+                        [Op.between]: [
+                            Sequelize.literal(`TO_DATE('${dataInicio.slice(0, 10)}', 'YYYY-MM-DD')`),
+                            Sequelize.literal(`TO_DATE('${(dataFim || new Date().toISOString().slice(0, 10))}', 'YYYY-MM-DD')`),
+                        ],
+                    },
                 ),
             ],
         };
@@ -361,7 +376,7 @@ export const obtemDadosDoRelatorioDeColetaPorColetorEIntervaloDeData = async (re
     let whereData = {};
     if (coletor) {
         whereColetor = {
-            nome: { [Op.like]: `%${coletor}%` },
+            nome: { [Op.iLike]: `%${coletor}%` },
         };
     }
     if (dataInicio) {
@@ -377,12 +392,20 @@ export const obtemDadosDoRelatorioDeColetaPorColetorEIntervaloDeData = async (re
         }
         whereData = {
             [Op.and]: [
-                // Transforma os valores em uma data e compara com o intervalo
                 Sequelize.where(
-                    literal(
-                        "STR_TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes, 2, '0'), '-', LPAD(data_coleta_dia, 2, '0')), '%Y-%m-%d')",
-                    ),
-                    { [Op.between]: [dataInicio, dataFim || new Date()] },
+                    literal(`
+                make_date(
+                  (data_coleta_ano)::int,
+                  COALESCE(NULLIF(data_coleta_mes, 0), 1)::int,
+                  COALESCE(NULLIF(data_coleta_dia, 0), 1)::int
+                )
+              `),
+                    {
+                        [Op.between]: [
+                            Sequelize.literal(`TO_DATE('${dataInicio.slice(0, 10)}', 'YYYY-MM-DD')`),
+                            Sequelize.literal(`TO_DATE('${(dataFim || new Date().toISOString().slice(0, 10))}', 'YYYY-MM-DD')`),
+                        ],
+                    },
                 ),
             ],
         };
@@ -483,23 +506,33 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
     }
     if (dataInicio) {
         if (dataFim && isBefore(new Date(dataFim), new Date(dataInicio))) {
-            res.status(codigosHttp.BAD_REQUEST).json({
+            return res.status(codigosHttp.BAD_REQUEST).json({
                 mensagem: 'A data de fim não pode ser anterior à data de início.',
             });
         }
+
         if (isBefore(new Date(), new Date(dataInicio))) {
-            res.status(codigosHttp.BAD_REQUEST).json({
+            return res.status(codigosHttp.BAD_REQUEST).json({
                 mensagem: 'A data de início não pode ser maior que a data atual.',
             });
         }
+
         whereData = {
             [Op.and]: [
-                // Transforma os valores em uma data e compara com o intervalo
                 Sequelize.where(
-                    literal(
-                        "STR_TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes, 2, '0'), '-', LPAD(data_coleta_dia, 2, '0')), '%Y-%m-%d')",
-                    ),
-                    { [Op.between]: [dataInicio, dataFim || new Date()] },
+                    literal(`
+              make_date(
+                (data_coleta_ano)::int,
+                COALESCE(NULLIF(data_coleta_mes, 0), 1)::int,
+                COALESCE(NULLIF(data_coleta_dia, 0), 1)::int
+              )
+            `),
+                    {
+                        [Op.between]: [
+                            Sequelize.literal(`TO_DATE('${dataInicio.slice(0, 10)}', 'YYYY-MM-DD')`),
+                            Sequelize.literal(`TO_DATE('${(dataFim || new Date().toISOString().slice(0, 10))}', 'YYYY-MM-DD')`),
+                        ],
+                    },
                 ),
             ],
         };
@@ -617,7 +650,7 @@ export const obtemDadosDoRelatorioDeFamiliasEGeneros = async (req, res, next) =>
     let where = {};
     if (familia) {
         where = {
-            nome: { [Op.like]: `%${familia}%` },
+            nome: { [Op.iLike]: `%${familia}%` },
         };
     }
 
@@ -704,12 +737,20 @@ export const obtemDadosDoRelatorioDeCodigoDeBarras = async (req, res, next) => {
     }
     whereData = {
         [Op.and]: [
-            // Transforma os valores em uma data e compara com o intervalo
             Sequelize.where(
-                literal(
-                    "STR_TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes, 2, '0'), '-', LPAD(data_coleta_dia, 2, '0')), '%Y-%m-%d')",
-                ),
-                { [Op.between]: [dataInicio, dataFim || new Date()] },
+                literal(`
+            make_date(
+              (data_coleta_ano)::int,
+              COALESCE(NULLIF(data_coleta_mes, 0), 1)::int,
+              COALESCE(NULLIF(data_coleta_dia, 0), 1)::int
+            )
+          `),
+                {
+                    [Op.between]: [
+                        Sequelize.literal(`TO_DATE('${dataInicio.slice(0, 10)}', 'YYYY-MM-DD')`),
+                        Sequelize.literal(`TO_DATE('${(dataFim || new Date().toISOString().slice(0, 10))}', 'YYYY-MM-DD')`),
+                    ],
+                },
             ),
         ],
     };
@@ -763,12 +804,20 @@ export const obtemDadosDoRelatorioDeQuantidade = async (req, res, next) => {
         }
         whereData = {
             [Op.and]: [
-                // Transforma os valores em uma data e compara com o intervalo
                 Sequelize.where(
-                    literal(
-                        "STR_TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes, 2, '0'), '-', LPAD(data_coleta_dia, 2, '0')), '%Y-%m-%d')",
-                    ),
-                    { [Op.between]: [dataInicio, dataFim || new Date()] },
+                    literal(`
+                make_date(
+                  (data_coleta_ano)::int,
+                  COALESCE(NULLIF(data_coleta_mes, 0), 1)::int,
+                  COALESCE(NULLIF(data_coleta_dia, 0), 1)::int
+                )
+              `),
+                    {
+                        [Op.between]: [
+                            Sequelize.literal(`TO_DATE('${dataInicio.slice(0, 10)}', 'YYYY-MM-DD')`),
+                            Sequelize.literal(`TO_DATE('${(dataFim || new Date().toISOString().slice(0, 10))}', 'YYYY-MM-DD')`),
+                        ],
+                    },
                 ),
             ],
         };

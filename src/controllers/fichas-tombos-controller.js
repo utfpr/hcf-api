@@ -166,7 +166,7 @@ export default function fichaTomboController(request, response, next) {
             };
 
             const where = {
-                identificacao: true,
+                identificacao: 1,
                 status: 'APROVADO',
                 tombo_hcf: tombo.hcf,
             };

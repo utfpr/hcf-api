@@ -1,6 +1,8 @@
 language: en,pt-BR
 words:
-  - mysql
+  - postgresql
+  - postgres
+  - herbario
   - distro
   - caprover
   - certbot

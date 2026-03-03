@@ -26,66 +26,33 @@ import {
 export const preparaRequisicao = (request, response) => {
     const { periodicidade } = request.query;
     const proximaAtualizacao = request.query.data_proxima_atualizacao;
-
-    selectEstaExecutandoServico(2).then(listaExecucaoSpecieslink => {
+    selectEstaExecutandoServico('SPECIESLINK').then(listaExecucaoSpecieslink => {
         if (listaExecucaoSpecieslink.length > 0) {
             const execucao = listaExecucaoSpecieslink[0].dataValues;
             const periodicidadeBD = execucao.periodicidade;
 
             if (periodicidadeBD === 'MANUAL') {
-                response.status(200).json({ result: 'failed' });
-                return;
-            }
-
-            if (
-                periodicidadeBD === 'SEMANAL'
-                || periodicidadeBD === '1MES'
-                || periodicidadeBD === '2MESES'
-            ) {
-                const dataProximaAtualizacao = execucao.data_proxima_atualizacao;
-
-                const podeExecutar = !dataProximaAtualizacao
-                    || moment().isAfter(moment(dataProximaAtualizacao), 'day');
-
-                if (podeExecutar) {
-                    atualizaTabelaConfiguracao(
-                        2,
-                        execucao.id,
-                        getHoraAtual(),
-                        null,
-                        periodicidade,
-                        proximaAtualizacao,
-                    ).then(() => {
-                        response.status(200).json({ result: 'success' });
+                response.status(200).json(JSON.parse(' { "result": "failed" } '));
+            } else if ((periodicidadeBD === 'SEMANAL') || (periodicidadeBD === '1MES') || (periodicidadeBD === '2MESES')) {
+                if (moment().format('DD/MM/YYYY') !== listaExecucaoSpecieslink[0].dataValues.data_proxima_atualizacao) {
+                    const { id } = listaExecucaoSpecieslink[0].dataValues;
+                    atualizaTabelaConfiguracao('SPECIESLINK', id, getHoraAtual(), null, periodicidade, proximaAtualizacao).then(() => {
+                        response.status(200).json(JSON.parse(' { "result": "success" } '));
                     });
                 } else {
                     response.status(200).json({ result: 'failed' });
                 }
             }
         } else {
-            selectTemExecucaoServico(2).then(execucaoSpecieslink => {
+            selectTemExecucaoServico('SPECIESLINK').then(execucaoSpecieslink => {
                 if (execucaoSpecieslink.length === 0) {
-                    insereExecucao(
-                        getHoraAtual(),
-                        null,
-                        periodicidade,
-                        proximaAtualizacao,
-                        2,
-                    ).then(() => {
-                        response.status(200).json({ result: 'success' });
+                    insereExecucao(getHoraAtual(), null, periodicidade, proximaAtualizacao, 'SPECIESLINK').then(() => {
+                        response.status(200).json(JSON.parse(' { "result": "success" } '));
                     });
                 } else {
-                    const execucao = execucaoSpecieslink[0].dataValues;
-
-                    atualizaTabelaConfiguracao(
-                        2,
-                        execucao.id,
-                        getHoraAtual(),
-                        null,
-                        periodicidade,
-                        proximaAtualizacao,
-                    ).then(() => {
-                        response.status(200).json({ result: 'success' });
+                    const { id } = execucaoSpecieslink[0].dataValues;
+                    atualizaTabelaConfiguracao('SPECIESLINK', id, getHoraAtual(), null, periodicidade, proximaAtualizacao).then(() => {
+                        response.status(200).json(JSON.parse(' { "result": "success" } '));
                     });
                 }
             });
@@ -104,7 +71,7 @@ export const preparaRequisicao = (request, response) => {
  * @param {*} response resposta enviada ao front end
  */
 export const estaExecutando = (_, response) => {
-    selectEstaExecutandoServico(2).then(listaExecucaoSpecieslink => {
+    selectEstaExecutandoServico('SPECIESLINK').then(listaExecucaoSpecieslink => {
         response.header('Access-Control-Allow-Origin', '*');
         response.header('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type');
         response.header('Access-Control-Allow-Methods', 'GET');

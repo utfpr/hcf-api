@@ -146,9 +146,9 @@ export function preparaExecucao(existeExecucao, idServico) {
     ehPossivelFazerComparacao(nomeArquivo, idServico).then(() => {
         const { id } = existeExecucao.dataValues;
         let conteudoLOG;
-        if (idServico === 1) {
+        if (idServico === 'REFLORA') {
             conteudoLOG = leLOG(`reflora/${nomeArquivo}`);
-        } else if (idServico === 2) {
+        } else if (idServico === 'SPECIESLINK') {
             conteudoLOG = leLOG(`specieslink/${nomeArquivo}`);
         }
         if (conteudoLOG.includes('O processo de comparação do Reflora acabou.') || conteudoLOG.includes('O processo de comparação do SpeciesLink acabou.')) {

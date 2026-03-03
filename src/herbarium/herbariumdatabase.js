@@ -169,14 +169,23 @@ export function insereExecucao(horaAtual, horaFim, periodicidadeUsuario, proxima
  * @return promessa.promise, como é assíncrono ele só retorna quando resolver, ou seja,
  * quando terminar de realizar a atualização.
  */
-export function atualizaTabelaConfiguracao(
-    idServico,
-    idExecucao,
-    horaInicio,
-    horaFim,
-    periodicidadeUsuario,
-    proximaAtualizacao,
-) {
+export function atualizaTabelaConfiguracao(idServico, idExecucao, horaInicio, horaFim, periodicidadeUsuario, proximaAtualizacao) {
+    if (idServico === 'REFLORA') {
+        const tabelaConfiguracaoReflora = modeloConfiguracao(conexao, Sequelize);
+        const promessa = Q.defer();
+        tabelaConfiguracaoReflora.update(
+            {
+                hora_inicio: horaInicio,
+                hora_fim: horaFim,
+                periodicidade: periodicidadeUsuario,
+                data_proxima_atualizacao: proximaAtualizacao,
+            },
+            { where: { id: idExecucao } },
+        ).then(() => {
+            promessa.resolve();
+        });
+        return promessa.promise;
+    }
     const tabelaConfiguracao = modeloConfiguracao(conexao, Sequelize);
     const promessa = Q.defer();
 
@@ -787,7 +796,7 @@ export function insereAlteracaoSugerida(idUsuario, statusAlteracao, idTombo, tom
             status: statusAlteracao,
             tombo_hcf: idTombo,
             tombo_json: tomboJson,
-            identificacao: true,
+            identificacao: 1,
             data_identificacao_dia: diaIdentificacao,
             data_identificacao_mes: mesIdentificacao,
             data_identificacao_ano: anoIdentificacao,
