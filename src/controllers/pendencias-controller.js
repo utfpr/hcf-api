@@ -42,7 +42,7 @@ export const listagem = (request, response, next) => {
         resultado: {},
     };
     let where = {
-        ativo: 1,
+        ativo: true,
     };
     let whereUsuario = {};
     if (status) {
@@ -113,7 +113,7 @@ export const desativar = (request, response, next) => {
     const callback = transaction => Promise.resolve()
         .then(() => Alteracao.findOne({
             where: {
-                ativo: 1,
+                ativo: true,
                 id,
             },
             transaction,
@@ -123,7 +123,7 @@ export const desativar = (request, response, next) => {
                 throw new BadRequestExeption(800);
             }
             return Alteracao.update({
-                ativo: 0,
+                ativo: false,
             }, {
                 where: {
                     id,
@@ -1738,7 +1738,7 @@ export async function visualizar(request, response, next) {
     try {
         const id = request.params.pendencia_id;
         const alteracao = await Alteracao.findOne({
-            where: { ativo: 1, id },
+            where: { ativo: true, id },
         });
 
         if (!alteracao) {
@@ -2151,14 +2151,14 @@ export function aceitarPendencia(request, response, next) {
             status,
         }, {
             where: {
-                ativo: 1,
+                ativo: true,
                 id,
             },
             transaction,
         }))
         .then(() => Alteracao.findOne({
             where: {
-                ativo: 1,
+                ativo: true,
                 id,
             },
             transaction,
