@@ -24,7 +24,7 @@ export async function run(knex: Knex): Promise<void> {
         'observacao',
         trx.raw('MIN(id)::int as keep_id'),
         trx.raw('ARRAY_AGG(id ORDER BY id) as ids'),
-        trx.raw('COUNT(*)::int as qtde'),
+        trx.raw('COUNT(*)::int as qtde')
       ])
       .groupBy(['nome', 'observacao'])
       .havingRaw('COUNT(*) > 1')) as unknown as Array<{

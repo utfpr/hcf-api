@@ -25,7 +25,7 @@ export default (Sequelize, DataTypes) => {
             allowNull: false,
         },
         observacao: {
-            type: DataTypes.STRING(500), 
+            type: DataTypes.STRING(500),
             allowNull: true,
         },
     };
