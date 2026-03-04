@@ -2,19 +2,22 @@ export default {
     nome: {
         in: 'body',
         isString: true,
-        isEmpty: false,
+        notEmpty: true,
         isLength: {
             options: [{ min: 3 }],
         },
     },
-    iniciais: {
+    observacao: {
         in: 'body',
         isString: true,
         optional: true,
+        isLength: {
+            options: [{ max: 500 }],
+        },
     },
     autor_id: {
         in: 'params',
         isInt: true,
-        isEmpty: false,
+        notEmpty: true,
     },
 };

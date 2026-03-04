@@ -7,7 +7,7 @@ export default {
             options: [{ min: 3 }],
         },
     },
-    iniciais: {
+    observacao: {
         in: 'body',
         isString: true,
         optional: true,
