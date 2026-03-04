@@ -1,12 +1,5 @@
 import { Knex } from 'knex'
 
-type DupGroupRow = {
-  nome: string
-  observacao: string | null
-  keep_id: number
-  drop_ids: number[]
-}
-
 export async function run(knex: Knex): Promise<void> {
   await knex.transaction(async trx => {
     const hasIniciais = await trx.schema.hasColumn('autores', 'iniciais')
