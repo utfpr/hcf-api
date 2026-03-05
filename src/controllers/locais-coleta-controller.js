@@ -208,7 +208,7 @@ export const buscarFasesSucessionais = (request, response, next) => {
 
 export const cadastrarLocalColeta = async (request, response, next) => {
     try {
-        const dados = pick(request.body, ['descricao', 'complemento', 'cidade_id', 'fase_sucessional_id']);
+        const dados = pick(request.body, ['descricao', 'cidade_id', 'fase_sucessional_id']);
         const localColeta = await LocalColeta.create(dados);
         response.status(201).json(localColeta);
     } catch (error) {
@@ -321,7 +321,7 @@ export const buscarLocalColetaPorId = async (request, response, next) => {
 export const atualizarLocalColeta = async (request, response, next) => {
     try {
         const { id } = request.params;
-        const dados = pick(request.body, ['descricao', 'complemento', 'cidade_id', 'fase_sucessional_id']);
+        const dados = pick(request.body, ['descricao', 'cidade_id', 'fase_sucessional_id']);
         const [updated] = await LocalColeta.update(dados, {
             where: { id },
         });
