@@ -37,3 +37,18 @@ Using "development" environment
 Master 18385 is running
 Worker 18385 started on port 3000
 ```
+
+---
+
+- adicionar busca pelo código de barras da foto
+- colocar um alerta no painel quando estiver em ambiente de desenvolvimento
+- issue para corrigir o DarwinCore (problema com o botão, quando clica não está funcionando)
+- issue para o incremento do hcf na api ao invés do painel
+- relatorio de quantidade de tombos por periodo
+  - relatorio tem que ter um grafico, mostrando quantos tombos foram cadastrados por periodo, somente quantitativo
+
+- alteração na ficha tombo
+
+nome cientifico = genero, especie, subespecie (se tiver), variedade (se tiver)
+um unico tombo tem variedade e subespecie. como devemos exibir no nome cientifico?
+inverter a ordem, colocar subespecie e depois variedade
