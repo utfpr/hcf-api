@@ -2,18 +2,6 @@
 
 set -euo pipefail
 
-EXCLUDE_PARAMS=""
-if [ -n "$SYNC_EXCLUDE_TABLES" ]; then
-  IFS=',' read -ra TABLES <<< "$SYNC_EXCLUDE_TABLES"
-  for table in "${TABLES[@]}"; do
-    table=$(echo "$table" | xargs)
-    if [ -n "$table" ]; then
-      EXCLUDE_PARAMS="$EXCLUDE_PARAMS --exclude-table-data=$table"
-    fi
-  done
-  echo "Excluding tables: $SYNC_EXCLUDE_TABLES"
-fi
-
 echo "Starting synchronization process..."
 
 PGPASSWORD="$SYNC_SOURCE_PASSWORD" pg_dump \
@@ -21,8 +9,7 @@ PGPASSWORD="$SYNC_SOURCE_PASSWORD" pg_dump \
   -p "$SYNC_SOURCE_PORT" \
   -U "$SYNC_SOURCE_USER" \
   -d "$SYNC_SOURCE_DATABASE" \
-  -Fc \
-  $EXCLUDE_PARAMS | \
+  -Fc | \
 PGPASSWORD="$SYNC_DEST_PASSWORD" pg_restore \
   -h "$SYNC_DEST_HOST" \
   -p "$SYNC_DEST_PORT" \
