@@ -1341,9 +1341,9 @@ export const editarVariedade = (request, response, next) => {
 
 // //////////////////AUTORES//////////////////
 export const cadastrarAutores = (request, response, next) => {
-    let { nome, iniciais } = request.body;
+    let { nome, observacao } = request.body;
     nome = limparEspacos(nome);
-    iniciais = limparEspacos(iniciais);
+    observacao = limparEspacos(observacao);
     const callback = transaction => Promise.resolve()
         .then(() => Autor.findOne({
             where: {
@@ -1356,7 +1356,7 @@ export const cadastrarAutores = (request, response, next) => {
                 throw new BadRequestExeption(513);
             }
         })
-        .then(() => Autor.create({ nome, iniciais }, transaction));
+        .then(() => Autor.create({ nome, observacao }, transaction));
     sequelize.transaction(callback)
         .then(autorCriado => {
             if (!autorCriado) {
@@ -1409,7 +1409,7 @@ export const buscarAutores = async (request, response, next) => {
         ];
 
         const result = await Autor.findAndCountAll({
-            attributes: ['id', 'nome', 'iniciais'],
+            attributes: ['id', 'nome', 'observacao'],
             order,
             limit: limite,
             offset,
@@ -1476,9 +1476,9 @@ export const excluirAutores = (request, response, next) => {
 };
 
 export const editarAutores = (request, response, next) => {
-    let { nome, iniciais } = request.body;
+    let { nome, observacao } = request.body;
     nome = limparEspacos(nome);
-    iniciais = limparEspacos(iniciais);
+    observacao = limparEspacos(observacao);
     const autorId = parseInt(request.params.autor_id);
 
     const callback = transaction => Promise.resolve()
@@ -1493,7 +1493,7 @@ export const editarAutores = (request, response, next) => {
                 throw new BadRequestExeption(517);
             }
         })
-        .then(() => Autor.update({ nome, iniciais }, {
+        .then(() => Autor.update({ nome, observacao }, {
             where: {
                 id: autorId,
             },

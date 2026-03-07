@@ -38,8 +38,7 @@ const generosOrdenacaoMiddleware = criaOrdenacaoMiddleware(['genero', 'familia',
 const especiesOrdenacaoMiddleware = criaOrdenacaoMiddleware(['especie', 'reino', 'familia', 'genero', 'familia', 'autor'], 'nome', 'asc');
 const subEspeciesOrdenacaoMiddleware = criaOrdenacaoMiddleware(['subespecie', 'reino', 'familia', 'genero', 'especie', 'autor'], 'nome', 'asc');
 const variedadesOrdenacaoMiddleware = criaOrdenacaoMiddleware(['variedade', 'reino', 'familia', 'genero', 'especie', 'autor'], 'nome', 'asc');
-const autorOrdenacaoMiddleware = criaOrdenacaoMiddleware(['autor', 'iniciais'], 'nome', 'asc');
-
+const autorOrdenacaoMiddleware = criaOrdenacaoMiddleware(['autor', 'observacao'], 'nome', 'asc');
 /**
  * @swagger
  * tags:
@@ -1534,10 +1533,15 @@ export default app => {
  *             properties:
  *               nome:
  *                 type: string
+ *               observacao:
+ *                 type: string
+ *                 nullable: true
+ *                 maxLength: 500
  *             required:
  *               - nome
  *           example:
  *             nome: "A. Author"
+ *             observacao: "Observação opcional sobre o autor"
  *     responses:
  *       201:
  *         description: Autor cadastrado com sucesso
@@ -1548,6 +1552,7 @@ export default app => {
  *               example:
  *                 id: 1
  *                 nome: "A. Author"
+ *                 observacao: "Observação opcional sobre o autor"
  *       '400':
  *         $ref: '#/components/responses/BadRequest'
  *       '401':
@@ -1600,9 +1605,10 @@ export default app => {
  *                         type: integer
  *                       nome:
  *                         type: string
- *                       iniciais:
+ *                       observacao:
  *                         type: string
  *                         nullable: true
+ *                         maxLength: 500
  *       '400':
  *         $ref: '#/components/responses/BadRequest'
  *       '401':
