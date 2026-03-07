@@ -17,7 +17,7 @@ import { aprovarPendencia } from './pendencias-controller';
 const {
     Solo, Relevo, Cidade, Estado, Vegetacao, FaseSucessional, Pais, Tipo, LocalColeta, Familia, sequelize,
     Genero, Subfamilia, Autor, Coletor, Variedade, Subespecie, TomboFoto, Identificador,
-    ColecaoAnexa, Especie, Herbario, Tombo, Alteracao, TomboIdentificador, ColetorComplementar, Sequelize: { Op },
+    ColecaoAnexa, Especie, Herbario, Tombo, Alteracao, TomboIdentificador, ColetorComplementar, Sequelize: { Op, fn, col },
 } = models;
 
 function parseDataTombo(valor) {
@@ -397,8 +397,8 @@ export const cadastro = (request, response, next) => {
                     usuario_id: request.usuario.id,
                     status,
                     tombo_json: JSON.stringify(tomboData),
-                    ativo: 1,
-                    identificacao: 1,
+                    ativo: true,
+                    identificacao: true,
                 };
                 tomboCriado = tombo;
 
@@ -486,8 +486,8 @@ function alteracaoIdentificador(request, transaction) {
             usuario_id: request.usuario.id,
             status: 'ESPERANDO',
             tombo_json: JSON.stringify(update),
-            ativo: 1,
-            identificacao: 1,
+            ativo: true,
+            identificacao: true,
         }, { transaction }))
         .then(alteracaoIdent => {
             if (request.usuario.tipo_usuario_id === 3) {
@@ -612,8 +612,8 @@ function alteracaoCuradorouOperador(request, response, transaction) {
         usuario_id: request.usuario.id,
         status: 'ESPERANDO',
         tombo_json: JSON.stringify(update),
-        ativo: 1,
-        identificacao: 1,
+        ativo: true,
+        identificacao: true,
     }, { transaction })
         .then(alteracaoCriada => {
             if (request.usuario.tipo_usuario_id === 1) {
@@ -1472,7 +1472,7 @@ export const obterTombo = async (request, response, next) => {
                     where: {
                         tombo_hcf: dadosTombo.hcf,
                         status: 'APROVADO',
-                        identificacao: 1,
+                        identificacao: true,
                     },
                     order: [['created_at', 'DESC']],
                 }),
@@ -1551,15 +1551,20 @@ export const getNumeroColetor = (request, response, next) => {
 
     Promise.resolve()
         .then(() =>
-            Tombo.findAll({
+            Tombo.findOne({
                 where: {
                     coletor_id: idColetor,
                 },
-                attributes: ['hcf', 'numero_coleta'],
+                attributes: [
+                    [fn('MAX', col('numero_coleta')), 'max_numero_coleta'],
+                ],
+                raw: true,
             }),
         )
-        .then(tombos => {
-            response.status(codigos.BUSCAR_UM_ITEM).json(tombos);
+        .then(resultado => {
+            const maxNumero = resultado?.max_numero_coleta;
+            const proximoNumero = maxNumero ? Number(maxNumero) + 1 : 1;
+            response.status(codigos.BUSCAR_UM_ITEM).json({ proximo_numero_coleta: proximoNumero });
         })
         .catch(next);
 };

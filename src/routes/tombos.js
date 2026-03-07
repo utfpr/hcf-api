@@ -76,7 +76,7 @@ export default app => {
      * @swagger
      * /tombos/numeroColetor/{idColetor}:
      *   get:
-     *     summary: Obtém o número do coletor pelo ID
+     *     summary: Obtém o próximo número de coleta do coletor
      *     tags: [Tombos]
      *     parameters:
      *       - in: path
@@ -87,19 +87,15 @@ export default app => {
      *         description: ID do coletor
      *     responses:
      *       200:
-     *         description: Lista de HCF e números de coleta retornada com sucesso
+     *         description: Próximo número de coleta retornado com sucesso
      *         content:
      *           application/json:
      *             schema:
-     *               type: array
-     *               items:
-     *                 type: object
-     *                 properties:
-     *                   hcf:
-     *                     type: integer
-     *                   numero_coleta:
-     *                     type: integer
-     *                     nullable: true
+     *               type: object
+     *               properties:
+     *                 proximo_numero_coleta:
+     *                   type: integer
+     *                   description: Próximo número de coleta disponível (MAX + 1)
      *       '404':
      *         $ref: '#/components/responses/NotFound'
      *       '500':

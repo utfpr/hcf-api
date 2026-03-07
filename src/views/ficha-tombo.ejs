@@ -141,7 +141,7 @@
             </div>
             <div class="cabecalho-info pad-topbottom border-bottom">
               <b class="fs-14">Herbário da Universidade Tecnológica Federal do Paraná - <br/>Campus Campo Mourão</b>
-            
+
               <div class="flex center-between w-full">
                 <b class="fs-14">HCF <%- tombo.hcf %></b>
 
@@ -156,7 +156,7 @@
             <div class="flex flex-col pad-padrao gap-1">
             <% if (familia && familia.nome) { %>
               <div>
-                <b class="fs-14">Família: </b> 
+                <b class="fs-14">Família: </b>
                 <% if (familia && familia.nome.toLowerCase() !== 'indeterminada') { %>
                   <%- tombo.familia.nome %>
                 <% } %>
@@ -177,17 +177,17 @@
               <% if (especie && especie.autor) { %>
                   <%- especie.autor.nome %>
               <% } %>
-              <% if (variedade && variedade.nome) { %>
-                <text class="ml-2">var. </text><i><%- variedade.nome %></i>
-              <% } %>
-              <% if (variedade && variedade.autor) { %>
-                  <%- variedade.autor.nome %>
-              <% } %>
               <% if (subespecie && subespecie.nome) { %>
                 <text class="ml-2">subsp. </text><i><%- subespecie.nome %></i>
               <% } %>
               <% if (subespecie && subespecie.autor) { %>
                   <%- subespecie.autor.nome %>
+              <% } %>
+              <% if (variedade && variedade.nome) { %>
+                <text class="ml-2">var. </text><i><%- variedade.nome %></i>
+              <% } %>
+              <% if (variedade && variedade.autor) { %>
+                  <%- variedade.autor.nome %>
               <% } %>
             </div>
 
@@ -213,9 +213,7 @@
             </div>
             <div>
               <b class="fs-14">Local de Coleta:</b>
-              <% if (localColeta && localColeta.complemento) { %>
-                  <%- localColeta.complemento %>
-              <% } %>
+
               <% if (localColeta && localColeta.descricao) { %>
                   <%- localColeta.descricao %>
               <% } %>
@@ -275,7 +273,7 @@
                   <div>
                     <b class="fs-14">nº:</b> <%- tombo.numero_coleta %>
                   </div>
-  
+
                   <div>
                     <b class="fs-14">Data:</b> <%- romano_data_coleta %>
                   </div>
