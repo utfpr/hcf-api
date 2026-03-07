@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:18
+    image: docker.io/postgis/postgis:18-3.6
     container_name: herbario_postgresql
     environment:
       POSTGRES_DB: $PG_DATABASE
@@ -25,7 +25,7 @@ services:
 
   nginx:
     image: nginx:1.17-alpine
-    container_name: berbario_nginx
+    container_name: herbario_nginx
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./nginx/conf.d:/etc/nginx/conf.d
