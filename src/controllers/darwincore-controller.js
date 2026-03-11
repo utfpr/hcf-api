@@ -19,6 +19,7 @@ const {
     Subfamilia,
     Autor,
     Coletor,
+    ColetorComplementar,
     Variedade,
     Subespecie,
     ColecaoAnexa,
@@ -45,6 +46,21 @@ function obtemNomeArquivoCsv() {
     const data = format(new Date(), 'yyyy-MM-dd');
 
     return `hcf_${data}.csv`;
+}
+
+function csvEscape(valor) {
+    if (valor === null || valor === undefined) {
+        return '';
+    }
+    const str = String(valor);
+    if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+        return `"${str.replace(/"/g, '""')}"`;
+    }
+    return str;
+}
+
+function csvLinha(campos) {
+    return campos.map(csvEscape).join(',');
 }
 
 const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
@@ -87,6 +103,7 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
             'relevo_id',
             'solo_id',
             'coletor_id',
+            'cidade_id',
         ],
         include: [
             {
@@ -178,6 +195,10 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
                 model: Coletor,
             },
             {
+                model: ColetorComplementar,
+                as: 'coletor_complementar',
+            },
+            {
                 model: Genero,
             },
             {
@@ -210,8 +231,7 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
         const paisCodigo = tombo?.cidade?.estado?.paise?.sigla ?? '';
         const paranaNome = tombo?.cidade?.estado?.nome ?? '';
         const cidadeNome = tombo?.cidade?.nome ?? '';
-        const vegetacao
-            = tombo.locais_coletum && tombo.locais_coletum.vegetacao ? tombo.locais_coletum.vegetacao.nome : '';
+        const vegetacao = tombo.vegetaco ? tombo.vegetaco.nome : '';
         const familiaNome = tombo.familia ? tombo.familia.nome : '';
         const generoNome = tombo.genero ? tombo.genero.nome : '';
         const especieNome = tombo.especy ? tombo.especy.nome : '';
@@ -223,17 +243,20 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
         if (tombo.variedade) {
             menorNomeCientifico = tombo.variedade.nome;
         }
-        if (tombo.especy && tombo.especy.autore) {
-            autores = tombo.especy.autore.nome;
+        if (tombo.especy && tombo.especy.autor) {
+            autores = tombo.especy.autor.nome;
         }
-        if (tombo.sub_especy && tombo.sub_especy.autore) {
-            autores += `| ${tombo.sub_especy.autore.nome}`;
+        if (tombo.sub_especy && tombo.sub_especy.autor) {
+            autores += `| ${tombo.sub_especy.autor.nome}`;
         }
-        if (tombo.variedade && tombo.variedade.autore) {
-            autores += `| ${tombo.variedade.autore.nome}`;
+        if (tombo.variedade && tombo.variedade.autor) {
+            autores += `| ${tombo.variedade.autor.nome}`;
         }
-        if (tombo.coletores && tombo.coletores.length > 0) {
-            coletores = tombo.coletores.map(coletor => padronizarNomeDarwincore(coletor.nome)).join(' | ');
+        if (tombo.coletore) {
+            coletores = padronizarNomeDarwincore(tombo.coletore.nome);
+            if (tombo.coletor_complementar?.complementares) {
+                coletores += ` | ${tombo.coletor_complementar.complementares}`;
+            }
         }
         if (tombo.data_coleta_ano) {
             dataColeta = tombo.data_coleta_ano;
@@ -281,20 +304,21 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
             tombo.tombos_fotos.forEach(foto => {
                 const dataAtualizacao = format(tombo.updated_at, 'yyyy-MM-dd');
 
-                let linha = [
-                    `PreservedSpecimen\tColecao\tpt\t${dataAtualizacao}\t02.032.297/0005-26\t`,
-                    'UTFPR\tHerbario da Universidade Tecnologica Federal do Parana – Campus Campo Mourao – HCF\t',
-                    `${license}\tUTFPR\t{"barcode":${foto.codigo_barra}}\tBr:UTFPR:HCF:${tombo.hcf.toString()}`,
-                    `${foto.id.toString()}\t${tombo.hcf.toString()}${foto.id.toString()}\t${coletores}\t`,
-                    `${tombo.numero_coleta}\t\t${tombo.observacao}\t${dataColeta}\t`,
-                    `${tombo.data_coleta_ano}\t${tombo.data_coleta_mes}\t${tombo.data_coleta_dia}\t`,
-                    `${vegetacao}\t${'América do Sul'}\t${paisNome}\t${paisCodigo}\t${paranaNome}\t`,
-                    `${cidadeNome}\t${tombo.altitude}\t${tombo.altitude}\t\t\t${tombo.latitude}\t`,
-                    `${tombo.longitude}\t${'WGS84'}\t${'GPS'}\t${'Plantae'}\t${familiaNome}\t${generoNome}\t`,
-                    `${especieNome}\t${menorNomeCientifico}\t${tombo.nome_cientifico}\t${autores}\t${tombo.taxon}`,
-                    `\t${tombo.nomes_populares}\t\t${nomeTipo}\t${nomeIdentificador}\t${dataIdentificacao}`,
-                    `\t${identificationQualifier}`,
-                ].join('');
+                const campos = [
+                    'PreservedSpecimen', 'Colecao', 'pt', dataAtualizacao, '02.032.297/0005-26',
+                    'UTFPR', 'Herbario da Universidade Tecnologica Federal do Parana – Campus Campo Mourao – HCF',
+                    license, 'UTFPR', `{"barcode":"${foto.codigo_barra}"}`, `Br:UTFPR:HCF:${tombo.hcf}`,
+                    tombo.hcf, coletores,
+                    tombo.numero_coleta, '', tombo.observacao, dataColeta,
+                    tombo.data_coleta_ano, tombo.data_coleta_mes, tombo.data_coleta_dia,
+                    vegetacao, 'América do Sul', paisNome, paisCodigo, paranaNome,
+                    cidadeNome, tombo.altitude, tombo.altitude, '', '', tombo.latitude,
+                    tombo.longitude, 'WGS84', 'GPS', 'Plantae', familiaNome, generoNome,
+                    especieNome, menorNomeCientifico, tombo.nome_cientifico, autores, tombo.taxon,
+                    tombo.nomes_populares, '', nomeTipo, nomeIdentificador, dataIdentificacao,
+                    identificationQualifier,
+                ];
+                let linha = csvLinha(campos);
                 linha = linha.replace(/(null|undefined)/g, '');
 
                 linhasProcessadas.push(`${linha.replace(/[\r\n]/g, '')}\n`);
@@ -302,20 +326,21 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
         } else {
             const dataAtualizacao = format(tombo.updated_at, 'yyyy-MM-dd');
 
-            let linha = [
-                `PreservedSpecimen\tColecao\tpt\t${dataAtualizacao}\t02.032.297/0005-26\t`,
-                'UTFPR\tHerbario da Universidade Tecnologica Federal do Parana – Campus Campo Mourao – HCF\t',
-                `${license}\tUTFPR\t{"barcode":}\tBr:UTFPR:HCF:${tombo.hcf.toString()}`,
-                `\t${tombo.hcf.toString()}\t${coletores}\t`,
-                `${tombo.numero_coleta}\t\t${tombo.observacao}\t${dataColeta}\t`,
-                `${tombo.data_coleta_ano}\t${tombo.data_coleta_mes}\t${tombo.data_coleta_dia}\t`,
-                `${vegetacao}\t${'América do Sul'}\t${paisNome}\t${paisCodigo}\t${paranaNome}\t`,
-                `${cidadeNome}\t${tombo.altitude}\t${tombo.altitude}\t\t\t${tombo.latitude}\t`,
-                `${tombo.longitude}\t${'WGS84'}\t${'GPS'}\t${'Plantae'}\t${familiaNome}\t${generoNome}\t`,
-                `${especieNome}\t${menorNomeCientifico}\t${tombo.nome_cientifico}\t${autores}\t${tombo.taxon}`,
-                `\t${tombo.nomes_populares}\t\t${nomeTipo}\t${nomeIdentificador}\t${dataIdentificacao}`,
-                `\t${identificationQualifier}`,
-            ].join('');
+            const campos = [
+                'PreservedSpecimen', 'Colecao', 'pt', dataAtualizacao, '02.032.297/0005-26',
+                'UTFPR', 'Herbario da Universidade Tecnologica Federal do Parana – Campus Campo Mourao – HCF',
+                license, 'UTFPR', '{"barcode":""}', `Br:UTFPR:HCF:${tombo.hcf}`,
+                tombo.hcf, coletores,
+                tombo.numero_coleta, '', tombo.observacao, dataColeta,
+                tombo.data_coleta_ano, tombo.data_coleta_mes, tombo.data_coleta_dia,
+                vegetacao, 'América do Sul', paisNome, paisCodigo, paranaNome,
+                cidadeNome, tombo.altitude, tombo.altitude, '', '', tombo.latitude,
+                tombo.longitude, 'WGS84', 'GPS', 'Plantae', familiaNome, generoNome,
+                especieNome, menorNomeCientifico, tombo.nome_cientifico, autores, tombo.taxon,
+                tombo.nomes_populares, '', nomeTipo, nomeIdentificador, dataIdentificacao,
+                identificationQualifier,
+            ];
+            let linha = csvLinha(campos);
 
             linha = linha.replace(/null|undefined/g, '');
 
@@ -330,9 +355,7 @@ export const obterModeloDarwinCore = async (request, response, next) => {
 
     const limit = request.query.limit > 1000 ? 1000 : request.query.limit || 1000;
 
-    const quantidadeTombos = await Tombo.count(
-        { distinct: true },
-    );
+    const quantidadeTombos = await Tombo.count({ col: 'hcf' });
 
     const cabecalho = colunasComoLinhaUnica();
 

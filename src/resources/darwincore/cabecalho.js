@@ -52,5 +52,5 @@ const colunas = [
 export default colunas;
 
 export function colunasComoLinhaUnica() {
-    return `${colunas.join('\t')}\n`;
+    return `${colunas.join(',')}\n`;
 }
