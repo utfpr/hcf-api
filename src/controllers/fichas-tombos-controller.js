@@ -237,14 +237,14 @@ export default function fichaTomboController(request, response, next) {
 
             const identificador = tombo.identificadores && tombo.identificadores.length > 0
                 ? tombo.identificadores
-                    .filter(ident => ident.nome && ident.nome.toLowerCase() !== 'não-identificado')
-                    .sort((a, b) => {
-                        const ordemA = a.tombos_identificadores?.ordem || 0;
-                        const ordemB = b.tombos_identificadores?.ordem || 0;
-                        return ordemA - ordemB;
-                    })
-                    .map(ident => ident.nome)
-                    .join('; ')
+                        .filter(ident => ident.nome && ident.nome.toLowerCase() !== 'não-identificado')
+                        .sort((a, b) => {
+                            const ordemA = a.tombos_identificadores?.ordem || 0;
+                            const ordemB = b.tombos_identificadores?.ordem || 0;
+                            return ordemA - ordemB;
+                        })
+                        .map(ident => ident.nome)
+                        .join('; ')
                 : '';
 
             const romanoDataIdentificacao = formataDataIdentificacao(

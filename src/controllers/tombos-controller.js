@@ -681,12 +681,12 @@ export const desativar = (request, response, next) => {
 export const listagem = (request, response, next) => {
     const { pagina, limite, offset } = request.paginacao;
     const {
-        nome_cientifico: nomeCientifico, 
-        hcf, 
-        tipo, 
-        nome_popular: nomePopular, 
+        nome_cientifico: nomeCientifico,
+        hcf,
+        tipo,
+        nome_popular: nomePopular,
         situacao,
-        codigo_barra_foto
+        codigo_barra_foto,
     } = request.query;
 
     let where = {
@@ -704,17 +704,17 @@ export const listagem = (request, response, next) => {
             model: Coletor,
             attributes: ['id', 'nome'],
             required: false,
-        }
+        },
     ];
 
     if (codigo_barra_foto) {
         include.push({
             model: TomboFoto,
             where: {
-                codigo_barra: codigo_barra_foto
+                codigo_barra: codigo_barra_foto,
             },
             attributes: ['id', 'codigo_barra', 'tombo_hcf'],
-            required: true
+            required: true,
         });
     }
 
@@ -728,15 +728,15 @@ export const listagem = (request, response, next) => {
     };
 
     Promise.resolve()
-        .then(() => Tombo.count({ 
-            where, 
-            include: codigo_barra_foto ? include : [], 
-            distinct: true 
+        .then(() => Tombo.count({
+            where,
+            include: codigo_barra_foto ? include : [],
+            distinct: true,
         }))
         .then(total => {
             retorno.metadados.total = total;
         })
-        .then(() => Tombo.findAll({ 
+        .then(() => Tombo.findAll({
             attributes: [
                 'hcf',
                 'nomes_populares',
