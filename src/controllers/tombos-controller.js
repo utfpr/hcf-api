@@ -693,11 +693,21 @@ export const listagem = (request, response, next) => {
         rascunho: false,
     };
 
-    if (nomeCientifico) { where.nome_cientifico = { [Op.iLike]: `%${nomeCientifico}%` }; }
-    if (hcf) { where.hcf = hcf; }
-    if (tipo) { where.tipo_id = tipo; }
-    if (nomePopular) { where.nomes_populares = { [Op.iLike]: `%${nomePopular}%` }; }
-    if (situacao) { where.situacao = situacao; }
+    if (nomeCientifico) {
+        where.nome_cientifico = { [Op.iLike]: `%${nomeCientifico}%` };
+    }
+    if (hcf) {
+        where.hcf = hcf;
+    }
+    if (tipo) {
+        where.tipo_id = tipo;
+    }
+    if (nomePopular) {
+        where.nomes_populares = { [Op.iLike]: `%${nomePopular}%` };
+    }
+    if (situacao) {
+        where.situacao = situacao;
+    }
 
     let include = [
         {
