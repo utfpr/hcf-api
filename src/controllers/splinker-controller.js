@@ -45,6 +45,7 @@ const obterModeloSPlinkerLotes = async (limit, offset, request, response) => {
             'data_identificacao_ano',
             'data_coleta_dia',
             'observacao',
+            'descricao',
             'nomes_populares',
             'numero_coleta',
             'updated_at',
@@ -138,7 +139,8 @@ const obterModeloSPlinkerLotes = async (limit, offset, request, response) => {
 
     tombos.forEach(tombo => {
         const kingdom = tombo.familia?.reino?.nome || '\t';
-        const family = tombo.familia?.nome || '\t';
+        const familyName = tombo.familia?.nome;
+        const family = (familyName && familyName.toLowerCase() !== 'indeterminada') ? familyName : '\t';
         const genus = tombo.genero?.nome || '\t';
         const species = tombo.especy?.nome || '\t';
         const scientificNameAuthor = tombo.especy?.autor?.nome || '\t';
@@ -156,7 +158,7 @@ const obterModeloSPlinkerLotes = async (limit, offset, request, response) => {
         const collectorName = tombo.coletore?.nome || '\t';
         const collectorNumber = tombo.numero_coleta || '\t';
         const country = tombo.locais_coletum?.cidade?.estado?.paise?.nome || '\t';
-        const stateOrProvince = tombo.locais_coletum?.cidade?.estado?.sigla || '\t';
+        const stateOrProvince = tombo.locais_coletum?.cidade?.estado?.sigla?.trim() || '\t';
         const city = tombo.locais_coletum?.cidade?.nome || '\t';
         const locality = tombo.locais_coletum?.descricao || '\t';
         const latitude = tombo.latitude
@@ -165,7 +167,7 @@ const obterModeloSPlinkerLotes = async (limit, offset, request, response) => {
         const longitude = tombo.longitude
             ? converteDecimalParaGrausMinutosSegundos(tombo.longitude, true, true)
             : '\t';
-        const elevation = tombo.altitude + ' m' || '\t';
+        const elevation = tombo.altitude ? `${tombo.altitude} m` : '\t';
         const identificationDate = [
             tombo.data_identificacao_ano,
             tombo.data_identificacao_mes?.toString().padStart(2, '0'),
@@ -174,11 +176,11 @@ const obterModeloSPlinkerLotes = async (limit, offset, request, response) => {
             .filter(Boolean)
             .join('-');
         const identifierName = tombo.identificadores
-            ? tombo.identificadores.map(i => i.nome).join(', ')
+            ? tombo.identificadores.map(i => i.nome).join(';')
             : '\t';
         const notes = tombo.tombos_fotos?.length > 0
-            ? `${tombo.tombos_fotos.map(foto => `[BARCODE=${foto.codigo_barra}]`).join(' , ')} ${tombo.observacao || '\t'}`
-            : tombo.observacao || '\t';
+            ? `${tombo.tombos_fotos.map(foto => `[BARCODE=${foto.codigo_barra}]`).join(' , ')} ${tombo.descricao || '\t'}`
+            : tombo.descricao || '\t';
 
         const linha = [
             kingdom,
