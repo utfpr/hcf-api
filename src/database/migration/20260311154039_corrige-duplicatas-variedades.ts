@@ -23,7 +23,7 @@ type NovaVariedade = {
 }
 
 export async function run(knex: Knex): Promise<void> {
-  await knex.transaction(async (trx) => {
+  await knex.transaction(async trx => {
     try {
       // 1. Buscamos os Tombos trazendo os nomes REAIS das tabelas de taxonomia via JOIN
       const tombos = await trx('tombos as t')
@@ -45,7 +45,7 @@ export async function run(knex: Knex): Promise<void> {
         .whereNotNull('t.familia_id')
         .whereNotNull('t.genero_id')
         .whereNotNull('t.especie_id')
-        .whereNotNull('v.nome') 
+        .whereNotNull('v.nome')
 
       const snapshot: SnapshotItem[] = []
       const variedadesMap = new Map<string, NovaVariedade>()
@@ -56,12 +56,12 @@ export async function run(knex: Knex): Promise<void> {
           normalize(row.variedade_nome),
           normalize(row.familia_nome),
           normalize(row.genero_nome),
-          normalize(row.especie_nome),
+          normalize(row.especie_nome)
         ].join('|')
 
         snapshot.push({
           tomboId: Number(row.tombo_id),
-          key,
+          key
         })
 
         if (!variedadesMap.has(key)) {
@@ -70,13 +70,13 @@ export async function run(knex: Knex): Promise<void> {
             nome: String(row.variedade_nome).trim(),
             familia_id: Number(row.familia_id),
             genero_id: Number(row.genero_id),
-            especie_id: Number(row.especie_id),
+            especie_id: Number(row.especie_id)
           })
         }
       }
 
       const novasVariedades = Array.from(variedadesMap.values())
-      const tomboIds = snapshot.map((item) => item.tomboId)
+      const tomboIds = snapshot.map(item => item.tomboId)
 
       // 3. Limpeza: removemos vínculos antigos para evitar erros de FK
       if (tomboIds.length > 0) {
@@ -91,32 +91,38 @@ export async function run(knex: Knex): Promise<void> {
       // 5. Inserção das novas variedades normalizadas
       const inserted = await trx('variedades')
         .insert(
-          novasVariedades.map((item) => ({
+          novasVariedades.map(item => ({
             nome: item.nome,
             familia_id: item.familia_id,
             genero_id: item.genero_id,
-            especie_id: item.especie_id,
+            especie_id: item.especie_id
           }))
         )
-        .returning(['id', 'nome', 'familia_id', 'genero_id', 'especie_id'])
+        .returning([
+          'id',
+          'nome',
+          'familia_id',
+          'genero_id',
+          'especie_id'
+        ])
 
       // 6. Criamos o mapa de Novos IDs para atualizar os Tombos
       const newIdMap = new Map<string, number>()
 
       for (const row of inserted) {
         const matchingTombo = tombos.find(
-          (t) =>
-            Number(t.familia_id) === Number(row.familia_id) &&
-            Number(t.genero_id) === Number(row.genero_id) &&
-            Number(t.especie_id) === Number(row.especie_id) &&
-            normalize(t.variedade_nome) === normalize(row.nome)
+          t =>
+            Number(t.familia_id) === Number(row.familia_id)
+            && Number(t.genero_id) === Number(row.genero_id)
+            && Number(t.especie_id) === Number(row.especie_id)
+            && normalize(t.variedade_nome) === normalize(row.nome)
         )
 
         const key = [
           normalize(row.nome),
           normalize(matchingTombo?.familia_nome),
           normalize(matchingTombo?.genero_nome),
-          normalize(matchingTombo?.especie_nome),
+          normalize(matchingTombo?.especie_nome)
         ].join('|')
 
         newIdMap.set(key, Number(row.id))
@@ -131,7 +137,7 @@ export async function run(knex: Knex): Promise<void> {
           const updated = await trx('tombos')
             .where('hcf', item.tomboId)
             .update({ variedade_id: novaVariedadeId })
-          
+
           tombosAtualizados += Number(updated || 0)
         }
       }
@@ -139,7 +145,6 @@ export async function run(knex: Knex): Promise<void> {
       console.log('Migração finalizada com sucesso!')
       console.log(`Variedades recriadas: ${novasVariedades.length}`)
       console.log(`Registros de Tombos corrigidos: ${tombosAtualizados}`)
-      
     } catch (error) {
       console.error('Falha na migração. O banco realizou rollback.', error)
       throw error
