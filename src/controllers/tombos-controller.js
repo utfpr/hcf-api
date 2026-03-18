@@ -681,48 +681,54 @@ export const desativar = (request, response, next) => {
 export const listagem = (request, response, next) => {
     const { pagina, limite, offset } = request.paginacao;
     const {
-        nome_cientifico: nomeCientifico, hcf, tipo, nome_popular: nomePopular, situacao,
+        nome_cientifico: nomeCientifico,
+        hcf,
+        tipo,
+        nome_popular: nomePopular,
+        situacao,
+        codigo_barra_foto,
     } = request.query;
+
     let where = {
         rascunho: false,
     };
 
     if (nomeCientifico) {
-        where = {
-            ...where,
-            nome_cientifico: { [Op.iLike]: `%${nomeCientifico}%` },
-        };
+        where.nome_cientifico = { [Op.iLike]: `%${nomeCientifico}%` };
     }
-
     if (hcf) {
-        where = {
-            ...where,
-            hcf,
-        };
+        where.hcf = hcf;
     }
-
     if (tipo) {
-        where = {
-            ...where,
-            tipo_id: tipo,
-        };
+        where.tipo_id = tipo;
     }
-
     if (nomePopular) {
-        where = {
-            ...where,
-            nomes_populares: { [Op.iLike]: `%${nomePopular}%` },
-        };
+        where.nomes_populares = { [Op.iLike]: `%${nomePopular}%` };
     }
-
     if (situacao) {
-        where = {
-            ...where,
-            situacao,
-        };
+        where.situacao = situacao;
     }
 
-    let retorno = {  // eslint-disable-line
+    let include = [
+        {
+            model: Coletor,
+            attributes: ['id', 'nome'],
+            required: false,
+        },
+    ];
+
+    if (codigo_barra_foto) {
+        include.push({
+            model: TomboFoto,
+            where: {
+                codigo_barra: codigo_barra_foto,
+            },
+            attributes: ['id', 'codigo_barra', 'tombo_hcf'],
+            required: true,
+        });
+    }
+
+    let retorno = {
         metadados: {
             total: 0,
             pagina,
@@ -730,12 +736,17 @@ export const listagem = (request, response, next) => {
         },
         tombos: [],
     };
+
     Promise.resolve()
-        .then(() => Tombo.count({ where }))
+        .then(() => Tombo.count({
+            where,
+            include: codigo_barra_foto ? include : [],
+            distinct: true,
+        }))
         .then(total => {
             retorno.metadados.total = total;
         })
-        .then(() => Tombo.findAndCountAll({
+        .then(() => Tombo.findAll({
             attributes: [
                 'hcf',
                 'nomes_populares',
@@ -744,21 +755,19 @@ export const listagem = (request, response, next) => {
                 'data_coleta_mes',
                 'data_coleta_ano',
                 'created_at',
+                'coletor_id',
+                'tipo_id',
             ],
-            include: {
-                model: Coletor,
-                attributes: ['id', 'nome'],
-                required: false,
-            },
+            include,
             where,
+            subQuery: false,
             order: [['hcf', 'DESC']],
             limit: limite,
             offset,
         }))
         .then(listaTombos => {
-            retorno.tombos = listaTombos.rows;
-            response.status(codigos.LISTAGEM)
-                .json(retorno);
+            retorno.tombos = listaTombos;
+            response.status(codigos.LISTAGEM).json(retorno);
         })
         .catch(next);
 };

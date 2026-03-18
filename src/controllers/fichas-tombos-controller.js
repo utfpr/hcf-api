@@ -235,9 +235,16 @@ export default function fichaTomboController(request, response, next) {
             const dataTombo = new Date(tombo.data_tombo);
             const romanoDataTombo = (`${dataTombo.getDate()}/${romanos[dataTombo.getMonth()]}/${dataTombo.getFullYear()}`);
 
-            const identificador = tombo.identificadores?.[0]?.nome
-                && tombo.identificadores?.[0]?.nome.toLowerCase() !== 'não-identificado'
-                ? tombo.identificadores?.[0]?.nome
+            const identificador = tombo.identificadores && tombo.identificadores.length > 0
+                ? tombo.identificadores
+                        .filter(ident => ident.nome && ident.nome.toLowerCase() !== 'não-identificado')
+                        .sort((a, b) => {
+                            const ordemA = a.tombos_identificadores?.ordem || 0;
+                            const ordemB = b.tombos_identificadores?.ordem || 0;
+                            return ordemA - ordemB;
+                        })
+                        .map(ident => ident.nome)
+                        .join('; ')
                 : '';
 
             const romanoDataIdentificacao = formataDataIdentificacao(
