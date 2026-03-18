@@ -140,7 +140,7 @@ const obterModeloSPlinkerLotes = async (limit, offset, request, response) => {
     tombos.forEach(tombo => {
         const kingdom = tombo.familia?.reino?.nome || '\t';
         const familyName = tombo.familia?.nome;
-        const family = (familyName && familyName !== 'Indeterminada') ? familyName : '\t';
+        const family = (familyName && familyName.toLowerCase() !== 'indeterminada') ? familyName : '\t';
         const genus = tombo.genero?.nome || '\t';
         const species = tombo.especy?.nome || '\t';
         const scientificNameAuthor = tombo.especy?.autor?.nome || '\t';
