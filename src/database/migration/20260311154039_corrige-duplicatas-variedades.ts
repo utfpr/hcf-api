@@ -22,6 +22,7 @@ type NovaVariedade = {
   familia_id: number
   genero_id: number
   especie_id: number
+  autor_id: number | null
 }
 
 export async function run(knex: Knex): Promise<void> {
@@ -37,6 +38,7 @@ export async function run(knex: Knex): Promise<void> {
         't.genero_id',
         't.especie_id',
         'v.nome as variedade_nome',
+        'v.autor_id as variedade_autor_id',
         'f.nome as familia_nome',
         'g.nome as genero_nome',
         'e.nome as especie_nome'
@@ -54,7 +56,8 @@ export async function run(knex: Knex): Promise<void> {
         normalize(row.variedade_nome),
         normalize(row.familia_nome),
         normalize(row.genero_nome),
-        normalize(row.especie_nome)
+        normalize(row.especie_nome),
+        row.variedade_autor_id
       ].join('|')
 
       snapshot.push({
@@ -68,7 +71,8 @@ export async function run(knex: Knex): Promise<void> {
           nome: String(row.variedade_nome).trim(),
           familia_id: Number(row.familia_id),
           genero_id: Number(row.genero_id),
-          especie_id: Number(row.especie_id)
+          especie_id: Number(row.especie_id),
+          autor_id: row.variedade_autor_id ? Number(row.variedade_autor_id) : null
         })
       }
     }
@@ -90,7 +94,8 @@ export async function run(knex: Knex): Promise<void> {
           nome: item.nome,
           familia_id: item.familia_id,
           genero_id: item.genero_id,
-          especie_id: item.especie_id
+          especie_id: item.especie_id,
+          autor_id: item.autor_id
         }))
       )
       .returning([
@@ -98,7 +103,8 @@ export async function run(knex: Knex): Promise<void> {
         'nome',
         'familia_id',
         'genero_id',
-        'especie_id'
+        'especie_id',
+        'autor_id'
       ])
 
     const newIdMap = new Map<string, number>()
@@ -110,13 +116,15 @@ export async function run(knex: Knex): Promise<void> {
           && Number(t.genero_id) === Number(row.genero_id)
           && Number(t.especie_id) === Number(row.especie_id)
           && normalize(t.variedade_nome) === normalize(row.nome)
+          && (t.variedade_autor_id ? Number(t.variedade_autor_id) : null) === (row.autor_id ? Number(row.autor_id) : null)
       )
 
       const key = [
         normalize(row.nome),
         normalize(matchingTombo?.familia_nome),
         normalize(matchingTombo?.genero_nome),
-        normalize(matchingTombo?.especie_nome)
+        normalize(matchingTombo?.especie_nome),
+        row.autor_id ? Number(row.autor_id) : null
       ].join('|')
 
       newIdMap.set(key, Number(row.id))
