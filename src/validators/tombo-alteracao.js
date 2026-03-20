@@ -42,6 +42,9 @@ export default {
     },
     'json.principal.data_coleta': {
         in: 'body',
+        optional: {
+            options: { nullable: true },
+        },
         custom: {
             options: validaData,
         },

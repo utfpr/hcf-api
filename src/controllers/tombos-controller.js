@@ -1294,15 +1294,17 @@ export const obterTombo = async (request, response, next) => {
                 const [tomboIdentificador] = tombo.identificadores;
 
                 if (tombo.data_identificacao_dia !== null) {
-                    dataIdent = `${tombo.data_identificacao_dia}/`;
+                    dataIdent = tombo.data_identificacao_dia;
                     resposta.data_identificacao_dia = tombo.data_identificacao_dia;
                 }
                 if (tombo.data_identificacao_mes !== null) {
-                    dataIdent += `${converteInteiroParaRomano(tombo.data_identificacao_mes)}/`;
+                    if (dataIdent) dataIdent += '/';
+                    dataIdent += converteInteiroParaRomano(tombo.data_identificacao_mes);
                     resposta.data_identificacao_mes = tombo.data_identificacao_mes;
                 }
                 if (tombo.data_identificacao_ano !== null) {
-                    dataIdent += `${tombo.data_identificacao_ano}`;
+                    if (dataIdent) dataIdent += '/';
+                    dataIdent += tombo.data_identificacao_ano;
                     resposta.data_identificacao_ano = tombo.data_identificacao_ano;
                 }
 
@@ -1318,11 +1320,13 @@ export const obterTombo = async (request, response, next) => {
                     resposta.data_coleta_dia = tombo.data_coleta_dia;
                 }
                 if (tombo.data_coleta_mes !== null) {
-                    dataCol += `/${converteInteiroParaRomano(tombo.data_coleta_mes)}`;
+                    if (dataCol) dataCol += '/';
+                    dataCol += converteInteiroParaRomano(tombo.data_coleta_mes);
                     resposta.data_coleta_mes = tombo.data_coleta_mes;
                 }
                 if (tombo.data_coleta_ano !== null) {
-                    dataCol += `/${tombo.data_coleta_ano}`;
+                    if (dataCol) dataCol += '/';
+                    dataCol += tombo.data_coleta_ano;
                     resposta.data_coleta_ano = tombo.data_coleta_ano;
                 }
 

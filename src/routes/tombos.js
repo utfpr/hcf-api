@@ -393,7 +393,6 @@ export default app => {
      *             required:
      *               - numero
      *               - coletor
-     *               - data_coleta
      *               - local
      *           example:
      *             numero: "12345"
