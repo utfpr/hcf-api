@@ -303,4 +303,44 @@ export default app => {
         validacoesMiddleware(desativarColetorEsquema),
         coletoresController.desativaColetor,
     ]);
+
+    /**
+     * @swagger
+     * /coletores/{coletorId}/numeros-coleta:
+     *   get:
+     *     summary: Lista números de coleta de um coletor
+     *     tags: [Coletores]
+     *     description: Retorna uma lista dos números de coleta cadastrados para um coletor específico.
+     *     parameters:
+     *       - in: path
+     *         name: coletorId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: ID do coletor
+     *     responses:
+     *       200:
+     *         description: Lista de números de coleta do coletor
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 numerosColeta:
+     *                   type: array
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       id:
+     *                         type: integer
+     *                       numero:
+     *                         type: integer
+     *       '404':
+     *         $ref: '#/components/responses/NotFound'
+     *       '500':
+     *         $ref: '#/components/responses/InternalServerError'
+     */
+    app.route('/coletores/:coletorId/numeros-coleta').get([
+        coletoresController.listaNumerosColetaPorColetor,
+    ]);
 };
