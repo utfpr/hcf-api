@@ -687,6 +687,8 @@ export const listagem = (request, response, next) => {
         nome_popular: nomePopular,
         situacao,
         codigo_barra_foto,
+        coletor_id: coletorId,
+        numero_coleta: numeroColeta,
     } = request.query;
 
     let where = {
@@ -707,6 +709,12 @@ export const listagem = (request, response, next) => {
     }
     if (situacao) {
         where.situacao = situacao;
+    }
+    if (coletorId) {
+        where.coletor_id = coletorId;
+    }
+    if (numeroColeta) {
+        where.numero_coleta = numeroColeta;
     }
 
     let include = [
