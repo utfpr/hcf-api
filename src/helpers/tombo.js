@@ -59,13 +59,13 @@ export function converteRequisicaoParaTombo(requisicao) {
         longitude: converteParaDecimal(localidade.longitude),
         altitude: localidade.altitude,
 
-        data_coleta_dia: dataColeta.dia,
-        data_coleta_mes: dataColeta.mes,
-        data_coleta_ano: dataColeta.ano,
+        data_coleta_dia: dataColeta?.dia,
+        data_coleta_mes: dataColeta?.mes,
+        data_coleta_ano: dataColeta?.ano,
 
-        data_identificacao_dia: dataIdentificacao.dia,
-        data_identificacao_mes: dataIdentificacao.mes,
-        data_identificacao_ano: dataIdentificacao.ano,
+        data_identificacao_dia: dataIdentificacao?.dia,
+        data_identificacao_mes: dataIdentificacao?.mes,
+        data_identificacao_ano: dataIdentificacao?.ano,
 
         tipo: {
             id: principal.tipo_id,
