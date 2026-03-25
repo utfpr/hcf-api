@@ -167,7 +167,6 @@ export default app => {
      *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/identificadores').get([
-        tokensMiddleware([TIPOS_USUARIOS.CURADOR]),
         validacoesMiddleware(listarIdentificadoresEsquema),
         listagensMiddleware,
         identificadoresController.listaIdentificadores,

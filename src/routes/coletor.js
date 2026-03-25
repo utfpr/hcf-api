@@ -199,7 +199,6 @@ export default app => {
      *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/coletores').get([
-        tokensMiddleware([TIPOS_USUARIOS.CURADOR]),
         validacoesMiddleware(listarColetoresEsquema),
         listagensMiddleware,
         coletoresController.listaColetores,
