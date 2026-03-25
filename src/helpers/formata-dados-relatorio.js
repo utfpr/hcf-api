@@ -57,15 +57,29 @@ const defineNomeCientifico = dado => {
 
 export const formatarDadosParaRelatorioDeColetaPorLocalEIntervaloDeData = dados => {
     const romanos = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
-    const dadosFormatados = dados.map(dado => ({
-        local: dado.locais_coletum?.descricao,
-        data: `${String(dado.data_coleta_dia).padStart(2, '0')}/${romanos[dado.data_coleta_mes - 1]}/${dado.data_coleta_ano}`,
-        tombo: dado?.hcf,
-        numeroColeta: dado.numero_coleta || '-',
-        especie: defineNomeCientifico(dado),
-        familia: dado?.familia?.nome || 'Não Informada',
-        autor: dado.especy?.autor?.nome || 'Não Informado',
-    }));
+    const dadosFormatados = dados.map(dado => {
+        let data = '';
+        if (dado.data_coleta_dia !== null) {
+            data = String(dado.data_coleta_dia).padStart(2, '0');
+        }
+        if (dado.data_coleta_mes !== null) {
+            if (data) data += '/';
+            data += romanos[dado.data_coleta_mes - 1];
+        }
+        if (dado.data_coleta_ano !== null) {
+            if (data) data += '/';
+            data += dado.data_coleta_ano;
+        }
+        return {
+            local: dado.locais_coletum?.descricao,
+            data,
+            tombo: dado?.hcf,
+            numeroColeta: dado.numero_coleta || '-',
+            especie: defineNomeCientifico(dado),
+            familia: dado?.familia?.nome || 'Não Informada',
+            autor: dado.especy?.autor?.nome || 'Não Informado',
+        };
+    });
 
     dadosFormatados.sort((a, b) => a.familia.localeCompare(b.familia));
 
@@ -76,8 +90,20 @@ export const formatarDadosParaRelatorioDeColetaPorColetorEIntervaloDeData = dado
     const romanos = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
     const dadosFormatados = dados.map(dado => {
         if (dado?.numero_coleta && dado?.numero_coleta !== null) {
+            let data = '';
+            if (dado.data_coleta_dia !== null) {
+                data = String(dado.data_coleta_dia).padStart(2, '0');
+            }
+            if (dado.data_coleta_mes !== null) {
+                if (data) data += '/';
+                data += romanos[dado.data_coleta_mes - 1];
+            }
+            if (dado.data_coleta_ano !== null) {
+                if (data) data += '/';
+                data += dado.data_coleta_ano;
+            }
             return {
-                data: `${String(dado.data_coleta_dia).padStart(2, '0')}/${romanos[dado.data_coleta_mes - 1]}/${dado.data_coleta_ano}`,
+                data,
                 tombo: dado?.hcf,
                 numeroColeta: dado.numero_coleta || '-',
                 especie: defineNomeCientifico(dado),

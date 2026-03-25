@@ -42,22 +42,34 @@ function formataDataSaida(data) {
 }
 
 function formataDataIdentificacao(dia, mes, ano, arrayRomanos) {
-    // Se não tiver ano, não mostra nada
     if (!ano) {
         return '';
     }
 
-    // Se tiver mês e ano mas não tiver dia, mostra mês/ano
     if (!dia && mes && ano) {
         return `${arrayRomanos[mes - 1]}/${ano}`;
     }
 
-    // Se não tiver mês mas tiver ano, mostra só o ano
     if (!mes && ano) {
         return `${ano}`;
     }
 
-    // Se tiver dia, mês e ano, mostra tudo
+    return `${dia}/${arrayRomanos[mes - 1]}/${ano}`;
+}
+
+function formataDataColeta(dia, mes, ano, arrayRomanos) {
+    if (!ano) {
+        return '';
+    }
+
+    if (!dia && mes && ano) {
+        return `${arrayRomanos[mes - 1]}/${ano}`;
+    }
+
+    if (!mes && ano) {
+        return `${ano}`;
+    }
+
     return `${dia}/${arrayRomanos[mes - 1]}/${ano}`;
 }
 
@@ -254,7 +266,12 @@ export default function fichaTomboController(request, response, next) {
                 romanos,
             );
 
-            const romanoDataColeta = (`${tombo.data_coleta_dia}/${romanos[tombo.data_coleta_mes - 1]}/${tombo.data_coleta_ano}`);
+            const romanoDataColeta = formataDataColeta(
+                tombo?.data_coleta_dia,
+                tombo?.data_coleta_mes,
+                tombo?.data_coleta_ano,
+                romanos,
+            );
 
             const parametros = {
                 // Se não tem fotos, cria um array de 1 posição com um objeto vazio

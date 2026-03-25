@@ -60,7 +60,19 @@ function RelacaoLocaisColeta({ dados, total, textoFiltro, showCoord = false }: R
       'I', 'II', 'III', 'IV', 'V', 'VI',
       'VII', 'VIII', 'IX', 'X', 'XI', 'XII'
     ];
-    return `${data_coleta_dia}/${romanoMeses[data_coleta_mes - 1]}/${data_coleta_ano}`;
+    let data = '';
+    if (data_coleta_dia !== null && data_coleta_dia !== undefined) {
+      data = String(data_coleta_dia).padStart(2, '0');
+    }
+    if (data_coleta_mes !== null && data_coleta_mes !== undefined) {
+      if (data) data += '/';
+      data += romanoMeses[data_coleta_mes - 1];
+    }
+    if (data_coleta_ano !== null && data_coleta_ano !== undefined) {
+      if (data) data += '/';
+      data += data_coleta_ano;
+    }
+    return data;
   }
 
   const converteDecimalParaDMS = (decimal: number | null, isLatitude = true) => {

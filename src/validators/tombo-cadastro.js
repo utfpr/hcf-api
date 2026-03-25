@@ -31,26 +31,65 @@ export default {
             options: validaDataTombo,
         },
     },
-    'json.principal.data_coleta.dia': {
+    'json.principal.data_coleta': {
         in: 'body',
         optional: {
             options: { nullable: true },
         },
-        isInt: true,
+        custom: {
+            options: validaData,
+        },
+    },
+    'json.principal.data_coleta.dia': {
+        in: 'body',
+        optional: {
+            options: { nullable: true, checkFalsy: false },
+        },
+        custom: {
+            options: value => {
+                if (value === null || value === undefined) {
+                    return true;
+                }
+                if (Number.isInteger(value)) {
+                    return true;
+                }
+                throw new Error('dia must be an integer');
+            },
+        },
     },
     'json.principal.data_coleta.mes': {
         in: 'body',
         optional: {
-            options: { nullable: true },
+            options: { nullable: true, checkFalsy: false },
         },
-        isInt: true,
+        custom: {
+            options: value => {
+                if (value === null || value === undefined) {
+                    return true;
+                }
+                if (Number.isInteger(value)) {
+                    return true;
+                }
+                throw new Error('mes must be an integer');
+            },
+        },
     },
     'json.principal.data_coleta.ano': {
         in: 'body',
         optional: {
-            options: { nullable: true },
+            options: { nullable: true, checkFalsy: false },
         },
-        isInt: true,
+        custom: {
+            options: value => {
+                if (value === null || value === undefined) {
+                    return true;
+                }
+                if (Number.isInteger(value)) {
+                    return true;
+                }
+                throw new Error('ano must be an integer');
+            },
+        },
     },
     'json.principal.tipo_id': {
         in: 'body',
