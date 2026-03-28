@@ -1,29 +1,47 @@
-- name: Setup readonly access to MySQL
+- name: Setup readonly access to PostgreSQL
   hosts: all
   become: yes
+  vars:
+    database_port: 5432
+
+  pre_tasks:
+    - name: Ensure required Python packages are installed
+      tags:
+        - always
+      ansible.builtin.apt:
+        name:
+          - python3-psycopg2
+        update_cache: yes
+        state: present
 
   tasks:
     - name: Ensure readonly_tunnel user is present
-      user:
+      tags:
+        - host
+      ansible.builtin.user:
         name: readonly_tunnel
         create_home: yes
         shell: /bin/false
         system: yes
 
     - name: Ensure readonly_tunnel user authorization key is present
-      authorized_key:
+      tags:
+        - host
+      ansible.posix.authorized_key:
         user: readonly_tunnel
         key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIARuxJ71FWsdjwVaZgoXILWRmVSdVEJBKfZi8kAYUkVA readonly_tunnel"
 
     - name: Ensure SSH access is strict
-      blockinfile:
+      tags:
+        - host
+      ansible.builtin.blockinfile:
         path: /etc/ssh/sshd_config.d/10-readonly-tunnel.conf
         block: |
           Match User readonly_tunnel
             PermitTTY no
             PermitTunnel no
             GatewayPorts no
-            PermitOpen localhost:3306
+            PermitOpen localhost:{{ database_port }}
             ForceCommand /bin/false
             X11Forwarding no
             AllowAgentForwarding no
@@ -36,8 +54,180 @@
       register: sshd_config_file
 
     - name: Reload SSH
-      service:
+      tags:
+        - host
+      ansible.builtin.service:
         name: sshd
         enabled: yes
         state: reloaded
       when: sshd_config_file.changed
+
+    - name: Ensure PostgreSQL readonly_tunnel user is present
+      tags:
+        - postgres
+      community.postgresql.postgresql_user:
+        name: "{{ postgres.readonly_user.name }}"
+        password: "{{ postgres.readonly_user.password }}"
+        login_user: "{{ postgres.login_user }}"
+        login_host: "{{ postgres.login_host }}"
+        login_port: "{{ postgres.login_port }}"
+        login_password: "{{ postgres.login_password }}"
+        state: present
+
+    - name: Grant all privileges on herbario_dev database
+      tags:
+        - postgres
+      community.postgresql.postgresql_privs:
+        database: herbario_dev
+        type: database
+        privs: ALL
+        roles: "{{ postgres.readonly_user.name }}"
+        login_user: "{{ postgres.login_user }}"
+        login_host: "{{ postgres.login_host }}"
+        login_port: "{{ postgres.login_port }}"
+        login_password: "{{ postgres.login_password }}"
+
+    - name: Grant usage on schemas in herbario_dev
+      tags:
+        - postgres
+      community.postgresql.postgresql_privs:
+        database: herbario_dev
+        type: schema
+        objs: "{{ item }}"
+        privs: ALL
+        roles: "{{ postgres.readonly_user.name }}"
+        login_user: "{{ postgres.login_user }}"
+        login_host: "{{ postgres.login_host }}"
+        login_port: "{{ postgres.login_port }}"
+        login_password: "{{ postgres.login_password }}"
+      loop:
+        - public
+        - topology
+
+    - name: Grant all privileges on all tables in herbario_dev
+      tags:
+        - postgres
+      community.postgresql.postgresql_privs:
+        database: herbario_dev
+        type: table
+        objs: ALL_IN_SCHEMA
+        privs: ALL
+        roles: "{{ postgres.readonly_user.name }}"
+        login_user: "{{ postgres.login_user }}"
+        login_host: "{{ postgres.login_host }}"
+        login_port: "{{ postgres.login_port }}"
+        login_password: "{{ postgres.login_password }}"
+
+    - name: Set default privileges for future tables in herbario_dev
+      tags:
+        - postgres
+      community.postgresql.postgresql_privs:
+        database: herbario_dev
+        type: default_privs
+        objs: tables
+        privs: ALL
+        roles: "{{ postgres.readonly_user.name }}"
+        login_user: "{{ postgres.login_user }}"
+        login_host: "{{ postgres.login_host }}"
+        login_port: "{{ postgres.login_port }}"
+        login_password: "{{ postgres.login_password }}"
+
+    - name: Set default privileges for future sequences in herbario_dev
+      tags:
+        - postgres
+      community.postgresql.postgresql_privs:
+        database: herbario_dev
+        type: default_privs
+        objs: sequences
+        privs: ALL
+        roles: "{{ postgres.readonly_user.name }}"
+        login_user: "{{ postgres.login_user }}"
+        login_host: "{{ postgres.login_host }}"
+        login_port: "{{ postgres.login_port }}"
+        login_password: "{{ postgres.login_password }}"
+
+    - name: Grant CONNECT on herbario_prod database
+      tags:
+        - postgres
+      community.postgresql.postgresql_privs:
+        database: herbario_prod
+        type: database
+        privs: CONNECT
+        roles: "{{ postgres.readonly_user.name }}"
+        login_user: "{{ postgres.login_user }}"
+        login_host: "{{ postgres.login_host }}"
+        login_port: "{{ postgres.login_port }}"
+        login_password: "{{ postgres.login_password }}"
+
+    - name: Grant usage on schemas in herbario_prod
+      tags:
+        - postgres
+      community.postgresql.postgresql_privs:
+        database: herbario_prod
+        type: schema
+        objs: "{{ item }}"
+        privs: USAGE
+        roles: "{{ postgres.readonly_user.name }}"
+        login_user: "{{ postgres.login_user }}"
+        login_host: "{{ postgres.login_host }}"
+        login_port: "{{ postgres.login_port }}"
+        login_password: "{{ postgres.login_password }}"
+      loop:
+        - public
+        - topology
+
+    - name: Grant SELECT on all tables in herbario_prod
+      tags:
+        - postgres
+      community.postgresql.postgresql_privs:
+        database: herbario_prod
+        type: table
+        objs: ALL_IN_SCHEMA
+        privs: SELECT
+        roles: "{{ postgres.readonly_user.name }}"
+        login_user: "{{ postgres.login_user }}"
+        login_host: "{{ postgres.login_host }}"
+        login_port: "{{ postgres.login_port }}"
+        login_password: "{{ postgres.login_password }}"
+
+    - name: Grant SELECT on all sequences in herbario_prod
+      tags:
+        - postgres
+      community.postgresql.postgresql_privs:
+        database: herbario_prod
+        type: sequence
+        objs: ALL_IN_SCHEMA
+        privs: SELECT
+        roles: "{{ postgres.readonly_user.name }}"
+        login_user: "{{ postgres.login_user }}"
+        login_host: "{{ postgres.login_host }}"
+        login_port: "{{ postgres.login_port }}"
+        login_password: "{{ postgres.login_password }}"
+
+    - name: Set default privileges for future tables in herbario_prod
+      tags:
+        - postgres
+      community.postgresql.postgresql_privs:
+        database: herbario_prod
+        type: default_privs
+        objs: tables
+        privs: SELECT
+        roles: "{{ postgres.readonly_user.name }}"
+        login_user: "{{ postgres.login_user }}"
+        login_host: "{{ postgres.login_host }}"
+        login_port: "{{ postgres.login_port }}"
+        login_password: "{{ postgres.login_password }}"
+
+    - name: Set default privileges for future sequences in herbario_prod
+      tags:
+        - postgres
+      community.postgresql.postgresql_privs:
+        database: herbario_prod
+        type: default_privs
+        objs: sequences
+        privs: SELECT
+        roles: "{{ postgres.readonly_user.name }}"
+        login_user: "{{ postgres.login_user }}"
+        login_host: "{{ postgres.login_host }}"
+        login_port: "{{ postgres.login_port }}"
+        login_password: "{{ postgres.login_password }}"
