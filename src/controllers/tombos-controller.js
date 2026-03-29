@@ -157,7 +157,7 @@ export const cadastro = (request, response, next) => {
                 }
                 return undefined;
             })
-        // //////////////CRIA COLECOES ANEXAS///////////
+            // //////////////CRIA COLECOES ANEXAS///////////
             .then(() => {
                 if (colecoesAnexas) {
                     const object = pick(colecoesAnexas, ['tipo', 'observacoes']);
@@ -174,7 +174,7 @@ export const cadastro = (request, response, next) => {
                 }
                 return undefined;
             })
-        // ///////// VALIDA A TAXONOMIA E A INSERE NO NOME CIENTIFICO //////////
+            // ///////// VALIDA A TAXONOMIA E A INSERE NO NOME CIENTIFICO //////////
             .then(() => {
                 if (taxonomia && taxonomia.familia_id) {
                     return Familia.findOne({
@@ -296,7 +296,7 @@ export const cadastro = (request, response, next) => {
                 }
                 return undefined;
             })
-        // /////////// CADASTRA TOMBO /////////////
+            // /////////// CADASTRA TOMBO /////////////
             .then(() => {
                 let jsonTombo = {
                     numero_coleta: principal.numero_coleta,
@@ -373,7 +373,7 @@ export const cadastro = (request, response, next) => {
                 }
                 return Tombo.create(jsonTombo, { transaction });
             })
-        // //////////// CADASTRA A ALTERACAO ///////////
+            // //////////// CADASTRA A ALTERACAO ///////////
             .then(tombo => {
                 if (!tombo) {
                     throw new BadRequestExeption(408);
@@ -419,7 +419,7 @@ export const cadastro = (request, response, next) => {
                     return alteracaoTomboCriado;
                 });
             })
-        // /////////////// CADASTRA O INDETIFICADOR ///////////////
+            // /////////////// CADASTRA O INDETIFICADOR ///////////////
             .then(alteracaoTomboCriado => {
                 if (!alteracaoTomboCriado) {
                     throw new BadRequestExeption(409);
@@ -1777,6 +1777,165 @@ export const verificarCoordenada = async (request, response, next) => {
         }
 
         return response.json({ dentro: rows[0].dentro });
+    } catch (err) {
+        return next(err);
+    }
+};
+
+export const relatorioPorPeriodo = async (request, response, next) => {
+    try {
+        const { data_inicio, data_fim, granularidade } = request.query;
+
+        if (!data_inicio || !data_fim || !granularidade) {
+            return response.status(400).json({
+                error: {
+                    message: 'Parâmetros obrigatórios: data_inicio, data_fim, granularidade',
+                },
+            });
+        }
+
+        // Validar granularidade
+        if (!['dia', 'semana', 'mes', 'ano'].includes(granularidade)) {
+            return response.status(400).json({
+                error: {
+                    message: 'Granularidade inválida. Use: dia, semana, mes ou ano',
+                },
+            });
+        }
+
+        const dataInicio = new Date(data_inicio);
+        const dataFim = new Date(data_fim);
+
+        if (isNaN(dataInicio.getTime()) || isNaN(dataFim.getTime())) {
+            return response.status(400).json({
+                error: {
+                    message: 'Datas inválidas. Use o formato YYYY-MM-DD',
+                },
+            });
+        }
+
+        if (dataInicio > dataFim) {
+            return response.status(400).json({
+                error: {
+                    message: 'Data de início deve ser menor ou igual à data de fim',
+                },
+            });
+        }
+
+        // Calcular diferenças para validar granularidade
+        const diffMs = dataFim - dataInicio;
+        const diffDias = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+        const diffSemanas = Math.ceil(diffDias / 7);
+        const diffMeses = Math.ceil((dataFim.getFullYear() - dataInicio.getFullYear()) * 12 + (dataFim.getMonth() - dataInicio.getMonth()));
+        const diffAnos = dataFim.getFullYear() - dataInicio.getFullYear();
+
+        // Validar granularidade baseada no período
+        let granularidadePermitida = 'ano';
+        if (diffDias <= 48) {
+            granularidadePermitida = 'dia';
+        } else if (diffSemanas <= 48) {
+            granularidadePermitida = 'semana';
+        } else if (diffMeses <= 48) {
+            granularidadePermitida = 'mes';
+        } else {
+            granularidadePermitida = 'ano';
+        }
+
+        // Mapear granularidades para verificação hierárquica
+        const granularidadeHierarquia = { dia: 0, semana: 1, mes: 2, ano: 3 };
+        const granularidadeSolicitada = granularidadeHierarquia[granularidade];
+        const granularidadeMaximaPermitida = granularidadeHierarquia[granularidadePermitida];
+
+        if (granularidadeSolicitada < granularidadeMaximaPermitida) {
+            return response.status(400).json({
+                error: {
+                    message: `Período muito grande para granularidade '${granularidade}'. Máximo: ${diffDias} dias. Use granularidade '${granularidadePermitida}' ou maior.`,
+                    restricoes: {
+                        difDias: diffDias,
+                        difSemanas: diffSemanas,
+                        difMeses: diffMeses,
+                        difAnos: diffAnos,
+                        granularidadePermitida: granularidadePermitida,
+                    },
+                },
+            });
+        }
+
+        let query = '';
+
+        if (granularidade === 'dia') {
+            query = `
+                SELECT
+                    TO_CHAR(TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes::text, 2, '0'), '-', LPAD(data_coleta_dia::text, 2, '0')), 'YYYY-MM-DD'), 'DD/MM/YYYY') AS periodo,
+                    COUNT(*) AS quantidade
+                FROM tombos
+                WHERE rascunho = false
+                    AND data_coleta_ano IS NOT NULL
+                    AND data_coleta_mes IS NOT NULL
+                    AND data_coleta_dia IS NOT NULL
+                    AND TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes::text, 2, '0'), '-', LPAD(data_coleta_dia::text, 2, '0')), 'YYYY-MM-DD')
+                        BETWEEN $1 AND $2
+                GROUP BY data_coleta_ano, data_coleta_mes, data_coleta_dia
+                ORDER BY data_coleta_ano ASC, data_coleta_mes ASC, data_coleta_dia ASC
+            `;
+        } else if (granularidade === 'semana') {
+            query = `
+                SELECT
+                    'Semana ' || TO_CHAR(TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes::text, 2, '0'), '-', LPAD(data_coleta_dia::text, 2, '0')), 'YYYY-MM-DD'), 'WW') || ' de ' || data_coleta_ano::text AS periodo,
+                    COUNT(*) AS quantidade
+                FROM tombos
+                WHERE rascunho = false
+                    AND data_coleta_ano IS NOT NULL
+                    AND data_coleta_mes IS NOT NULL
+                    AND data_coleta_dia IS NOT NULL
+                    AND TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes::text, 2, '0'), '-', LPAD(data_coleta_dia::text, 2, '0')), 'YYYY-MM-DD')
+                        BETWEEN $1 AND $2
+                GROUP BY data_coleta_ano, TO_CHAR(TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes::text, 2, '0'), '-', LPAD(data_coleta_dia::text, 2, '0')), 'YYYY-MM-DD'), 'WW')
+                ORDER BY data_coleta_ano ASC, TO_CHAR(TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes::text, 2, '0'), '-', LPAD(data_coleta_dia::text, 2, '0')), 'YYYY-MM-DD'), 'WW')::integer ASC
+            `;
+        } else if (granularidade === 'mes') {
+            query = `
+                SELECT
+                    data_coleta_mes::text || '/' || data_coleta_ano::text AS periodo,
+                    COUNT(*) AS quantidade
+                FROM tombos
+                WHERE rascunho = false
+                    AND data_coleta_ano IS NOT NULL
+                    AND data_coleta_mes IS NOT NULL
+                    AND data_coleta_ano::integer >= EXTRACT(YEAR FROM $1::date)::integer
+                    AND data_coleta_ano::integer <= EXTRACT(YEAR FROM $2::date)::integer
+                GROUP BY data_coleta_ano, data_coleta_mes
+                ORDER BY data_coleta_ano ASC, data_coleta_mes ASC
+            `;
+        } else if (granularidade === 'ano') {
+            query = `
+                SELECT
+                    data_coleta_ano::text AS periodo,
+                    COUNT(*) AS quantidade
+                FROM tombos
+                WHERE rascunho = false
+                    AND data_coleta_ano IS NOT NULL
+                    AND data_coleta_ano::integer >= EXTRACT(YEAR FROM $1::date)::integer
+                    AND data_coleta_ano::integer <= EXTRACT(YEAR FROM $2::date)::integer
+                GROUP BY data_coleta_ano
+                ORDER BY data_coleta_ano ASC
+            `;
+        }
+
+        const resultado = await sequelize.query(query, {
+            bind: [data_inicio, data_fim],
+            type: models.Sequelize.QueryTypes.SELECT,
+        });
+
+        // Filtrar valores nulos
+        const dados = resultado
+            .filter(item => item.periodo !== null)
+            .map(item => ({
+                periodo: item.periodo,
+                quantidade: parseInt(item.quantidade, 10),
+            }));
+
+        return response.status(200).json(dados);
     } catch (err) {
         return next(err);
     }
