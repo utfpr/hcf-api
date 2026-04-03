@@ -1828,14 +1828,14 @@ export const relatorioPorPeriodo = async (request, response, next) => {
         const diffSemanas = Math.ceil(diffDias / 7);
         const diffMeses = Math.ceil((dataFim.getFullYear() - dataInicio.getFullYear()) * 12 + (dataFim.getMonth() - dataInicio.getMonth()));
         const diffAnos = dataFim.getFullYear() - dataInicio.getFullYear();
-
+        
         // Validar granularidade baseada no período
         let granularidadePermitida = 'ano';
-        if (diffDias <= 48) {
+        if (diffDias <= 30) {
             granularidadePermitida = 'dia';
-        } else if (diffSemanas <= 48) {
+        } else if (diffSemanas <= 30) {
             granularidadePermitida = 'semana';
-        } else if (diffMeses <= 48) {
+        } else if (diffMeses <= 30) {
             granularidadePermitida = 'mes';
         } else {
             granularidadePermitida = 'ano';
@@ -1865,60 +1865,92 @@ export const relatorioPorPeriodo = async (request, response, next) => {
 
         if (granularidade === 'dia') {
             query = `
+                WITH date_series AS (
+                    SELECT generate_series($1::date, $2::date, '1 day'::interval)::date AS data_p
+                ),
+                counts AS (
+                    SELECT
+                        TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes::text, 2, '0'), '-', LPAD(data_coleta_dia::text, 2, '0')), 'YYYY-MM-DD') AS data_c,
+                        COUNT(*) AS qtd
+                    FROM tombos
+                    WHERE rascunho = false
+                        AND data_coleta_ano IS NOT NULL
+                        AND data_coleta_mes IS NOT NULL
+                        AND data_coleta_dia IS NOT NULL
+                    GROUP BY 1
+                )
                 SELECT
-                    TO_CHAR(TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes::text, 2, '0'), '-', LPAD(data_coleta_dia::text, 2, '0')), 'YYYY-MM-DD'), 'DD/MM/YYYY') AS periodo,
-                    COUNT(*) AS quantidade
-                FROM tombos
-                WHERE rascunho = false
-                    AND data_coleta_ano IS NOT NULL
-                    AND data_coleta_mes IS NOT NULL
-                    AND data_coleta_dia IS NOT NULL
-                    AND TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes::text, 2, '0'), '-', LPAD(data_coleta_dia::text, 2, '0')), 'YYYY-MM-DD')
-                        BETWEEN $1 AND $2
-                GROUP BY data_coleta_ano, data_coleta_mes, data_coleta_dia
-                ORDER BY data_coleta_ano ASC, data_coleta_mes ASC, data_coleta_dia ASC
+                    TO_CHAR(ds.data_p, 'DD/MM/YYYY') AS periodo,
+                    COALESCE(c.qtd, 0) AS quantidade
+                FROM date_series ds
+                LEFT JOIN counts c ON ds.data_p = c.data_c
+                ORDER BY ds.data_p ASC
             `;
         } else if (granularidade === 'semana') {
             query = `
+                WITH date_series AS (
+                    SELECT generate_series(date_trunc('week', $1::date), date_trunc('week', $2::date), '1 week'::interval)::date AS data_p
+                ),
+                counts AS (
+                    SELECT
+                        date_trunc('week', TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes::text, 2, '0'), '-', LPAD(data_coleta_dia::text, 2, '0')), 'YYYY-MM-DD'))::date AS data_c,
+                        COUNT(*) AS qtd
+                    FROM tombos
+                    WHERE rascunho = false
+                        AND data_coleta_ano IS NOT NULL
+                        AND data_coleta_mes IS NOT NULL
+                        AND data_coleta_dia IS NOT NULL
+                    GROUP BY 1
+                )
                 SELECT
-                    'Semana ' || TO_CHAR(TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes::text, 2, '0'), '-', LPAD(data_coleta_dia::text, 2, '0')), 'YYYY-MM-DD'), 'WW') || ' de ' || data_coleta_ano::text AS periodo,
-                    COUNT(*) AS quantidade
-                FROM tombos
-                WHERE rascunho = false
-                    AND data_coleta_ano IS NOT NULL
-                    AND data_coleta_mes IS NOT NULL
-                    AND data_coleta_dia IS NOT NULL
-                    AND TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes::text, 2, '0'), '-', LPAD(data_coleta_dia::text, 2, '0')), 'YYYY-MM-DD')
-                        BETWEEN $1 AND $2
-                GROUP BY data_coleta_ano, TO_CHAR(TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes::text, 2, '0'), '-', LPAD(data_coleta_dia::text, 2, '0')), 'YYYY-MM-DD'), 'WW')
-                ORDER BY data_coleta_ano ASC, TO_CHAR(TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes::text, 2, '0'), '-', LPAD(data_coleta_dia::text, 2, '0')), 'YYYY-MM-DD'), 'WW')::integer ASC
+                    'Semana ' || LPAD((ROW_NUMBER() OVER(ORDER BY ds.data_p))::text, 2, '0') AS periodo,
+                    COALESCE(c.qtd, 0) AS quantidade
+                FROM date_series ds
+                LEFT JOIN counts c ON ds.data_p = c.data_c
+                ORDER BY ds.data_p ASC
             `;
         } else if (granularidade === 'mes') {
             query = `
+                WITH date_series AS (
+                    SELECT generate_series(date_trunc('month', $1::date), date_trunc('month', $2::date), '1 month'::interval)::date AS data_p
+                ),
+                counts AS (
+                    SELECT
+                        date_trunc('month', TO_DATE(CONCAT(t.data_coleta_ano, '-', LPAD(t.data_coleta_mes::text, 2, '0'), '-01'), 'YYYY-MM-DD'))::date AS data_c,
+                        COUNT(*) AS qtd
+                    FROM tombos t
+                    WHERE t.rascunho = false
+                        AND t.data_coleta_ano IS NOT NULL
+                        AND t.data_coleta_mes IS NOT NULL
+                    GROUP BY 1
+                )
                 SELECT
-                    data_coleta_mes::text || '/' || data_coleta_ano::text AS periodo,
-                    COUNT(*) AS quantidade
-                FROM tombos
-                WHERE rascunho = false
-                    AND data_coleta_ano IS NOT NULL
-                    AND data_coleta_mes IS NOT NULL
-                    AND data_coleta_ano::integer >= EXTRACT(YEAR FROM $1::date)::integer
-                    AND data_coleta_ano::integer <= EXTRACT(YEAR FROM $2::date)::integer
-                GROUP BY data_coleta_ano, data_coleta_mes
-                ORDER BY data_coleta_ano ASC, data_coleta_mes ASC
+                    TO_CHAR(ds.data_p, 'MM/YYYY') AS periodo,
+                    COALESCE(c.qtd, 0) AS quantidade
+                FROM date_series ds
+                LEFT JOIN counts c ON ds.data_p = c.data_c
+                ORDER BY ds.data_p ASC
             `;
         } else if (granularidade === 'ano') {
             query = `
+                WITH date_series AS (
+                    SELECT generate_series(date_trunc('year', $1::date), date_trunc('year', $2::date), '1 year'::interval)::date AS data_p
+                ),
+                counts AS (
+                    SELECT
+                        data_coleta_ano AS ano_c,
+                        COUNT(*) AS qtd
+                    FROM tombos t
+                    WHERE t.rascunho = false
+                        AND t.data_coleta_ano IS NOT NULL
+                    GROUP BY 1
+                )
                 SELECT
-                    data_coleta_ano::text AS periodo,
-                    COUNT(*) AS quantidade
-                FROM tombos
-                WHERE rascunho = false
-                    AND data_coleta_ano IS NOT NULL
-                    AND data_coleta_ano::integer >= EXTRACT(YEAR FROM $1::date)::integer
-                    AND data_coleta_ano::integer <= EXTRACT(YEAR FROM $2::date)::integer
-                GROUP BY data_coleta_ano
-                ORDER BY data_coleta_ano ASC
+                    TO_CHAR(ds.data_p, 'YYYY') AS periodo,
+                    COALESCE(c.qtd, 0) AS quantidade
+                FROM date_series ds
+                LEFT JOIN counts c ON EXTRACT(YEAR FROM ds.data_p) = c.ano_c
+                ORDER BY ds.data_p ASC
             `;
         }
 
@@ -1927,13 +1959,11 @@ export const relatorioPorPeriodo = async (request, response, next) => {
             type: models.Sequelize.QueryTypes.SELECT,
         });
 
-        // Filtrar valores nulos
-        const dados = resultado
-            .filter(item => item.periodo !== null)
-            .map(item => ({
-                periodo: item.periodo,
-                quantidade: parseInt(item.quantidade, 10),
-            }));
+        // Mapear resultados para o formato esperado
+        const dados = resultado.map(item => ({
+            periodo: item.periodo,
+            quantidade: parseInt(item.quantidade, 10),
+        }));
 
         return response.status(200).json(dados);
     } catch (err) {
