@@ -1828,7 +1828,7 @@ export const relatorioPorPeriodo = async (request, response, next) => {
         const diffSemanas = Math.ceil(diffDias / 7);
         const diffMeses = Math.ceil((dataFim.getFullYear() - dataInicio.getFullYear()) * 12 + (dataFim.getMonth() - dataInicio.getMonth()));
         const diffAnos = dataFim.getFullYear() - dataInicio.getFullYear();
-        
+
         // Validar granularidade baseada no período
         let granularidadePermitida = 'ano';
         if (diffDias <= 30) {
