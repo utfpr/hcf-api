@@ -9,6 +9,7 @@ import {
     alteracao, getNumeroColetor, getUltimoNumeroTombo, getCodigoBarraTombo,
     editarCodigoBarra, getUltimoNumeroCodigoBarras, postCodigoBarraTombo,
     verificarCoordenada, getUltimoCodigoBarra, deletarCodigoBarras, listagemTombosPorIdentificador,
+    relatorioPorPeriodo,
 } from '../controllers/tombos-controller';
 import exportarTombosController from '../controllers/tombos-exportacoes-controller';
 import criaJsonMiddleware from '../middlewares/json-middleware';
@@ -20,7 +21,6 @@ import coletorCadastro from '../validators/coletor-cadastro';
 import cadastrarTipoEsquema from '../validators/tipo-cadastro';
 import cadastrarTomboEsquema from '../validators/tombo-cadastro';
 import listagemTombo from '../validators/tombo-listagem';
-
 /**
  * @swagger
  * tags:
@@ -70,6 +70,58 @@ export default app => {
                 TIPOS_USUARIOS.IDENTIFICADOR,
             ]),
             getDadosCadTombo,
+        ]);
+
+    /**
+ * @swagger
+ * /tombos/relatorio-periodo:
+ *   get:
+ *     summary: Gera relatório de tombos por período com granularidade configurável
+ *     tags: [Tombos]
+ *     parameters:
+ *       - in: query
+ *         name: data_inicio
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Data de início do período (formato YYYY-MM-DD)
+ *       - in: query
+ *         name: data_fim
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Data de fim do período (formato YYYY-MM-DD)
+ *       - in: query
+ *         name: granularidade
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [dia, semana, mes, ano]
+ *         description: Granularidade do agrupamento dos dados
+ *     responses:
+ *       200:
+ *         description: Relatório gerado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   periodo:
+ *                     type: string
+ *                   quantidade:
+ *                     type: integer
+ *       '400':
+ *         description: Parâmetros inválidos
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
+ */
+    app.route('/tombos/relatorio-periodo')
+        .get([
+            relatorioPorPeriodo,
         ]);
 
     /**
