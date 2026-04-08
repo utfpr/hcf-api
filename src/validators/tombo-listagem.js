@@ -40,12 +40,27 @@ export default {
         isInt: true,
         optional: true,
     },
+    codigo_barra_foto: {
+        in: 'query',
+        isString: true,
+        optional: true,
+    },
     limite: {
         in: 'query',
         isInt: true,
         optional: true,
     },
     pagina: {
+        in: 'query',
+        isInt: true,
+        optional: true,
+    },
+    coletor_id: {
+        in: 'query',
+        isInt: true,
+        optional: true,
+    },
+    numero_coleta: {
         in: 'query',
         isInt: true,
         optional: true,

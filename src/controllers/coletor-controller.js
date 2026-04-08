@@ -117,3 +117,34 @@ export const desativaColetor = async (req, res, next) => {
         next(error);
     }
 };
+
+export const listaNumerosColetaPorColetor = async (req, res, next) => {
+    try {
+        const { coletorId } = req.params;
+        const { Tombo } = models;
+        const coletor = await Coletor.findByPk(coletorId);
+        if (!coletor) {
+            return res.status(404).json({ mensagem: 'Coletor não encontrado.' });
+        }
+        const numerosColeta = await Tombo.findAll({
+            attributes: ['numero_coleta'],
+            where: {
+                coletor_id: coletorId,
+                rascunho: false,
+                numero_coleta: { [Op.not]: null },
+            },
+            raw: true,
+            order: [['numero_coleta', 'ASC']],
+        });
+        const numerosUnicos = [...new Set(numerosColeta.map(item => item.numero_coleta))].map((numero, index) => ({
+            id: index,
+            numero,
+        }));
+
+        res.status(200).json({
+            numerosColeta: numerosUnicos,
+        });
+    } catch (error) {
+        next(error);
+    }
+};

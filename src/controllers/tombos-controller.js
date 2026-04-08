@@ -157,7 +157,7 @@ export const cadastro = (request, response, next) => {
                 }
                 return undefined;
             })
-        // //////////////CRIA COLECOES ANEXAS///////////
+            // //////////////CRIA COLECOES ANEXAS///////////
             .then(() => {
                 if (colecoesAnexas) {
                     const object = pick(colecoesAnexas, ['tipo', 'observacoes']);
@@ -174,7 +174,7 @@ export const cadastro = (request, response, next) => {
                 }
                 return undefined;
             })
-        // ///////// VALIDA A TAXONOMIA E A INSERE NO NOME CIENTIFICO //////////
+            // ///////// VALIDA A TAXONOMIA E A INSERE NO NOME CIENTIFICO //////////
             .then(() => {
                 if (taxonomia && taxonomia.familia_id) {
                     return Familia.findOne({
@@ -296,7 +296,7 @@ export const cadastro = (request, response, next) => {
                 }
                 return undefined;
             })
-        // /////////// CADASTRA TOMBO /////////////
+            // /////////// CADASTRA TOMBO /////////////
             .then(() => {
                 let jsonTombo = {
                     numero_coleta: principal.numero_coleta,
@@ -373,7 +373,7 @@ export const cadastro = (request, response, next) => {
                 }
                 return Tombo.create(jsonTombo, { transaction });
             })
-        // //////////// CADASTRA A ALTERACAO ///////////
+            // //////////// CADASTRA A ALTERACAO ///////////
             .then(tombo => {
                 if (!tombo) {
                     throw new BadRequestExeption(408);
@@ -419,7 +419,7 @@ export const cadastro = (request, response, next) => {
                     return alteracaoTomboCriado;
                 });
             })
-        // /////////////// CADASTRA O INDETIFICADOR ///////////////
+            // /////////////// CADASTRA O INDETIFICADOR ///////////////
             .then(alteracaoTomboCriado => {
                 if (!alteracaoTomboCriado) {
                     throw new BadRequestExeption(409);
@@ -687,6 +687,8 @@ export const listagem = (request, response, next) => {
         nome_popular: nomePopular,
         situacao,
         codigo_barra_foto,
+        coletor_id: coletorId,
+        numero_coleta: numeroColeta,
     } = request.query;
 
     let where = {
@@ -707,6 +709,12 @@ export const listagem = (request, response, next) => {
     }
     if (situacao) {
         where.situacao = situacao;
+    }
+    if (coletorId) {
+        where.coletor_id = coletorId;
+    }
+    if (numeroColeta) {
+        where.numero_coleta = numeroColeta;
     }
 
     let include = [
@@ -1769,6 +1777,195 @@ export const verificarCoordenada = async (request, response, next) => {
         }
 
         return response.json({ dentro: rows[0].dentro });
+    } catch (err) {
+        return next(err);
+    }
+};
+
+export const relatorioPorPeriodo = async (request, response, next) => {
+    try {
+        const { data_inicio, data_fim, granularidade } = request.query;
+
+        if (!data_inicio || !data_fim || !granularidade) {
+            return response.status(400).json({
+                error: {
+                    message: 'Parâmetros obrigatórios: data_inicio, data_fim, granularidade',
+                },
+            });
+        }
+
+        // Validar granularidade
+        if (!['dia', 'semana', 'mes', 'ano'].includes(granularidade)) {
+            return response.status(400).json({
+                error: {
+                    message: 'Granularidade inválida. Use: dia, semana, mes ou ano',
+                },
+            });
+        }
+
+        const dataInicio = new Date(data_inicio);
+        const dataFim = new Date(data_fim);
+
+        if (isNaN(dataInicio.getTime()) || isNaN(dataFim.getTime())) {
+            return response.status(400).json({
+                error: {
+                    message: 'Datas inválidas. Use o formato YYYY-MM-DD',
+                },
+            });
+        }
+
+        if (dataInicio > dataFim) {
+            return response.status(400).json({
+                error: {
+                    message: 'Data de início deve ser menor ou igual à data de fim',
+                },
+            });
+        }
+
+        // Calcular diferenças para validar granularidade
+        const diffMs = dataFim - dataInicio;
+        const diffDias = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+        const diffSemanas = Math.ceil(diffDias / 7);
+        const diffMeses = Math.ceil((dataFim.getFullYear() - dataInicio.getFullYear()) * 12 + (dataFim.getMonth() - dataInicio.getMonth()));
+        const diffAnos = dataFim.getFullYear() - dataInicio.getFullYear();
+
+        // Validar granularidade baseada no período
+        let granularidadePermitida = 'ano';
+        if (diffDias <= 30) {
+            granularidadePermitida = 'dia';
+        } else if (diffSemanas <= 30) {
+            granularidadePermitida = 'semana';
+        } else if (diffMeses <= 30) {
+            granularidadePermitida = 'mes';
+        } else {
+            granularidadePermitida = 'ano';
+        }
+
+        // Mapear granularidades para verificação hierárquica
+        const granularidadeHierarquia = { dia: 0, semana: 1, mes: 2, ano: 3 };
+        const granularidadeSolicitada = granularidadeHierarquia[granularidade];
+        const granularidadeMaximaPermitida = granularidadeHierarquia[granularidadePermitida];
+
+        if (granularidadeSolicitada < granularidadeMaximaPermitida) {
+            return response.status(400).json({
+                error: {
+                    message: `Período muito grande para granularidade '${granularidade}'. Máximo: ${diffDias} dias. Use granularidade '${granularidadePermitida}' ou maior.`,
+                    restricoes: {
+                        difDias: diffDias,
+                        difSemanas: diffSemanas,
+                        difMeses: diffMeses,
+                        difAnos: diffAnos,
+                        granularidadePermitida: granularidadePermitida,
+                    },
+                },
+            });
+        }
+
+        let query = '';
+
+        if (granularidade === 'dia') {
+            query = `
+                WITH date_series AS (
+                    SELECT generate_series($1::date, $2::date, '1 day'::interval)::date AS data_p
+                ),
+                counts AS (
+                    SELECT
+                        TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes::text, 2, '0'), '-', LPAD(data_coleta_dia::text, 2, '0')), 'YYYY-MM-DD') AS data_c,
+                        COUNT(*) AS qtd
+                    FROM tombos
+                    WHERE rascunho = false
+                        AND data_coleta_ano IS NOT NULL
+                        AND data_coleta_mes IS NOT NULL
+                        AND data_coleta_dia IS NOT NULL
+                    GROUP BY 1
+                )
+                SELECT
+                    TO_CHAR(ds.data_p, 'DD/MM/YYYY') AS periodo,
+                    COALESCE(c.qtd, 0) AS quantidade
+                FROM date_series ds
+                LEFT JOIN counts c ON ds.data_p = c.data_c
+                ORDER BY ds.data_p ASC
+            `;
+        } else if (granularidade === 'semana') {
+            query = `
+                WITH date_series AS (
+                    SELECT generate_series(date_trunc('week', $1::date), date_trunc('week', $2::date), '1 week'::interval)::date AS data_p
+                ),
+                counts AS (
+                    SELECT
+                        date_trunc('week', TO_DATE(CONCAT(data_coleta_ano, '-', LPAD(data_coleta_mes::text, 2, '0'), '-', LPAD(data_coleta_dia::text, 2, '0')), 'YYYY-MM-DD'))::date AS data_c,
+                        COUNT(*) AS qtd
+                    FROM tombos
+                    WHERE rascunho = false
+                        AND data_coleta_ano IS NOT NULL
+                        AND data_coleta_mes IS NOT NULL
+                        AND data_coleta_dia IS NOT NULL
+                    GROUP BY 1
+                )
+                SELECT
+                    'Semana ' || LPAD((ROW_NUMBER() OVER(ORDER BY ds.data_p))::text, 2, '0') AS periodo,
+                    COALESCE(c.qtd, 0) AS quantidade
+                FROM date_series ds
+                LEFT JOIN counts c ON ds.data_p = c.data_c
+                ORDER BY ds.data_p ASC
+            `;
+        } else if (granularidade === 'mes') {
+            query = `
+                WITH date_series AS (
+                    SELECT generate_series(date_trunc('month', $1::date), date_trunc('month', $2::date), '1 month'::interval)::date AS data_p
+                ),
+                counts AS (
+                    SELECT
+                        date_trunc('month', TO_DATE(CONCAT(t.data_coleta_ano, '-', LPAD(t.data_coleta_mes::text, 2, '0'), '-01'), 'YYYY-MM-DD'))::date AS data_c,
+                        COUNT(*) AS qtd
+                    FROM tombos t
+                    WHERE t.rascunho = false
+                        AND t.data_coleta_ano IS NOT NULL
+                        AND t.data_coleta_mes IS NOT NULL
+                    GROUP BY 1
+                )
+                SELECT
+                    TO_CHAR(ds.data_p, 'MM/YYYY') AS periodo,
+                    COALESCE(c.qtd, 0) AS quantidade
+                FROM date_series ds
+                LEFT JOIN counts c ON ds.data_p = c.data_c
+                ORDER BY ds.data_p ASC
+            `;
+        } else if (granularidade === 'ano') {
+            query = `
+                WITH date_series AS (
+                    SELECT generate_series(date_trunc('year', $1::date), date_trunc('year', $2::date), '1 year'::interval)::date AS data_p
+                ),
+                counts AS (
+                    SELECT
+                        data_coleta_ano AS ano_c,
+                        COUNT(*) AS qtd
+                    FROM tombos t
+                    WHERE t.rascunho = false
+                        AND t.data_coleta_ano IS NOT NULL
+                    GROUP BY 1
+                )
+                SELECT
+                    TO_CHAR(ds.data_p, 'YYYY') AS periodo,
+                    COALESCE(c.qtd, 0) AS quantidade
+                FROM date_series ds
+                LEFT JOIN counts c ON EXTRACT(YEAR FROM ds.data_p) = c.ano_c
+                ORDER BY ds.data_p ASC
+            `;
+        }
+
+        const resultado = await sequelize.query(query, {
+            bind: [data_inicio, data_fim],
+            type: models.Sequelize.QueryTypes.SELECT,
+        });
+
+        // Mapear resultados para o formato esperado
+        const dados = resultado.map(item => ({
+            periodo: item.periodo,
+            quantidade: parseInt(item.quantidade, 10),
+        }));
+
+        return response.status(200).json(dados);
     } catch (err) {
         return next(err);
     }
