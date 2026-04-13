@@ -9,6 +9,8 @@ import {
     formatarDadosParaRelatorioDeColetaPorColetorEIntervaloDeData,
     formataTextFilterColetor,
     agruparPorLocal,
+    agruparPorCidade,
+    formataTextFilterCidade,
     agruparPorFamiliaGeneroEspecie,
     agruparPorFamiliaComContadorECodigo,
     agruparResultadoPorFamilia,
@@ -17,6 +19,7 @@ import {
 import { generateReport } from '~/reports/reports';
 import ReportInventario from '~/reports/templates/InventarioEspecies';
 import ReportLocalColeta from '~/reports/templates/LocaisColeta';
+import ReportTombosPorCidade from '~/reports/templates/TombosPorCidade';
 import ReportFamiliasGeneros from '~/reports/templates/RelacaoFamiliasGenero';
 import ReportQtd from '~/reports/templates/RelacaoFamiliasGeneroQtd';
 import ReportColetaModelo1 from '~/reports/templates/RelacaoTombos';
@@ -630,6 +633,156 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
             readable._read = () => { }; // Implementa o método _read (obrigatório)
             readable.push(buffer); // Empurrar os dados binários para o stream
             readable.push(null); // Indica o fim do fluxo de dados
+            res.setHeader('Content-Type', 'application/pdf');
+            readable.pipe(res);
+        } catch (e) {
+            next(e);
+        }
+
+    } catch (e) {
+        next(e);
+    }
+};
+
+/// ////// Relatório de Tombos por Cidade //////////
+export const obtemDadosDoRelatorioDeTombosPorCidade = async (req, res, next) => {
+    const { paginacao } = req;
+    const { limite, pagina, offset } = paginacao;
+    const { cidade, dataInicio, dataFim, showCoord } = req.query;
+
+    let whereCidade = {};
+    let whereData = {};
+    if (cidade) {
+        whereCidade = {
+            id: cidade,
+        };
+    }
+    if (dataInicio) {
+        if (dataFim && isBefore(new Date(dataFim), new Date(dataInicio))) {
+            return res.status(codigosHttp.BAD_REQUEST).json({
+                mensagem: 'A data de fim não pode ser anterior à data de início.',
+            });
+        }
+
+        if (isBefore(new Date(), new Date(dataInicio))) {
+            return res.status(codigosHttp.BAD_REQUEST).json({
+                mensagem: 'A data de início não pode ser maior que a data atual.',
+            });
+        }
+
+        whereData = {
+            [Op.and]: [
+                Sequelize.where(
+                    literal(`
+              make_date(
+                (data_coleta_ano)::int,
+                COALESCE(NULLIF(data_coleta_mes, 0), 1)::int,
+                COALESCE(NULLIF(data_coleta_dia, 0), 1)::int
+              )
+            `),
+                    {
+                        [Op.between]: [
+                            Sequelize.literal(`TO_DATE('${dataInicio.slice(0, 10)}', 'YYYY-MM-DD')`),
+                            Sequelize.literal(`TO_DATE('${(dataFim || new Date().toISOString().slice(0, 10))}', 'YYYY-MM-DD')`),
+                        ],
+                    },
+                ),
+            ],
+        };
+    }
+
+    try {
+        const tombos = await Tombo.findAndCountAll({
+            attributes: [
+                'hcf',
+                'numero_coleta',
+                'familia_id',
+                'especie_id',
+                'genero_id',
+                'nome_cientifico',
+                'data_coleta_ano',
+                'data_coleta_mes',
+                'data_coleta_dia',
+                'latitude',
+                'longitude',
+            ],
+            where: whereData,
+            include: [
+                {
+                    model: Familia,
+                    attributes: ['id', 'nome'],
+                },
+                {
+                    model: Genero,
+                    attributes: ['id', 'nome'],
+                },
+                {
+                    model: Especie,
+                    attributes: ['id', 'nome'],
+                    include: [
+                        {
+                            model: Autor,
+                            attributes: ['id', 'nome'],
+                            as: 'autor',
+                        },
+                    ],
+                },
+                {
+                    model: Cidade,
+                    attributes: ['id', 'nome'],
+                    where: Object.keys(whereCidade).length > 0 ? whereCidade : undefined,
+                    required: Object.keys(whereCidade).length > 0,
+                    include: [
+                        {
+                            model: Estado,
+                            attributes: ['id', 'nome', 'sigla'],
+                            include: [
+                                {
+                                    model: Pais,
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+            offset,
+        });
+
+        const dadosPuros = tombos.rows.map(registro => registro.get({ plain: true }));
+        const dadosFormatados = agruparPorCidade(dadosPuros);
+
+        if (req.method === 'GET') {
+            const cidadeNome = cidade
+                ? dadosPuros[0]?.cidade?.nome || cidade
+                : undefined;
+            res.json({
+                metadados: {
+                    total: tombos.count,
+                    pagina,
+                    limite,
+                },
+                resultado: dadosFormatados,
+                filtro: formataTextFilterCidade(cidadeNome, dataInicio, dataFim || new Date()),
+            });
+            return;
+        }
+
+        try {
+            const cidadeNome = cidade
+                ? dadosPuros[0]?.cidade?.nome || cidade
+                : undefined;
+            const buffer = await generateReport(
+                ReportTombosPorCidade, {
+                    dados: dadosFormatados.locais,
+                    total: dadosFormatados?.quantidadeTotal || 0,
+                    textoFiltro: formataTextFilterCidade(cidadeNome, dataInicio, dataFim || new Date()),
+                    showCoord: showCoord === 'true',
+                });
+            const readable = new Readable();
+
+            readable._read = () => { };
+            readable.push(buffer);
+            readable.push(null);
             res.setHeader('Content-Type', 'application/pdf');
             readable.pipe(res);
         } catch (e) {

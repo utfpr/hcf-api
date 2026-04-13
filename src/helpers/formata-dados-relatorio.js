@@ -361,3 +361,73 @@ export function agruparPorGenero(dados) {
         };
     });
 }
+
+export function agruparPorCidade(dados) {
+    const agrupado = {};
+    let quantidadeTotal = 0;
+
+    dados.sort((a, b) => {
+        const familiaA = a?.familia?.nome || '';
+        const familiaB = b?.familia?.nome || '';
+        const familia = familiaA.localeCompare(familiaB);
+        if (familia !== 0) return familia;
+
+        const generoA = a?.genero?.nome || '';
+        const generoB = b?.genero?.nome || '';
+        const genero = generoA.localeCompare(generoB);
+        if (genero !== 0) return genero;
+
+        const especieA = a?.especy?.nome || '';
+        const especieB = b?.especy?.nome || '';
+        return especieA.localeCompare(especieB);
+    }).forEach(entradaOriginal => {
+        const cidade = entradaOriginal.cidade;
+        const estado = cidade?.estado?.nome || 'Desconhecido';
+        const estadoSigla = cidade?.estado?.sigla || '-';
+        const municipio = cidade?.nome || 'Desconhecido';
+
+        const chave = `${estado} > ${municipio}`;
+
+        const entrada = {
+            ...entradaOriginal,
+            latitude: entradaOriginal?.latitude || null,
+            longitude: entradaOriginal?.longitude || null,
+            autor: entradaOriginal.especy?.autor?.nome || '',
+        };
+
+        if (!agrupado[chave]) {
+            agrupado[chave] = {
+                estado,
+                estadoSigla,
+                municipio,
+                latitude: entradaOriginal?.latitude || null,
+                longitude: entradaOriginal?.longitude || null,
+                quantidadeRegistros: 0,
+                registros: [],
+            };
+        }
+
+        agrupado[chave].registros.push(entrada);
+        agrupado[chave].quantidadeRegistros += 1;
+        quantidadeTotal += 1;
+    });
+
+    const locais = Object.values(agrupado);
+    const locaisComResumo = adicionarResumoTaxonomicoPorLocal(locais);
+
+    return {
+        locais: locaisComResumo,
+        quantidadeTotal,
+    };
+}
+
+export const formataTextFilterCidade = (cidade, inicio, fim) => {
+    let filtro = 'Coletados';
+    if (inicio && fim) {
+        filtro += ` no período ${format(new Date(inicio), 'dd/MM/yyyy')} à ${format(new Date(fim), 'dd/MM/yyyy')}`;
+    }
+    if (cidade) {
+        filtro += ` na cidade ${cidade}`;
+    }
+    return filtro;
+};
