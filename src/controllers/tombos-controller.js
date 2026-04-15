@@ -13,6 +13,7 @@ import models from '../models';
 import codigos from '../resources/codigos-http';
 import verifyRecaptcha from '../utils/verify-recaptcha';
 import { aprovarPendencia } from './pendencias-controller';
+import { request } from 'express';
 
 const {
     Solo, Relevo, Cidade, Estado, Vegetacao, FaseSucessional, Pais, Tipo, LocalColeta, Familia, sequelize,
@@ -35,6 +36,27 @@ function parseDataTombo(valor) {
     return null;
 }
 
+const getProximoNumeroTombo = () => {
+    return Tombo.findOne({
+        attributes: [
+            [fn('MAX', col('hcf')), 'max_hcf'],
+        ],
+        raw: true,
+    })
+        .then(resultado => {
+            const maxNumero = resultado?.max_hcf;
+            return maxNumero ? Number(maxNumero) + 1 : 1;
+        });
+};
+
+export const getProximoNumeroTomboEndPoint = (request, response, next) => {
+    getProximoNumeroTombo()
+        .then(proximoNumero => {
+            response.status(codigos.BUSCAR_UM_ITEM).json({ hcf: proximoNumero });
+        })
+        .catch(next);
+};
+
 export const cadastro = (request, response, next) => {
     const {
         principal,
@@ -51,8 +73,22 @@ export const cadastro = (request, response, next) => {
     } = request.body.json;
     let tomboCriado = null;
 
+    const isNovoTombo = !principal.hcf;
+
     const callback = transaction =>
         Promise.resolve()
+            .then(() => {
+                if (isNovoTombo) {
+                    return getProximoNumeroTombo();
+                }
+                return principal.hcf;
+            })
+            .then(hcfGerado => {
+                if (isNovoTombo) {
+                    principal.hcf = hcfGerado;
+                }
+                return undefined;
+            })
             .then(() => {
                 if (!paisagem || !paisagem.solo_id) {
                     return undefined;
