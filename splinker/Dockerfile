@@ -1,6 +1,6 @@
 FROM eclipse-temurin:21-jre
 
-ENV SPLINKER_VERSION=7.2.6
+ARG SPLINKER_VERSION=7.2.7
 
 WORKDIR /app
 
@@ -15,12 +15,11 @@ RUN \
   apt-get remove -y curl && \
   rm -rf /var/lib/apt/lists/*
 
-ENV TZ=America/Sao_Paulo
-ENV CRON_SCHEDULE="0 0 * * *"
+ENV \
+  TZ=America/Sao_Paulo \
+  CRON_SCHEDULE="0 0 * * *"
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-
-WORKDIR /app
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
