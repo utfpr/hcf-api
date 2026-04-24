@@ -15,68 +15,65 @@ export async function run(knex: Knex): Promise<void> {
   `)
 
   // 2. Cria a view do splinker com todos os campos do map.dat
+  await knex.raw(`DROP VIEW IF EXISTS vw_splinker`)
   await knex.raw(`
-    CREATE OR REPLACE VIEW vw_splinker AS
+    CREATE VIEW vw_splinker AS
     SELECT
-      'Plantae' AS kingdom,
-      '' AS phylum,
-      '' AS class,
-      '' AS "order",
+      'Plantae' AS "Kingdom",
+      '' AS "Phylum",
+      '' AS "Class",
+      '' AS "Ordem",
       CASE
         WHEN LOWER(f.nome) = 'indeterminada' THEN ''
         ELSE COALESCE(f.nome, '')
-      END AS family,
-      COALESCE(g.nome, '') AS genus,
-      COALESCE(e.nome, '') AS species,
-      '' AS subspecies,
-      COALESCE(a.nome, '') AS scientific_name_author,
-      COALESCE(t.nomes_populares, '') AS common_name,
-      '' AS field_number,
-      t.hcf AS catalog_number,
-      '' AS previous_catalog_number,
-      'PreservedSpecimen' AS basis_of_record,
-      COALESCE(tp.nome, '') AS type_status,
-      '' AS preparation_type,
-      '' AS individual_count,
-      '' AS specimen_sex,
-      '' AS specimen_life_stage,
-      CONCAT_WS('-',
-        t.data_coleta_ano::text,
-        LPAD(t.data_coleta_mes::text, 2, '0'),
-        LPAD(t.data_coleta_dia::text, 2, '0')
-      ) AS collection_date,
-      COALESCE(col.nome, '') AS collector_name,
-      COALESCE(t.numero_coleta::text, '') AS collector_number,
-      '' AS continent_or_ocean,
-      COALESCE(p.nome, '') AS country,
-      COALESCE(TRIM(est.sigla), '') AS state_or_province,
-      COALESCE(c.nome, '') AS city,
-      COALESCE(lc.descricao, '') AS locality,
-      t.latitude,
-      t.longitude,
+      END AS "Family",
+      COALESCE(g.nome, '') AS "Genus",
+      COALESCE(e.nome, '') AS "Species",
+      '' AS "Subspeceis",
+      COALESCE(a.nome, '') AS "ScientificNameAuthor",
+      COALESCE(t.nomes_populares, '') AS "CommonName",
+      '' AS "FieldNumber",
+      t.hcf AS "CatalogNumber",
+      '' AS "PreviousCatalogNumber",
+      'PreservedSpecimen' AS "BasisOfRecord",
+      COALESCE(tp.nome, '') AS "TypeStatus",
+      '' AS "PreparationType",
+      '' AS "IndividualCount",
+      '' AS "Sex",
+      '' AS "LifeStage",
+      COALESCE(t.data_coleta_dia::text, '') AS "DayCollected",
+      COALESCE(t.data_coleta_mes::text, '') AS "MonthCollected",
+      COALESCE(t.data_coleta_ano::text, '') AS "YearCollected",
+      COALESCE(col.nome, '') AS "Collector",
+      COALESCE(t.numero_coleta::text, '') AS "CollectorNumber",
+      '' AS "Continent",
+      COALESCE(p.nome, '') AS "Country",
+      COALESCE(TRIM(est.sigla), '') AS "StateProvice",
+      COALESCE(c.nome, '') AS "County",
+      COALESCE(lc.descricao, '') AS "Locality",
+      t.latitude AS "VerbatimLatitude",
+      t.longitude AS "VerbatimLongitude",
       CASE
         WHEN t.altitude IS NOT NULL THEN t.altitude::text || ' m'
         ELSE ''
-      END AS elevation,
-      '' AS depth,
-      CONCAT_WS('-',
-        t.data_identificacao_ano::text,
-        LPAD(t.data_identificacao_mes::text, 2, '0'),
-        LPAD(t.data_identificacao_dia::text, 2, '0')
-      ) AS identification_date,
+      END AS "VerbatimElevation",
+      '' AS "VerbatimDepth",
+      COALESCE(t.data_identificacao_dia::text, '') AS "DayIdentified",
+      COALESCE(t.data_identificacao_mes::text, '') AS "MonthIdentified",
+      COALESCE(t.data_identificacao_ano::text, '') AS "YearIdentified",
       COALESCE(
         (SELECT string_agg(ident.nome, ';')
          FROM tombos_identificadores ti
          JOIN identificadores ident ON ti.identificador_id = ident.id
          WHERE ti.tombo_hcf = t.hcf),
         ''
-      ) AS identifier_name,
-      '' AS related_catalog_item,
-      '' AS relationship_type,
+      ) AS "IdentifiedBy",
+      '' AS "RelatedCatalogItem",
+      '' AS "RelationShipType",
       CONCAT_WS(' ',
         fn_barcodes_tombo(t.hcf),
         t.descricao
-      ) AS notes
+      ) AS "Notes"
     FROM tombos t
     LEFT JOIN locais_coleta lc ON t.local_coleta_id = lc.id
     LEFT JOIN cidades c ON lc.cidade_id = c.id
