@@ -4,6 +4,20 @@ on:
   - pull_request
 
 jobs:
+  check-issue-reference:
+    runs-on: ubuntu-latest
+    if: github.base_ref == 'development'
+    steps:
+      - name: Check if the issue is linked
+        env:
+          PULL_REQUEST_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          if ! echo "$PULL_REQUEST_TITLE" | grep -qP '^[a-zA-Z0-9-]+#\d+'; then
+            echo "Pull request title must start with '<repository>#<issue-number>' (e.g. 'hcf-web#42 my changes')"
+            echo "Pull request title: $PULL_REQUEST_TITLE"
+            exit 1
+          fi
+
   lint:
     runs-on: ubuntu-latest
     steps:
