@@ -246,13 +246,13 @@ export function agruparPorLocal(dados) {
     let quantidadeTotal = 0;
 
     dados.sort((a, b) => {
-        const familia = a?.familia?.nome.localeCompare(b?.familia?.nome);
+        const familia = (a?.familia?.nome || '').localeCompare(b?.familia?.nome || '');
         if (familia !== 0) return familia;
 
-        const genero = a?.genero?.nome.localeCompare(b?.genero?.nome);
+        const genero = (a?.genero?.nome || '').localeCompare(b?.genero?.nome || '');
         if (genero !== 0) return genero;
 
-        return a?.especy?.nome.localeCompare(b?.especy?.nome);
+        return (a?.especy?.nome || '').localeCompare(b?.especy?.nome || '');
     }).forEach(entradaOriginal => {
         const locaisColetum = entradaOriginal.locais_coletum;
         const cidade = locaisColetum?.cidade;
@@ -267,7 +267,8 @@ export function agruparPorLocal(dados) {
             ...entradaOriginal,
             latitude: entradaOriginal?.latitude || null,
             longitude: entradaOriginal?.longitude || null,
-            autor: entradaOriginal.especy?.autor?.nome || '',
+            variedade: entradaOriginal.variedade || null,
+            sub_especie: entradaOriginal.sub_especy || null,
         };
 
         if (!agrupado[chave]) {

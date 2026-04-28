@@ -40,6 +40,8 @@ const {
     Estado,
     Pais,
     TomboFoto,
+    Variedade,
+    Subespecie,
 } = models;
 
 /// ////// Relatório de Inventário de Espécies //////////
@@ -291,7 +293,7 @@ export const obtemDadosDoRelatorioDeColetaIntervaloDeData = async (req, res, nex
                     {
                         [Op.between]: [
                             Sequelize.literal(`TO_DATE('${dataInicio.slice(0, 10)}', 'YYYY-MM-DD')`),
-                            Sequelize.literal(`TO_DATE('${(dataFim || new Date().toISOString().slice(0, 10))}', 'YYYY-MM-DD')`),
+                            Sequelize.literal(`TO_DATE('${(dataFim ? dataFim.slice(0, 10) : new Date().toISOString().slice(0, 10))}', 'YYYY-MM-DD')`),
                         ],
                     },
                 ),
@@ -403,7 +405,7 @@ export const obtemDadosDoRelatorioDeColetaPorColetorEIntervaloDeData = async (re
                     {
                         [Op.between]: [
                             Sequelize.literal(`TO_DATE('${dataInicio.slice(0, 10)}', 'YYYY-MM-DD')`),
-                            Sequelize.literal(`TO_DATE('${(dataFim || new Date().toISOString().slice(0, 10))}', 'YYYY-MM-DD')`),
+                            Sequelize.literal(`TO_DATE('${(dataFim ? dataFim.slice(0, 10) : new Date().toISOString().slice(0, 10))}', 'YYYY-MM-DD')`),
                         ],
                     },
                 ),
@@ -530,7 +532,7 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
                     {
                         [Op.between]: [
                             Sequelize.literal(`TO_DATE('${dataInicio.slice(0, 10)}', 'YYYY-MM-DD')`),
-                            Sequelize.literal(`TO_DATE('${(dataFim || new Date().toISOString().slice(0, 10))}', 'YYYY-MM-DD')`),
+                            Sequelize.literal(`TO_DATE('${(dataFim ? dataFim.slice(0, 10) : new Date().toISOString().slice(0, 10))}', 'YYYY-MM-DD')`),
                         ],
                     },
                 ),
@@ -546,6 +548,8 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
                 'familia_id',
                 'especie_id',
                 'genero_id',
+                'variedade_id',
+                'sub_especie_id',
                 'nome_cientifico',
                 'data_coleta_ano',
                 'data_coleta_mes',
@@ -567,6 +571,28 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
                 },
                 {
                     model: Especie,
+                    attributes: ['id', 'nome'],
+                    include: [
+                        {
+                            model: Autor,
+                            attributes: ['id', 'nome'],
+                            as: 'autor',
+                        },
+                    ],
+                },
+                {
+                    model: Variedade,
+                    attributes: ['id', 'nome'],
+                    include: [
+                        {
+                            model: Autor,
+                            attributes: ['id', 'nome'],
+                            as: 'autor',
+                        },
+                    ],
+                },
+                {
+                    model: Subespecie,
                     attributes: ['id', 'nome'],
                     include: [
                         {
@@ -748,7 +774,7 @@ export const obtemDadosDoRelatorioDeCodigoDeBarras = async (req, res, next) => {
                 {
                     [Op.between]: [
                         Sequelize.literal(`TO_DATE('${dataInicio.slice(0, 10)}', 'YYYY-MM-DD')`),
-                        Sequelize.literal(`TO_DATE('${(dataFim || new Date().toISOString().slice(0, 10))}', 'YYYY-MM-DD')`),
+                        Sequelize.literal(`TO_DATE('${(dataFim ? dataFim.slice(0, 10) : new Date().toISOString().slice(0, 10))}', 'YYYY-MM-DD')`),
                     ],
                 },
             ),
@@ -815,7 +841,7 @@ export const obtemDadosDoRelatorioDeQuantidade = async (req, res, next) => {
                     {
                         [Op.between]: [
                             Sequelize.literal(`TO_DATE('${dataInicio.slice(0, 10)}', 'YYYY-MM-DD')`),
-                            Sequelize.literal(`TO_DATE('${(dataFim || new Date().toISOString().slice(0, 10))}', 'YYYY-MM-DD')`),
+                            Sequelize.literal(`TO_DATE('${(dataFim ? dataFim.slice(0, 10) : new Date().toISOString().slice(0, 10))}', 'YYYY-MM-DD')`),
                         ],
                     },
                 ),
