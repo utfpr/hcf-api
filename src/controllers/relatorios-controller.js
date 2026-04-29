@@ -19,11 +19,11 @@ import {
 import { generateReport } from '~/reports/reports';
 import ReportInventario from '~/reports/templates/InventarioEspecies';
 import ReportLocalColeta from '~/reports/templates/LocaisColeta';
-import ReportTombosPorCidade from '~/reports/templates/TombosPorCidade';
 import ReportFamiliasGeneros from '~/reports/templates/RelacaoFamiliasGenero';
 import ReportQtd from '~/reports/templates/RelacaoFamiliasGeneroQtd';
 import ReportColetaModelo1 from '~/reports/templates/RelacaoTombos';
 import ReportColetaModelo2 from '~/reports/templates/RelacaoTombosComColeta';
+import ReportTombosPorCidade from '~/reports/templates/TombosPorCidade';
 import codigosHttp from '~/resources/codigos-http';
 
 import models from '../models';
@@ -709,6 +709,11 @@ export const obtemDadosDoRelatorioDeTombosPorCidade = async (req, res, next) => 
                         },
                     ],
                 },
+            ],
+            order: [
+                ['familia_id', 'ASC'],
+                ['genero_id', 'ASC'],
+                ['especie_id', 'ASC'],
             ],
             offset,
         });

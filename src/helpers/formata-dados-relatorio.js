@@ -367,19 +367,31 @@ export function agruparPorCidade(dados) {
     let quantidadeTotal = 0;
 
     dados.sort((a, b) => {
-        const familiaA = a?.familia?.nome || '';
-        const familiaB = b?.familia?.nome || '';
-        const familia = familiaA.localeCompare(familiaB);
-        if (familia !== 0) return familia;
+        const familiaA = a?.familia_id ?? a?.familia?.id ?? 0;
+        const familiaB = b?.familia_id ?? b?.familia?.id ?? 0;
+        if (familiaA !== familiaB) return familiaA - familiaB;
 
-        const generoA = a?.genero?.nome || '';
-        const generoB = b?.genero?.nome || '';
-        const genero = generoA.localeCompare(generoB);
-        if (genero !== 0) return genero;
+        const generoA = a?.genero_id ?? a?.genero?.id ?? 0;
+        const generoB = b?.genero_id ?? b?.genero?.id ?? 0;
+        if (generoA !== generoB) return generoA - generoB;
 
-        const especieA = a?.especy?.nome || '';
-        const especieB = b?.especy?.nome || '';
-        return especieA.localeCompare(especieB);
+        const especieA = a?.especie_id ?? a?.especy?.id ?? 0;
+        const especieB = b?.especie_id ?? b?.especy?.id ?? 0;
+        if (especieA !== especieB) return especieA - especieB;
+
+        const familiaNomeA = a?.familia?.nome || '';
+        const familiaNomeB = b?.familia?.nome || '';
+        const familiaNome = familiaNomeA.localeCompare(familiaNomeB);
+        if (familiaNome !== 0) return familiaNome;
+
+        const generoNomeA = a?.genero?.nome || '';
+        const generoNomeB = b?.genero?.nome || '';
+        const generoNome = generoNomeA.localeCompare(generoNomeB);
+        if (generoNome !== 0) return generoNome;
+
+        const especieNomeA = a?.especy?.nome || '';
+        const especieNomeB = b?.especy?.nome || '';
+        return especieNomeA.localeCompare(especieNomeB);
     }).forEach(entradaOriginal => {
         const cidade = entradaOriginal.cidade;
         const estado = cidade?.estado?.nome || 'Desconhecido';
