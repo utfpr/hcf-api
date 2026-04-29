@@ -326,7 +326,7 @@ export default function fichaTomboController(request, response, next) {
             };
 
             const caminhoArquivoHtml = path.resolve(__dirname, '../views/ficha-tombo.ejs');
-            return renderizaArquivoHtml(caminhoArquivoHtml, parametros, response)
+            return renderizaArquivoHtml(caminhoArquivoHtml, parametros)
                 .then(html => {
                     response.status(200).send(html);
                 });
