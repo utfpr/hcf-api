@@ -8,6 +8,7 @@ interface Registro {
   data_coleta_dia: number;
   especy: {
     nome: string;
+    autor?: { nome: string } | null;
     genero: {
       nome: string;
     }
@@ -21,9 +22,16 @@ interface Registro {
   genero: {
     nome: string;
   }
+  variedade?: {
+    nome: string;
+    autor?: { nome: string } | null;
+  } | null;
+  sub_especie?: {
+    nome: string;
+    autor?: { nome: string } | null;
+  } | null;
   latitude: number | null;
   longitude: number | null;
-  autor?: string;
 }
 
 interface LocaisColeta {
@@ -103,6 +111,30 @@ function RelacaoLocaisColeta({ dados, total, textoFiltro, showCoord = false }: R
     };
   }
 
+  const renderNomeCientifico = (item: Registro) => {
+    const { especy, genero } = item;
+    return (
+      <>
+        <span style={{ fontStyle: 'italic' }}>{genero?.nome} {especy?.nome}</span>
+        {especy?.autor?.nome && ` ${especy.autor.nome}`}
+        {item.sub_especie && (
+          <>
+            {' subsp. '}
+            <span style={{ fontStyle: 'italic' }}>{item.sub_especie.nome}</span>
+            {item.sub_especie.autor?.nome && ` ${item.sub_especie.autor.nome}`}
+          </>
+        )}
+        {item.variedade && (
+          <>
+            {' var. '}
+            <span style={{ fontStyle: 'italic' }}>{item.variedade.nome}</span>
+            {item.variedade.autor?.nome && ` ${item.variedade.autor.nome}`}
+          </>
+        )}
+      </>
+    );
+  }
+
   const renderTable = (registros: Registro[]) => {
     return (
       <table>
@@ -110,8 +142,7 @@ function RelacaoLocaisColeta({ dados, total, textoFiltro, showCoord = false }: R
           <tr>
             <th>Data Coleta</th>
             <th>Família</th>
-            <th>Espécie</th>
-            {/* <th>Autor</th> */}
+            <th>Nome Científico</th>
             {showCoord && <th>Latitude</th>}
             {showCoord && <th>Longitude</th>}
             <th style={{ textAlign: 'right' }}>Nº do Tombo</th>
@@ -119,13 +150,13 @@ function RelacaoLocaisColeta({ dados, total, textoFiltro, showCoord = false }: R
         </thead>
         <tbody>
           {registros.map((item, i) => {
-            const { especy, familia, genero } = item;
+            const { familia } = item;
             const cordenadas = obtemCordenadas(item);
             return (
               <tr key={`${i}-${item.hcf}`}>
                 <td>{criaData(item)}</td>
                 <td>{familia?.nome}</td>
-                <td style={{ display: 'flex', gap: 10 }}><div style={{ fontStyle: 'italic', display: 'flex', alignItems: 'center', width: 'fit-content' }}>{genero?.nome} {especy?.nome}</div> {item.autor}</td>
+                <td>{renderNomeCientifico(item)}</td>
                 {showCoord && <td>{cordenadas.latitude}</td>}
                 {showCoord && <td>{cordenadas.longitude}</td>}
                 <td style={{ textAlign: 'right' }}>{item.hcf}</td>
