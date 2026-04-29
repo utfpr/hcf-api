@@ -9,7 +9,7 @@ import {
     alteracao, getNumeroColetor, getUltimoNumeroTombo, getCodigoBarraTombo,
     editarCodigoBarra, getUltimoNumeroCodigoBarras, postCodigoBarraTombo,
     verificarCoordenada, getUltimoCodigoBarra, deletarCodigoBarras, listagemTombosPorIdentificador,
-    relatorioPorPeriodo,
+    relatorioPorPeriodo, getProximoNumeroTomboEndPoint,
 } from '../controllers/tombos-controller';
 import exportarTombosController from '../controllers/tombos-exportacoes-controller';
 import criaJsonMiddleware from '../middlewares/json-middleware';
@@ -21,6 +21,7 @@ import coletorCadastro from '../validators/coletor-cadastro';
 import cadastrarTipoEsquema from '../validators/tipo-cadastro';
 import cadastrarTomboEsquema from '../validators/tombo-cadastro';
 import listagemTombo from '../validators/tombo-listagem';
+
 /**
  * @swagger
  * tags:
@@ -353,6 +354,11 @@ export default app => {
     app.route('/tombos/filtrar_ultimo_numero')
         .get([
             getUltimoNumeroTombo,
+        ]);
+
+    app.route('/tombos/proximo_numero')
+        .get([
+            getProximoNumeroTomboEndPoint,
         ]);
 
     /**
