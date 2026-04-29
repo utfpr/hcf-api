@@ -1760,7 +1760,7 @@ export const verificarCoordenada = async (request, response, next) => {
 
         const query = `
             SELECT ST_Contains(
-                poligono,
+                ST_SetSRID(poligono, 4674),
                 ST_SetSRID(ST_POINT($1, $2), 4674)
             ) AS dentro
             FROM cidades
