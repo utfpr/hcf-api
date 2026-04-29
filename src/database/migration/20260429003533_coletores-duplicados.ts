@@ -12,13 +12,13 @@ export async function run(knex: Knex): Promise<void> {
     // Agrupa por nome normalizado; prefere o registro com e-mail, depois o menor id
     const dupGroups = (await trx('coletores')
       .select([
-        trx.raw("TRIM(LOWER(nome)) as nome_norm"),
+        trx.raw('TRIM(LOWER(nome)) as nome_norm'),
         trx.raw(`COALESCE(
           MIN(id) FILTER (WHERE email IS NOT NULL AND email <> ''),
           MIN(id)
         )::int as keep_id`),
         trx.raw('ARRAY_AGG(id ORDER BY id) as ids'),
-        trx.raw('COUNT(*)::int as qtde'),
+        trx.raw('COUNT(*)::int as qtde')
       ])
       .groupByRaw('TRIM(LOWER(nome))')
       .havingRaw('COUNT(*) > 1')) as unknown as DupGroupRow[]
