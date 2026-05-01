@@ -420,15 +420,4 @@ export default app => {
             controller.obtemDadosDoRelatorioDeQuantidade,
         ]);
 
-    // TODO: Descomentar quando a função obtemDadosDoRelatorioDeCoordenadasForaDoPoligono for implementada no controller
-    // app.route('/relatorio/coordenadas-fora-do-poligono')
-    //     .get([
-    //         tokensMiddleware([
-    //             TIPOS_USUARIOS.CURADOR,
-    //             TIPOS_USUARIOS.OPERADOR,
-    //             TIPOS_USUARIOS.IDENTIFICADOR,
-    //         ]),
-    //         listagensMiddleware,
-    //         controller.obtemDadosDoRelatorioDeCoordenadasForaDoPoligono,
-    //     ]);
 };
