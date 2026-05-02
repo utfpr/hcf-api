@@ -8,10 +8,6 @@ import {
     converteParaDecimal, converteDecimalParaGraus, converteDecimalParaGMSGrau, converteDecimalParaGMSMinutos, converteDecimalParaGMSSegundos,
 } from '../helpers/coordenadas';
 import pick from '../helpers/pick';
-
-const SRID = {
-    SIRGAS_2000: 4674,
-};
 import { converteInteiroParaRomano } from '../helpers/tombo';
 import models from '../models';
 import codigos from '../resources/codigos-http';
@@ -1765,7 +1761,7 @@ export const verificarCoordenada = async (request, response, next) => {
         const query = `
             SELECT ST_Contains(
                 poligono,
-                ST_SetSRID(ST_POINT($1, $2), ${SRID.SIRGAS_2000})
+                ST_SetSRID(ST_POINT($1, $2), 4674)
             ) AS dentro
             FROM cidades
             WHERE id = $3;
