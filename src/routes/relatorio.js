@@ -407,5 +407,14 @@ export default app => {
             ]),
             listagensMiddleware,
             controller.obtemDadosDoRelatorioDeCoordenadaForaPoligono,
+        ])
+        .post([
+            tokensMiddleware([
+                TIPOS_USUARIOS.CURADOR,
+                TIPOS_USUARIOS.OPERADOR,
+                TIPOS_USUARIOS.IDENTIFICADOR,
+            ]),
+            listagensMiddleware,
+            controller.obtemDadosDoRelatorioDeCoordenadaForaPoligono,
         ]);
 };

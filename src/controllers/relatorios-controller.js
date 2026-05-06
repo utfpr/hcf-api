@@ -21,6 +21,7 @@ import ReportFamiliasGeneros from '~/reports/templates/RelacaoFamiliasGenero';
 import ReportQtd from '~/reports/templates/RelacaoFamiliasGeneroQtd';
 import ReportColetaModelo1 from '~/reports/templates/RelacaoTombos';
 import ReportColetaModelo2 from '~/reports/templates/RelacaoTombosComColeta';
+import ReportCoordenadaForaPoligono from '~/reports/templates/CoordenadaForaPoligono';
 import codigosHttp from '~/resources/codigos-http';
 
 import models from '../models';
@@ -974,12 +975,32 @@ export const obtemDadosDoRelatorioDeCoordenadaForaPoligono = async (req, res, ne
             cidades: Object.values(estado.cidades),
         }));
 
-        res.status(codigosHttp.LISTAGEM).json({
-            metadados: {
-                total: results.length,
-            },
-            resultado,
-        });
+        if (req.method === 'GET') {
+            res.status(codigosHttp.LISTAGEM).json({
+                metadados: {
+                    total: results.length,
+                },
+                resultado,
+            });
+            return;
+        }
+
+        try {
+            const buffer = await generateReport(
+                ReportCoordenadaForaPoligono, {
+                    dados: resultado,
+                    total: results.length,
+                });
+            const readable = new Readable();
+
+            readable._read = () => { };
+            readable.push(buffer);
+            readable.push(null);
+            res.setHeader('Content-Type', 'application/pdf');
+            readable.pipe(res);
+        } catch (e) {
+            next(e);
+        }
     } catch (error) {
         next(error);
     }
