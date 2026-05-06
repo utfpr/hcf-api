@@ -21,6 +21,7 @@ import ReportFamiliasGeneros from '~/reports/templates/RelacaoFamiliasGenero';
 import ReportQtd from '~/reports/templates/RelacaoFamiliasGeneroQtd';
 import ReportColetaModelo1 from '~/reports/templates/RelacaoTombos';
 import ReportColetaModelo2 from '~/reports/templates/RelacaoTombosComColeta';
+import ReportCoordenadaForaPoligono from '~/reports/templates/CoordenadaForaPoligono';
 import codigosHttp from '~/resources/codigos-http';
 
 import models from '../models';
@@ -906,6 +907,125 @@ export const obtemDadosDoRelatorioDeQuantidade = async (req, res, next) => {
             readable.pipe(res);
         } catch (error) {
             next(error);
+        }
+    } catch (error) {
+        next(error);
+    }
+};
+
+/// ////// Relatório de Coordenadas Fora do Polígono //////////
+export const obtemDadosDoRelatorioDeCoordenadaForaPoligono = async (req, res, next) => {
+    const { incluirSemCoordenadas } = req.query;
+    const incluirSem = incluirSemCoordenadas === 'true';
+
+    try {
+        let query = `
+            SELECT
+                t.hcf,
+                t.latitude,
+                t.longitude,
+                t.nome_cientifico,
+                c.nome AS cidade_nome,
+                e.nome AS estado_nome,
+                e.sigla AS estado_sigla,
+                CASE
+                    WHEN t.latitude IS NULL OR t.longitude IS NULL THEN 'SEM_COORDENADA'
+                    WHEN c.poligono IS NULL THEN 'SEM_POLIGONO'
+                    ELSE 'FORA_DO_POLIGONO'
+                END AS motivo
+            FROM tombos t
+            LEFT JOIN cidades c ON t.cidade_id = c.id
+            LEFT JOIN estados e ON c.estado_id = e.id
+            WHERE t.rascunho = false
+              AND t.ativo = true
+              AND (
+                (
+                    t.latitude IS NOT NULL
+                    AND t.longitude IS NOT NULL
+                    AND c.poligono IS NOT NULL
+                    AND ST_Contains(
+                        c.poligono,
+                        ST_SetSRID(ST_Point(t.longitude, t.latitude), 4674)
+                    ) = false
+                )
+        `;
+
+        if (incluirSem) {
+            query += `
+                OR (t.latitude IS NULL OR t.longitude IS NULL)
+            `;
+        }
+
+        query += `
+              )
+            ORDER BY e.nome ASC, c.nome ASC, t.hcf ASC
+        `;
+
+        const results = await sequelize.query(query, {
+            type: models.Sequelize.QueryTypes.SELECT,
+        });
+
+        // Agrupar por estado e cidade
+        const agrupado = {};
+        results.forEach(row => {
+            const estadoKey = row.estado_nome || 'Sem estado';
+            const cidadeKey = row.cidade_nome || 'Sem cidade';
+
+            if (!agrupado[estadoKey]) {
+                agrupado[estadoKey] = {
+                    estado: estadoKey,
+                    sigla: row.estado_sigla || '',
+                    cidades: {},
+                };
+            }
+
+            if (!agrupado[estadoKey].cidades[cidadeKey]) {
+                agrupado[estadoKey].cidades[cidadeKey] = {
+                    cidade: cidadeKey,
+                    tombos: [],
+                };
+            }
+
+            agrupado[estadoKey].cidades[cidadeKey].tombos.push({
+                hcf: row.hcf,
+                latitude: row.latitude,
+                longitude: row.longitude,
+                nome_cientifico: row.nome_cientifico,
+                motivo: row.motivo,
+            });
+        });
+
+        // Converter para array
+        const resultado = Object.values(agrupado).map(estado => ({
+            ...estado,
+            cidades: Object.values(estado.cidades),
+        }));
+
+        if (req.method === 'GET') {
+            res.status(codigosHttp.LISTAGEM).json({
+                metadados: {
+                    total: results.length,
+                },
+                resultado,
+            });
+            return;
+        }
+
+        try {
+            const buffer = await generateReport(
+                ReportCoordenadaForaPoligono, {
+                    dados: resultado,
+                    total: results.length,
+                });
+            const readable = new Readable();
+
+            readable._read = () => { };
+            readable.push(buffer);
+            readable.push(null);
+            res.setHeader('Content-Type', 'application/pdf');
+            readable.pipe(res);
+        } catch (e) {
+            next(e);
         }
     } catch (error) {
         next(error);
