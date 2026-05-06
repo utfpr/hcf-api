@@ -9,6 +9,8 @@ import {
     formatarDadosParaRelatorioDeColetaPorColetorEIntervaloDeData,
     formataTextFilterColetor,
     agruparPorLocal,
+    agruparPorCidade,
+    formataTextFilterCidade,
     agruparPorFamiliaGeneroEspecie,
     agruparPorFamiliaComContadorECodigo,
     agruparResultadoPorFamilia,
@@ -21,6 +23,7 @@ import ReportFamiliasGeneros from '~/reports/templates/RelacaoFamiliasGenero';
 import ReportQtd from '~/reports/templates/RelacaoFamiliasGeneroQtd';
 import ReportColetaModelo1 from '~/reports/templates/RelacaoTombos';
 import ReportColetaModelo2 from '~/reports/templates/RelacaoTombosComColeta';
+import ReportTombosPorCidade from '~/reports/templates/TombosPorCidade';
 import codigosHttp from '~/resources/codigos-http';
 
 import models from '../models';
@@ -656,6 +659,126 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
             readable._read = () => { }; // Implementa o método _read (obrigatório)
             readable.push(buffer); // Empurrar os dados binários para o stream
             readable.push(null); // Indica o fim do fluxo de dados
+            res.setHeader('Content-Type', 'application/pdf');
+            readable.pipe(res);
+        } catch (e) {
+            next(e);
+        }
+
+    } catch (e) {
+        next(e);
+    }
+};
+
+/// ////// Relatório de Tombos por Cidade //////////
+export const obtemDadosDoRelatorioDeTombosPorCidade = async (req, res, next) => {
+    const { paginacao } = req;
+    const { limite, pagina, offset } = paginacao;
+    const { cidade, showCoord } = req.query;
+
+    let whereCidade = {};
+    if (cidade) {
+        whereCidade = {
+            id: cidade,
+        };
+    }
+
+    try {
+        const tombos = await Tombo.findAndCountAll({
+            attributes: [
+                'hcf',
+                'numero_coleta',
+                'familia_id',
+                'especie_id',
+                'genero_id',
+                'nome_cientifico',
+                'data_coleta_ano',
+                'data_coleta_mes',
+                'data_coleta_dia',
+                'latitude',
+                'longitude',
+            ],
+            include: [
+                {
+                    model: Familia,
+                    attributes: ['id', 'nome'],
+                },
+                {
+                    model: Genero,
+                    attributes: ['id', 'nome'],
+                },
+                {
+                    model: Especie,
+                    attributes: ['id', 'nome'],
+                    include: [
+                        {
+                            model: Autor,
+                            attributes: ['id', 'nome'],
+                            as: 'autor',
+                        },
+                    ],
+                },
+                {
+                    model: Cidade,
+                    attributes: ['id', 'nome'],
+                    where: Object.keys(whereCidade).length > 0 ? whereCidade : undefined,
+                    required: Object.keys(whereCidade).length > 0,
+                    include: [
+                        {
+                            model: Estado,
+                            attributes: ['id', 'nome', 'sigla'],
+                            include: [
+                                {
+                                    model: Pais,
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+            order: [
+                ['familia_id', 'ASC'],
+                ['genero_id', 'ASC'],
+                ['especie_id', 'ASC'],
+            ],
+            offset,
+        });
+
+        const dadosPuros = tombos.rows.map(registro => registro.get({ plain: true }));
+        const dadosFormatados = agruparPorCidade(dadosPuros);
+
+        if (req.method === 'GET') {
+            const cidadeNome = cidade
+                ? dadosPuros[0]?.cidade?.nome || cidade
+                : undefined;
+            res.json({
+                metadados: {
+                    total: tombos.count,
+                    pagina,
+                    limite,
+                },
+                resultado: dadosFormatados,
+                filtro: formataTextFilterCidade(cidadeNome),
+            });
+            return;
+        }
+
+        try {
+            const cidadeNome = cidade
+                ? dadosPuros[0]?.cidade?.nome || cidade
+                : undefined;
+            const buffer = await generateReport(
+                ReportTombosPorCidade, {
+                    dados: dadosFormatados.locais,
+                    total: dadosFormatados?.quantidadeTotal || 0,
+                    textoFiltro: formataTextFilterCidade(cidadeNome),
+                    showCoord: showCoord === 'true',
+                });
+            const readable = new Readable();
+
+            readable._read = () => { };
+            readable.push(buffer);
+            readable.push(null);
             res.setHeader('Content-Type', 'application/pdf');
             readable.pipe(res);
         } catch (e) {
