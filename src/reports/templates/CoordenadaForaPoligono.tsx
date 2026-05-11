@@ -38,9 +38,23 @@ function renderMotivo(motivo: string) {
   }
 }
 
-function formatCoord(val: number | null | undefined): string {
-  if (val === null || val === undefined) return '—';
-  return val.toFixed(6);
+function decimalParaDMS(decimal: number | null | undefined, isLatitude: boolean): string {
+  if (decimal === null || decimal === undefined) return '—';
+
+  const abs = Math.abs(decimal);
+  const graus = Math.floor(abs);
+  const minutosDecimal = (abs - graus) * 60;
+  const minutos = Math.floor(minutosDecimal);
+  const segundos = ((minutosDecimal - minutos) * 60).toFixed(1);
+
+  let hemisferio: string;
+  if (isLatitude) {
+    hemisferio = decimal >= 0 ? 'N' : 'S';
+  } else {
+    hemisferio = decimal >= 0 ? 'L' : 'O';
+  }
+
+  return `${graus}° ${String(minutos).padStart(2, '0')}' ${String(segundos).padStart(4, '0')}" ${hemisferio}`;
 }
 
 function RelatorioCoordenadaForaPoligono({ dados, total }: RelatorioCoordenadaForaPoligonoProps) {
@@ -48,10 +62,10 @@ function RelatorioCoordenadaForaPoligono({ dados, total }: RelatorioCoordenadaFo
   const renderTabelaTombos = (tombos: TomboItem[]) => (
     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem', marginTop: '0.25em' }}>
       <colgroup>
-        <col style={{ width: '8%' }} />
-        <col style={{ width: '36%' }} />
-        <col style={{ width: '18%' }} />
-        <col style={{ width: '18%' }} />
+        <col style={{ width: '7%' }} />
+        <col style={{ width: '33%' }} />
+        <col style={{ width: '20%' }} />
+        <col style={{ width: '20%' }} />
         <col style={{ width: '20%' }} />
       </colgroup>
       <thead>
@@ -71,8 +85,12 @@ function RelatorioCoordenadaForaPoligono({ dados, total }: RelatorioCoordenadaFo
           >
             <td style={{ textAlign: 'right', padding: '3px 6px' }}>{tombo.hcf}</td>
             <td style={{ fontStyle: 'italic', padding: '3px 6px' }}>{tombo.nome_cientifico || '—'}</td>
-            <td style={{ padding: '3px 6px' }}>{formatCoord(tombo.latitude)}</td>
-            <td style={{ padding: '3px 6px' }}>{formatCoord(tombo.longitude)}</td>
+            <td style={{ padding: '3px 6px', fontFamily: 'monospace', fontSize: '0.7rem' }}>
+              {decimalParaDMS(tombo.latitude, true)}
+            </td>
+            <td style={{ padding: '3px 6px', fontFamily: 'monospace', fontSize: '0.7rem' }}>
+              {decimalParaDMS(tombo.longitude, false)}
+            </td>
             <td style={{ padding: '3px 6px' }}>{renderMotivo(tombo.motivo)}</td>
           </tr>
         ))}
@@ -83,8 +101,10 @@ function RelatorioCoordenadaForaPoligono({ dados, total }: RelatorioCoordenadaFo
   const renderCidade = (cidade: CidadeGroup, estadoSigla: string) => (
     <div
       key={`${estadoSigla}-${cidade.cidade}`}
-      style={{ marginBottom: '1.25em', pageBreakInside: 'avoid' }}
+      style={{ marginBottom: '1.25em' }}
     >
+      {/* pageBreakInside: avoid só no cabeçalho — evita que o nome da cidade
+          fique sozinho no final de uma página, mas a tabela pode quebrar livremente */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
@@ -93,6 +113,8 @@ function RelatorioCoordenadaForaPoligono({ dados, total }: RelatorioCoordenadaFo
         padding: '0.3em 0.6em',
         borderRadius: '3px',
         marginBottom: '0.2em',
+        pageBreakInside: 'avoid',
+        pageBreakAfter: 'avoid',
       }}>
         <span style={{ fontWeight: 'bold', fontSize: '0.75rem' }}>
           Município: {cidade.cidade}
@@ -132,7 +154,7 @@ function RelatorioCoordenadaForaPoligono({ dados, total }: RelatorioCoordenadaFo
   };
 
   return (
-    <Page title="Relatório de Coordenadas Fora do Município">
+    <Page title="Diagnóstico de Erros de Posicionamento">
       {dados.map(renderEstado)}
       <div style={{
         marginTop: '1.5em',

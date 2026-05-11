@@ -910,6 +910,7 @@ export const obtemDadosDoRelatorioDeCoordenadaForaPoligono = async (req, res, ne
             FROM tombos t
             LEFT JOIN cidades c ON t.cidade_id = c.id
             LEFT JOIN estados e ON c.estado_id = e.id
+            LEFT JOIN paises p ON e.pais_id = p.id
             WHERE t.rascunho = false
               AND t.ativo = true
               AND (
@@ -932,11 +933,32 @@ export const obtemDadosDoRelatorioDeCoordenadaForaPoligono = async (req, res, ne
 
         query += `
               )
+        `;
+
+        const replacements = {};
+
+        if (req.query.pais_id) {
+            query += ` AND p.id = :pais_id`;
+            replacements.pais_id = req.query.pais_id;
+        }
+
+        if (req.query.estado_id) {
+            query += ` AND e.id = :estado_id`;
+            replacements.estado_id = req.query.estado_id;
+        }
+
+        if (req.query.cidade_id) {
+            query += ` AND c.id = :cidade_id`;
+            replacements.cidade_id = req.query.cidade_id;
+        }
+
+        query += `
             ORDER BY e.nome ASC, c.nome ASC, t.hcf ASC
         `;
 
         const results = await sequelize.query(query, {
             type: models.Sequelize.QueryTypes.SELECT,
+            replacements,
         });
 
         // Agrupar por estado e cidade
