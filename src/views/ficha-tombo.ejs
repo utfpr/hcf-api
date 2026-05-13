@@ -125,7 +125,7 @@
       }
     </style>
     <body>
-      <% if ( imprimir === '0') { %>
+      <% if (imprimir === '0') { %>
         <% fotos.length = 1%>
       <% } %>
 
@@ -133,163 +133,264 @@
       <% let fichaIndex = 0; %>
 
       <% for (let j = 0; j < copias; j++) { %>
-        <div class="ficha">
-          <!-- Cabeçalho da ficha -->
-          <div class="flex">
-            <div class="cabecalho-img pad-padrao border-right border-bottom">
-              <img width="100" src="/assets/logotipo_HCF.png" alt="Logo UTFPR">
+
+        <% if (imprimir === '2') { %>
+
+          <!-- Ficha reduzida: parte 1 (cabeçalho + taxonomia + identificador) -->
+          <div class="ficha">
+            <div class="flex">
+              <div class="cabecalho-img pad-padrao border-right border-bottom">
+                <img width="100" src="/assets/logotipo_HCF.png" alt="Logo UTFPR">
+              </div>
+              <div class="cabecalho-info pad-topbottom border-bottom">
+                <b class="fs-14">Herbário da Universidade Tecnológica Federal do Paraná - <br/>Campus Campo Mourão</b>
+                <div class="flex center-between w-full">
+                  <b class="fs-14">HCF <%- tombo.hcf %></b>
+                  <div class="flex fs-14">
+                    <b>Data:</b> <%- romano_data_tombo %>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="cabecalho-info pad-topbottom border-bottom">
-              <b class="fs-14">Herbário da Universidade Tecnológica Federal do Paraná - <br/>Campus Campo Mourão</b>
+            <div class="flex flex-col pad-padrao gap-1">
+              <% if (familia && familia.nome) { %>
+                <div>
+                  <b class="fs-14">Família: </b>
+                  <% if (familia.nome.toLowerCase() !== 'indeterminada') { %>
+                    <%- tombo.familia.nome %>
+                  <% } %>
+                  <% if (tombo && tombo.sub_familia) { %>
+                    - <%- subfamilia.nome %>
+                  <% } %>
+                </div>
+              <% } %>
+              <div>
+                <b class="fs-14">Espécie:</b>
+                <% if (genero && genero.nome) { %><i><%- genero.nome %></i><% } %>
+                <% if (especie && especie.nome) { %><i><%- especie.nome %></i><% } %>
+                <% if (especie && especie.autor) { %><%- especie.autor.nome %><% } %>
+                <% if (subespecie && subespecie.nome) { %><text class="ml-2">subsp. </text><i><%- subespecie.nome %></i><% } %>
+                <% if (subespecie && subespecie.autor) { %><%- subespecie.autor.nome %><% } %>
+                <% if (variedade && variedade.nome) { %><text class="ml-2">var. </text><i><%- variedade.nome %></i><% } %>
+                <% if (variedade && variedade.autor) { %><%- variedade.autor.nome %><% } %>
+              </div>
+              <div class="linha-vazia"></div>
+              <div>
+                <b class="fs-14">Nome Vulgar:</b> <%- tombo.nomes_populares %>
+              </div>
+              <div class="flex center-between">
+                <div>
+                  <b class="fs-14">Identificador:</b> <%- identificador %>
+                </div>
+                <% if (romano_data_identificacao) { %>
+                  <div><b class="fs-14">Data:</b> <%- romano_data_identificacao %></div>
+                <% } else { %>
+                  <div><b class="fs-14" style="margin-right: 6.5rem;">Data:</b></div>
+                <% } %>
+              </div>
+            </div>
+          </div>
 
-              <div class="flex center-between w-full">
-                <b class="fs-14">HCF <%- tombo.hcf %></b>
+          <!-- Ficha reduzida: parte 2 (só taxonomia + identificador, sem cabeçalho) -->
+          <div class="ficha">
+            <div class="flex flex-col pad-padrao gap-1">
+              <% if (familia && familia.nome) { %>
+                <div>
+                  <b class="fs-14">Família: </b>
+                  <% if (familia.nome.toLowerCase() !== 'indeterminada') { %>
+                    <%- tombo.familia.nome %>
+                  <% } %>
+                  <% if (tombo && tombo.sub_familia) { %>
+                    - <%- subfamilia.nome %>
+                  <% } %>
+                </div>
+              <% } %>
+              <div>
+                <b class="fs-14">Espécie:</b>
+                <% if (genero && genero.nome) { %><i><%- genero.nome %></i><% } %>
+                <% if (especie && especie.nome) { %><i><%- especie.nome %></i><% } %>
+                <% if (especie && especie.autor) { %><%- especie.autor.nome %><% } %>
+                <% if (subespecie && subespecie.nome) { %><text class="ml-2">subsp. </text><i><%- subespecie.nome %></i><% } %>
+                <% if (subespecie && subespecie.autor) { %><%- subespecie.autor.nome %><% } %>
+                <% if (variedade && variedade.nome) { %><text class="ml-2">var. </text><i><%- variedade.nome %></i><% } %>
+                <% if (variedade && variedade.autor) { %><%- variedade.autor.nome %><% } %>
+              </div>
+              <div class="linha-vazia"></div>
+              <div>
+                <b class="fs-14">Nome Vulgar:</b> <%- tombo.nomes_populares %>
+              </div>
+              <div class="flex center-between">
+                <div>
+                  <b class="fs-14">Identificador:</b> <%- identificador %>
+                </div>
+                <% if (romano_data_identificacao) { %>
+                  <div><b class="fs-14">Data:</b> <%- romano_data_identificacao %></div>
+                <% } else { %>
+                  <div><b class="fs-14" style="margin-right: 6.5rem;">Data:</b></div>
+                <% } %>
+              </div>
+            </div>
+          </div>
 
-                <div class="flex fs-14">
-                  <b>Data:</b> <%- romano_data_tombo %>
+        <% } else { %>
+
+          <!-- Ficha completa (imprimir 0 = sem código de barras, 1 = com código de barras) -->
+          <div class="ficha">
+            <div class="flex">
+              <div class="cabecalho-img pad-padrao border-right border-bottom">
+                <img width="100" src="/assets/logotipo_HCF.png" alt="Logo UTFPR">
+              </div>
+              <div class="cabecalho-info pad-topbottom border-bottom">
+                <b class="fs-14">Herbário da Universidade Tecnológica Federal do Paraná - <br/>Campus Campo Mourão</b>
+                <div class="flex center-between w-full">
+                  <b class="fs-14">HCF <%- tombo.hcf %></b>
+                  <div class="flex fs-14">
+                    <b>Data:</b> <%- romano_data_tombo %>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-col pad-padrao gap-1">
+              <% if (familia && familia.nome) { %>
+                <div>
+                  <b class="fs-14">Família: </b>
+                  <% if (familia && familia.nome.toLowerCase() !== 'indeterminada') { %>
+                    <%- tombo.familia.nome %>
+                  <% } %>
+                  <% if (tombo && tombo.sub_familia) { %>
+                    - <%- subfamilia.nome %>
+                  <% } %>
+                </div>
+              <% } %>
+
+              <div>
+                <b class="fs-14">Espécie:</b>
+                <% if (genero && genero.nome) { %>
+                    <i><%- genero.nome %></i>
+                <% } %>
+                <% if (especie && especie.nome) { %>
+                    <i><%- especie.nome %></i>
+                <% } %>
+                <% if (especie && especie.autor) { %>
+                    <%- especie.autor.nome %>
+                <% } %>
+                <% if (subespecie && subespecie.nome) { %>
+                  <text class="ml-2">subsp. </text><i><%- subespecie.nome %></i>
+                <% } %>
+                <% if (subespecie && subespecie.autor) { %>
+                    <%- subespecie.autor.nome %>
+                <% } %>
+                <% if (variedade && variedade.nome) { %>
+                  <text class="ml-2">var. </text><i><%- variedade.nome %></i>
+                <% } %>
+                <% if (variedade && variedade.autor) { %>
+                    <%- variedade.autor.nome %>
+                <% } %>
+              </div>
+
+              <div class="linha-vazia"></div>
+
+              <div>
+                <b class="fs-14">Nome Vulgar:</b> <%- tombo.nomes_populares %>
+              </div>
+              <div class="flex center-between">
+                <div>
+                  <b class="fs-14">Identificador:</b> <%- identificador %>
+                </div>
+                <% if (romano_data_identificacao) { %>
+                  <div>
+                    <b class="fs-14">Data:</b> <%- romano_data_identificacao %>
+                  </div>
+                <% } %>
+                <% if (!romano_data_identificacao) { %>
+                  <div>
+                    <b class="fs-14" style="margin-right: 6.5rem;">Data:</b>
+                  </div>
+                <% } %>
+              </div>
+              <div>
+                <b class="fs-14">Local de Coleta:</b>
+
+                <% if (localColeta && localColeta.descricao) { %>
+                    <%- localColeta.descricao %>
+                <% } %>
+                <% if (cidade && cidade.nome) { %>
+                    - <%- cidade.nome %>
+                <% } %>
+                <% if (cidade && cidade.estado) { %>
+                    - <%- cidade.estado.nome %>
+                <% } %>
+                <% if (cidade && cidade.estado && cidade.estado.pais) { %>
+                    - <%- cidade.estado.pais.nome %>
+                <% } %>
+              </div>
+
+              <div class="linha-vazia"></div>
+
+              <div>
+                <b class="fs-14">Observações:</b>
+                <% if (tombo && tombo.descricao) { %>
+                    <%- tombo.descricao %>
+                <% } %>
+                <% if (tombo.solo) { %>
+                    - Solo: <%- tombo.solo.nome %>
+                <% } %>
+                <% if (tombo.relevo) { %>
+                    - Relevo: <%- tombo.relevo.nome %>
+                <% } %>
+                <% if (tombo.vegetaco) { %>
+                    - Vegetação: <%- tombo.vegetaco.nome %>
+                <% } %>
+                <% if (tombo && tombo.latitude) { %>
+                    - Latitude: <%- tombo.latitude %>
+                <% } %>
+                <% if (tombo && tombo.longitude) { %>
+                    - Longitude: <%- tombo.longitude %>
+                <% } %>
+                <% if (tombo && tombo.altitude) { %>
+                    - Altitude: <%- tombo.altitude %>m
+                <% } %>
+                <% if (localColeta && localColeta.fase_sucessional) { %>
+                    - Fase sucessional: <%- localColeta.fase_sucessional.nome %>
+                <% } %>
+              </div>
+
+              <div class="linha-vazia"></div>
+
+              <div class="flex start-between">
+                <div class="flex items-start">
+                  <b class="fs-14"><%- tombo.coletores.length == 1 ? 'Coletor' : 'Coletores' %>:</b>
+                  <div class="ml-1 limited-div-50">
+                    <%- tombo.coletores %>
+                  </div>
+                </div>
+
+                <div class="flex flex-col gap-1 limited-code-div">
+                  <div class="flex center-between w-full">
+                    <div>
+                      <b class="fs-14">nº:</b> <%- tombo.numero_coleta %>
+                    </div>
+
+                    <div>
+                      <b class="fs-14">Data:</b> <%- romano_data_coleta %>
+                    </div>
+                  </div>
+
+                  <div class="linha-vazia"></div>
+
+                  <% if (!!fotos[0]['id'] && imprimir !== '0') { %>
+                    <div class="flex center-end">
+                      <svg id="<%- 'code128_' + fotos[0]['id'] %>" data-codigo-barras="<%- codigo_barras_selecionado %>"></svg>
+                    </div>
+                  <% } %>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Corpo da ficha -->
-            <div class="flex flex-col pad-padrao gap-1">
-            <% if (familia && familia.nome) { %>
-              <div>
-                <b class="fs-14">Família: </b>
-                <% if (familia && familia.nome.toLowerCase() !== 'indeterminada') { %>
-                  <%- tombo.familia.nome %>
-                <% } %>
-                <% if (tombo && tombo.sub_familia) { %>
-                  - <%- subfamilia.nome %>
-                <% } %>
-              </div>
-            <% } %>
+        <% } %>
 
-            <div>
-              <b class="fs-14">Espécie:</b>
-              <% if (genero && genero.nome) { %>
-                  <i><%- genero.nome %></i>
-              <% } %>
-              <% if (especie && especie.nome) { %>
-                  <i><%- especie.nome %></i>
-              <% } %>
-              <% if (especie && especie.autor) { %>
-                  <%- especie.autor.nome %>
-              <% } %>
-              <% if (subespecie && subespecie.nome) { %>
-                <text class="ml-2">subsp. </text><i><%- subespecie.nome %></i>
-              <% } %>
-              <% if (subespecie && subespecie.autor) { %>
-                  <%- subespecie.autor.nome %>
-              <% } %>
-              <% if (variedade && variedade.nome) { %>
-                <text class="ml-2">var. </text><i><%- variedade.nome %></i>
-              <% } %>
-              <% if (variedade && variedade.autor) { %>
-                  <%- variedade.autor.nome %>
-              <% } %>
-            </div>
-
-            <div class="linha-vazia"></div>
-
-            <div>
-              <b class="fs-14">Nome Vulgar:</b> <%- tombo.nomes_populares %>
-            </div>
-            <div class="flex center-between">
-              <div>
-                <b class="fs-14">Identificador:</b> <%- identificador %>
-              </div>
-              <% if (romano_data_identificacao) { %>
-                <div>
-                  <b class="fs-14">Data:</b> <%- romano_data_identificacao %>
-                </div>
-              <% } %>
-              <% if (!romano_data_identificacao) { %>
-                <div>
-                  <b class="fs-14" style="margin-right: 6.5rem;">Data:</b>
-                </div>
-              <% } %>
-            </div>
-            <div>
-              <b class="fs-14">Local de Coleta:</b>
-
-              <% if (localColeta && localColeta.descricao) { %>
-                  <%- localColeta.descricao %>
-              <% } %>
-              <% if (cidade && cidade.nome) { %>
-                  - <%- cidade.nome %>
-              <% } %>
-              <% if (cidade && cidade.estado) { %>
-                  - <%- cidade.estado.nome %>
-              <% } %>
-              <% if (cidade && cidade.estado && cidade.estado.pais) { %>
-                  - <%- cidade.estado.pais.nome %>
-              <% } %>
-            </div>
-
-            <div class="linha-vazia"></div>
-
-            <div>
-              <b class="fs-14">Observações:</b>
-              <% if (tombo && tombo.descricao) { %>
-                  <%- tombo.descricao %>
-              <% } %>
-              <% if (tombo.solo) { %>
-                  - Solo: <%- tombo.solo.nome %>
-              <% } %>
-              <% if (tombo.relevo) { %>
-                  - Relevo: <%- tombo.relevo.nome %>
-              <% } %>
-              <% if (tombo.vegetaco) { %>
-                  - Vegetação: <%- tombo.vegetaco.nome %>
-              <% } %>
-              <% if (tombo && tombo.latitude) { %>
-                  - Latitude: <%- tombo.latitude %>
-              <% } %>
-              <% if (tombo && tombo.longitude) { %>
-                  - Longitude: <%- tombo.longitude %>
-              <% } %>
-              <% if (tombo && tombo.altitude) { %>
-                  - Altitude: <%- tombo.altitude %>m
-              <% } %>
-              <% if (localColeta && localColeta.fase_sucessional) { %>
-                  - Fase sucessional: <%- localColeta.fase_sucessional.nome %>
-              <% } %>
-            </div>
-
-            <div class="linha-vazia"></div>
-
-            <div class="flex start-between">
-              <div class="flex items-start">
-                <b class="fs-14"><%- tombo.coletores.length == 1 ? 'Coletor' : 'Coletores' %>:</b>
-                <div class="ml-1 limited-div-50">
-                  <%- tombo.coletores %>
-                </div>
-              </div>
-
-              <div class="flex flex-col gap-1 limited-code-div">
-                <div class="flex center-between w-full">
-                  <div>
-                    <b class="fs-14">nº:</b> <%- tombo.numero_coleta %>
-                  </div>
-
-                  <div>
-                    <b class="fs-14">Data:</b> <%- romano_data_coleta %>
-                  </div>
-                </div>
-
-                <div class="linha-vazia"></div>
-
-                <% if (!!fotos[0]['id'] && imprimir !== '0') { %>
-                  <div class="flex center-end">
-                    <svg id="<%- 'code128_' + fotos[0]['id'] %>" data-codigo-barras="<%- codigo_barras_selecionado %>"></svg>
-                  </div>
-                <% } %>
-              </div>
-            </div>
-            </div>
-        </div>
         <% fichaIndex++; %>
       <% } %>
       <script src="/assets/js/jsbarcode.code128.min.js"></script>
