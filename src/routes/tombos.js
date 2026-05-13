@@ -9,7 +9,7 @@ import {
     alteracao, getNumeroColetor, getUltimoNumeroTombo, getCodigoBarraTombo,
     editarCodigoBarra, getUltimoNumeroCodigoBarras, postCodigoBarraTombo,
     verificarCoordenada, getUltimoCodigoBarra, deletarCodigoBarras, listagemTombosPorIdentificador,
-    relatorioPorPeriodo,
+    relatorioPorPeriodo, getProximoNumeroTomboEndPoint,
 } from '../controllers/tombos-controller';
 import exportarTombosController from '../controllers/tombos-exportacoes-controller';
 import criaJsonMiddleware from '../middlewares/json-middleware';
@@ -354,6 +354,16 @@ export default app => {
     app.route('/tombos/filtrar_ultimo_numero')
         .get([
             getUltimoNumeroTombo,
+        ]);
+
+    app.route('/tombos/proximo_numero')
+        .get([
+            tokensMiddleware([
+                TIPOS_USUARIOS.CURADOR,
+                TIPOS_USUARIOS.OPERADOR,
+                TIPOS_USUARIOS.IDENTIFICADOR,
+            ]),
+            getProximoNumeroTomboEndPoint,
         ]);
 
     /**
