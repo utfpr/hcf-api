@@ -27,9 +27,6 @@ export default {
     },
     'json.principal.hcf': {
         in: 'body',
-        optional: {
-            options: { nullable: true },
-        },
         isInt: true,
     },
     'json.principal.data_tombo': {

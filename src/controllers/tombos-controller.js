@@ -72,22 +72,8 @@ export const cadastro = (request, response, next) => {
     } = request.body.json;
     let tomboCriado = null;
 
-    const isNovoTombo = !principal.hcf;
-
     const callback = transaction =>
         Promise.resolve()
-            .then(() => {
-                if (isNovoTombo) {
-                    return getProximoNumeroTombo();
-                }
-                return principal.hcf;
-            })
-            .then(hcfGerado => {
-                if (isNovoTombo) {
-                    principal.hcf = hcfGerado;
-                }
-                return undefined;
-            })
             .then(() => {
                 if (!paisagem || !paisagem.solo_id) {
                     return undefined;
@@ -334,6 +320,7 @@ export const cadastro = (request, response, next) => {
             // /////////// CADASTRA TOMBO /////////////
             .then(() => {
                 let jsonTombo = {
+                    hcf: principal.hcf,
                     numero_coleta: principal.numero_coleta,
                     cidade_id: localidade.cidade_id,
                     coletor_id: coletor,
