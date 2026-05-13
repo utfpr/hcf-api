@@ -25,6 +25,13 @@ export default {
         },
         isInt: true,
     },
+    'json.principal.hcf': {
+        in: 'body',
+        optional: {
+            options: { nullable: true },
+        },
+        isInt: true,
+    },
     'json.principal.data_tombo': {
         in: 'body',
         custom: {

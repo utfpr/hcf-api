@@ -14,7 +14,6 @@ import codigos from '../resources/codigos-http';
 import verifyRecaptcha from '../utils/verify-recaptcha';
 import { aprovarPendencia } from './pendencias-controller';
 import { request } from 'express';
-
 const {
     Solo, Relevo, Cidade, Estado, Vegetacao, FaseSucessional, Pais, Tipo, LocalColeta, Familia, sequelize,
     Genero, Subfamilia, Autor, Coletor, Variedade, Subespecie, TomboFoto, Identificador,
@@ -35,27 +34,6 @@ function parseDataTombo(valor) {
     }
     return null;
 }
-
-const getProximoNumeroTombo = () => {
-    return Tombo.findOne({
-        attributes: [
-            [fn('MAX', col('hcf')), 'max_hcf'],
-        ],
-        raw: true,
-    })
-        .then(resultado => {
-            const maxNumero = resultado?.max_hcf;
-            return maxNumero ? Number(maxNumero) + 1 : 1;
-        });
-};
-
-export const getProximoNumeroTomboEndPoint = (request, response, next) => {
-    getProximoNumeroTombo()
-        .then(proximoNumero => {
-            response.status(codigos.BUSCAR_UM_ITEM).json({ hcf: proximoNumero });
-        })
-        .catch(next);
-};
 
 export const cadastro = (request, response, next) => {
     const {
@@ -335,6 +313,7 @@ export const cadastro = (request, response, next) => {
             // /////////// CADASTRA TOMBO /////////////
             .then(() => {
                 let jsonTombo = {
+                    hcf: principal.hcf,
                     numero_coleta: principal.numero_coleta,
                     cidade_id: localidade.cidade_id,
                     coletor_id: coletor,
