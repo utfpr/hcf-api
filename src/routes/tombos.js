@@ -358,6 +358,11 @@ export default app => {
 
     app.route('/tombos/proximo_numero')
         .get([
+            tokensMiddleware([
+                TIPOS_USUARIOS.CURADOR,
+                TIPOS_USUARIOS.OPERADOR,
+                TIPOS_USUARIOS.IDENTIFICADOR,
+            ]),
             getProximoNumeroTomboEndPoint,
         ]);
 
