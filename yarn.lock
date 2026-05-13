@@ -1985,6 +1985,7 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "@gar/promise-retry@npm:^1.0.0":
   version: 1.0.3
   resolution: "@gar/promise-retry@npm:1.0.3"
@@ -1992,6 +1993,8 @@ __metadata:
   languageName: node
   linkType: hard
 
+=======
+>>>>>>> 0c0c19d (ajustes: hcf da requisicao e auth da rota)
 "@humanfs/core@npm:^0.19.1":
   version: 0.19.1
   resolution: "@humanfs/core@npm:0.19.1"
@@ -2175,6 +2178,7 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "@npmcli/agent@npm:^4.0.0":
   version: 4.0.0
   resolution: "@npmcli/agent@npm:4.0.0"
@@ -2204,6 +2208,8 @@ __metadata:
   languageName: node
   linkType: hard
 
+=======
+>>>>>>> 0c0c19d (ajustes: hcf da requisicao e auth da rota)
 "@paralleldrive/cuid2@npm:^2.2.2":
   version: 2.3.1
   resolution: "@paralleldrive/cuid2@npm:2.3.1"
@@ -3427,6 +3433,7 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "cacache@npm:^20.0.1":
   version: 20.0.4
   resolution: "cacache@npm:20.0.4"
@@ -3445,6 +3452,8 @@ __metadata:
   languageName: node
   linkType: hard
 
+=======
+>>>>>>> 0c0c19d (ajustes: hcf da requisicao e auth da rota)
 "call-bind-apply-helpers@npm:^1.0.0, call-bind-apply-helpers@npm:^1.0.1, call-bind-apply-helpers@npm:^1.0.2":
   version: 1.0.2
   resolution: "call-bind-apply-helpers@npm:1.0.2"
@@ -5066,6 +5075,7 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "fs-minipass@npm:^3.0.0":
   version: 3.0.3
   resolution: "fs-minipass@npm:3.0.3"
@@ -5075,6 +5085,8 @@ __metadata:
   languageName: node
   linkType: hard
 
+=======
+>>>>>>> 0c0c19d (ajustes: hcf da requisicao e auth da rota)
 "fs-readdir-recursive@npm:^1.1.0":
   version: 1.1.0
   resolution: "fs-readdir-recursive@npm:1.1.0"
@@ -5564,6 +5576,7 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "http-cache-semantics@npm:^4.1.1":
   version: 4.2.0
   resolution: "http-cache-semantics@npm:4.2.0"
@@ -5571,6 +5584,8 @@ __metadata:
   languageName: node
   linkType: hard
 
+=======
+>>>>>>> 0c0c19d (ajustes: hcf da requisicao e auth da rota)
 "http-errors@npm:2.0.0, http-errors@npm:^2.0.0":
   version: 2.0.0
   resolution: "http-errors@npm:2.0.0"
@@ -5605,7 +5620,11 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "https-proxy-agent@npm:^7.0.1, https-proxy-agent@npm:^7.0.6":
+=======
+"https-proxy-agent@npm:^7.0.6":
+>>>>>>> 0c0c19d (ajustes: hcf da requisicao e auth da rota)
   version: 7.0.6
   resolution: "https-proxy-agent@npm:7.0.6"
   dependencies:
@@ -5642,6 +5661,7 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "iconv-lite@npm:^0.7.2":
   version: 0.7.2
   resolution: "iconv-lite@npm:0.7.2"
@@ -5651,6 +5671,8 @@ __metadata:
   languageName: node
   linkType: hard
 
+=======
+>>>>>>> 0c0c19d (ajustes: hcf da requisicao e auth da rota)
 "ignore-by-default@npm:^1.0.1":
   version: 1.0.1
   resolution: "ignore-by-default@npm:1.0.1"
@@ -6570,6 +6592,7 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "lru-cache@npm:^11.1.0, lru-cache@npm:^11.2.1":
   version: 11.3.5
   resolution: "lru-cache@npm:11.3.5"
@@ -6577,6 +6600,8 @@ __metadata:
   languageName: node
   linkType: hard
 
+=======
+>>>>>>> 0c0c19d (ajustes: hcf da requisicao e auth da rota)
 "lru-cache@npm:^5.1.1":
   version: 5.1.1
   resolution: "lru-cache@npm:5.1.1"
@@ -6639,6 +6664,7 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "make-fetch-happen@npm:^15.0.0":
   version: 15.0.5
   resolution: "make-fetch-happen@npm:15.0.5"
@@ -6659,6 +6685,8 @@ __metadata:
   languageName: node
   linkType: hard
 
+=======
+>>>>>>> 0c0c19d (ajustes: hcf da requisicao e auth da rota)
 "math-intrinsics@npm:^1.1.0":
   version: 1.1.0
   resolution: "math-intrinsics@npm:1.1.0"
@@ -6802,6 +6830,7 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "minipass-collect@npm:^2.0.1":
   version: 2.0.1
   resolution: "minipass-collect@npm:2.0.1"
@@ -6862,6 +6891,8 @@ __metadata:
   languageName: node
   linkType: hard
 
+=======
+>>>>>>> 0c0c19d (ajustes: hcf da requisicao e auth da rota)
 "minipass@npm:^4.2.4":
   version: 4.2.8
   resolution: "minipass@npm:4.2.8"
@@ -6876,14 +6907,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "minipass@npm:^7.0.2, minipass@npm:^7.0.3, minipass@npm:^7.0.4":
+=======
+"minipass@npm:^7.0.4":
+>>>>>>> 0c0c19d (ajustes: hcf da requisicao e auth da rota)
   version: 7.1.3
   resolution: "minipass@npm:7.1.3"
   checksum: 10c0/539da88daca16533211ea5a9ee98dc62ff5742f531f54640dd34429e621955e91cc280a91a776026264b7f9f6735947629f920944e9c1558369e8bf22eb33fbb
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "minizlib@npm:^3.0.1, minizlib@npm:^3.1.0":
+=======
+"minizlib@npm:^3.1.0":
+>>>>>>> 0c0c19d (ajustes: hcf da requisicao e auth da rota)
   version: 3.1.0
   resolution: "minizlib@npm:3.1.0"
   dependencies:
@@ -7069,22 +7108,38 @@ __metadata:
   linkType: hard
 
 "node-gyp@npm:latest":
+<<<<<<< HEAD
   version: 12.2.0
   resolution: "node-gyp@npm:12.2.0"
+=======
+  version: 12.3.0
+  resolution: "node-gyp@npm:12.3.0"
+>>>>>>> 0c0c19d (ajustes: hcf da requisicao e auth da rota)
   dependencies:
     env-paths: "npm:^2.2.0"
     exponential-backoff: "npm:^3.1.1"
     graceful-fs: "npm:^4.2.6"
+<<<<<<< HEAD
     make-fetch-happen: "npm:^15.0.0"
+=======
+>>>>>>> 0c0c19d (ajustes: hcf da requisicao e auth da rota)
     nopt: "npm:^9.0.0"
     proc-log: "npm:^6.0.0"
     semver: "npm:^7.3.5"
     tar: "npm:^7.5.4"
     tinyglobby: "npm:^0.2.12"
+<<<<<<< HEAD
     which: "npm:^6.0.0"
   bin:
     node-gyp: bin/node-gyp.js
   checksum: 10c0/3ed046746a5a7d90950cd8b0547332b06598443f31fe213ef4332a7174c7b7d259e1704835feda79b87d3f02e59d7791842aac60642ede4396ab25fdf0f8f759
+=======
+    undici: "npm:^6.25.0"
+    which: "npm:^6.0.0"
+  bin:
+    node-gyp: bin/node-gyp.js
+  checksum: 10c0/9d9032b405cbe42f72a105259d9eb679376470c102df4a2dbaa51e07d59bf741dcffb85897087ea9d8318b9cabb824a8978af51508ae142f0239ae1e6a3c2329
+>>>>>>> 0c0c19d (ajustes: hcf da requisicao e auth da rota)
   languageName: node
   linkType: hard
 
@@ -7332,6 +7387,7 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "p-map@npm:^7.0.2":
   version: 7.0.4
   resolution: "p-map@npm:7.0.4"
@@ -7339,6 +7395,8 @@ __metadata:
   languageName: node
   linkType: hard
 
+=======
+>>>>>>> 0c0c19d (ajustes: hcf da requisicao e auth da rota)
 "p-try@npm:^2.0.0":
   version: 2.2.0
   resolution: "p-try@npm:2.2.0"
@@ -8414,11 +8472,19 @@ __metadata:
   linkType: hard
 
 "semver@npm:^7.3.5":
+<<<<<<< HEAD
   version: 7.7.4
   resolution: "semver@npm:7.7.4"
   bin:
     semver: bin/semver.js
   checksum: 10c0/5215ad0234e2845d4ea5bb9d836d42b03499546ddafb12075566899fc617f68794bb6f146076b6881d755de17d6c6cc73372555879ec7dce2c2feee947866ad2
+=======
+  version: 7.8.0
+  resolution: "semver@npm:7.8.0"
+  bin:
+    semver: bin/semver.js
+  checksum: 10c0/8f096ca9b80ffd47b308d03f9ce8c873e27e2983f36023c559cdc92c51e8433fc23ebbfe57ec9623fc155636a6961ee989501099841ae4bb1babc8d2b3f048cd
+>>>>>>> 0c0c19d (ajustes: hcf da requisicao e auth da rota)
   languageName: node
   linkType: hard
 
@@ -8680,7 +8746,11 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "socks-proxy-agent@npm:^8.0.3, socks-proxy-agent@npm:^8.0.5":
+=======
+"socks-proxy-agent@npm:^8.0.5":
+>>>>>>> 0c0c19d (ajustes: hcf da requisicao e auth da rota)
   version: 8.0.5
   resolution: "socks-proxy-agent@npm:8.0.5"
   dependencies:
@@ -8801,6 +8871,7 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "ssri@npm:^13.0.0":
   version: 13.0.1
   resolution: "ssri@npm:13.0.1"
@@ -8810,6 +8881,8 @@ __metadata:
   languageName: node
   linkType: hard
 
+=======
+>>>>>>> 0c0c19d (ajustes: hcf da requisicao e auth da rota)
 "stackback@npm:0.0.2":
   version: 0.0.2
   resolution: "stackback@npm:0.0.2"
@@ -9072,15 +9145,24 @@ __metadata:
   linkType: hard
 
 "tar@npm:^7.5.4":
+<<<<<<< HEAD
   version: 7.5.13
   resolution: "tar@npm:7.5.13"
+=======
+  version: 7.5.15
+  resolution: "tar@npm:7.5.15"
+>>>>>>> 0c0c19d (ajustes: hcf da requisicao e auth da rota)
   dependencies:
     "@isaacs/fs-minipass": "npm:^4.0.0"
     chownr: "npm:^3.0.0"
     minipass: "npm:^7.1.2"
     minizlib: "npm:^3.1.0"
     yallist: "npm:^5.0.0"
+<<<<<<< HEAD
   checksum: 10c0/5c65b8084799bde7a791593a1c1a45d3d6ee98182e3700b24c247b7b8f8654df4191642abbdb07ff25043d45dcff35620827c3997b88ae6c12040f64bed5076b
+=======
+  checksum: 10c0/8f039edb1d12fdd7df6c6f9877d125afe9f3da3f5f9317df326fdd090d48793d6998cede1506a1471f3e3a250db270a89dace28005eb5e99c5a9132d704ac956
+>>>>>>> 0c0c19d (ajustes: hcf da requisicao e auth da rota)
   languageName: node
   linkType: hard
 
@@ -9434,6 +9516,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
+=======
+"undici@npm:^6.25.0":
+  version: 6.25.0
+  resolution: "undici@npm:6.25.0"
+  checksum: 10c0/2597cc6689bdb02c210c557b1f85febbfda65becae6e6fc1061508e2f33734d25207f81cd8af56ada9956329eb3a7bd7431e87dcfeceba20ee87059b57dcf985
+  languageName: node
+  linkType: hard
+
+>>>>>>> 0c0c19d (ajustes: hcf da requisicao e auth da rota)
 "unicode-canonical-property-names-ecmascript@npm:^2.0.0":
   version: 2.0.1
   resolution: "unicode-canonical-property-names-ecmascript@npm:2.0.1"
@@ -9896,6 +9988,7 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "yallist@npm:^4.0.0":
   version: 4.0.0
   resolution: "yallist@npm:4.0.0"
@@ -9903,6 +9996,8 @@ __metadata:
   languageName: node
   linkType: hard
 
+=======
+>>>>>>> 0c0c19d (ajustes: hcf da requisicao e auth da rota)
 "yallist@npm:^5.0.0":
   version: 5.0.0
   resolution: "yallist@npm:5.0.0"
