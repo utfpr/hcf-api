@@ -123,6 +123,10 @@
       .limited-code-div {
         min-width: 5cm;
       }
+
+      .ficha-reduzida {
+        min-height: unset;
+      }
     </style>
     <body>
       <% if (imprimir === '0') { %>
@@ -137,7 +141,7 @@
         <% if (imprimir === '2') { %>
 
           <!-- Ficha reduzida: parte 1 (cabeçalho + taxonomia + identificador) -->
-          <div class="ficha">
+          <div class="ficha ficha-reduzida">
             <div class="flex">
               <div class="cabecalho-img pad-padrao border-right border-bottom">
                 <img width="100" src="/assets/logotipo_HCF.png" alt="Logo UTFPR">
@@ -192,7 +196,7 @@
           </div>
 
           <!-- Ficha reduzida: parte 2 (só taxonomia + identificador, sem cabeçalho) -->
-          <div class="ficha">
+          <div class="ficha ficha-reduzida">
             <div class="flex flex-col pad-padrao gap-1">
               <% if (familia && familia.nome) { %>
                 <div>
