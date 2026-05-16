@@ -1,0 +1,9 @@
+---
+- name: Ensure required Python packages are installed
+  tags:
+    - always
+  ansible.builtin.apt:
+    name:
+      - python3-psycopg2
+    update_cache: yes
+    state: present

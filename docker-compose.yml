@@ -1,3 +1,10 @@
+volumes:
+  postgres_data:
+
+networks:
+  herbario_network:
+    driver: bridge
+
 services:
   postgres:
     image: docker.io/postgis/postgis:18-3.6
@@ -7,10 +14,12 @@ services:
       POSTGRES_USER: $PG_USERNAME
       POSTGRES_PASSWORD: $PG_PASSWORD
     volumes:
-      - ./postgresql:/var/lib/postgresql
+      - postgres_data:/var/lib/postgresql/data
     ports:
       - ${PG_PORT:-5432}:5432
     shm_size: 128mb
+    networks:
+      - herbario_network
 
   api:
     build:
@@ -22,6 +31,8 @@ services:
     env_file: .env
     ports:
       - $PORT:$PORT
+    networks:
+      - herbario_network
 
   nginx:
     image: nginx:1.17-alpine

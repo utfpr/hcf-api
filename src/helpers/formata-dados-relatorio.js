@@ -246,13 +246,13 @@ export function agruparPorLocal(dados) {
     let quantidadeTotal = 0;
 
     dados.sort((a, b) => {
-        const familia = a?.familia?.nome.localeCompare(b?.familia?.nome);
+        const familia = (a?.familia?.nome || '').localeCompare(b?.familia?.nome || '');
         if (familia !== 0) return familia;
 
-        const genero = a?.genero?.nome.localeCompare(b?.genero?.nome);
+        const genero = (a?.genero?.nome || '').localeCompare(b?.genero?.nome || '');
         if (genero !== 0) return genero;
 
-        return a?.especy?.nome.localeCompare(b?.especy?.nome);
+        return (a?.especy?.nome || '').localeCompare(b?.especy?.nome || '');
     }).forEach(entradaOriginal => {
         const locaisColetum = entradaOriginal.locais_coletum;
         const cidade = locaisColetum?.cidade;
@@ -267,7 +267,8 @@ export function agruparPorLocal(dados) {
             ...entradaOriginal,
             latitude: entradaOriginal?.latitude || null,
             longitude: entradaOriginal?.longitude || null,
-            autor: entradaOriginal.especy?.autor?.nome || '',
+            variedade: entradaOriginal.variedade || null,
+            sub_especie: entradaOriginal.sub_especy || null,
         };
 
         if (!agrupado[chave]) {
@@ -361,3 +362,85 @@ export function agruparPorGenero(dados) {
         };
     });
 }
+
+export function agruparPorCidade(dados) {
+    const agrupado = {};
+    let quantidadeTotal = 0;
+
+    dados.sort((a, b) => {
+        const familiaA = a?.familia_id ?? a?.familia?.id ?? 0;
+        const familiaB = b?.familia_id ?? b?.familia?.id ?? 0;
+        if (familiaA !== familiaB) return familiaA - familiaB;
+
+        const generoA = a?.genero_id ?? a?.genero?.id ?? 0;
+        const generoB = b?.genero_id ?? b?.genero?.id ?? 0;
+        if (generoA !== generoB) return generoA - generoB;
+
+        const especieA = a?.especie_id ?? a?.especy?.id ?? 0;
+        const especieB = b?.especie_id ?? b?.especy?.id ?? 0;
+        if (especieA !== especieB) return especieA - especieB;
+
+        const familiaNomeA = a?.familia?.nome || '';
+        const familiaNomeB = b?.familia?.nome || '';
+        const familiaNome = familiaNomeA.localeCompare(familiaNomeB);
+        if (familiaNome !== 0) return familiaNome;
+
+        const generoNomeA = a?.genero?.nome || '';
+        const generoNomeB = b?.genero?.nome || '';
+        const generoNome = generoNomeA.localeCompare(generoNomeB);
+        if (generoNome !== 0) return generoNome;
+
+        const especieNomeA = a?.especy?.nome || '';
+        const especieNomeB = b?.especy?.nome || '';
+        return especieNomeA.localeCompare(especieNomeB);
+    }).forEach(entradaOriginal => {
+        const cidade = entradaOriginal.cidade;
+        const estado = cidade?.estado?.nome || 'Desconhecido';
+        const estadoSigla = cidade?.estado?.sigla || '-';
+        const municipio = cidade?.nome || 'Desconhecido';
+
+        const chave = `${estado} > ${municipio}`;
+
+        const entrada = {
+            ...entradaOriginal,
+            latitude: entradaOriginal?.latitude || null,
+            longitude: entradaOriginal?.longitude || null,
+            autor: entradaOriginal.especy?.autor?.nome || '',
+        };
+
+        if (!agrupado[chave]) {
+            agrupado[chave] = {
+                estado,
+                estadoSigla,
+                municipio,
+                latitude: entradaOriginal?.latitude || null,
+                longitude: entradaOriginal?.longitude || null,
+                quantidadeRegistros: 0,
+                registros: [],
+            };
+        }
+
+        agrupado[chave].registros.push(entrada);
+        agrupado[chave].quantidadeRegistros += 1;
+        quantidadeTotal += 1;
+    });
+
+    const locais = Object.values(agrupado);
+    const locaisComResumo = adicionarResumoTaxonomicoPorLocal(locais);
+
+    return {
+        locais: locaisComResumo,
+        quantidadeTotal,
+    };
+}
+
+export const formataTextFilterCidade = (cidade, inicio, fim) => {
+    let filtro = 'Coletados';
+    if (inicio && fim) {
+        filtro += ` no período ${format(new Date(inicio), 'dd/MM/yyyy')} à ${format(new Date(fim), 'dd/MM/yyyy')}`;
+    }
+    if (cidade) {
+        filtro += ` na cidade ${cidade}`;
+    }
+    return filtro;
+};

@@ -1,0 +1,6 @@
+services:
+  splinker:
+    image: splinker:local
+    container_name: splinker
+    build: .
+    env_file: .env

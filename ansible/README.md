@@ -6,6 +6,7 @@
 - Add the following collections to your Ansible installation
   - `ansible-galaxy collection install ansible.posix`
   - `ansible-galaxy collection install community.mysql`
+  - `ansible-galaxy collection install community.postgresql`
 
 ## Setup
 

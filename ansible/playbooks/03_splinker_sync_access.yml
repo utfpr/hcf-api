@@ -1,0 +1,77 @@
+---
+- name: Setup splinker_sync PostgreSQL access (vw_splinker on herbario_prod)
+  hosts: all
+  become: yes
+
+  roles:
+    - postgresql_client
+
+  tasks:
+    - name: Ensure splinker_sync PostgreSQL user is present
+      tags:
+        - postgres
+      community.postgresql.postgresql_user:
+        name: "{{ postgres.splinker_sync_user.name }}"
+        password: "{{ postgres.splinker_sync_user.password }}"
+        login_user: "{{ postgres.login_user }}"
+        login_host: "{{ postgres.login_host }}"
+        login_port: "{{ postgres.login_port }}"
+        login_password: "{{ postgres.login_password }}"
+        state: present
+
+    - name: Grant CONNECT on herbario_prod database
+      tags:
+        - postgres
+      community.postgresql.postgresql_privs:
+        database: herbario_prod
+        type: database
+        privs: CONNECT
+        roles: "{{ postgres.splinker_sync_user.name }}"
+        login_user: "{{ postgres.login_user }}"
+        login_host: "{{ postgres.login_host }}"
+        login_port: "{{ postgres.login_port }}"
+        login_password: "{{ postgres.login_password }}"
+
+    - name: Grant USAGE on public schema in herbario_prod
+      tags:
+        - postgres
+      community.postgresql.postgresql_privs:
+        database: herbario_prod
+        type: schema
+        objs: public
+        privs: USAGE
+        roles: "{{ postgres.splinker_sync_user.name }}"
+        login_user: "{{ postgres.login_user }}"
+        login_host: "{{ postgres.login_host }}"
+        login_port: "{{ postgres.login_port }}"
+        login_password: "{{ postgres.login_password }}"
+
+    - name: Grant SELECT on vw_splinker and tombos_fotos in herbario_prod
+      tags:
+        - postgres
+      community.postgresql.postgresql_privs:
+        database: herbario_prod
+        schema: public
+        type: table
+        objs: vw_splinker,tombos_fotos
+        privs: SELECT
+        roles: "{{ postgres.splinker_sync_user.name }}"
+        login_user: "{{ postgres.login_user }}"
+        login_host: "{{ postgres.login_host }}"
+        login_port: "{{ postgres.login_port }}"
+        login_password: "{{ postgres.login_password }}"
+
+    - name: Grant EXECUTE on fn_barcodes_tombo function in herbario_prod
+      tags:
+        - postgres
+      community.postgresql.postgresql_privs:
+        database: herbario_prod
+        schema: public
+        type: function
+        objs: fn_barcodes_tombo(int8)
+        privs: EXECUTE
+        roles: "{{ postgres.splinker_sync_user.name }}"
+        login_user: "{{ postgres.login_user }}"
+        login_host: "{{ postgres.login_host }}"
+        login_port: "{{ postgres.login_port }}"
+        login_password: "{{ postgres.login_password }}"

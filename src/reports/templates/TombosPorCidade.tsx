@@ -8,7 +8,6 @@ interface Registro {
   data_coleta_dia: number;
   especy: {
     nome: string;
-    autor?: { nome: string } | null;
     genero: {
       nome: string;
     }
@@ -22,23 +21,15 @@ interface Registro {
   genero: {
     nome: string;
   }
-  variedade?: {
-    nome: string;
-    autor?: { nome: string } | null;
-  } | null;
-  sub_especie?: {
-    nome: string;
-    autor?: { nome: string } | null;
-  } | null;
   latitude: number | null;
   longitude: number | null;
+  autor?: string;
 }
 
-interface LocaisColeta {
+interface CidadeGroup {
   estado: string;
   estadoSigla: string;
   municipio: string;
-  local: string;
   registros: Registro[];
   quantidadeRegistros: number;
   quantidadeEspecies?: number;
@@ -46,18 +37,18 @@ interface LocaisColeta {
   quantidadeFamilias?: number;
 }
 
-interface RelacaoLocaisColetaProps {
-  dados: LocaisColeta[];
+interface RelacaoTombosPorCidadeProps {
+  dados: CidadeGroup[];
   total?: number;
   textoFiltro?: string;
   showCoord?: boolean;
 }
 
-function RelacaoLocaisColeta({ dados, total, textoFiltro, showCoord = false }: RelacaoLocaisColetaProps) {
+function RelacaoTombosPorCidade({ dados, total, textoFiltro, showCoord = false }: RelacaoTombosPorCidadeProps) {
   const renderTotalizador = (geral: boolean, qtd?: number, qtdEspecies?: number, qtdGeneros?: number, qtdFamilias?: number) => {
     return (
       <div style={{ marginTop: '1em', borderTop: '1px solid #000', paddingTop: '0.5em' }}>
-        Total {geral ? 'geral' : 'do local'}: {geral ? total : qtd} {!geral ? `(Famílias: ${qtdFamilias || 0}, Gêneros: ${qtdGeneros || 0}, Espécies: ${qtdEspecies || 0})`: ''}
+        Total {geral ? 'geral' : 'da cidade'}: {geral ? total : qtd} {!geral ? `(Famílias: ${qtdFamilias || 0}, Gêneros: ${qtdGeneros || 0}, Espécies: ${qtdEspecies || 0})`: ''}
       </div>
     )
   }
@@ -111,30 +102,6 @@ function RelacaoLocaisColeta({ dados, total, textoFiltro, showCoord = false }: R
     };
   }
 
-  const renderNomeCientifico = (item: Registro) => {
-    const { especy, genero } = item;
-    return (
-      <>
-        <span style={{ fontStyle: 'italic' }}>{genero?.nome} {especy?.nome}</span>
-        {especy?.autor?.nome && ` ${especy.autor.nome}`}
-        {item.sub_especie && (
-          <>
-            {' subsp. '}
-            <span style={{ fontStyle: 'italic' }}>{item.sub_especie.nome}</span>
-            {item.sub_especie.autor?.nome && ` ${item.sub_especie.autor.nome}`}
-          </>
-        )}
-        {item.variedade && (
-          <>
-            {' var. '}
-            <span style={{ fontStyle: 'italic' }}>{item.variedade.nome}</span>
-            {item.variedade.autor?.nome && ` ${item.variedade.autor.nome}`}
-          </>
-        )}
-      </>
-    );
-  }
-
   const renderTable = (registros: Registro[]) => {
     return (
       <table>
@@ -142,7 +109,7 @@ function RelacaoLocaisColeta({ dados, total, textoFiltro, showCoord = false }: R
           <tr>
             <th>Data Coleta</th>
             <th>Família</th>
-            <th>Nome Científico</th>
+            <th>Espécie</th>
             {showCoord && <th>Latitude</th>}
             {showCoord && <th>Longitude</th>}
             <th style={{ textAlign: 'right' }}>Nº do Tombo</th>
@@ -150,13 +117,13 @@ function RelacaoLocaisColeta({ dados, total, textoFiltro, showCoord = false }: R
         </thead>
         <tbody>
           {registros.map((item, i) => {
-            const { familia } = item;
+            const { especy, familia, genero } = item;
             const cordenadas = obtemCordenadas(item);
             return (
               <tr key={`${i}-${item.hcf}`}>
                 <td>{criaData(item)}</td>
                 <td>{familia?.nome}</td>
-                <td>{renderNomeCientifico(item)}</td>
+                <td style={{ display: 'flex', gap: 10 }}><div style={{ fontStyle: 'italic', display: 'flex', alignItems: 'center', width: 'fit-content' }}>{genero?.nome} {especy?.nome}</div> {item.autor}</td>
                 {showCoord && <td>{cordenadas.latitude}</td>}
                 {showCoord && <td>{cordenadas.longitude}</td>}
                 <td style={{ textAlign: 'right' }}>{item.hcf}</td>
@@ -168,16 +135,13 @@ function RelacaoLocaisColeta({ dados, total, textoFiltro, showCoord = false }: R
     )
   }
 
-  const renderItem = (item: LocaisColeta) => {
+  const renderItem = (item: CidadeGroup) => {
     return (
       <div>
-        <div key={item.local} className="grupoLocalColeta">
+        <div key={`${item.municipio}-${item.estadoSigla}`} className="grupoLocalColeta">
           <div>
             <h1>UF.: {item.estadoSigla}</h1>
             <h1>Município: {item.municipio}</h1>
-          </div>
-          <div>
-            <h1 className="longText">Local: {item.local}</h1>
           </div>
         </div>
         {renderTable(item.registros)}
@@ -187,11 +151,11 @@ function RelacaoLocaisColeta({ dados, total, textoFiltro, showCoord = false }: R
   }
 
   return (
-    <Page title="Relação de Locais de Coleta" textoFiltro={textoFiltro}>
+    <Page title="Relação de Tombos por Cidade" textoFiltro={textoFiltro}>
       {dados.map(renderItem)}
       {renderTotalizador(true)}
     </Page>
   )
 }
 
-export default RelacaoLocaisColeta
+export default RelacaoTombosPorCidade
