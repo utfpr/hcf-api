@@ -1,5 +1,6 @@
 import React from "react";
 import { Page } from "../components/Page";
+import { converteDecimalParaDMS } from "../../helpers/coordenadas";
 
 interface TomboItem {
   hcf: number;
@@ -38,25 +39,6 @@ function renderMotivo(motivo: string) {
   }
 }
 
-function decimalParaDMS(decimal: number | null | undefined, isLatitude: boolean): string {
-  if (decimal === null || decimal === undefined) return '—';
-
-  const abs = Math.abs(decimal);
-  const graus = Math.floor(abs);
-  const minutosDecimal = (abs - graus) * 60;
-  const minutos = Math.floor(minutosDecimal);
-  const segundos = ((minutosDecimal - minutos) * 60).toFixed(1);
-
-  let hemisferio: string;
-  if (isLatitude) {
-    hemisferio = decimal >= 0 ? 'N' : 'S';
-  } else {
-    hemisferio = decimal >= 0 ? 'L' : 'O';
-  }
-
-  return `${graus}° ${String(minutos).padStart(2, '0')}' ${String(segundos).padStart(4, '0')}" ${hemisferio}`;
-}
-
 function RelatorioCoordenadaForaPoligono({ dados, total }: RelatorioCoordenadaForaPoligonoProps) {
 
   const renderTabelaTombos = (tombos: TomboItem[]) => (
@@ -86,10 +68,10 @@ function RelatorioCoordenadaForaPoligono({ dados, total }: RelatorioCoordenadaFo
             <td style={{ textAlign: 'right', padding: '3px 6px' }}>{tombo.hcf}</td>
             <td style={{ fontStyle: 'italic', padding: '3px 6px' }}>{tombo.nome_cientifico || '—'}</td>
             <td style={{ padding: '3px 6px', fontFamily: 'monospace', fontSize: '0.7rem' }}>
-              {decimalParaDMS(tombo.latitude, true)}
+              {converteDecimalParaDMS(tombo.latitude, true)}
             </td>
             <td style={{ padding: '3px 6px', fontFamily: 'monospace', fontSize: '0.7rem' }}>
-              {decimalParaDMS(tombo.longitude, false)}
+              {converteDecimalParaDMS(tombo.longitude, false)}
             </td>
             <td style={{ padding: '3px 6px' }}>{renderMotivo(tombo.motivo)}</td>
           </tr>
