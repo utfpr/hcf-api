@@ -39,6 +39,28 @@ function parseDataTombo(valor) {
     return null;
 }
 
+const getProximoNumeroTombo = async () => {
+    const resultado = await Tombo.findOne({
+        attributes: [
+            [fn('MAX', col('hcf')), 'max_hcf'],
+        ],
+        raw: true,
+    });
+    const maxNumero = resultado?.max_hcf;
+    return maxNumero ? Number(maxNumero) + 1 : 1;
+};
+
+export const getProximoNumeroTomboEndPoint = async (request, response, next) => {
+    try {
+        const proximoNumero = await getProximoNumeroTombo();
+        response
+            .status(codigos.BUSCAR_UM_ITEM)
+            .json({ hcf: proximoNumero });
+    } catch (error) {
+        next(error);
+    }
+};
+
 export const cadastro = (request, response, next) => {
     const {
         principal,
