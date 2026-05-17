@@ -318,10 +318,8 @@ export const cadastro = (request, response, next) => {
                 return undefined;
             })
             // /////////// CADASTRA TOMBO /////////////
-            .then(async () => {
-                const hcf = await getProximoNumeroTombo();
+            .then(() => {
                 let jsonTombo = {
-                    hcf,
                     numero_coleta: principal.numero_coleta,
                     cidade_id: localidade.cidade_id,
                     coletor_id: coletor,
