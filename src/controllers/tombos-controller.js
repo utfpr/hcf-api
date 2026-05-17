@@ -8,15 +8,15 @@ import {
     converteParaDecimal, converteDecimalParaGraus, converteDecimalParaGMSGrau, converteDecimalParaGMSMinutos, converteDecimalParaGMSSegundos,
 } from '../helpers/coordenadas';
 import pick from '../helpers/pick';
-
-const SRID = {
-    SIRGAS_2000: 4674,
-};
 import { converteInteiroParaRomano } from '../helpers/tombo';
 import models from '../models';
 import codigos from '../resources/codigos-http';
 import verifyRecaptcha from '../utils/verify-recaptcha';
 import { aprovarPendencia } from './pendencias-controller';
+
+const SRID = {
+    SIRGAS_2000: 4674,
+};
 
 const {
     Solo, Relevo, Cidade, Estado, Vegetacao, FaseSucessional, Pais, Tipo, LocalColeta, Familia, sequelize,

@@ -1087,17 +1087,17 @@ export const obtemDadosDoRelatorioDeCoordenadaForaPoligono = async (req, res, ne
         const replacements = {};
 
         if (req.query.pais_id) {
-            query += ` AND p.id = :pais_id`;
+            query += ' AND p.id = :pais_id';
             replacements.pais_id = req.query.pais_id;
         }
 
         if (req.query.estado_id) {
-            query += ` AND e.id = :estado_id`;
+            query += ' AND e.id = :estado_id';
             replacements.estado_id = req.query.estado_id;
         }
 
         if (req.query.cidade_id) {
-            query += ` AND c.id = :cidade_id`;
+            query += ' AND c.id = :cidade_id';
             replacements.cidade_id = req.query.cidade_id;
         }
 
