@@ -17,13 +17,13 @@ import {
     agruparPorGenero,
 } from '~/helpers/formata-dados-relatorio';
 import { generateReport } from '~/reports/reports';
+import ReportCoordenadaForaPoligono from '~/reports/templates/CoordenadaForaPoligono';
 import ReportInventario from '~/reports/templates/InventarioEspecies';
 import ReportLocalColeta from '~/reports/templates/LocaisColeta';
 import ReportFamiliasGeneros from '~/reports/templates/RelacaoFamiliasGenero';
 import ReportQtd from '~/reports/templates/RelacaoFamiliasGeneroQtd';
 import ReportColetaModelo1 from '~/reports/templates/RelacaoTombos';
 import ReportColetaModelo2 from '~/reports/templates/RelacaoTombosComColeta';
-import ReportCoordenadaForaPoligono from '~/reports/templates/CoordenadaForaPoligono';
 import ReportTombosPorCidade from '~/reports/templates/TombosPorCidade';
 import codigosHttp from '~/resources/codigos-http';
 
