@@ -195,6 +195,33 @@ async function main(): Promise<void> {
     )
 
     await Promise.all(tarefas)
+
+    // Verificação: buscar cidades que ainda ficaram sem polígono
+    const pendentesResult = await client.query<Cidade>(
+      `SELECT c.id, c.nome, ST_AsBinary(c.poligono) AS pol_wkb
+       FROM public.cidades c
+       JOIN public.estados e ON c.estado_id = e.id
+       WHERE e.pais_id = 76
+         AND c.nome != 'Não Informado'
+         AND c.poligono IS NULL;`
+    )
+    const pendentes = pendentesResult.rows
+
+    if (pendentes.length > 0) {
+      const RETRY_CONCURRENCY = 2
+      const RETRY_DELAY_MS = 500
+      const retryLimit = pLimit(RETRY_CONCURRENCY)
+
+      const retryTarefas = pendentes.map((c: Cidade) =>
+        retryLimit(async () => {
+          const res = await processarCidade(client, municipios, c)
+          await delay(RETRY_DELAY_MS)
+          return res
+        })
+      )
+
+      await Promise.all(retryTarefas)
+    }
   } finally {
     await client.end()
   }

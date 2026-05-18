@@ -17,7 +17,7 @@ export async function run(knex: Knex): Promise<void> {
   // 2. Cria a view do splinker com todos os campos do map.dat
   await knex.raw(`DROP VIEW IF EXISTS vw_splinker`)
   await knex.raw(`
-    CREATE VIEW vw_splinker AS
+    CREATE OR REPLACE VIEW vw_splinker AS
     SELECT
       'Plantae' AS "Kingdom",
       '' AS "Phylum",
@@ -29,7 +29,7 @@ export async function run(knex: Knex): Promise<void> {
       END AS "Family",
       COALESCE(g.nome, '') AS "Genus",
       COALESCE(e.nome, '') AS "Species",
-      '' AS "Subspeceis",
+      '' AS "Subspecies",
       COALESCE(a.nome, '') AS "ScientificNameAuthor",
       COALESCE(t.nomes_populares, '') AS "CommonName",
       '' AS "FieldNumber",
@@ -44,11 +44,11 @@ export async function run(knex: Knex): Promise<void> {
       COALESCE(t.data_coleta_dia::text, '') AS "DayCollected",
       COALESCE(t.data_coleta_mes::text, '') AS "MonthCollected",
       COALESCE(t.data_coleta_ano::text, '') AS "YearCollected",
-      COALESCE(col.nome, '') AS "Collector",
+      COALESCE((col.nome || cc.complementares), '') AS "Collector",
       COALESCE(t.numero_coleta::text, '') AS "CollectorNumber",
       '' AS "Continent",
       COALESCE(p.nome, '') AS "Country",
-      COALESCE(TRIM(est.sigla), '') AS "StateProvice",
+      COALESCE(TRIM(est.sigla), '') AS "StateProvince",
       COALESCE(c.nome, '') AS "County",
       COALESCE(lc.descricao, '') AS "Locality",
       t.latitude AS "VerbatimLatitude",
@@ -85,6 +85,7 @@ export async function run(knex: Knex): Promise<void> {
     LEFT JOIN especies e ON t.especie_id = e.id
     LEFT JOIN autores a ON e.autor_id = a.id
     LEFT JOIN coletores col ON t.coletor_id = col.id
+    LEFT JOIN coletores_complementares cc ON cc.hcf = t.hcf
     LEFT JOIN tipos tp ON t.tipo_id = tp.id
   `)
 }

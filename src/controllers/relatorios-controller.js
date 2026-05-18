@@ -9,18 +9,22 @@ import {
     formatarDadosParaRelatorioDeColetaPorColetorEIntervaloDeData,
     formataTextFilterColetor,
     agruparPorLocal,
+    agruparPorCidade,
+    formataTextFilterCidade,
     agruparPorFamiliaGeneroEspecie,
     agruparPorFamiliaComContadorECodigo,
     agruparResultadoPorFamilia,
     agruparPorGenero,
 } from '~/helpers/formata-dados-relatorio';
 import { generateReport } from '~/reports/reports';
+import ReportCoordenadaForaPoligono from '~/reports/templates/CoordenadaForaPoligono';
 import ReportInventario from '~/reports/templates/InventarioEspecies';
 import ReportLocalColeta from '~/reports/templates/LocaisColeta';
 import ReportFamiliasGeneros from '~/reports/templates/RelacaoFamiliasGenero';
 import ReportQtd from '~/reports/templates/RelacaoFamiliasGeneroQtd';
 import ReportColetaModelo1 from '~/reports/templates/RelacaoTombos';
 import ReportColetaModelo2 from '~/reports/templates/RelacaoTombosComColeta';
+import ReportTombosPorCidade from '~/reports/templates/TombosPorCidade';
 import codigosHttp from '~/resources/codigos-http';
 
 import models from '../models';
@@ -667,6 +671,126 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
     }
 };
 
+/// ////// Relatório de Tombos por Cidade //////////
+export const obtemDadosDoRelatorioDeTombosPorCidade = async (req, res, next) => {
+    const { paginacao } = req;
+    const { limite, pagina, offset } = paginacao;
+    const { cidade, showCoord } = req.query;
+
+    let whereCidade = {};
+    if (cidade) {
+        whereCidade = {
+            id: cidade,
+        };
+    }
+
+    try {
+        const tombos = await Tombo.findAndCountAll({
+            attributes: [
+                'hcf',
+                'numero_coleta',
+                'familia_id',
+                'especie_id',
+                'genero_id',
+                'nome_cientifico',
+                'data_coleta_ano',
+                'data_coleta_mes',
+                'data_coleta_dia',
+                'latitude',
+                'longitude',
+            ],
+            include: [
+                {
+                    model: Familia,
+                    attributes: ['id', 'nome'],
+                },
+                {
+                    model: Genero,
+                    attributes: ['id', 'nome'],
+                },
+                {
+                    model: Especie,
+                    attributes: ['id', 'nome'],
+                    include: [
+                        {
+                            model: Autor,
+                            attributes: ['id', 'nome'],
+                            as: 'autor',
+                        },
+                    ],
+                },
+                {
+                    model: Cidade,
+                    attributes: ['id', 'nome'],
+                    where: Object.keys(whereCidade).length > 0 ? whereCidade : undefined,
+                    required: Object.keys(whereCidade).length > 0,
+                    include: [
+                        {
+                            model: Estado,
+                            attributes: ['id', 'nome', 'sigla'],
+                            include: [
+                                {
+                                    model: Pais,
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+            order: [
+                ['familia_id', 'ASC'],
+                ['genero_id', 'ASC'],
+                ['especie_id', 'ASC'],
+            ],
+            offset,
+        });
+
+        const dadosPuros = tombos.rows.map(registro => registro.get({ plain: true }));
+        const dadosFormatados = agruparPorCidade(dadosPuros);
+
+        if (req.method === 'GET') {
+            const cidadeNome = cidade
+                ? dadosPuros[0]?.cidade?.nome || cidade
+                : undefined;
+            res.json({
+                metadados: {
+                    total: tombos.count,
+                    pagina,
+                    limite,
+                },
+                resultado: dadosFormatados,
+                filtro: formataTextFilterCidade(cidadeNome),
+            });
+            return;
+        }
+
+        try {
+            const cidadeNome = cidade
+                ? dadosPuros[0]?.cidade?.nome || cidade
+                : undefined;
+            const buffer = await generateReport(
+                ReportTombosPorCidade, {
+                    dados: dadosFormatados.locais,
+                    total: dadosFormatados?.quantidadeTotal || 0,
+                    textoFiltro: formataTextFilterCidade(cidadeNome),
+                    showCoord: showCoord === 'true',
+                });
+            const readable = new Readable();
+
+            readable._read = () => { };
+            readable.push(buffer);
+            readable.push(null);
+            res.setHeader('Content-Type', 'application/pdf');
+            readable.pipe(res);
+        } catch (e) {
+            next(e);
+        }
+
+    } catch (e) {
+        next(e);
+    }
+};
+
 /// ////// Relatório de Famílias e Gêneros //////////
 export const obtemDadosDoRelatorioDeFamiliasEGeneros = async (req, res, next) => {
     const { paginacao } = req;
@@ -906,6 +1030,147 @@ export const obtemDadosDoRelatorioDeQuantidade = async (req, res, next) => {
             readable.pipe(res);
         } catch (error) {
             next(error);
+        }
+    } catch (error) {
+        next(error);
+    }
+};
+
+/// ////// Relatório de Coordenadas Fora do Polígono //////////
+export const obtemDadosDoRelatorioDeCoordenadaForaPoligono = async (req, res, next) => {
+    const { incluirSemCoordenadas } = req.query;
+    const incluirSem = incluirSemCoordenadas === 'true';
+
+    try {
+        let query = `
+            SELECT
+                t.hcf,
+                t.latitude,
+                t.longitude,
+                t.nome_cientifico,
+                c.nome AS cidade_nome,
+                e.nome AS estado_nome,
+                e.sigla AS estado_sigla,
+                CASE
+                    WHEN t.latitude IS NULL OR t.longitude IS NULL THEN 'SEM_COORDENADA'
+                    WHEN c.poligono IS NULL THEN 'SEM_POLIGONO'
+                    ELSE 'FORA_DO_POLIGONO'
+                END AS motivo
+            FROM tombos t
+            LEFT JOIN cidades c ON t.cidade_id = c.id
+            LEFT JOIN estados e ON c.estado_id = e.id
+            LEFT JOIN paises p ON e.pais_id = p.id
+            WHERE t.rascunho = false
+              AND t.ativo = true
+              AND (
+                (
+                    t.latitude IS NOT NULL
+                    AND t.longitude IS NOT NULL
+                    AND c.poligono IS NOT NULL
+                    AND ST_Contains(
+                        c.poligono,
+                        ST_SetSRID(ST_Point(t.longitude, t.latitude), 4674)
+                    ) = false
+                )
+        `;
+
+        if (incluirSem) {
+            query += `
+                OR (t.latitude IS NULL OR t.longitude IS NULL)
+            `;
+        }
+
+        query += `
+              )
+        `;
+
+        const replacements = {};
+
+        if (req.query.pais_id) {
+            query += ' AND p.id = :pais_id';
+            replacements.pais_id = req.query.pais_id;
+        }
+
+        if (req.query.estado_id) {
+            query += ' AND e.id = :estado_id';
+            replacements.estado_id = req.query.estado_id;
+        }
+
+        if (req.query.cidade_id) {
+            query += ' AND c.id = :cidade_id';
+            replacements.cidade_id = req.query.cidade_id;
+        }
+
+        query += `
+            ORDER BY e.nome ASC, c.nome ASC, t.hcf ASC
+        `;
+
+        const results = await sequelize.query(query, {
+            type: models.Sequelize.QueryTypes.SELECT,
+            replacements,
+        });
+
+        // Agrupar por estado e cidade
+        const agrupado = {};
+        results.forEach(row => {
+            const estadoKey = row.estado_nome || 'Sem estado';
+            const cidadeKey = row.cidade_nome || 'Sem cidade';
+
+            if (!agrupado[estadoKey]) {
+                agrupado[estadoKey] = {
+                    estado: estadoKey,
+                    sigla: row.estado_sigla || '',
+                    cidades: {},
+                };
+            }
+
+            if (!agrupado[estadoKey].cidades[cidadeKey]) {
+                agrupado[estadoKey].cidades[cidadeKey] = {
+                    cidade: cidadeKey,
+                    tombos: [],
+                };
+            }
+
+            agrupado[estadoKey].cidades[cidadeKey].tombos.push({
+                hcf: row.hcf,
+                latitude: row.latitude,
+                longitude: row.longitude,
+                nome_cientifico: row.nome_cientifico,
+                motivo: row.motivo,
+            });
+        });
+
+        // Converter para array
+        const resultado = Object.values(agrupado).map(estado => ({
+            ...estado,
+            cidades: Object.values(estado.cidades),
+        }));
+
+        if (req.method === 'GET') {
+            res.status(codigosHttp.LISTAGEM).json({
+                metadados: {
+                    total: results.length,
+                },
+                resultado,
+            });
+            return;
+        }
+
+        try {
+            const buffer = await generateReport(
+                ReportCoordenadaForaPoligono, {
+                    dados: resultado,
+                    total: results.length,
+                });
+            const readable = new Readable();
+
+            readable._read = () => { };
+            readable.push(buffer);
+            readable.push(null);
+            res.setHeader('Content-Type', 'application/pdf');
+            readable.pipe(res);
+        } catch (e) {
+            next(e);
         }
     } catch (error) {
         next(error);
