@@ -1,4 +1,5 @@
 import limparEspacos from '@/helpers/limpa-espaco';
+import { atualizarNomeCientificoPorGenero, atualizarNomeCientificoPorEspecie } from '../utils/atualiza-nome-cientifico';
 
 import BadRequestExeption from '../errors/bad-request-exception';
 import models from '../models';
@@ -604,7 +605,8 @@ export const editarGenero = (request, response, next) => {
                 id: generoId,
             },
             transaction,
-        }));
+        }))
+        .then(() => atualizarNomeCientificoPorGenero(generoId, transaction));
     sequelize.transaction(callback)
         .then(generoCriado => {
             if (!generoCriado) {
@@ -837,7 +839,8 @@ export const editarEspecie = (request, response, next) => {
                 id: especieId,
             },
             transaction,
-        }));
+        }))
+        .then(() => atualizarNomeCientificoPorEspecie(especieId, transaction));
     sequelize.transaction(callback)
         .then(especieCriado => {
             if (!especieCriado) {
