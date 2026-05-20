@@ -13,10 +13,11 @@ import models from '../models';
 import codigos from '../resources/codigos-http';
 import verifyRecaptcha from '../utils/verify-recaptcha';
 import { aprovarPendencia } from './pendencias-controller';
+
 const {
     Solo, Relevo, Cidade, Estado, Vegetacao, FaseSucessional, Pais, Tipo, LocalColeta, Familia, sequelize,
     Genero, Subfamilia, Autor, Coletor, Variedade, Subespecie, TomboFoto, Identificador,
-    ColecaoAnexa, Especie, Herbario, Tombo, Alteracao, TomboIdentificador, ColetorComplementar, Sequelize: { Op, fn, col },
+    ColecaoAnexa, Especie, Herbario, Tombo, Alteracao, TomboIdentificador, ColetorComplementar, Sequelize: { Op },
 } = models;
 
 function parseDataTombo(valor) {
@@ -34,28 +35,6 @@ function parseDataTombo(valor) {
     return null;
 }
 
-const getProximoNumeroTombo = async () => {
-    const resultado = await Tombo.findOne({
-        attributes: [
-            [fn('MAX', col('hcf')), 'max_hcf'],
-        ],
-        raw: true,
-    });
-    const maxNumero = resultado?.max_hcf;
-    return maxNumero ? Number(maxNumero) + 1 : 1;
-};
-
-export const getProximoNumeroTomboEndPoint = async (request, response, next) => {
-    try {
-        const proximoNumero = await getProximoNumeroTombo();
-        response
-            .status(codigos.BUSCAR_UM_ITEM)
-            .json({ hcf: proximoNumero });
-    } catch (error) {
-        next(error);
-    }
-};
-
 export const cadastro = (request, response, next) => {
     const {
         principal,
@@ -72,22 +51,8 @@ export const cadastro = (request, response, next) => {
     } = request.body.json;
     let tomboCriado = null;
 
-    const isNovoTombo = !principal.hcf;
-
     const callback = transaction =>
         Promise.resolve()
-            .then(() => {
-                if (isNovoTombo) {
-                    return getProximoNumeroTombo();
-                }
-                return principal.hcf;
-            })
-            .then(hcfGerado => {
-                if (isNovoTombo) {
-                    principal.hcf = hcfGerado;
-                }
-                return undefined;
-            })
             .then(() => {
                 if (!paisagem || !paisagem.solo_id) {
                     return undefined;

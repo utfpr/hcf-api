@@ -68,6 +68,7 @@
 		"chai": "6.2.0",
 		"chai-http": "^5.1.2",
 		"esbuild": "0.28.0",
+		"glob": "10.3.10",
 		"eslint": "9.39.1",
 		"eslint-plugin-import-helpers": "2.0.1",
 		"globals": "16.5.0",
