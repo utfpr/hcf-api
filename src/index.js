@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import './setup';
+import './setup.js';
 import cluster from 'cluster';
 import http from 'http';
 import os from 'os';
