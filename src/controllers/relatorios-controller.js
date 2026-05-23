@@ -1051,6 +1051,7 @@ export const obtemDadosDoRelatorioDeCoordenadaForaPoligono = async (req, res, ne
                 c.nome AS cidade_nome,
                 e.nome AS estado_nome,
                 e.sigla AS estado_sigla,
+                col.nome AS coletor_nome,
                 CASE
                     WHEN t.latitude IS NULL OR t.longitude IS NULL THEN 'SEM_COORDENADA'
                     WHEN c.poligono IS NULL THEN 'SEM_POLIGONO'
@@ -1060,6 +1061,7 @@ export const obtemDadosDoRelatorioDeCoordenadaForaPoligono = async (req, res, ne
             LEFT JOIN cidades c ON t.cidade_id = c.id
             LEFT JOIN estados e ON c.estado_id = e.id
             LEFT JOIN paises p ON e.pais_id = p.id
+            LEFT JOIN coletores col ON t.coletor_id = col.id
             WHERE t.rascunho = false
               AND t.ativo = true
               AND (
@@ -1136,6 +1138,7 @@ export const obtemDadosDoRelatorioDeCoordenadaForaPoligono = async (req, res, ne
                 latitude: row.latitude,
                 longitude: row.longitude,
                 nome_cientifico: row.nome_cientifico,
+                coletor_nome: row.coletor_nome,
                 motivo: row.motivo,
             });
         });

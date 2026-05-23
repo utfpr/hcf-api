@@ -7,6 +7,7 @@ interface TomboItem {
   latitude: number | null;
   longitude: number | null;
   nome_cientifico: string | null;
+  coletor_nome: string | null;
   motivo: string;
 }
 
@@ -44,16 +45,18 @@ function RelatorioCoordenadaForaPoligono({ dados, total }: RelatorioCoordenadaFo
   const renderTabelaTombos = (tombos: TomboItem[]) => (
     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem', marginTop: '0.25em' }}>
       <colgroup>
-        <col style={{ width: '7%' }} />
-        <col style={{ width: '33%' }} />
-        <col style={{ width: '20%' }} />
-        <col style={{ width: '20%' }} />
-        <col style={{ width: '20%' }} />
+        <col style={{ width: '6%' }} />
+        <col style={{ width: '24%' }} />
+        <col style={{ width: '18%' }} />
+        <col style={{ width: '15%' }} />
+        <col style={{ width: '15%' }} />
+        <col style={{ width: '22%' }} />
       </colgroup>
       <thead>
         <tr style={{ backgroundColor: '#e0e0e0' }}>
           <th style={{ textAlign: 'right', padding: '4px 6px', borderBottom: '1px solid #aaa' }}>HCF</th>
           <th style={{ textAlign: 'left', padding: '4px 6px', borderBottom: '1px solid #aaa' }}>Nome Científico</th>
+          <th style={{ textAlign: 'left', padding: '4px 6px', borderBottom: '1px solid #aaa' }}>Coletor Principal</th>
           <th style={{ textAlign: 'left', padding: '4px 6px', borderBottom: '1px solid #aaa' }}>Latitude</th>
           <th style={{ textAlign: 'left', padding: '4px 6px', borderBottom: '1px solid #aaa' }}>Longitude</th>
           <th style={{ textAlign: 'left', padding: '4px 6px', borderBottom: '1px solid #aaa' }}>Motivo</th>
@@ -67,6 +70,7 @@ function RelatorioCoordenadaForaPoligono({ dados, total }: RelatorioCoordenadaFo
           >
             <td style={{ textAlign: 'right', padding: '3px 6px' }}>{tombo.hcf}</td>
             <td style={{ fontStyle: 'italic', padding: '3px 6px' }}>{tombo.nome_cientifico || '—'}</td>
+            <td style={{ padding: '3px 6px' }}>{tombo.coletor_nome || '—'}</td>
             <td style={{ padding: '3px 6px', fontFamily: 'monospace', fontSize: '0.7rem' }}>
               {converteDecimalParaDMS(tombo.latitude, true)}
             </td>
