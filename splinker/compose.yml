@@ -3,4 +3,13 @@ services:
     image: splinker:local
     container_name: splinker
     build: .
-    env_file: .env
+    env_file: ../.env
+    networks:
+      - hcf-api_herbario_network
+      - conversao_banco_python_my_network
+
+networks:
+  hcf-api_herbario_network:
+    external: true
+  conversao_banco_python_my_network:
+    external: true

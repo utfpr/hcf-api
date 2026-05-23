@@ -15,11 +15,11 @@ async function main() {
 
   // Configurar conexão com o banco de dados
   const client = new Client({
-    host: process.env.DATABASE_HOST,
-    port: process.env.DATABASE_PORT,
-    database: process.env.DATABASE_NAME,
-    user: process.env.DATABASE_USERNAME,
-    password: process.env.DATABASE_PASSWORD,
+    host: process.env.DATABASE_HOST || process.env.PG_HOST,
+    port: process.env.DATABASE_PORT || process.env.PG_PORT,
+    database: process.env.DATABASE_NAME || process.env.PG_DATABASE,
+    user: process.env.DATABASE_USERNAME || process.env.PG_USERNAME,
+    password: process.env.DATABASE_PASSWORD || process.env.PG_PASSWORD,
   });
 
   try {
