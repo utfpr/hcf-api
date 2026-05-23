@@ -17,7 +17,7 @@ RUN \
   apt-get remove -y curl && \
   rm -rf /var/lib/apt/lists/*
 
-RUN npm init -y && npm install pg
+RUN npm init -y && npm install pg tsx
 
 ENV \
   TZ=America/Sao_Paulo \
@@ -25,7 +25,7 @@ ENV \
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-COPY save_logs.js /app/save_logs.js
+COPY save_logs.ts /app/save_logs.ts
 COPY run_splinker.sh /app/run_splinker.sh
 RUN chmod +x /app/run_splinker.sh
 
