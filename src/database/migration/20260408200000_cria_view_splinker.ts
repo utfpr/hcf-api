@@ -44,7 +44,7 @@ export async function run(knex: Knex): Promise<void> {
       COALESCE(t.data_coleta_dia::text, '') AS "DayCollected",
       COALESCE(t.data_coleta_mes::text, '') AS "MonthCollected",
       COALESCE(t.data_coleta_ano::text, '') AS "YearCollected",
-      COALESCE((col.nome || cc.complementares), '') AS "Collector",
+      (COALESCE(col.nome, '') || COALESCE(cc.complementares, '')) AS "Collector"
       COALESCE(t.numero_coleta::text, '') AS "CollectorNumber",
       '' AS "Continent",
       COALESCE(p.nome, '') AS "Country",
