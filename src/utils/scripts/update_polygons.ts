@@ -6,17 +6,6 @@ import { Client } from 'pg'
 import { fileURLToPath } from 'url'
 import wkx from 'wkx'
 
-interface MunicipioIBGE {
-  id: number
-  nome: string
-  nome_normalizado: string
-}
-
-interface MunicipioIBGEResponse {
-  id: number
-  nome: string
-}
-
 interface Cidade {
   id: number
   nome: string
@@ -56,36 +45,16 @@ if (!isValidConnectionString(connectionString)) {
   process.exit(1)
 }
 
-const API_IBGE_MUNICIPIOS = 'https://servicodados.ibge.gov.br/api/v1/localidades/municipios'
 const API_IBGE_POLYGON
   = 'https://servicodados.ibge.gov.br/api/v3/malhas/municipios/{codigo_ibge}?formato=application/vnd.geo+json&qualidade=minima'
 
 const MAX_CONCURRENCY = 5
 const REQUEST_DELAY_MS = 150
 
-function removerAcentos(str: string): string {
-  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-}
-
 function delay(ms: number): Promise<void> {
   return new Promise(resolve => {
     setTimeout(resolve, ms)
   })
-}
-
-async function carregarListaMunicipios(): Promise<MunicipioIBGE[]> {
-  const resp = await axios.get<MunicipioIBGEResponse[]>(API_IBGE_MUNICIPIOS, { timeout: 30000 })
-  return resp.data.map((m: MunicipioIBGEResponse) => ({
-    id: m.id,
-    nome: m.nome,
-    nome_normalizado: removerAcentos(m.nome.toLowerCase())
-  }))
-}
-
-function obterCodigoIbge(nome: string, municipios: MunicipioIBGE[]): number | null {
-  const nomeNorm = removerAcentos(nome.toLowerCase())
-  const m = municipios.find(x => x.nome_normalizado === nomeNorm)
-  return m ? parseInt(String(m.id), 10) : null
 }
 
 async function obterPoligonoIbge(codigoIbge: number): Promise<Buffer> {
@@ -113,11 +82,12 @@ async function obterPoligonoIbge(codigoIbge: number): Promise<Buffer> {
 
 async function processarCidade(
   client: Client,
-  municipios: MunicipioIBGE[],
   cidade: Cidade
 ): Promise<ResultadoProcessamento> {
   const {
-    id, nome, pol_wkb: polWkb
+    id,
+    nome,
+    pol_wkb: polWkb
   } = cidade
 
   if (nome === 'Não Informado') {
@@ -126,16 +96,9 @@ async function processarCidade(
     }
   }
 
-  const codigoIbge = obterCodigoIbge(nome, municipios)
-  if (!codigoIbge) {
-    return {
-      inserido: 0, atualizado: 0, erro: 1
-    }
-  }
-
   let polBytes: Buffer
   try {
-    polBytes = await obterPoligonoIbge(codigoIbge)
+    polBytes = await obterPoligonoIbge(id)
   } catch {
     return {
       inserido: 0, atualizado: 0, erro: 1
@@ -174,7 +137,6 @@ async function processarCidade(
 }
 
 async function main(): Promise<void> {
-  const municipios = await carregarListaMunicipios()
   const client = new Client({ connectionString })
   await client.connect()
 
@@ -188,7 +150,7 @@ async function main(): Promise<void> {
 
     const tarefas = cidades.map((c: Cidade) =>
       limit(async () => {
-        const res = await processarCidade(client, municipios, c)
+        const res = await processarCidade(client, c)
         await delay(REQUEST_DELAY_MS)
         return res
       })
@@ -214,7 +176,7 @@ async function main(): Promise<void> {
 
       const retryTarefas = pendentes.map((c: Cidade) =>
         retryLimit(async () => {
-          const res = await processarCidade(client, municipios, c)
+          const res = await processarCidade(client, c)
           await delay(RETRY_DELAY_MS)
           return res
         })
