@@ -355,8 +355,9 @@
                 <% if (tombo && tombo.altitude) { %>
                     - Altitude: <%- tombo.altitude %>m
                 <% } %>
-                <% if (localColeta && localColeta.fase_sucessional) { %>
-                    - Fase sucessional: <%- localColeta.fase_sucessional.nome %>
+                <% const faseSucessionalNome = (localColeta && localColeta.fase_sucessional && localColeta.fase_sucessional.nome) || fase_sucessional; %>
+                <% if (faseSucessionalNome) { %>
+                    - Fase sucessional: <%- faseSucessionalNome %>
                 <% } %>
               </div>
 
