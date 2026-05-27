@@ -2,7 +2,7 @@ import { program } from 'commander'
 import createKnex from 'knex'
 import path from 'node:path'
 
-import { ConsoleLogger } from '@/infrastructure/logger'
+import { ConsoleLogger } from '@/infrastructure/ConsoleLogger'
 
 import { ApplyMigrationService } from './apply-migration-service'
 import { CreateMigrationService } from './create-migration-service'
