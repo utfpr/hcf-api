@@ -46,5 +46,5 @@ export const Either = Object.freeze({
   },
   left<T extends Error>(value: T) {
     return new Left(value)
-  },
+  }
 })

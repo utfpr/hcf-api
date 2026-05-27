@@ -1,12 +1,8 @@
 import { PaisCollectionKnexAdapter } from '@/infrastructure/PaisCollectionKnexAdapter'
+import { singleton } from '@/library/singleton'
 
 import { createKnexInstance } from './KnexFactory'
 
-let instance: PaisCollectionKnexAdapter | null = null
-
-export function createPaisCollection(): PaisCollectionKnexAdapter {
-  if (!instance) {
-    instance = new PaisCollectionKnexAdapter({ knex: createKnexInstance() })
-  }
-  return instance
-}
+export const createPaisCollection = singleton(() => {
+  return new PaisCollectionKnexAdapter({ knex: createKnexInstance() })
+})

@@ -1,28 +1,25 @@
 import createKnex, { Knex } from 'knex'
 
+import { singleton } from '@/library/singleton'
+
 const {
   PG_DATABASE,
-  PG_USERNAME,
-  PG_PASSWORD,
   PG_HOST,
+  PG_PASSWORD,
   PG_PORT = '5432',
+  PG_USERNAME
 } = process.env
 
-let instance: Knex | null = null
-
-export function createKnexInstance(): Knex {
-  if (!instance) {
-    instance = createKnex({
-      client: 'postgres',
-      connection: {
-        database: PG_DATABASE,
-        host: PG_HOST,
-        port: parseInt(PG_PORT),
-        user: PG_USERNAME,
-        password: PG_PASSWORD,
-      },
-      pool: { min: 2, max: 25 },
-    })
-  }
-  return instance
-}
+export const createKnexInstance = singleton((): Knex => {
+  return createKnex({
+    client: 'postgres',
+    connection: {
+      database: PG_DATABASE,
+      host: PG_HOST,
+      password: PG_PASSWORD,
+      port: parseInt(PG_PORT),
+      user: PG_USERNAME
+    },
+    pool: { max: 25, min: 2 }
+  })
+})

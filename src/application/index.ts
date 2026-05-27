@@ -6,6 +6,7 @@ import { ExpressServer } from '@/infrastructure/ExpressServer'
 
 import legacyRoutes from '../routes'
 import { Application, Route } from './Application'
+import { routes as estadoRoutes } from './estado'
 import { routes as paisRoutes } from './pais'
 
 const environment = process.env.NODE_ENV ?? 'development'
@@ -14,7 +15,10 @@ const corsOrigins = process.env.CORS_ORIGINS ?? '*'
 const corsMethods = process.env.CORS_METHODS ?? 'HEAD,GET,POST,PUT,PATCH,DELETE'
 const corsAllowedHeaders = process.env.CORS_ALLOWED_HEADERS ?? 'Content-Type,Authorization'
 
-const routes: Route[] = [...paisRoutes]
+const routes: Route[] = [
+  ...paisRoutes,
+  ...estadoRoutes
+]
 
 const logger = new ConsoleLogger()
 const server = new ExpressServer({ logger })
