@@ -44,7 +44,7 @@ export async function run(knex: Knex): Promise<void> {
       COALESCE(t.data_coleta_dia::text, '') AS "DayCollected",
       COALESCE(t.data_coleta_mes::text, '') AS "MonthCollected",
       COALESCE(t.data_coleta_ano::text, '') AS "YearCollected",
-      (COALESCE(col.nome, '') || COALESCE(cc.complementares, '')) AS "Collector"
+      (COALESCE(col.nome, '') ||' ' || COALESCE(cc.complementares, '')) AS "Collector",
       COALESCE(t.numero_coleta::text, '') AS "CollectorNumber",
       '' AS "Continent",
       COALESCE(p.nome, '') AS "Country",
@@ -76,7 +76,7 @@ export async function run(knex: Knex): Promise<void> {
       ) AS "Notes"
     FROM tombos t
     LEFT JOIN locais_coleta lc ON t.local_coleta_id = lc.id
-    LEFT JOIN cidades c ON lc.cidade_id = c.id
+    LEFT JOIN cidades c ON t.cidade_id = c.id 
     LEFT JOIN estados est ON c.estado_id = est.id
     LEFT JOIN paises p ON est.pais_id = p.id
     LEFT JOIN familias f ON t.familia_id = f.id
