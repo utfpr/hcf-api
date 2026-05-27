@@ -36,6 +36,7 @@
   "include": [
     "src/",
     "test/",
+    "splinker/",
     "eslint.config.mts",
     "vitest.config.mts"
   ],
