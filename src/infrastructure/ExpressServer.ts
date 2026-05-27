@@ -1,3 +1,4 @@
+import parser from 'body-parser'
 import express from 'express'
 import http from 'node:http'
 
@@ -14,30 +15,31 @@ interface Dependencies {
 }
 
 export class ExpressServer implements Server {
-  readonly router: express.Router
-  private readonly expressApp: express.Application
-  private readonly httpServer: http.Server
+  private readonly app: express.Application
   private readonly logger: Logger
 
+  readonly httpServer: http.Server
+
   constructor({ logger }: Dependencies) {
-    this.router = express.Router()
+    this.app = express()
+    this.app.use(parser.json())
     this.logger = logger
-    this.expressApp = express()
-    this.httpServer = http.createServer(this.expressApp)
+
+    this.httpServer = http.createServer(this.app)
   }
 
   use(...args: unknown[]): this {
-    (this.expressApp.use as (...a: any[]) => void)(...args)
+    (this.app.use as (...a: any[]) => void)(...args)
     return this
   }
 
   mount(router: unknown): this {
-    this.router.use(router as express.Router)
+    this.app.use(router as express.Router)
     return this
   }
 
   endpoint(method: Method, path: string, ...handlers: RequestHandler[]): this {
-    this.router[method](
+    this.app[method](
       path,
       async (expressRequest: express.Request, expressResponse: express.Response) => {
         const params = {
@@ -98,7 +100,6 @@ export class ExpressServer implements Server {
   }
 
   start(port: number): Promise<void> {
-    this.expressApp.use('/api', this.router)
     return new Promise((resolve, reject) => {
       this.httpServer
         .on('listening', () => {

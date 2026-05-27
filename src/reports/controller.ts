@@ -31,7 +31,6 @@ export async function generatePreview(request: Request, response: Response) {
   try {
     const fileName = request.params.fileName as string
     const ReportTemplate = TEMPLATES[fileName]
-
     if (!ReportTemplate) {
       response.status(404).send(`Report template "${fileName}" not found`)
       return

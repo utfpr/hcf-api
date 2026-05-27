@@ -18,9 +18,9 @@ const {
   DATABASE_URL
 } = process.env
 
-const connectionString
-  = DATABASE_URL
-    || `postgresql://${PG_USERNAME}:${PG_PASSWORD}@${PG_HOST}:${PG_PORT}/${PG_DATABASE}`
+const connectionString =
+  DATABASE_URL
+  || `postgresql://${PG_USERNAME}:${PG_PASSWORD}@${PG_HOST}:${PG_PORT}/${PG_DATABASE}`
 
 function isValidConnectionString(cs: string | undefined): boolean {
   return typeof cs === 'string' && cs.length > 0 && !/undefined/.test(cs)

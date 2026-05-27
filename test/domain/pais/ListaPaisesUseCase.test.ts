@@ -8,7 +8,6 @@ import { Either } from '@/library/either/Either'
 
 const makeMockCollection = (overrides?: Partial<PaisCollection>): PaisCollection => ({
   findAll: vi.fn().mockResolvedValue(Either.right([])),
-  findEstadosBySigla: vi.fn().mockResolvedValue(Either.right([])),
   ...overrides
 })
 

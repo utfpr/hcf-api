@@ -1,4 +1,3 @@
-import parser from 'body-parser'
 import makeCors from 'cors'
 import express from 'express'
 import makeHelmet from 'helmet'
@@ -8,7 +7,7 @@ import morgan from 'morgan'
 import { Method } from '@/library/http/common'
 import { RequestHandler, Server } from '@/library/http/Server'
 
-import { assets, upload } from '../config/directory'
+import { upload } from '../config/directory'
 // import swaggerSpec from '../config/swagger'
 import legacyErrors from '../middlewares/erros-middleware'
 import { generatePreview, reportPreview } from '../reports/controller'
@@ -72,11 +71,10 @@ export class Application {
         methods: cors.methods,
         allowedHeaders: cors.allowedHeaders
       }))
-      .use(parser.json())
       .use(morgan('dev'))
       // .use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
-      .use('/fotos', express.static(upload))
-      .use('/assets', express.static(assets))
+      // .use('/fotos', express.static(upload))
+      // .use('/assets', express.static(assets))
       .use(
         '/uploads',
         express.static(upload, {
@@ -95,7 +93,8 @@ export class Application {
     this.server.use('/reports', reportsRouter)
 
     for (const route of this.routes) {
-      this.server.endpoint(route.method, route.path, ...route.handlers)
+      const sanitizedPath = `/api/${route.path}`.replaceAll(/\/{2,}/g, '/').replaceAll(/\/$/, '')
+      this.server.endpoint(route.method, sanitizedPath, ...route.handlers)
     }
 
     if (this.legacyRouter) {
