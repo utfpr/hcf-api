@@ -190,7 +190,7 @@ export default function exportacoes(request, response, next) {
             const parametros = { colunas, tombos };
 
             const caminhoArquivoHtml = path.resolve(__dirname, '../views/exportacao-tombos.ejs');
-            return renderizaArquivoHtml(caminhoArquivoHtml, parametros, response)
+            return renderizaArquivoHtml(caminhoArquivoHtml, parametros)
                 .then(html => {
                     response.status(200).send(html);
                 });
