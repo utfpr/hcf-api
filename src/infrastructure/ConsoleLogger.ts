@@ -1,4 +1,4 @@
-import { Logger } from '@/library/logger'
+import { Logger } from '@/library/logger/Logger'
 
 export class ConsoleLogger implements Logger {
   private formatMessage(message: string, extraInput?: unknown): string {

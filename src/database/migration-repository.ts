@@ -1,6 +1,6 @@
 import { Knex } from 'knex'
 
-import { Logger } from '@/library/logger'
+import { Logger } from '@/library/logger/Logger'
 
 interface Dependencies {
   knex: Knex

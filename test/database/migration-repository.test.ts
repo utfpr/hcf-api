@@ -3,7 +3,7 @@ import {
   vi, describe, expect, test
 } from 'vitest'
 
-import { Logger } from '@/library/logger'
+import { Logger } from '@/library/logger/Logger'
 
 import { MigrationRepository } from '../../src/database/migration-repository'
 
