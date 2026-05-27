@@ -154,6 +154,22 @@ export default defineConfig([
       '@stylistic/object-property-newline': [
         'error',
         { allowAllPropertiesOnSameLine: true }
+      ],
+      '@stylistic/operator-linebreak': [
+        'warn',
+        'before',
+        { overrides: { '=': 'after' } }
+      ],
+      '@stylistic/quote-props': [
+        'error',
+        'as-needed'
+      ],
+      'no-restricted-syntax': [
+        'warn',
+        {
+          message: 'Use EnumOf pattern instead of TypeScript enums.',
+          selector: 'TSEnumDeclaration'
+        }
       ]
     }
   },

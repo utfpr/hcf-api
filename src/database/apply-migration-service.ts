@@ -1,6 +1,6 @@
 import path from 'node:path'
 
-import { Logger } from '@/library/logger'
+import { Logger } from '@/library/logger/Logger'
 
 import { CorruptedDirectoryError } from './error/corrupted-directory-error'
 import { MigrationFileSystem } from './migration-file-system'
