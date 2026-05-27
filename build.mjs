@@ -6,13 +6,12 @@ import path from 'node:path'
 
 rmSync('dist', { recursive: true, force: true }) // Limpa a pasta dist antes de gerar novo build
 
-const entryPoints = globSync('src/**/*.{js,ts,tsx}') // Encontra todos os arquivos a serem transpilados
-
 await build({
-    entryPoints,
-    bundle: false,
+    entryPoints: ['src/index.js', 'src/setup.js'],
+    bundle: true,
+    packages: 'external',
     platform: 'node',
     target: 'node22',
     outdir: 'dist',
-    format: 'esm',
+    format: 'cjs',
 })
