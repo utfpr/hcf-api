@@ -316,11 +316,12 @@
               <div>
                 <b class="fs-14">Local de Coleta:</b>
 
-                <% if (localColeta && localColeta.descricao) { %>
+                <% const temDescricaoLocal = localColeta && localColeta.descricao; %>
+                <% if (temDescricaoLocal) { %>
                     <%- localColeta.descricao %>
                 <% } %>
                 <% if (cidade && cidade.nome) { %>
-                    - <%- cidade.nome %>
+                    <%- temDescricaoLocal ? ' - ' : '' %><%- cidade.nome %>
                 <% } %>
                 <% if (cidade && cidade.estado) { %>
                     - <%- cidade.estado.nome %>
