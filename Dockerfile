@@ -2,9 +2,9 @@ FROM node:jod-slim AS build
 
 WORKDIR /usr/src/app
 
-COPY package.json yarn.lock tsconfig.json .babelrc ./
+COPY package.json yarn.lock tsconfig.json build.mjs ./
 
-RUN yarn install --production=false
+RUN  yarn install --production=false
 
 COPY ./src/ ./src/
 

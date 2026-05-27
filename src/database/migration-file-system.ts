@@ -1,6 +1,7 @@
 import { Knex } from 'knex'
 import fs from 'node:fs'
 import path from 'node:path'
+import { pathToFileURL } from 'node:url'
 
 interface Dependencies {
   knex: Knex
@@ -30,6 +31,7 @@ export class MigrationFileSystem {
     const fileName = `${timestamp}_${name}`
 
     const upFilePath = path.join(this.migrationsPath, `${fileName}.ts`)
+      .replace(/\\/g, '/')
 
     fs.writeFileSync(upFilePath, MIGRATION_TEMPLATE)
 
@@ -41,17 +43,25 @@ export class MigrationFileSystem {
     return files
       .filter(file => /\.[jt]s$/.test(file))
       .sort()
-      .map(file => path.join(this.migrationsPath, file))
+      .map(file => path.join(this.migrationsPath, file).replace(/\\/g, '/'))
   }
 
   private async importMigrationModule(name: string): Promise<{ run: (knex: Knex) => Promise<void> }> {
     const filePathWithoutExtension = path.join(this.migrationsPath, name)
+    const isAbsolute = path.isAbsolute(this.migrationsPath)
+
+    const toSpecifier = (fsPath: string): string => {
+      if (isAbsolute) {
+        return pathToFileURL(fsPath).href
+      }
+      return fsPath.replace(/\\/g, '/')
+    }
 
     let migrationModule: { run: (knex: Knex) => Promise<void> }
     if (fs.existsSync(`${filePathWithoutExtension}.ts`)) {
-      migrationModule = await import(`${filePathWithoutExtension}.ts`) as { run: (knex: Knex) => Promise<void> }
+      migrationModule = await import(toSpecifier(`${filePathWithoutExtension}.ts`)) as { run: (knex: Knex) => Promise<void> }
     } else if (fs.existsSync(`${filePathWithoutExtension}.js`)) {
-      migrationModule = await import(`${filePathWithoutExtension}.js`) as { run: (knex: Knex) => Promise<void> }
+      migrationModule = await import(toSpecifier(`${filePathWithoutExtension}.js`)) as { run: (knex: Knex) => Promise<void> }
     } else {
       throw new Error(`Migration file ${name} not found`)
     }
