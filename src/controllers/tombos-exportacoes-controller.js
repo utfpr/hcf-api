@@ -189,7 +189,7 @@ export default function exportacoes(request, response, next) {
                 .sort(a => a == 'codigo_barra' ? 1 : -1);
             const parametros = { colunas, tombos };
 
-            const caminhoArquivoHtml = path.resolve(__dirname, '../views/exportacao-tombos.ejs');
+            const caminhoArquivoHtml = path.resolve('src/views/exportacao-tombos.ejs');
             return renderizaArquivoHtml(caminhoArquivoHtml, parametros, response)
                 .then(html => {
                     response.status(200).send(html);

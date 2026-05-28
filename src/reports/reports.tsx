@@ -62,7 +62,7 @@ export async function generateReport<P extends React.Attributes>(Component: Comp
   await page.setContent(htmlContent, { waitUntil: 'networkidle0' })
   await Promise.all([
     page.addStyleTag({
-      path: path.join(__dirname, 'assets/styles/root.css')
+      path: path.resolve('src/reports/assets/styles/root.css')
     })
   ])
 

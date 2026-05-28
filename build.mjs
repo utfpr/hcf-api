@@ -1,17 +1,26 @@
 import { rmSync } from 'node:fs'
-import { globSync } from 'glob'
 import { build } from 'esbuild'
-import fs from 'node:fs'
-import path from 'node:path'
+import { globSync } from 'glob'
 
-rmSync('dist', { recursive: true, force: true }) // Limpa a pasta dist antes de gerar novo build
+rmSync('dist', { recursive: true, force: true })
+
+const files = globSync('src/**/*.{ejs,html,ttf,css}')
 
 await build({
-    entryPoints: ['src/index.js', 'src/setup.js'],
-    bundle: true,
-    packages: 'external',
-    platform: 'node',
-    target: 'node22',
+    entryPoints: [
+        ...files,
+        'src/index.js',
+    ],
     outdir: 'dist',
-    format: 'cjs',
+    bundle: true,
+    minify: true,
+    platform: 'node',
+    target: 'node20',
+    packages: 'external',
+    loader: {
+        '.ejs': 'copy',
+        '.html': 'copy',
+        '.ttf': 'copy',
+        '.css': 'copy',
+    }
 })
