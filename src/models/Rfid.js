@@ -1,17 +1,13 @@
 function associate(modelos) {
     const {
-        Tombo,
         TomboFoto,
-        Rfid
+        Rfid,
     } = modelos;
 
-    TomboFoto.belongsTo(Tombo, {
-        foreignKey: 'tombo_hcf',
+    Rfid.belongsTo(TomboFoto, {
+        foreignKey: 'tombo_foto_id'
     });
 
-    TomboFoto.hasMany(Rfid, { 
-        foreignKey: 'tombo_foto_id', as: 'rfids' 
-    });
 }
 
 export const defaultScope = {
@@ -30,36 +26,35 @@ export default (Sequelize, DataTypes) => {
             autoIncrement: true,
             primaryKey: true,
         },
-        tombo_hcf: {
+        tombo_foto_id: {
             type: DataTypes.INTEGER,
             allowNull: false,
         },
-        codigo_barra: {
-            type: DataTypes.STRING(50),
-            allowNull: true,
-        },
-        num_barra: {
-            type: DataTypes.STRING(50),
-            allowNull: true,
-        },
-        caminho_foto: {
-            type: DataTypes.TEXT,
-            allowNull: true,
-        },
-        em_vivo: {
-            type: DataTypes.BOOLEAN,
+        epc: {
+            type: DataTypes.STRING(96),
             allowNull: false,
-            defaultValue: false,
+        },
+        tid: {
+            type: DataTypes.STRING(96),
+            allowNull: true,
+        },
+        status: {
+            type: DataTypes.STRING(20),
+            allowNull: false,
+            defaultValue: 'PENDENTE', 
         },
     };
 
     const options = {
         defaultScope,
+        tableName: 'rfids',
+        timestamps: true,
+        createdAt: 'created_at',
+        updatedAt: 'updated_at',
     };
 
-    const Model = Sequelize.define('tombos_fotos', attributes, options);
+    const Model = Sequelize.define('Rfid', attributes, options);
 
     Model.associate = associate;
-
     return Model;
 };
