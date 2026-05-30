@@ -123,9 +123,14 @@ function RelacaoTombosPorCidade({ dados, total, textoFiltro, showCoord = false }
               <tr key={`${i}-${item.hcf}`}>
                 <td>{criaData(item)}</td>
                 <td>{familia?.nome}</td>
-                <td style={{ display: 'flex', gap: 10 }}><div style={{ fontStyle: 'italic', display: 'flex', alignItems: 'center', width: 'fit-content' }}>{genero?.nome} {especy?.nome}</div> {item.autor}</td>
-                {showCoord && <td>{cordenadas.latitude}</td>}
-                {showCoord && <td>{cordenadas.longitude}</td>}
+                <td style={{ display: 'flex', gap: 8 }}>
+                  <div style={{ fontStyle: 'italic', margin: 0, maxWidth: '220px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {`${genero?.nome || ''} ${especy?.nome || ''}`.trim()}
+                  </div>
+                  <div style={{ margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.autor || ''}</div>
+                </td>
+                {showCoord && <td style={{ whiteSpace: 'nowrap' }}>{cordenadas.latitude}</td>}
+                {showCoord && <td style={{ whiteSpace: 'nowrap' }}>{cordenadas.longitude}</td>}
                 <td style={{ textAlign: 'right' }}>{item.hcf}</td>
               </tr>
             )
