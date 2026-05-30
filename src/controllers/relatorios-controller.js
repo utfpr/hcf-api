@@ -675,13 +675,15 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
 export const obtemDadosDoRelatorioDeTombosPorCidade = async (req, res, next) => {
     const { paginacao } = req;
     const { limite, pagina, offset } = paginacao;
-    const { cidade, showCoord } = req.query;
+    const { cidade, showCoord, estado } = req.query;
 
     let whereCidade = {};
     if (cidade) {
-        whereCidade = {
-            id: cidade,
-        };
+        whereCidade.id = cidade;
+    }
+    if (estado) {
+        // se usuário informou estado, filtra cidades por estado
+        whereCidade.estado_id = estado;
     }
 
     try {
