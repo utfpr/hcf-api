@@ -29,7 +29,7 @@ export async function run(knex: Knex): Promise<void> {
       END AS "Family",
       COALESCE(g.nome, '') AS "Genus",
       COALESCE(e.nome, '') AS "Species",
-      '' AS "Subspecies",
+      COALESCE(se.nome, '') AS "Subspecies",
       COALESCE(a.nome, '') AS "ScientificNameAuthor",
       COALESCE(t.nomes_populares, '') AS "CommonName",
       '' AS "FieldNumber",
@@ -53,10 +53,7 @@ export async function run(knex: Knex): Promise<void> {
       COALESCE(lc.descricao, '') AS "Locality",
       t.latitude AS "VerbatimLatitude",
       t.longitude AS "VerbatimLongitude",
-      CASE
-        WHEN t.altitude IS NOT NULL THEN t.altitude::text || ' m'
-        ELSE ''
-      END AS "VerbatimElevation",
+      COALESCE(t.altitude::text, '') AS "VerbatimElevation",
       '' AS "VerbatimDepth",
       COALESCE(t.data_identificacao_dia::text, '') AS "DayIdentified",
       COALESCE(t.data_identificacao_mes::text, '') AS "MonthIdentified",
@@ -83,6 +80,7 @@ export async function run(knex: Knex): Promise<void> {
     LEFT JOIN reinos r ON f.reino_id = r.id
     LEFT JOIN generos g ON t.genero_id = g.id
     LEFT JOIN especies e ON t.especie_id = e.id
+    LEFT JOIN sub_especies se ON se.id = t.sub_especie_id
     LEFT JOIN autores a ON e.autor_id = a.id
     LEFT JOIN coletores col ON t.coletor_id = col.id
     LEFT JOIN coletores_complementares cc ON cc.hcf = t.hcf
