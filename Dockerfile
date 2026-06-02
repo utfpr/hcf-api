@@ -56,9 +56,11 @@ RUN \
     --shell /usr/sbin/nologin \
     hcf_api
 
+USER hcf_api
+
 WORKDIR /home/hcf_api/app
 
-COPY package.json yarn.lock ./
+COPY --chown=hcf_api:hcf_api package.json yarn.lock ./
 
 RUN yarn install --frozen-lockfile --production && \
   yarn cache clean --force
@@ -66,10 +68,6 @@ RUN yarn install --frozen-lockfile --production && \
 COPY --from=build --chown=hcf_api:hcf_api /usr/src/app/dist ./dist
 COPY --chown=hcf_api:hcf_api ./public ./public
 COPY --from=build --chmod=664 /usr/src/app/dist/reports/assets/fonts/*.ttf /usr/share/fonts/truetype/
-
-RUN chown -R hcf_api:hcf_api /home/hcf_api/app
-
-USER hcf_api
 
 EXPOSE $PORT
 

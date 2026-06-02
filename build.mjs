@@ -4,11 +4,11 @@ import { globSync } from 'glob'
 
 rmSync('dist', { recursive: true, force: true })
 
-const files = globSync('src/**/*.{ejs,html,ttf,css}')
+const assets = globSync('src/**/*.{ejs,html,ttf,css}')
 
 await build({
     entryPoints: [
-        ...files,
+        ...assets,
         'src/index.js',
     ],
     outdir: 'dist',

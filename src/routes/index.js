@@ -1,18 +1,47 @@
 import express from 'express';
-import { readdirSync } from 'fs';
-import { basename } from 'path';
 
-const __basename = basename(__filename);
-const app = express();
+import cidades from './cidades';
+import coletor from './coletor';
+import darwin from './darwin';
+import estados from './estados';
+import herbarios from './herbarios';
+import identificador from './identificador';
+import locais from './locais';
+import paises from './paises';
+import pendencias from './pendencias';
+import reflora from './reflora';
+import relatorio from './relatorio';
+import remessas from './remessas';
+import specieslink from './specieslink';
+import splinker from './splinker';
+import taxonomias from './taxonomias';
+import tombos from './tombos';
+import uploads from './uploads';
+import usuarios from './usuarios';
 
-const isRouteFile = file => file !== __basename && /\.js$/.test(file);
+const router = express.Router();
 
-// eslint-disable-next-line
-const loadRouteFile = file => require(`./${file}`);
+const routes = [
+    cidades,
+    coletor,
+    darwin,
+    estados,
+    herbarios,
+    identificador,
+    locais,
+    paises,
+    pendencias,
+    reflora,
+    relatorio,
+    remessas,
+    specieslink,
+    splinker,
+    taxonomias,
+    tombos,
+    uploads,
+    usuarios,
+];
 
-readdirSync(__dirname)
-    .filter(isRouteFile)
-    .map(loadRouteFile)
-    .forEach(mod => mod.default(app));
+routes.forEach(route => route(router));
 
-export default app;
+export default router;

@@ -26,13 +26,15 @@ services:
       context: .
       dockerfile: Dockerfile
     platform: linux/amd64
-    image: hcf-api:local
+    image: herbario-api:local
     container_name: herbario_api
     env_file: .env
     ports:
       - $PORT:$PORT
     networks:
       - herbario_network
+    depends_on:
+      - postgres
 
   nginx:
     image: nginx:1.17-alpine
@@ -43,3 +45,5 @@ services:
       - ./uploads:/usr/share/nginx/html
     ports:
       - 8080:80
+    depends_on:
+      - api
