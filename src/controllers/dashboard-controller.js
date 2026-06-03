@@ -1,42 +1,8 @@
 import { Op, Sequelize } from 'sequelize';
+
 import models from '../models/index.js';
 
-const { Tombo, Especie, Coletor, Cidade, Familia, Genero, Herbario, TomboFoto } = models; 
-
-const agruparPorIndice = (dados, tamanho, indice, offset = 0) => {
-    const array = Array(tamanho).fill(0);
-    let total = 0;
-
-    dados.forEach(item => {
-        const idx = parseInt(item.get(indice)) - offset;
-        const qtd = parseInt(item.get('total'));
-
-        if (idx >= 0 && idx < tamanho) {
-            array[idx] += qtd;
-            total += qtd;
-        }
-    });
-
-    return { array, total };
-};
-
-const agruparMesPorSemana = (dados) => {
-    const array = Array(5).fill(0); 
-    let total = 0;
-    
-    dados.forEach(item => {
-        const dia = parseInt(item.get('dia')); 
-        const qtd = parseInt(item.get('total'));
-        const semanaIdx = Math.floor((dia - 1) / 7);
-
-        if (semanaIdx >= 0 && semanaIdx < 5) {
-            array[semanaIdx] += qtd;
-            total += qtd;
-        }
-    });
-
-    return { array, total };
-};
+const { Tombo, Especie, Coletor, Cidade, Familia, Genero, Herbario, TomboFoto } = models;
 
 const calcularPorcentagem = (atual, passado) => {
     if (passado > 0) return parseFloat((((atual - passado) / passado) * 100).toFixed(1));
@@ -50,68 +16,43 @@ const formatarRanking = (dadosQuery, aliasTabela) => {
 
         return {
             nome: info?.nome || info?.sigla || 'N/A',
-            total: parseInt(item.get('quantidade'), 10) || 0
+            total: parseInt(item.get('quantidade'), 10) || 0,
         };
     });
 };
 
-const formatarSemana = (array) => {
-    const dias = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
-    return array.map((total, index) => ({ dia: dias[index], total }));
-};
-
-const formatarAno = (array) => {
+const formatarAno = array => {
     const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
     return array.map((total, index) => ({ mes: meses[index], total }));
 };
 
-const formatarMes = (array, dataBase) => {
-    const ano = dataBase.getFullYear();
-    const mes = dataBase.getMonth();
-    const ultimoDiaDoMes = new Date(ano, mes + 1, 0).getDate();
-    const formatoFinal = [];
-
-    for (let i = 0; i < 5; i++) {
-        const diaInicio = (i * 7) + 1;
-        if (diaInicio > ultimoDiaDoMes) break; 
-        
-        const diaFim = Math.min((i + 1) * 7, ultimoDiaDoMes);
-        const strInicio = `${String(diaInicio).padStart(2, '0')}/${String(mes + 1).padStart(2, '0')}`;
-        const strFim = `${String(diaFim).padStart(2, '0')}/${String(mes + 1).padStart(2, '0')}`;
-        
-        formatoFinal.push({ semana: `${strInicio} - ${strFim}`, total: array[i] });
-    }
-
-    return formatoFinal;
-};
-
 export const tomboInfo = async (request, response, next) => {
     try {
-        const ID_HCF = 2; 
+        const ID_HCF = 2;
 
         const condicaoBase = {
             rascunho: false,
-            ativo: true
+            ativo: true,
         };
 
         const [
             totaisGerais,
             distintos,
-            rankEspecies, 
-            rankFamilias, 
-            rankGeneros, 
-            rankMunicipios, 
-            rankColetores, 
+            rankEspecies,
+            rankFamilias,
+            rankGeneros,
+            rankMunicipios,
+            rankColetores,
             rankHerbarios,
-            totalImagens
+            totalImagens,
         ] = await Promise.all([
             Tombo.findOne({
                 attributes: [
                     [Sequelize.literal('COUNT(*)'), 'total'],
                     [Sequelize.literal(`COUNT(*) FILTER (WHERE entidade_id IS NULL OR entidade_id = ${ID_HCF})`), 'tombos_internos'],
-                    [Sequelize.literal(`COUNT(*) FILTER (WHERE entidade_id IS NOT NULL AND entidade_id != ${ID_HCF})`), 'tombos_externos']
+                    [Sequelize.literal(`COUNT(*) FILTER (WHERE entidade_id IS NOT NULL AND entidade_id != ${ID_HCF})`), 'tombos_externos'],
                 ],
-                raw: true
+                raw: true,
             }), // totaisGerais
             Tombo.findOne({
                 where: condicaoBase,
@@ -121,47 +62,59 @@ export const tomboInfo = async (request, response, next) => {
                     [Sequelize.literal('COUNT(DISTINCT genero_id)'), 'generos'],
                     [Sequelize.literal('COUNT(DISTINCT cidade_id)'), 'municipios'],
                     [Sequelize.literal('COUNT(DISTINCT coletor_id)'), 'coletores'],
-                    [Sequelize.literal('COUNT(DISTINCT entidade_id)'), 'herbarios']
+                    [Sequelize.literal('COUNT(DISTINCT entidade_id)'), 'herbarios'],
                 ],
-                raw: true
+                raw: true,
             }), // distintos
             Tombo.findAll({
                 where: { ...condicaoBase, especie_id: { [Op.not]: null } },
                 attributes: ['especie_id', [Sequelize.fn('COUNT', Sequelize.col('tombos.hcf')), 'quantidade']],
                 include: [{ model: Especie, as: 'especie', attributes: ['nome'] }],
-                group: ['especie_id', 'especie.id'], order: [[Sequelize.literal('quantidade'), 'DESC']], limit: 5 
+                group: ['especie_id', 'especie.id'],
+                order: [[Sequelize.literal('quantidade'), 'DESC']],
+                limit: 5,
             }), // rankEspecies
             Tombo.findAll({
                 where: { ...condicaoBase, familia_id: { [Op.not]: null } },
                 attributes: ['familia_id', [Sequelize.fn('COUNT', Sequelize.col('tombos.hcf')), 'quantidade']],
                 include: [{ model: Familia, as: 'familia', attributes: ['nome'] }],
-                group: ['familia_id', 'familia.id', 'familia.nome'], order: [[Sequelize.literal('quantidade'), 'DESC']], limit: 5 
+                group: ['familia_id', 'familia.id', 'familia.nome'],
+                order: [[Sequelize.literal('quantidade'), 'DESC']],
+                limit: 5,
             }), // rankFamilias
             Tombo.findAll({
                 where: { ...condicaoBase, genero_id: { [Op.not]: null } },
                 attributes: ['genero_id', [Sequelize.fn('COUNT', Sequelize.col('tombos.hcf')), 'quantidade']],
                 include: [{ model: Genero, as: 'genero', attributes: ['nome'] }],
-                group: ['genero_id', 'genero.id', 'genero.nome'], order: [[Sequelize.literal('quantidade'), 'DESC']], limit: 5 
+                group: ['genero_id', 'genero.id', 'genero.nome'],
+                order: [[Sequelize.literal('quantidade'), 'DESC']],
+                limit: 5,
             }), // rankGeneros
             Tombo.findAll({
                 where: { ...condicaoBase, cidade_id: { [Op.not]: null } },
                 attributes: ['cidade_id', [Sequelize.fn('COUNT', Sequelize.col('tombos.hcf')), 'quantidade']],
                 include: [{ model: Cidade, attributes: ['nome'] }],
-                group: ['cidade_id', 'cidade.id', 'cidade.nome'], order: [[Sequelize.literal('quantidade'), 'DESC']], limit: 5 
+                group: ['cidade_id', 'cidade.id', 'cidade.nome'],
+                order: [[Sequelize.literal('quantidade'), 'DESC']],
+                limit: 5,
             }), // rankMunicipios
             Tombo.findAll({
                 where: { ...condicaoBase, coletor_id: { [Op.not]: null } },
                 attributes: ['coletor_id', [Sequelize.fn('COUNT', Sequelize.col('tombos.hcf')), 'quantidade']],
                 include: [{ model: Coletor, as: 'coletor', attributes: ['nome'] }],
-                group: ['coletor_id', 'coletor.id', 'coletor.nome'], order: [[Sequelize.literal('quantidade'), 'DESC']], limit: 5 
+                group: ['coletor_id', 'coletor.id', 'coletor.nome'],
+                order: [[Sequelize.literal('quantidade'), 'DESC']],
+                limit: 5,
             }), // rankColetores
             Tombo.findAll({
                 where: { ...condicaoBase, entidade_id: { [Op.not]: null } },
                 attributes: ['entidade_id', [Sequelize.fn('COUNT', Sequelize.col('tombos.hcf')), 'quantidade']],
                 include: [{ model: Herbario, attributes: ['nome', 'sigla'] }],
-                group: ['entidade_id', 'herbario.id', 'herbario.nome', 'herbario.sigla'], order: [[Sequelize.literal('quantidade'), 'DESC']], limit: 5 
+                group: ['entidade_id', 'herbario.id', 'herbario.nome', 'herbario.sigla'],
+                order: [[Sequelize.literal('quantidade'), 'DESC']],
+                limit: 5,
             }), // rankHerbarios
-            TomboFoto.count() // totalImagens
+            TomboFoto.count(), // totalImagens
         ]);
 
         return response.status(200).json({
@@ -175,21 +128,21 @@ export const tomboInfo = async (request, response, next) => {
                 taxonomia: {
                     familias: { total: parseInt(distintos.familias, 10) || 0, ranking: formatarRanking(rankFamilias, 'familia') },
                     generos: { total: parseInt(distintos.generos, 10) || 0, ranking: formatarRanking(rankGeneros, 'genero') },
-                    especies: { total: parseInt(distintos.especies, 10) || 0, ranking: formatarRanking(rankEspecies, 'especie') }
+                    especies: { total: parseInt(distintos.especies, 10) || 0, ranking: formatarRanking(rankEspecies, 'especie') },
                 },
                 municipios: {
-                    total: parseInt(distintos.municipios, 10) || 0, 
-                    ranking: formatarRanking(rankMunicipios, 'cidade') 
+                    total: parseInt(distintos.municipios, 10) || 0,
+                    ranking: formatarRanking(rankMunicipios, 'cidade'),
                 },
                 coletores: {
                     total: parseInt(distintos.coletores, 10) || 0,
-                    ranking: formatarRanking(rankColetores, 'coletor')
+                    ranking: formatarRanking(rankColetores, 'coletor'),
                 },
                 herbarios: {
                     total: parseInt(distintos.herbarios, 10) || 0,
-                    ranking: formatarRanking(rankHerbarios, 'herbario')
-                }
-            }
+                    ranking: formatarRanking(rankHerbarios, 'herbario'),
+                },
+            },
         });
 
     } catch (error) {
@@ -199,7 +152,7 @@ export const tomboInfo = async (request, response, next) => {
 
 export const tomboSerieTemporal = async (request, response, next) => {
     try {
-        const anoBase = parseInt(request.query.ano) || new Date().getFullYear();
+        const anoBase = parseInt(request.query.ano, 10) || new Date().getFullYear();
         const anoAnterior = anoBase - 1;
 
         const inicioRange = new Date(anoAnterior, 0, 1);
@@ -209,18 +162,18 @@ export const tomboSerieTemporal = async (request, response, next) => {
             where: {
                 rascunho: false,
                 ativo: true,
-                data_tombo: { [Op.between]: [inicioRange, fimRange] }
+                data_tombo: { [Op.between]: [inicioRange, fimRange] },
             },
             attributes: [
                 [Sequelize.fn('EXTRACT', Sequelize.literal('YEAR FROM data_tombo')), 'ano'],
                 [Sequelize.fn('EXTRACT', Sequelize.literal('MONTH FROM data_tombo')), 'mes'],
-                [Sequelize.literal('COUNT(*)'), 'total']
+                [Sequelize.literal('COUNT(*)'), 'total'],
             ],
             group: [
                 Sequelize.fn('EXTRACT', Sequelize.literal('YEAR FROM data_tombo')),
-                Sequelize.fn('EXTRACT', Sequelize.literal('MONTH FROM data_tombo'))
+                Sequelize.fn('EXTRACT', Sequelize.literal('MONTH FROM data_tombo')),
             ],
-            raw: true
+            raw: true,
         });
 
         const arrayAtual = Array(12).fill(0);
@@ -247,7 +200,7 @@ export const tomboSerieTemporal = async (request, response, next) => {
         return response.status(200).json({
             meta: {
                 ano_referencia: anoBase,
-                ano_comparacao: anoAnterior
+                ano_comparacao: anoAnterior,
             },
             serie_temporal: {
                 dados: {
@@ -257,9 +210,9 @@ export const tomboSerieTemporal = async (request, response, next) => {
                 totais: {
                     atual: totalAtual,
                     passado: totalPassado,
-                    porcentagem: calcularPorcentagem(totalAtual, totalPassado)
-                }
-            }
+                    porcentagem: calcularPorcentagem(totalAtual, totalPassado),
+                },
+            },
         });
 
     } catch (error) {
