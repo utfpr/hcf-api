@@ -1,7 +1,7 @@
 import { Op, Sequelize } from 'sequelize';
 import models from '../models/index.js';
 
-const { Rfid, TomboFoto } = models;
+const { Rfid, TomboFoto, Tombo, Especie, Coletor } = models;
 
 export const iniciarGravacao = async (request, response, next) => {
     const { tombo_foto_id } = request.body;
@@ -191,6 +191,64 @@ export const listarPendentesRfid = async (request, response, next) => {
                 total: tombosPendentes.count,
                 pagina,
                 limite
+            }
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const validarEpc = async (request, response, next) => {
+    const { epc } = request.params; 
+
+    try {
+        const rfid = await Rfid.findOne({
+            where: { epc: epc },
+            include: [
+                {
+                    model: TomboFoto,
+                    include: [
+                        {
+                            model: Tombo,
+                            include: [
+                                { 
+                                    model: Especie, 
+                                    as: 'especie', 
+                                    attributes: ['nome'] 
+                                },
+                                { 
+                                    model: Coletor, 
+                                    as: 'coletor', 
+                                    attributes: ['nome'] 
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        });
+
+        if (!rfid) {
+            return response.status(404).json({
+                valido: false,
+                mensagem: 'EPC não encontrado.'
+            });
+        }
+
+        const tomboFoto = rfid.TomboFoto;
+        const tombo = tomboFoto ? tomboFoto.Tombo : null;
+
+        return response.status(200).json({
+            valido: true,
+            mensagem: 'EPC validado com sucesso.',
+            dados: {
+                id_rfid: rfid.id,
+                epc: rfid.epc,
+                status_rfid: rfid.status,
+                tombo_hcf: tombo?.hcf || tomboFoto?.tombo_hcf || 'N/A',
+                nome_cientifico: tombo?.especie?.nome || tombo?.nome_cientifico || 'N/A',
+                coletor_principal: tombo?.coletor?.nome || 'N/A'
             }
         });
 
