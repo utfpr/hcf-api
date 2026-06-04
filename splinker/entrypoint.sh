@@ -1,17 +1,16 @@
 #!/bin/sh
 
+# Export container environment variables to /etc/environment so cron can read them
+printenv | grep -v "^\(HOME\|USER\|LOGNAME\|SHELL\|PATH\)=" >> /etc/environment
+
 echo "Generating config from environment variables..."
 
-DATABASE_HOST="${DATABASE_HOST:-$PG_HOST}"
-DATABASE_PORT="${DATABASE_PORT:-$PG_PORT}"
-DATABASE_NAME="${DATABASE_NAME:-$PG_DATABASE}"
-DATABASE_USERNAME="${DATABASE_USERNAME:-$PG_USERNAME}"
-DATABASE_PASSWORD="${DATABASE_PASSWORD:-$PG_PASSWORD}"
-
-# Dentro do Docker, substituir localhost por nome do container
-if [ "$DATABASE_HOST" = "localhost" ] || [ "$DATABASE_HOST" = "127.0.0.1" ]; then
-  DATABASE_HOST="hcf_postgres"
-fi
+# Expect DATABASE_* variables to be provided by the environment/container
+: "${DATABASE_HOST:?DATABASE_HOST is required}"
+: "${DATABASE_PORT:?DATABASE_PORT is required}"
+: "${DATABASE_NAME:?DATABASE_NAME is required}"
+: "${DATABASE_USERNAME:?DATABASE_USERNAME is required}"
+: "${DATABASE_PASSWORD:?DATABASE_PASSWORD is required}"
 
 cat > /app/splinker.conf <<EOF
 [dataset]
@@ -22,12 +21,6 @@ dbname=${DATABASE_NAME}
 user=${DATABASE_USERNAME}
 password=${DATABASE_PASSWORD}
 EOF
-
-echo "export DATABASE_HOST='${DATABASE_HOST}'" > /app/env.sh
-echo "export DATABASE_PORT='${DATABASE_PORT}'" >> /app/env.sh
-echo "export DATABASE_NAME='${DATABASE_NAME}'" >> /app/env.sh
-echo "export DATABASE_USERNAME='${DATABASE_USERNAME}'" >> /app/env.sh
-echo "export DATABASE_PASSWORD='${DATABASE_PASSWORD}'" >> /app/env.sh
 
 echo "Configuring cron job with schedule: $CRON_SCHEDULE ($TZ)"
 

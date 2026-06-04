@@ -3,13 +3,6 @@ services:
     image: splinker:local
     container_name: splinker
     build: .
-    env_file: ../.env
-    networks:
-      - hcf-api_herbario_network
-      - conversao_banco_python_my_network
-
-networks:
-  hcf-api_herbario_network:
-    external: true
-  conversao_banco_python_my_network:
-    external: true
+    env_file: .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
