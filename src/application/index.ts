@@ -2,12 +2,12 @@ import cluster from 'node:cluster'
 import os from 'node:os'
 
 import { ConsoleLogger } from '@/infrastructure/ConsoleLogger'
-import { ExpressServer } from '@/infrastructure/ExpressServer'
 
 import legacyRoutes from '../routes'
-import { Application, Route } from './Application'
 import { routes as estadoRoutes } from './estado'
 import { routes as paisRoutes } from './pais'
+import { Kernel, Route } from './Kernel'
+import { ExpressApplication } from '@/infrastructure/ExpressApplication'
 
 const environment = process.env.NODE_ENV ?? 'development'
 
@@ -21,9 +21,9 @@ const routes: Route[] = [
 ]
 
 const logger = new ConsoleLogger()
-const server = new ExpressServer({ logger })
-const application = new Application({
-  server,
+const server = new ExpressApplication({ logger })
+const kernel = new Kernel({
+  application: server,
   routes,
   legacyRouter: legacyRoutes,
   cors: {
@@ -34,7 +34,7 @@ const application = new Application({
 })
 
 async function startServer() {
-  await application.start(Number(process.env.PORT ?? 3000))
+  await kernel.start(Number(process.env.PORT ?? 3000))
 }
 
 if (cluster.isPrimary) {

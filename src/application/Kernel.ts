@@ -5,12 +5,13 @@ import morgan from 'morgan'
 // import swaggerUi from 'swagger-ui-express'
 
 import { Method } from '@/library/http/common'
-import { RequestHandler, Server } from '@/library/http/Server'
+import { RequestHandler } from '@/library/http/Server'
 
 import { upload } from '../config/directory'
 // import swaggerSpec from '../config/swagger'
 import legacyErrors from '../middlewares/erros-middleware'
 import { generatePreview, reportPreview } from '../reports/controller'
+import { Application } from '@/library/Application'
 
 export interface Route {
   method: Method
@@ -25,10 +26,10 @@ interface CorsParameters {
 }
 
 interface Parameters {
-  server: Server
+  application: Application
   routes: Route[]
-  legacyRouter?: unknown
   cors: CorsParameters
+  legacyRouter?: unknown
 }
 
 const securityConfig = {
@@ -47,16 +48,16 @@ const securityConfig = {
   }
 }
 
-export class Application {
-  private readonly server: Server
-  private readonly routes: Route[]
+export class Kernel {
+  readonly application: Application
+  readonly routes: Route[]
   private readonly legacyRouter?: unknown
 
   constructor({
-    server, routes,
+    application, routes,
     legacyRouter, cors
   }: Parameters) {
-    this.server = server
+    this.application = application
     this.routes = routes
     this.legacyRouter = legacyRouter
 
@@ -64,7 +65,7 @@ export class Application {
   }
 
   private setup({ cors }: { cors: CorsParameters }): void {
-    this.server
+    this.application
       .use(makeHelmet(securityConfig))
       .use(makeCors({
         origin: cors.origins,
@@ -90,21 +91,21 @@ export class Application {
     const reportsRouter = express.Router()
     reportsRouter.get('/:fileName', reportPreview)
     reportsRouter.post('/:fileName', generatePreview)
-    this.server.use('/reports', reportsRouter)
+    this.application.use('/reports', reportsRouter)
 
     for (const route of this.routes) {
-      const sanitizedPath = `/api/${route.path}`.replaceAll(/\/{2,}/g, '/').replaceAll(/\/$/, '')
-      this.server.endpoint(route.method, sanitizedPath, ...route.handlers)
+      const sanitizedPath = `/api/${route.path}`.replaceAll(/\/{2,}/g, '/').replaceAll(/\/$/g, '')
+      this.application.endpoint(route.method, sanitizedPath, ...route.handlers)
     }
 
     if (this.legacyRouter) {
-      this.server.mount(this.legacyRouter)
+      this.application.use(this.legacyRouter)
     }
 
-    this.server.use(legacyErrors)
+    this.application.use(legacyErrors)
   }
 
   async start(port: number): Promise<void> {
-    await this.server.start(port)
+    await this.application.start(port)
   }
 }

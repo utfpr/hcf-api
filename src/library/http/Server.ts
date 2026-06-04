@@ -1,5 +1,6 @@
+// import http from 'node:http'
 import {
-  HttpRequest, HttpResponse, Method
+  HttpRequest, HttpResponse
 } from './common'
 import { HttpError } from './error/HttpError'
 
@@ -16,16 +17,4 @@ export interface RequestHandler<
     request: HttpRequest<RequestBody, Params>,
     next: NextHandler<ResponseBody>,
   ): Promise<HttpResponse<ResponseBody> | HttpError>
-}
-
-export interface Server {
-  endpoint(method: Method, path: string, ...handlers: RequestHandler[]): this
-  get(path: string, ...handlers: RequestHandler[]): this
-  post(path: string, ...handlers: RequestHandler[]): this
-  put(path: string, ...handlers: RequestHandler[]): this
-  delete(path: string, ...handlers: RequestHandler[]): this
-  use(...args: unknown[]): this
-  mount(router: unknown): this
-  start(port: number): Promise<void>
-  shutdown(): Promise<void>
 }
