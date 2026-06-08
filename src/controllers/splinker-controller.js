@@ -122,6 +122,7 @@ const obterModeloSPlinkerLotes = async (limit, offset, request, response) => {
             },
             {
                 model: Coletor,
+                as: 'coletor',
             },
             {
                 model: Identificador,

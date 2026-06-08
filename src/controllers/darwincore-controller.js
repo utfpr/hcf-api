@@ -193,6 +193,7 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
             },
             {
                 model: Coletor,
+                as: 'coletor',
             },
             {
                 model: ColetorComplementar,

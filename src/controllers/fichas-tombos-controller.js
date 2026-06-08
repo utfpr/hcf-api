@@ -88,6 +88,7 @@ export default function fichaTomboController(request, response, next) {
             const include = [
                 {
                     model: Coletor,
+                    as: 'coletor',
                 },
                 {
                     model: Identificador,
