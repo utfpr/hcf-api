@@ -253,8 +253,8 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
         if (tombo.variedade && tombo.variedade.autor) {
             autores += `| ${tombo.variedade.autor.nome}`;
         }
-        if (tombo.coletore) {
-            coletores = padronizarNomeDarwincore(tombo.coletore.nome);
+        if (tombo.coletor) {
+            coletores = padronizarNomeDarwincore(tombo.coletor.nome);
             if (tombo.coletor_complementar?.complementares) {
                 coletores += ` | ${tombo.coletor_complementar.complementares}`;
             }

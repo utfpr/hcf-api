@@ -1978,7 +1978,7 @@ export async function visualizar(request, response, next) {
         }
 
         if (parametros.coletor !== undefined) {
-            const antigoColetor = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.coletore?.nome || '');
+            const antigoColetor = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.coletor?.nome || '');
             addRetorno('7', 'Coletor', antigoColetor, parametros.coletor?.nome || '');
         }
 

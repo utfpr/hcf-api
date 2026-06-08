@@ -1261,10 +1261,10 @@ export const obterTombo = async (request, response, next) => {
                     colecaoInicial: tombo.colecoes_anexa !== null ? tombo.colecoes_anexa?.tipo : '',
                     complementoInicial: tombo.localizacao !== null && tombo.localizacao !== undefined ? tombo.localizacao?.complemento : '',
                     hcf: tombo.hcf,
-                    coletor: tombo.coletore
+                    coletor: tombo.coletor
                         ? {
-                                id: tombo.coletore?.id,
-                                nome: tombo.coletore?.nome,
+                                id: tombo.coletor?.id,
+                                nome: tombo.coletor?.nome,
                             }
                         : null,
                     situacao: tombo.situacao,
