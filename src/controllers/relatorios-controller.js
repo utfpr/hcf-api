@@ -445,6 +445,7 @@ export const obtemDadosDoRelatorioDeColetaPorColetorEIntervaloDeData = async (re
                 },
                 {
                     model: Coletor,
+                    as: 'coletor',
                     where: whereColetor,
                     required: true,
                     attributes: ['id', 'nome'],

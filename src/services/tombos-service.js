@@ -40,7 +40,7 @@ export function selecionaObjetoCompletoTomboPorId(condicoes, transacao) {
             {
                 required: true,
                 model: Coletor,
-                through: { attributes: [] },
+                as: 'coletor',
             },
         ],
 

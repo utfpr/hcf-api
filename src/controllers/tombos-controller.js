@@ -746,6 +746,7 @@ export const listagem = (request, response, next) => {
     let include = [
         {
             model: Coletor,
+            as: 'coletor',
             attributes: ['id', 'nome'],
             required: false,
         },
@@ -838,6 +839,7 @@ export async function listagemTombosPorIdentificador(request, response, next) {
                 },
                 {
                     model: Coletor,
+                    as: 'coletor',
                     attributes: ['id', 'nome'],
                     required: false,
                 },
@@ -1198,6 +1200,7 @@ export const obterTombo = async (request, response, next) => {
                         },
                         {
                             model: Coletor,
+                            as: 'coletor',
                             attributes: ['id', 'nome'],
                         },
                         {
