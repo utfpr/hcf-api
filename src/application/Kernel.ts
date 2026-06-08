@@ -4,6 +4,7 @@ import makeHelmet from 'helmet'
 import morgan from 'morgan'
 // import swaggerUi from 'swagger-ui-express'
 
+import { Application } from '@/library/Application'
 import { Method } from '@/library/http/common'
 import { RequestHandler } from '@/library/http/Server'
 
@@ -11,7 +12,6 @@ import { upload } from '../config/directory'
 // import swaggerSpec from '../config/swagger'
 import legacyErrors from '../middlewares/erros-middleware'
 import { generatePreview, reportPreview } from '../reports/controller'
-import { Application } from '@/library/Application'
 
 export interface Route {
   method: Method

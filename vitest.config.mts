@@ -8,6 +8,7 @@ export default defineConfig({
     mockReset: true,
     clearMocks: true,
     include: ['test/**/*.test.ts', 'test/**/*.spec.ts'],
+    exclude: ['test/integration/**'],
     coverage: {
       provider: 'v8',
       reporter: [

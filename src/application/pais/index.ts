@@ -2,7 +2,7 @@ import { ListaPaisesUseCase } from '@/domain/pais/ListaPaisesUseCase'
 import { createPaisCollection } from '@/factory/PaisCollectionFactory'
 import { Method } from '@/library/http/common'
 
-import { Route } from '../Application'
+import { Route } from '../Kernel'
 import { ListaPaisesController } from './ListaPaisesController'
 
 const paisCollection = createPaisCollection()

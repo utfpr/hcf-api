@@ -2,12 +2,12 @@ import cluster from 'node:cluster'
 import os from 'node:os'
 
 import { ConsoleLogger } from '@/infrastructure/ConsoleLogger'
+import { ExpressApplication } from '@/infrastructure/ExpressApplication'
 
 import legacyRoutes from '../routes'
 import { routes as estadoRoutes } from './estado'
-import { routes as paisRoutes } from './pais'
 import { Kernel, Route } from './Kernel'
-import { ExpressApplication } from '@/infrastructure/ExpressApplication'
+import { routes as paisRoutes } from './pais'
 
 const environment = process.env.NODE_ENV ?? 'development'
 

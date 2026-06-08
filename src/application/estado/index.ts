@@ -2,7 +2,7 @@ import { ListaEstadosUseCase } from '@/domain/estado/ListaEstadosUseCase'
 import { createEstadoCollection } from '@/factory/EstadoCollectionFactory'
 import { Method } from '@/library/http/common'
 
-import { Route } from '../Application'
+import { Route } from '../Kernel'
 import { ListaEstadosController } from './ListaEstadosController'
 
 const estadoCollection = createEstadoCollection()

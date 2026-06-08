@@ -1,0 +1,12 @@
+services:
+  postgres_test:
+    image: postgis/postgis:18-3.6
+    container_name: herbario_postgresql_test
+    environment:
+      POSTGRES_DB: herbario_test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: testpassword
+    ports:
+      - "5433:5432"
+    tmpfs:
+      - /var/lib/postgresql
