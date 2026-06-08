@@ -14,7 +14,7 @@ services:
       POSTGRES_USER: $PG_USERNAME
       POSTGRES_PASSWORD: $PG_PASSWORD
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
     ports:
       - ${PG_PORT:-5432}:5432
     shm_size: 128mb
