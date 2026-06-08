@@ -523,7 +523,7 @@ export default app => {
      *                       created_at:
      *                         type: string
      *                         format: date-time
-     *                       coletore:
+     *                       coletor:
      *                         type: object
      *                         properties:
      *                           id:
