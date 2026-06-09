@@ -1374,6 +1374,18 @@ export default app => {
      *               properties:
      *                 dentro:
      *                   type: boolean
+     *                 cidadeEncontrada:
+     *                   type: object
+     *                   nullable: true
+     *                   properties:
+     *                     id:
+     *                       type: integer
+     *                     nome:
+     *                       type: string
+     *                     estado_nome:
+     *                       type: string
+     *                     estado_sigla:
+     *                       type: string
      *       '400':
      *         $ref: '#/components/responses/BadRequest'
      *       '401':
