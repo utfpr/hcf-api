@@ -14,7 +14,8 @@ export default defineConfig([
       'mysql/',
       'public/',
       'coverage/',
-      'node_modules/'
+      'node_modules/',
+      'splinker/'
     ]
   },
   {
