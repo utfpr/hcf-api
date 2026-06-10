@@ -18,13 +18,15 @@ RUN apt-get update && \
   curl -fsSL https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz -o /tmp/node.tar.xz && \
   tar -xJf /tmp/node.tar.xz -C /usr/local --strip-components=1 && \
   rm -f /tmp/node.tar.xz && \
+  corepack enable && \
   apt-get remove -y curl xz-utils && \
   apt autoremove -y && \
   rm -rf /var/lib/apt/lists/*
 
-# Copy package.json and package-lock.json from splinker/ and install dependencies deterministically
-COPY package.json package-lock.json /app/
-RUN npm ci --production
+# Copy package.json and yarn.lock from splinker/ and install dependencies
+COPY package.json yarn.lock /app/
+RUN yarn install --production && \
+  yarn cache clean --force
 
 ENV \
   TZ=America/Sao_Paulo \
