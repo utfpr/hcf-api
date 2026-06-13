@@ -3,6 +3,22 @@ import models from '../models/index.js';
 
 const { Rfid, TomboFoto, Tombo, Especie, Coletor } = models;
 
+const getIncludedTomboFoto = rfidJson => (
+    rfidJson.TomboFoto || rfidJson.tombos_foto || rfidJson.tombo_foto || rfidJson.TomboFotos
+);
+
+const getIncludedTombo = tomboFotoJson => (
+    tomboFotoJson?.Tombo || tomboFotoJson?.tombo
+);
+
+const getNomeCientifico = tombo => (
+    tombo?.especie?.nome || tombo?.Especie?.nome || tombo?.nome_cientifico || 'N/A'
+);
+
+const getColetorPrincipal = tombo => (
+    tombo?.coletor?.nome || tombo?.Coletor?.nome || 'N/A'
+);
+
 export const iniciarGravacao = async (request, response, next) => {
     const { tombo_foto_id } = request.body;
 
@@ -180,13 +196,48 @@ export const listarPendentesRfid = async (request, response, next) => {
         const tombosPendentes = await TomboFoto.findAndCountAll({
             attributes: ['id', 'tombo_hcf', 'codigo_barra', 'caminho_foto'],
             where: whereCondicao,
+            include: [
+                {
+                    model: Tombo,
+                    attributes: ['hcf', 'nome_cientifico'],
+                    required: false,
+                    include: [
+                        {
+                            model: Especie,
+                            as: 'especie',
+                            attributes: ['nome'],
+                            required: false,
+                        },
+                        {
+                            model: Coletor,
+                            as: 'coletor',
+                            attributes: ['nome'],
+                            required: false,
+                        },
+                    ],
+                },
+            ],
             limit: limite,
             offset: offset,
             order: [['id', 'DESC']]
         });
 
+        const dados = tombosPendentes.rows.map(tomboFoto => {
+            const item = tomboFoto.toJSON();
+            const tombo = getIncludedTombo(item);
+
+            return {
+                id: item.id,
+                tombo_hcf: item.tombo_hcf,
+                codigo_barra: item.codigo_barra,
+                caminho_foto: item.caminho_foto,
+                nome_cientifico: getNomeCientifico(tombo),
+                coletor_principal: getColetorPrincipal(tombo),
+            };
+        });
+
         return response.status(200).json({
-            dados: tombosPendentes.rows,
+            dados,
             meta: {
                 total: tombosPendentes.count,
                 pagina,
@@ -236,19 +287,20 @@ export const validarEpc = async (request, response, next) => {
             });
         }
 
-        const tomboFoto = rfid.TomboFoto;
-        const tombo = tomboFoto ? tomboFoto.Tombo : null;
+        const rfidJson = rfid.toJSON();
+        const tomboFoto = getIncludedTomboFoto(rfidJson);
+        const tombo = getIncludedTombo(tomboFoto);
 
         return response.status(200).json({
             valido: true,
             mensagem: 'EPC validado com sucesso.',
             dados: {
-                id_rfid: rfid.id,
-                epc: rfid.epc,
-                status_rfid: rfid.status,
+                id_rfid: rfidJson.id,
+                epc: rfidJson.epc,
+                status_rfid: rfidJson.status,
                 tombo_hcf: tombo?.hcf || tomboFoto?.tombo_hcf || 'N/A',
-                nome_cientifico: tombo?.especie?.nome || tombo?.nome_cientifico || 'N/A',
-                coletor_principal: tombo?.coletor?.nome || 'N/A'
+                nome_cientifico: getNomeCientifico(tombo),
+                coletor_principal: getColetorPrincipal(tombo)
             }
         });
 
