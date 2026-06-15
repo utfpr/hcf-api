@@ -2,6 +2,7 @@ import parser from 'body-parser'
 import express from 'express'
 import http from 'node:http'
 
+import { Application } from '@/library/Application'
 import {
   Headers, HttpRequest, HttpResponse, Method
 } from '@/library/http/common'
@@ -9,7 +10,6 @@ import { HttpError } from '@/library/http/error/HttpError'
 import { InternalServerError } from '@/library/http/error/InternalServerError'
 import { RequestHandler } from '@/library/http/Server'
 import { Logger } from '@/library/logger/Logger'
-import { Application } from '@/library/Application'
 
 interface Dependencies {
   logger: Logger

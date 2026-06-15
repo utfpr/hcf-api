@@ -1,13 +1,11 @@
 import cluster from 'node:cluster'
 import os from 'node:os'
 
+import { createKnexInstance } from '@/factory/KnexFactory'
 import { ConsoleLogger } from '@/infrastructure/ConsoleLogger'
-import { ExpressApplication } from '@/infrastructure/ExpressApplication'
 
 import legacyRoutes from '../routes'
-import { routes as estadoRoutes } from './estado'
-import { Kernel, Route } from './Kernel'
-import { routes as paisRoutes } from './pais'
+import { createApp } from './create-app'
 
 const environment = process.env.NODE_ENV ?? 'development'
 
@@ -15,26 +13,20 @@ const corsOrigins = process.env.CORS_ORIGINS ?? '*'
 const corsMethods = process.env.CORS_METHODS ?? 'HEAD,GET,POST,PUT,PATCH,DELETE'
 const corsAllowedHeaders = process.env.CORS_ALLOWED_HEADERS ?? 'Content-Type,Authorization'
 
-const routes: Route[] = [
-  ...paisRoutes,
-  ...estadoRoutes
-]
-
 const logger = new ConsoleLogger()
-const server = new ExpressApplication({ logger })
-const kernel = new Kernel({
-  application: server,
-  routes,
-  legacyRouter: legacyRoutes,
+const application = createApp({
+  logger,
   cors: {
     origins: corsOrigins.split(','),
     methods: corsMethods.split(','),
     allowedHeaders: corsAllowedHeaders.split(',')
-  }
+  },
+  knex: createKnexInstance(),
+  legacyRouter: legacyRoutes
 })
 
 async function startServer() {
-  await kernel.start(Number(process.env.PORT ?? 3000))
+  await application.start(Number(process.env.PORT ?? 3000))
 }
 
 if (cluster.isPrimary) {

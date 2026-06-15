@@ -1,20 +1,24 @@
-import { ListaEstadosUseCase } from '@/domain/estado/ListaEstadosUseCase'
-import { createEstadoCollection } from '@/factory/EstadoCollectionFactory'
-import { Method } from '@/library/http/common'
+import { type Knex } from 'knex'
 
-import { Route } from '../Kernel'
+import { ListaEstadosUseCase } from '@/domain/estado/ListaEstadosUseCase'
+import { EstadoCollectionKnexAdapter } from '@/infrastructure/EstadoCollectionKnexAdapter'
+import { Method } from '@/library/http/common'
+import { Route } from '@/library/http/Router'
+
 import { ListaEstadosController } from './ListaEstadosController'
 
-const estadoCollection = createEstadoCollection()
+export function routes(knex: Knex): Route[] {
+  const estadoCollection = new EstadoCollectionKnexAdapter({ knex })
 
-export const routes: Route[] = [
-  {
-    handlers: [
-      new ListaEstadosController({
-        listaEstadosUseCase: new ListaEstadosUseCase({ estadoCollection })
-      })
-    ],
-    method: Method.Get,
-    path: '/paises/:paisSigla/estados'
-  }
-]
+  return [
+    {
+      handlers: [
+        new ListaEstadosController({
+          listaEstadosUseCase: new ListaEstadosUseCase({ estadoCollection })
+        })
+      ],
+      method: Method.Get,
+      path: '/paises/:paisSigla/estados'
+    }
+  ]
+}

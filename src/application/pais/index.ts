@@ -1,20 +1,24 @@
-import { ListaPaisesUseCase } from '@/domain/pais/ListaPaisesUseCase'
-import { createPaisCollection } from '@/factory/PaisCollectionFactory'
-import { Method } from '@/library/http/common'
+import { type Knex } from 'knex'
 
-import { Route } from '../Kernel'
+import { ListaPaisesUseCase } from '@/domain/pais/ListaPaisesUseCase'
+import { PaisCollectionKnexAdapter } from '@/infrastructure/PaisCollectionKnexAdapter'
+import { Method } from '@/library/http/common'
+import { Route } from '@/library/http/Router'
+
 import { ListaPaisesController } from './ListaPaisesController'
 
-const paisCollection = createPaisCollection()
+export function routes(knex: Knex): Route[] {
+  const paisCollection = new PaisCollectionKnexAdapter({ knex })
 
-export const routes: Route[] = [
-  {
-    handlers: [
-      new ListaPaisesController({
-        listaPaisesUseCase: new ListaPaisesUseCase({ paisCollection })
-      })
-    ],
-    method: Method.Get,
-    path: '/paises'
-  }
-]
+  return [
+    {
+      handlers: [
+        new ListaPaisesController({
+          listaPaisesUseCase: new ListaPaisesUseCase({ paisCollection })
+        })
+      ],
+      method: Method.Get,
+      path: '/paises'
+    }
+  ]
+}
