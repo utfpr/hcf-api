@@ -1,20 +1,31 @@
 import type { Knex } from 'knex'
 
-import { seedPaises } from './paises.seed'
-
-export const estados = [
-  {
-    id: 1, nome: 'Paraná', sigla: 'PR', paises_sigla: 'BRA'
-  },
-  {
-    id: 2, nome: 'São Paulo', sigla: 'SP', paises_sigla: 'BRA'
-  },
-  {
-    id: 3, nome: 'Buenos Aires', sigla: 'BA', paises_sigla: 'ARG'
-  }
+/**
+ * Paises owned by lista-estados integration tests (used only as FK carriers).
+ * Siglas are exactly 4 chars to fit bpchar(4).
+ */
+const paises = [
+  { nome: 'XEST Brasil',    sigla: 'XEBR' },
+  { nome: 'XEST Argentina', sigla: 'XEAR' }
 ]
 
-export async function seedEstados(knex: Knex): Promise<void> {
-  await seedPaises(knex)
-  await knex('estados').insert(estados)
+export async function seedEstados(
+  knex: Knex
+): Promise<Array<{ id: number; nome: string; sigla: string }>> {
+  const [paisBrasil, paisArgentina] = await knex('paises')
+    .insert(paises)
+    .returning(['id', 'sigla'])
+
+  return knex('estados')
+    .insert([
+      { nome: 'Paraná',       sigla: 'XEPR', pais_id: paisBrasil.id },
+      { nome: 'São Paulo',    sigla: 'XESP', pais_id: paisBrasil.id },
+      { nome: 'Buenos Aires', sigla: 'XEBA', pais_id: paisArgentina.id }
+    ])
+    .returning(['id', 'nome', 'sigla'])
+}
+
+export async function cleanupEstados(knex: Knex): Promise<void> {
+  await knex('estados').whereIn('sigla', ['XEPR', 'XESP', 'XEBA']).delete()
+  await knex('paises').whereIn('sigla', paises.map(p => p.sigla)).delete()
 }

@@ -1,29 +1,32 @@
 import {
-  beforeAll, describe, expect, test
+  afterAll, beforeAll, describe, expect, test
 } from 'vitest'
 
 import { createTestApp } from '../setup/app-factory'
-import { estados, seedEstados } from '../setup/seeds/estados.seed'
+import { cleanupEstados, seedEstados } from '../setup/seeds/estados.seed'
 
 describe('GET /api/paises/:paisSigla/estados', () => {
   const { agent, knex } = createTestApp()
+  let seeded: Array<{ id: number; nome: string; sigla: string }>
 
   beforeAll(async () => {
-    await seedEstados(knex)
+    seeded = await seedEstados(knex)
+  })
+
+  afterAll(async () => {
+    await cleanupEstados(knex)
+    await knex.destroy()
   })
 
   test('returns 200 with estados for the given country', async () => {
-    const response = await agent.get('/api/paises/BRA/estados').expect(200)
+    // XEST_BRA owns seeded[0] (Paraná/XEPR) and seeded[1] (São Paulo/XESP)
+    const response = await agent.get('/api/paises/XEBR/estados').expect(200)
     expect(response.body).toEqual([
       {
-        id: estados[0].id,
-        nome: estados[0].nome,
-        sigla: estados[0].sigla
+        id: seeded[0].id, nome: seeded[0].nome, sigla: seeded[0].sigla
       },
       {
-        id: estados[1].id,
-        nome: estados[1].nome,
-        sigla: estados[1].sigla
+        id: seeded[1].id, nome: seeded[1].nome, sigla: seeded[1].sigla
       }
     ])
   })

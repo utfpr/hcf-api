@@ -1,47 +1,84 @@
-# Integration tests
+# Integration Tests
 
-HTTP integration tests for the new hexagonal API routes, using Vitest + supertest against a real PostgreSQL database.
+Integration tests run against a real PostgreSQL database. **You are responsible for
+starting the container and applying migrations before running the tests.**
 
 ## Prerequisites
 
-- Node 22 + Yarn
-- Docker (for default `TEST_DB_MODE=docker`)
+- Docker installed and running
+- Node.js dependencies installed (`npm install`)
 
-## Run locally (Docker test DB)
+## First-time setup
 
-```bash
-yarn test:integration
-```
-
-This will:
-
-1. Start `docker-compose.test.yml` (PostGIS on port **5433**)
-2. Bootstrap minimal `paises` / `estados` tables (fresh Docker DB has no legacy schema)
-3. Run tests
-4. Stop the test container
-
-## Run against an existing database
+### 1. Start the test database
 
 ```bash
-TEST_DB_MODE=external \
-  PG_DATABASE=herbario_test \
-  PG_HOST=127.0.0.1 \
-  PG_PORT=5432 \
-  PG_USERNAME=postgres \
-  PG_PASSWORD=masterkey \
-  PG_MIGRATION_USERNAME=postgres \
-  PG_MIGRATION_PASSWORD=masterkey \
-  yarn test:integration
+docker compose -f compose.test.yml up -d
 ```
 
-In `external` mode, pending Knex migrations are applied before tests (expects a database that already has the legacy schema, or migrations that can run cleanly).
+This starts a PostgreSQL container on port **5433** using the credentials in `.env`.
 
-## Watch mode
+### 2. Apply migrations
 
 ```bash
-yarn test:integration:watch
+npm run migration:apply
 ```
 
-## Environment
+This runs the full migration stack against the database defined in `.env`. You only need to
+re-run this when new migrations are added.
 
-Copy or adjust [`.env.test`](../../.env.test) at the project root. `TEST_DB_MODE` defaults to `docker` when unset.
+## Running the tests
+
+```bash
+npm run test:integration
+```
+
+The test suite connects to the already-running database and executes all tests
+in `test/integration/`. No schema changes are made at test time.
+
+For watch mode (re-runs on file changes):
+
+```bash
+npm run test:integration:watch
+```
+
+## Stopping the database
+
+```bash
+docker compose -f compose.test.yml down
+```
+
+Since the container uses `tmpfs`, all data is lost when it stops. Start fresh
+next time with `docker compose up -d` followed by `migration:apply`.
+
+---
+
+## Writing new integration tests
+
+Each test file must own its data:
+
+- **`beforeAll`** — insert only the rows your tests need, using a unique prefix in any
+  identifier column (sigla, nome, etc.) that distinguishes your rows from other test files.
+- **`afterAll`** — delete your rows and call `knex.destroy()` to release the connection pool.
+- Never use `TRUNCATE` — it would wipe data owned by other test files running in parallel.
+
+See `test/integration/pais/lista-paises.test.ts` for a concrete example.
+
+### Seed helpers
+
+Reusable seed/cleanup functions live in `test/integration/setup/seeds/`. Create one file per
+domain entity. Each file should export:
+
+| Export | Purpose |
+|---|---|
+| `seed*(knex)` | Inserts rows and returns them with auto-generated IDs |
+| `cleanup*(knex)` | Deletes only the rows owned by that seed file |
+
+### Namespace convention
+
+Use a short, unique prefix for identifiers to avoid collisions between test files:
+
+| Test file | Prefix used |
+|---|---|
+| `lista-paises.test.ts` | `XPBR`/`XPAR` (pais sigla), `XPAI ` (nome prefix) |
+| `lista-estados.test.ts` | `XEBR`/`XEAR` (pais sigla), `XEPR`/`XESP`/`XEBA` (estado sigla) |

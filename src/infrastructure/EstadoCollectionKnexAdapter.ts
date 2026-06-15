@@ -6,11 +6,6 @@ import { Either } from '@/library/either/Either'
 
 import { CollectionError } from './error/CollectionError'
 
-/** Row shape in DB (filter column exists on table but is not exposed as Attributes). */
-type EstadoKnexRecord = Attributes & {
-  paises_sigla: string
-}
-
 interface Dependencies {
   knex: Knex
 }
@@ -24,16 +19,18 @@ export class EstadoCollectionKnexAdapter implements EstadoCollection {
 
   async findAll(filters: EstadoFilters): Promise<Either<Error, Attributes[]>> {
     try {
-      const query = this.knex<EstadoKnexRecord>('estados')
+      const query = this.knex('estados')
         .select([
-          'id',
-          'nome',
-          'sigla'
+          'estados.id',
+          'estados.nome',
+          'estados.sigla'
         ])
-        .orderBy('nome')
+        .orderBy('estados.nome')
 
       if (filters.paisSigla) {
-        query.where('paises_sigla', filters.paisSigla)
+        query
+          .join('paises', 'estados.pais_id', 'paises.id')
+          .where('paises.sigla', filters.paisSigla)
       }
 
       return Either.right(await query)
