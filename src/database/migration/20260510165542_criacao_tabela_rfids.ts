@@ -8,7 +8,7 @@ export async function run(knex: Knex): Promise<void> {
     await trx.schema.createTable('rfids', table => {
       table.increments('id').primary()
       
-      table.integer('tombo_foto_id').unsigned().notNullable()
+      table.bigInteger('tombo_foto_id').notNullable()
       table.foreign('tombo_foto_id')
         .references('id')
         .inTable('tombos_fotos')
