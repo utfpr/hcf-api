@@ -3,9 +3,8 @@ import {
   vi, describe, expect, test
 } from 'vitest'
 
-import { Logger } from '@/library/logger/Logger'
-
 import { MigrationRepository } from '@/database/migration-repository'
+import { Logger } from '@/library/logger/Logger'
 
 const logger: Logger = {
   debug: vi.fn(),

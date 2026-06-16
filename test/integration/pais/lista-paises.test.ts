@@ -13,7 +13,7 @@ describe('GET /api/paises — per-test data example', () => {
   test('finds the country that was just inserted', async () => {
     const [pais] = await knex('paises')
       .insert({ nome: 'XPIT País Exemplo', sigla: 'XPIT' })
-      .returning([
+      .returning<Array<{ id: number; nome: string; sigla: string }>>([
         'id',
         'nome',
         'sigla'
@@ -58,7 +58,7 @@ describe('GET /api/paises', () => {
   test('filters by nome param (case-insensitive)', async () => {
     const response = await agent.get('/api/paises?nome=xpai bra').expect(200)
     expect(response.body).toHaveLength(1)
-    expect(response.body[0].sigla).toBe('XPBR')
+    expect((response.body as Array<{ sigla: string }>)[0].sigla).toBe('XPBR')
   })
 
   test('returns empty array when no match', async () => {

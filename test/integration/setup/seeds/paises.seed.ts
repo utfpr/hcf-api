@@ -8,13 +8,17 @@ import type { Knex } from 'knex'
  */
 export const paises = [
   { nome: 'XPAI Argentina', sigla: 'XPAR' },
-  { nome: 'XPAI Brasil',    sigla: 'XPBR' }
+  { nome: 'XPAI Brasil', sigla: 'XPBR' }
 ]
 
 export async function seedPaises(
   knex: Knex
 ): Promise<Array<{ id: number; nome: string; sigla: string }>> {
-  return knex('paises').insert(paises).returning(['id', 'nome', 'sigla'])
+  return knex('paises').insert(paises).returning([
+    'id',
+    'nome',
+    'sigla'
+  ])
 }
 
 export async function cleanupPaises(knex: Knex): Promise<void> {
