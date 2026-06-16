@@ -7,8 +7,9 @@ import { EstadoCollectionKnexAdapter } from '@/infrastructure/EstadoCollectionKn
 
 function stubKnex<TResult>(promise: Promise<TResult>): Knex & { builder: Record<string, unknown> } {
   const builder = {} as Record<string, unknown>
-  builder.orderBy = vi.fn().mockImplementation(() => builder)
   builder.select = vi.fn().mockImplementation(() => builder)
+  builder.orderBy = vi.fn().mockImplementation(() => builder)
+  builder.join = vi.fn().mockImplementation(() => builder)
   builder.where = vi.fn().mockImplementation(() => builder)
   builder.then = (
     onResolved: (v: TResult) => unknown,
@@ -40,12 +41,13 @@ describe('EstadoCollectionKnexAdapter', () => {
     expect(result.value).toEqual(rows)
     expect(knex).toHaveBeenCalledWith('estados')
     expect(knex.builder.select).toHaveBeenCalledWith([
-      'id',
-      'nome',
-      'sigla'
+      'estados.id',
+      'estados.nome',
+      'estados.sigla'
     ])
-    expect(knex.builder.where).toHaveBeenCalledWith('paises_sigla', 'BRA')
-    expect(knex.builder.orderBy).toHaveBeenCalledWith('nome')
+    expect(knex.builder.join).toHaveBeenCalledWith('paises', 'estados.pais_id', 'paises.id')
+    expect(knex.builder.where).toHaveBeenCalledWith('paises.sigla', 'BRA')
+    expect(knex.builder.orderBy).toHaveBeenCalledWith('estados.nome')
   })
 
   test('findAll returns all rows when no filters provided', async () => {
@@ -65,6 +67,7 @@ describe('EstadoCollectionKnexAdapter', () => {
 
     expect(result.right()).toBe(true)
     expect(result.value).toHaveLength(2)
+    expect(knex.builder.join).not.toHaveBeenCalled()
     expect(knex.builder.where).not.toHaveBeenCalled()
   })
 
