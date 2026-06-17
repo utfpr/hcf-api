@@ -19,6 +19,59 @@ const getColetorPrincipal = tombo => (
     tombo?.coletor?.nome || tombo?.Coletor?.nome || 'N/A'
 );
 
+const codificarParaEpcHex = (tomboHcf, codigoBarra) => {
+    const tomboId = parseInt(tomboHcf, 10);
+    const match = codigoBarra.match(/([a-zA-Z]+)(\d+)/);
+    
+    if (!match) {
+        throw new Error('Formato de código de barras inválido para gravação RFID.');
+    }
+    
+    const herbario = match[1]; 
+    const numero = parseInt(match[2], 10); 
+
+    // ID Tombo (4 Bytes = 8 chars hex)
+    const bloco1 = tomboId.toString(16).padStart(8, '0').toUpperCase();
+
+    // Sigla herbario (4 Bytes = 8 chars hex)
+    const prefixo = `_${herbario}`.substring(0, 4).padEnd(4, ' '); 
+    let bloco2 = '';
+
+    for(let i = 0; i < 4; i++) {
+        bloco2 += prefixo.charCodeAt(i).toString(16).padStart(2, '0').toUpperCase();
+    }
+
+    // Numero cog de barras (4 Bytes = 8 chars hex)
+    const bloco3 = numero.toString(16).padStart(8, '0').toUpperCase();
+
+    return bloco1 + bloco2 + bloco3; 
+};
+
+const decodificarEpcHex = (epcHex) => {
+    if (!epcHex || epcHex.length !== 24) return epcHex; 
+
+    try {
+        const hexBloco1 = epcHex.substring(0, 8);
+        const hexBloco2 = epcHex.substring(8, 16);
+        const hexBloco3 = epcHex.substring(16, 24);
+        const tomboId = parseInt(hexBloco1, 16);
+        let prefixo = '';
+
+        for(let i = 0; i < 8; i += 2) {
+            prefixo += String.fromCharCode(parseInt(hexBloco2.substring(i, i + 2), 16));
+        }
+
+        prefixo = prefixo.trim();
+
+        const numero = parseInt(hexBloco3, 16);
+        const numeroFormatado = String(numero).padStart(9, '0');
+
+        return `${tomboId}${prefixo}${numeroFormatado}`;
+    } catch (e) {
+        return epcHex;
+    }
+};
+
 export const iniciarGravacao = async (request, response, next) => {
     const { tombo_foto_id } = request.body;
 
@@ -26,24 +79,31 @@ export const iniciarGravacao = async (request, response, next) => {
         const foto = await TomboFoto.findByPk(tombo_foto_id);
         if (!foto) return response.status(404).json({ erro: 'Foto não encontrada.' });
 
-        const data = `${foto.tombo_hcf}#${foto.codigo_barra}`.replace(/\s/g, '');
+        let epcHexParaGravar;
+        
+        try {
+            epcHexParaGravar = codificarParaEpcHex(foto.tombo_hcf, foto.codigo_barra);
+        } catch (err) {
+            return response.status(400).json({ erro: err.message });
+        }
+
         let rfid = await Rfid.findOne({ where: { tombo_foto_id } });
 
         if (rfid) {
             if (rfid.status === 'CONCLUIDO') {
-                return response.status(409).json({ 
-                    erro: 'Tombo já possui uma etiqueta RFID vinculada e concluída.' 
+                return response.status(409).json({
+                    erro: 'Tombo já possui uma etiqueta RFID vinculada e concluída.'
                 });
             }
 
-            rfid.epc = data;
+            rfid.epc = epcHexParaGravar;
             rfid.status = 'PENDENTE';
             await rfid.save();
 
         } else {
             rfid = await Rfid.create({
                 tombo_foto_id,
-                epc: data,
+                epc: epcHexParaGravar,
                 status: 'PENDENTE'
             });
         }
@@ -71,8 +131,8 @@ export const finalizarGravacao = async (request, response, next) => {
         if (!rfid) return response.status(404).json({ erro: 'Tag não encontrada.' });
 
         if (rfid.status === 'CONCLUIDO') {
-            return response.status(409).json({ 
-                erro: 'Ttag já registrada como CONCLUIDO e não pode ser modificada.' 
+            return response.status(409).json({
+                erro: 'Ttag já registrada como CONCLUIDO e não pode ser modificada.'
             });
         }
 
@@ -86,13 +146,13 @@ export const finalizarGravacao = async (request, response, next) => {
             case 'CONCLUIDO':
                 if (tid) {
                     const tagExistente = await Rfid.findOne({ where: { tid } });
-                    
+
                     if (tagExistente && tagExistente.id !== Number(id)) {
                         return response.status(409).json({
                             erro: 'TID já se encontra vinculado a outro tombo no sistema.'
                         });
                     }
-                    
+
                     rfid.tid = tid;
                 }
                 break;
@@ -126,7 +186,7 @@ export const listagem = async (request, response, next) => {
         const whereRfid = {};
 
         if (epc) {
-            whereRfid.epc = { [Op.iLike]: `%${epc}%` }; 
+            whereRfid.epc = { [Op.iLike]: `%${epc}%` };
         }
 
         if (status) {
@@ -146,13 +206,13 @@ export const listagem = async (request, response, next) => {
         const rfids = await Rfid.findAndCountAll({
             limit: limite,
             offset,
-            where: whereRfid, 
+            where: whereRfid,
             include: [
                 {
                     model: TomboFoto,
                     attributes: ['id', 'tombo_hcf', 'codigo_barra', 'caminho_foto'],
                     where: Object.keys(whereFoto).length > 0 ? whereFoto : undefined,
-                    required: Object.keys(whereFoto).length > 0 
+                    required: Object.keys(whereFoto).length > 0
                 }
             ],
             order: [['created_at', 'DESC']]
@@ -178,7 +238,7 @@ export const listarPendentesRfid = async (request, response, next) => {
         const limite = parseInt(request.query.limite) || 10;
         const pagina = parseInt(request.query.pagina) || 1;
         const offset = (pagina - 1) * limite;
-        const { q } = request.query; 
+        const { q } = request.query;
 
         const whereCondicao = {
             id: {
@@ -251,7 +311,7 @@ export const listarPendentesRfid = async (request, response, next) => {
 };
 
 export const validarEpc = async (request, response, next) => {
-    const { epc } = request.params; 
+    const { epc } = request.params;
 
     try {
         const rfid = await Rfid.findOne({
@@ -263,15 +323,15 @@ export const validarEpc = async (request, response, next) => {
                         {
                             model: Tombo,
                             include: [
-                                { 
-                                    model: Especie, 
-                                    as: 'especie', 
-                                    attributes: ['nome'] 
+                                {
+                                    model: Especie,
+                                    as: 'especie',
+                                    attributes: ['nome']
                                 },
-                                { 
-                                    model: Coletor, 
-                                    as: 'coletor', 
-                                    attributes: ['nome'] 
+                                {
+                                    model: Coletor,
+                                    as: 'coletor',
+                                    attributes: ['nome']
                                 }
                             ]
                         }
@@ -296,7 +356,8 @@ export const validarEpc = async (request, response, next) => {
             mensagem: 'EPC validado com sucesso.',
             dados: {
                 id_rfid: rfidJson.id,
-                epc: rfidJson.epc,
+                epc_formatado: rfidJson.epc,
+                epc: decodificarEpcHex(rfidJson.epc),
                 status_rfid: rfidJson.status,
                 tombo_hcf: tombo?.hcf || tomboFoto?.tombo_hcf || 'N/A',
                 nome_cientifico: getNomeCientifico(tombo),
