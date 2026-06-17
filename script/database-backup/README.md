@@ -46,7 +46,7 @@ gunzip -c herbario_prod_1748469600.sql.gz | \
 | `-p`          | Porta do PostgreSQL                            |
 | `-U`          | Usuário do banco                               |
 | `-d`          | Banco de destino (deve existir previamente)    |
-| `PGPASSWORD`  | Senha do usuário (evita prompt interativo)     |
+| `PGPASSWORD`  | Senha do usuário                               |
 
 ---
 
@@ -73,5 +73,4 @@ gunzip -c herbario_prod_1748469600.sql.gz | \
 ### Observações de segurança
 
 - O `access_token` no `.env` expira em ~1 hora; o `refresh_token` é o que mantém o serviço funcionando a longo prazo.
-- Nunca commite o arquivo `.env` com tokens reais (já está no `.gitignore`).
 - Em caso de comprometimento do token, revogue-o em [Google Account Security](https://myaccount.google.com/permissions) e gere um novo via `rclone config reconnect gdrive:`.
