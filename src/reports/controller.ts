@@ -13,7 +13,8 @@ import RelacaoTombosComColeta from '@/reports/templates/RelacaoTombosComColeta'
 // Static map of allowed templates – prevents runtime path traversal and lets
 // esbuild bundle the templates into the main output instead of requiring
 // separate compiled files alongside the bundle.
-const TEMPLATES: Record<string, ComponentType> = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const TEMPLATES: Record<string, ComponentType<any>> = {
   InventarioEspecies,
   LocaisColeta,
   RelacaoFamiliasGenero,
@@ -32,7 +33,7 @@ export function reportPreview(_: Request, response: Response) {
 
 export async function generatePreview(request: Request, response: Response) {
   try {
-    const { fileName } = request.params
+    const fileName = request.params.fileName as string
     const ReportTemplate = TEMPLATES[fileName]
 
     if (!ReportTemplate) {

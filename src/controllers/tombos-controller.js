@@ -1,4 +1,4 @@
-import { ForeignKeyConstraintError } from 'sequelize';
+import { ForeignKeyConstraintError, fn, col } from 'sequelize';
 
 import { padronizarNomeDarwincore } from '~/helpers/padroniza-nome-darwincore';
 
