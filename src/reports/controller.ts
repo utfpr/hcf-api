@@ -10,7 +10,7 @@ export function reportPreview(_: Request, response: Response) {
 
 export async function generatePreview(request: Request, response: Response) {
   try {
-    const { fileName } = request.params
+    const fileName = request.params.fileName as string
     const { default: ReportTemplate } = await import(path.join(__dirname, `../reports/templates/${fileName}`)) as { default: ComponentType }
 
     const buffer = await generateReport(ReportTemplate, request.body ?? {})
