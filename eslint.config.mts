@@ -15,6 +15,9 @@ export default defineConfig([
       'public/',
       'coverage/',
       'node_modules/',
+      '.pnp.cjs',
+      '.pnp.loader.mjs',
+      '.yarn/',
       'splinker/'
     ]
   },
