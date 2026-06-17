@@ -12,7 +12,7 @@ EOF
 
 echo "Configuring cron job with schedule: $CRON_SCHEDULE ($TZ)"
 
-printenv | grep -E "^(POSTGRES_|GDRIVE_|RETENTION_)" >> /etc/environment
+printenv | grep -E "^(DATABASE_|GDRIVE_|RETENTION_|CRON_SCHEDULE|TZ)" >> /etc/environment
 
 echo "$CRON_SCHEDULE /backup.sh 1> /proc/1/fd/1 2> /proc/1/fd/2" | crontab -
 

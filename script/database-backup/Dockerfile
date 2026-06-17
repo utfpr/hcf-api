@@ -28,8 +28,9 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 COPY backup.sh entrypoint.sh /
 
-RUN chmod +x /backup.sh /entrypoint.sh
+RUN sed -i 's/\r$//' /backup.sh /entrypoint.sh && \
+  chmod +x /backup.sh /entrypoint.sh
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/bin/sh", "/entrypoint.sh"]
 
 CMD ["cron", "-f"]
