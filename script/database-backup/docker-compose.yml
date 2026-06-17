@@ -1,0 +1,21 @@
+services:
+  database-backup:
+    image: database-backup:local
+    container_name: database-backup
+    build: .
+    environment:
+      #PostgreSQL
+      POSTGRES_HOST:	${PG_HOST}
+      POSTGRES_PORT:	"${PG_PORT}"
+      POSTGRES_USER:	"${PG_USERNAME}"
+      POSTGRES_PASSWORD: "${PG_PASSWORD}"
+      POSTGRES_DATABASE:	"${PG_DATABASE}"
+      #Google Drive 
+      GDRIVE_TOKEN:      "${GDRIVE_TOKEN}"
+      GDRIVE_FOLDER_ID:  "${GDRIVE_FOLDER_ID}"
+
+      RETENTION_DAILY: 	"${RETENTION_DAILY}"
+      RETENTION_WEEKLY:	"${RETENTION_WEEKLY}"
+
+      CRON_SCHEDULE:  "${CRON_SCHEDULE}"
+      TZ:	"${TZ}"
