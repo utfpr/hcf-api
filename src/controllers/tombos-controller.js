@@ -1822,7 +1822,7 @@ export const verificarCoordenada = async (request, response, next) => {
 
         return response.json({
             dentro: selectedCityRows[0].dentro === true,
-            cidadeEncontrada: cidadeEncontradaRows[0] || null,
+            cidade_encontrada: cidadeEncontradaRows[0] || null,
         });
     } catch (err) {
         return next(err);
