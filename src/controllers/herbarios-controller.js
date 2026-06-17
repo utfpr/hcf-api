@@ -46,7 +46,7 @@ export const listaTodosHerbariosAtivos = (limit, offset, where) => Herbario.find
     where,
     limit,
     offset,
-    order: [['id', 'DESC']],
+    order: [['nome', 'ASC']],
 });
 
 export const buscarHerbario = (request, response, next) => {

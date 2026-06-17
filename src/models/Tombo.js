@@ -62,6 +62,7 @@ function associate(modelos) {
     });
 
     Tombo.belongsTo(Coletor, {
+        as: 'coletor',
         foreignKey: 'coletor_id',
     });
 

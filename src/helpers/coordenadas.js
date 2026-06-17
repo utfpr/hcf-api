@@ -23,6 +23,27 @@ export const converteParaDecimal = coordenada => {
     return sinal * (graus + (minutos / 60) + (segundos / 3600));
 };
 
+export const converteDecimalParaDMS = (decimal, isLatitude = true) => {
+    if (decimal === null || decimal === undefined || decimal === '') {
+        return '';
+    }
+
+    const abs = Math.abs(decimal);
+    const graus = Math.floor(abs);
+    const minutosDecimal = (abs - graus) * 60;
+    const minutos = Math.floor(minutosDecimal);
+    const segundos = ((minutosDecimal - minutos) * 60).toFixed(2);
+
+    let hemisferio;
+    if (isLatitude) {
+        hemisferio = decimal >= 0 ? 'N' : 'S';
+    } else {
+        hemisferio = decimal >= 0 ? 'E' : 'W';
+    }
+
+    return `${graus}° ${minutos}' ${segundos}" ${hemisferio}`;
+};
+
 export const converteDecimalParaGraus = (decimal, isLat) => {
     let max = 180;
 

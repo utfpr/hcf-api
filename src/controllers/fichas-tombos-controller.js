@@ -88,6 +88,7 @@ export default function fichaTomboController(request, response, next) {
             const include = [
                 {
                     model: Coletor,
+                    as: 'coletor',
                 },
                 {
                     model: Identificador,
@@ -134,6 +135,9 @@ export default function fichaTomboController(request, response, next) {
                     model: Vegetacao,
                 },
                 {
+                    model: FaseSucessional,
+                },
+                {
                     as: 'local_coleta',
                     model: LocalColeta,
                     include: [
@@ -157,6 +161,18 @@ export default function fichaTomboController(request, response, next) {
                 {
                     model: ColetorComplementar,
                     as: 'coletor_complementar',
+                },
+                {
+                    required: false,
+                    model: Cidade,
+                    include: {
+                        model: Estado,
+                        attributes: ['id', 'nome', 'sigla', 'pais_id'],
+                        include: {
+                            as: 'pais',
+                            model: Pais,
+                        },
+                    },
                 },
             ];
 
@@ -236,10 +252,10 @@ export default function fichaTomboController(request, response, next) {
 
             const { tombo, identificacao, fotos } = resultado;
 
-            const coletores = `${!!tombo?.coletore?.nome !== false ? tombo?.coletore?.nome?.concat(' ') : ''}${tombo?.coletor_complementar ? tombo.coletor_complementar?.complementares : ''}`;
+            const coletores = `${!!tombo?.coletor?.nome !== false ? tombo?.coletor?.nome?.concat(' ') : ''}${tombo?.coletor_complementar ? tombo.coletor_complementar?.complementares : ''}`;
 
             const localColeta = tombo?.local_coleta;
-            const cidade = localColeta?.cidade || '';
+            const cidade = localColeta?.cidade || tombo?.cidade || '';
             const estado = cidade?.estado || '';
             const pais = estado?.pais || '';
 
@@ -295,6 +311,7 @@ export default function fichaTomboController(request, response, next) {
 
                 relevo: tombo?.relevo?.nome || '',
                 vegetacao: tombo?.vegetaco?.nome || '',
+                fase_sucessional: tombo?.fase_sucessional?.nome || '',
 
                 familia: tombo.familia,
                 imprimir: request.params.imprimir_cod,

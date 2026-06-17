@@ -122,6 +122,7 @@ const obterModeloSPlinkerLotes = async (limit, offset, request, response) => {
             },
             {
                 model: Coletor,
+                as: 'coletor',
             },
             {
                 model: Identificador,
@@ -155,7 +156,7 @@ const obterModeloSPlinkerLotes = async (limit, offset, request, response) => {
         ]
             .filter(Boolean)
             .join('-');
-        const collectorName = tombo.coletore?.nome || '\t';
+        const collectorName = tombo.coletor?.nome || '\t';
         const collectorNumber = tombo.numero_coleta || '\t';
         const country = tombo.locais_coletum?.cidade?.estado?.paise?.nome || '\t';
         const stateOrProvince = tombo.locais_coletum?.cidade?.estado?.sigla?.trim() || '\t';
