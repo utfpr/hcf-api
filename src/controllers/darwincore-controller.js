@@ -348,7 +348,7 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
             linhasProcessadas.push(`${linha.replace(/[\r\n]/g, '')}\n`);
         }
 
-        response.write(`${linhasProcessadas}`);
+        response.write(linhasProcessadas.join(''));
     });
 };
 
