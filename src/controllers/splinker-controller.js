@@ -20,6 +20,7 @@ const {
     Especie,
     Tombo,
     TomboFoto,
+    SplinkerExecucao,
 } = models;
 
 function obtemNomeArquivoTxt() {
@@ -257,6 +258,25 @@ export const obterModeloSPLinker = async (request, response, next) => {
     }
 
     response.end();
+};
+
+export const obterUltimaExecucaoSPLinker = async (request, response, next) => {
+    try {
+        const execucao = await SplinkerExecucao.findOne({
+            order: [['data_hora', 'DESC']],
+            attributes: [
+                // data_hora é "timestamp without time zone" já em horário de Brasília;
+                // to_char evita que o driver reinterprete o valor literal como UTC.
+                [models.sequelize.fn('to_char', models.sequelize.col('data_hora'), 'YYYY-MM-DD"T"HH24:MI:SS'), 'data_hora'],
+                'ultimo_tombo_hcf',
+                'sucesso',
+            ],
+        });
+
+        response.json(execucao);
+    } catch (error) {
+        next(error);
+    }
 };
 
 export default {};
