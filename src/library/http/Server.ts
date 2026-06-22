@@ -1,4 +1,3 @@
-// import http from 'node:http'
 import {
   HttpRequest, HttpResponse
 } from './common'

@@ -1,12 +1,14 @@
 services:
-  postgres_test:
+  postgres:
     image: postgis/postgis:18-3.6
-    container_name: herbario_postgresql_test
+    container_name: herbario_postgresql_e2e
     environment:
-      POSTGRES_DB: herbario_test
+      POSTGRES_DB: herbario_e2e
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: testpassword
     ports:
       - "5433:5432"
+    volumes:
+      - ./test/integration/setup/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
     tmpfs:
       - /var/lib/postgresql

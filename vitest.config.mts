@@ -33,12 +33,12 @@ export default defineConfig({
       {
         extends: true,
         test: {
-          name: 'integration',
+          name: 'e2e',
           globals: true,
           environment: 'node',
-          include: ['test/integration/**/*.test.ts', 'test/integration/**/*.spec.ts'],
-          setupFiles: ['test/integration/setup/load-env.ts'],
-          globalSetup: ['test/integration/setup/global-setup.ts']
+          include: ['test/e2e/**/*.test.ts', 'test/e2e/**/*.spec.ts'],
+          setupFiles: ['test/e2e/setup/load-env.ts'],
+          globalSetup: ['test/e2e/setup/global-setup.ts']
         }
       }
     ]

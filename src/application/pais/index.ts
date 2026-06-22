@@ -18,7 +18,7 @@ export function routes(knex: Knex): Route[] {
         })
       ],
       method: Method.Get,
-      path: '/paises'
+      path: '/v1/paises'
     }
   ]
 }

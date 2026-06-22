@@ -39,6 +39,46 @@ jobs:
           retention-days: 7
           overwrite: true
 
+  integration-test:
+    runs-on: ubuntu-latest
+    env:
+      PG_HOST: localhost
+      PG_PORT: 5432
+      PG_DATABASE: herbario_test
+      PG_USERNAME: postgres
+      PG_PASSWORD: testpassword
+      PG_MIGRATION_USERNAME: postgres
+      PG_MIGRATION_PASSWORD: testpassword
+    services:
+      postgres:
+        image: postgis/postgis:18-3.6
+        env:
+          POSTGRES_DB: herbario_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: testpassword
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/jod'
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      - name: Apply base schema
+        run: psql -h $PG_HOST -p $PG_PORT -U $PG_MIGRATION_USERNAME -d $PG_DATABASE -f test/integration/setup/schema.sql
+        env:
+          PGPASSWORD: ${{ env.PG_MIGRATION_PASSWORD }}
+      - name: Run integration tests
+        run: yarn test:integration
+
   build:
     runs-on: ubuntu-latest
     steps:
