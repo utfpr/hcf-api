@@ -13,9 +13,18 @@ const calcularPorcentagem = (atual, passado) => {
 const formatarRanking = (dadosQuery, aliasTabela) => {
     return dadosQuery.map(item => {
         const info = item[aliasTabela] || item[aliasTabela.charAt(0).toUpperCase() + aliasTabela.slice(1)];
+        let nome = info?.nome || info?.sigla || 'N/A';
+
+        if (aliasTabela === 'especie') {
+            const generoInfo = item.genero || item.Genero;
+
+            if (generoInfo?.nome) {
+                nome = `${generoInfo.nome} ${nome}`;
+            }
+        }
 
         return {
-            nome: info?.nome || info?.sigla || 'N/A',
+            nome: nome,
             total: parseInt(item.get('quantidade'), 10) || 0,
         };
     });
@@ -69,8 +78,11 @@ export const tomboInfo = async (request, response, next) => {
             Tombo.findAll({
                 where: { ...condicaoBase, especie_id: { [Op.not]: null } },
                 attributes: ['especie_id', [Sequelize.fn('COUNT', Sequelize.col('tombos.hcf')), 'quantidade']],
-                include: [{ model: Especie, as: 'especie', attributes: ['nome'] }],
-                group: ['especie_id', 'especie.id'],
+                include: [
+                    { model: Especie, as: 'especie', attributes: ['nome'] },
+                    { model: Genero, as: 'genero', attributes: ['nome'] },
+                ],
+                group: ['especie_id', 'especie.id', 'genero.id', 'genero.nome'],
                 order: [[Sequelize.literal('quantidade'), 'DESC']],
                 limit: 5,
             }), // rankEspecies
