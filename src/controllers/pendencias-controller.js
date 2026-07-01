@@ -1007,6 +1007,7 @@ export const visualizarAlteracaoOperador = (json, alteracao, transaction) => {
             include: [
                 {
                     model: Coletor,
+                    as: 'coletor',
                 },
                 {
                     model: Herbario,
@@ -1889,7 +1890,7 @@ export async function visualizar(request, response, next) {
             include: [
                 { model: Variedade }, { model: Especie }, { model: Familia },
                 { model: Subfamilia }, { model: Genero }, { model: Subespecie },
-                { model: Herbario }, { model: Tipo }, { model: Coletor }, { model: ColetorComplementar, as: 'coletor_complementar' },
+                { model: Herbario }, { model: Tipo }, { model: Coletor, as: 'coletor' }, { model: ColetorComplementar, as: 'coletor_complementar' },
                 { model: Solo }, { model: Relevo }, { model: Vegetacao }, { model: ColecaoAnexa }, { model: FaseSucessional },
                 {
                     model: LocalColeta,
@@ -1977,7 +1978,7 @@ export async function visualizar(request, response, next) {
         }
 
         if (parametros.coletor !== undefined) {
-            const antigoColetor = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.coletore?.nome || '');
+            const antigoColetor = (alteracaoAprovada || ehRascunho) ? '' : (tombo?.coletor?.nome || '');
             addRetorno('7', 'Coletor', antigoColetor, parametros.coletor?.nome || '');
         }
 

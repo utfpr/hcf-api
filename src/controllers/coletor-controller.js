@@ -46,7 +46,7 @@ export const listaColetores = async (req, res, next) => {
             where.id = id;
         } else if (nome) {
             nome = limparEspacos(nome);
-            where.nome = { [Op.like]: `%${nome}%` };
+            where.nome = { [Op.iLike]: `%${nome}%` };
         }
 
         const result = await Coletor.findAndCountAll({

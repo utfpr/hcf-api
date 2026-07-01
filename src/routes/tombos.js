@@ -9,7 +9,7 @@ import {
     alteracao, getNumeroColetor, getUltimoNumeroTombo, getCodigoBarraTombo,
     editarCodigoBarra, getUltimoNumeroCodigoBarras, postCodigoBarraTombo,
     verificarCoordenada, getUltimoCodigoBarra, deletarCodigoBarras, listagemTombosPorIdentificador,
-    relatorioPorPeriodo,
+    relatorioPorPeriodo, getProximoNumeroTomboEndPoint,
 } from '../controllers/tombos-controller';
 import exportarTombosController from '../controllers/tombos-exportacoes-controller';
 import criaJsonMiddleware from '../middlewares/json-middleware';
@@ -21,6 +21,7 @@ import coletorCadastro from '../validators/coletor-cadastro';
 import cadastrarTipoEsquema from '../validators/tipo-cadastro';
 import cadastrarTomboEsquema from '../validators/tombo-cadastro';
 import listagemTombo from '../validators/tombo-listagem';
+
 /**
  * @swagger
  * tags:
@@ -355,6 +356,16 @@ export default app => {
             getUltimoNumeroTombo,
         ]);
 
+    app.route('/tombos/proximo_numero')
+        .get([
+            tokensMiddleware([
+                TIPOS_USUARIOS.CURADOR,
+                TIPOS_USUARIOS.OPERADOR,
+                TIPOS_USUARIOS.IDENTIFICADOR,
+            ]),
+            getProximoNumeroTomboEndPoint,
+        ]);
+
     /**
      * @swagger
      * /tombos/ultimo_codigo_barra:
@@ -512,7 +523,7 @@ export default app => {
      *                       created_at:
      *                         type: string
      *                         format: date-time
-     *                       coletore:
+     *                       coletor:
      *                         type: object
      *                         properties:
      *                           id:
@@ -1363,6 +1374,18 @@ export default app => {
      *               properties:
      *                 dentro:
      *                   type: boolean
+     *                 cidadeEncontrada:
+     *                   type: object
+     *                   nullable: true
+     *                   properties:
+     *                     id:
+     *                       type: integer
+     *                     nome:
+     *                       type: string
+     *                     estado_nome:
+     *                       type: string
+     *                     estado_sigla:
+     *                       type: string
      *       '400':
      *         $ref: '#/components/responses/BadRequest'
      *       '401':

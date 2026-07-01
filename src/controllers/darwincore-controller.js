@@ -193,6 +193,7 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
             },
             {
                 model: Coletor,
+                as: 'coletor',
             },
             {
                 model: ColetorComplementar,
@@ -252,8 +253,8 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
         if (tombo.variedade && tombo.variedade.autor) {
             autores += `| ${tombo.variedade.autor.nome}`;
         }
-        if (tombo.coletore) {
-            coletores = padronizarNomeDarwincore(tombo.coletore.nome);
+        if (tombo.coletor) {
+            coletores = padronizarNomeDarwincore(tombo.coletor.nome);
             if (tombo.coletor_complementar?.complementares) {
                 coletores += ` | ${tombo.coletor_complementar.complementares}`;
             }
@@ -347,7 +348,7 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
             linhasProcessadas.push(`${linha.replace(/[\r\n]/g, '')}\n`);
         }
 
-        response.write(`${linhasProcessadas}`);
+        response.write(linhasProcessadas.join(''));
     });
 };
 

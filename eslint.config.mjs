@@ -16,6 +16,10 @@ export default defineConfig([
       'node_modules/',
       'build.mjs',
       'eslint.config.mjs',
+      '.pnp.cjs',
+      '.pnp.loader.mjs',
+      '.yarn/',
+      'splinker/'
     ]
   },
   {

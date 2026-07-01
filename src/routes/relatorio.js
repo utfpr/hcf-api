@@ -343,6 +343,28 @@ export default app => {
             controller.obtemDadosDoRelatorioDeLocalDeColeta,
         ]);
 
+    app.route('/relatorio/tombos-por-cidade')
+        .get([
+            tokensMiddleware([
+                TIPOS_USUARIOS.CURADOR,
+                TIPOS_USUARIOS.OPERADOR,
+                TIPOS_USUARIOS.IDENTIFICADOR,
+            ]),
+            listagensMiddleware,
+            controller.obtemDadosDoRelatorioDeTombosPorCidade,
+        ]);
+
+    app.route('/relatorio/tombos-por-cidade')
+        .post([
+            tokensMiddleware([
+                TIPOS_USUARIOS.CURADOR,
+                TIPOS_USUARIOS.OPERADOR,
+                TIPOS_USUARIOS.IDENTIFICADOR,
+            ]),
+            listagensMiddleware,
+            controller.obtemDadosDoRelatorioDeTombosPorCidade,
+        ]);
+
     app.route('/relatorio/familias-generos')
         .get([
             tokensMiddleware([
@@ -396,5 +418,25 @@ export default app => {
             ]),
             listagensMiddleware,
             controller.obtemDadosDoRelatorioDeQuantidade,
+        ]);
+
+    app.route('/relatorio/coordenadas-fora-poligono')
+        .get([
+            tokensMiddleware([
+                TIPOS_USUARIOS.CURADOR,
+                TIPOS_USUARIOS.OPERADOR,
+                TIPOS_USUARIOS.IDENTIFICADOR,
+            ]),
+            listagensMiddleware,
+            controller.obtemDadosDoRelatorioDeCoordenadaForaPoligono,
+        ])
+        .post([
+            tokensMiddleware([
+                TIPOS_USUARIOS.CURADOR,
+                TIPOS_USUARIOS.OPERADOR,
+                TIPOS_USUARIOS.IDENTIFICADOR,
+            ]),
+            listagensMiddleware,
+            controller.obtemDadosDoRelatorioDeCoordenadaForaPoligono,
         ]);
 };
