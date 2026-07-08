@@ -13,7 +13,7 @@ starting the container and applying migrations before running the tests.**
 ### 1. Start the test database
 
 ```bash
-docker compose -f compose.e2e.yml up -d
+docker compose -f compose.integration.yml up -d
 ```
 
 This starts a PostgreSQL container on port **5433** using the credentials in `.env`.
@@ -45,7 +45,7 @@ npm run test:integration:watch
 ## Stopping the database
 
 ```bash
-docker compose -f compose.e2e.yml down
+docker compose -f compose.integration.yml down
 ```
 
 Since the container uses `tmpfs`, all data is lost when it stops. Start fresh

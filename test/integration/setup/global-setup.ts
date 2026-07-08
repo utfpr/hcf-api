@@ -43,7 +43,7 @@ export async function setup(): Promise<void> {
     throw new Error(
       `Cannot connect to the test database (${PG_HOST}:${PG_PORT}/${PG_DATABASE}). `
       + 'Start the container and apply the schema before running e2e tests — '
-      + 'see test/e2e/README.md'
+      + 'see test/integration/README.md'
     )
   } finally {
     await knex.destroy().catch(() => undefined)
