@@ -2,15 +2,15 @@ import createKnex, { Knex } from 'knex'
 
 import { singleton } from '@/library/singleton'
 
-const {
-  PG_DATABASE,
-  PG_HOST,
-  PG_PASSWORD,
-  PG_PORT = '5432',
-  PG_USERNAME
-} = process.env
-
 export const createKnexInstance = singleton((): Knex => {
+  const {
+    PG_DATABASE,
+    PG_HOST,
+    PG_PASSWORD,
+    PG_PORT = '5432',
+    PG_USERNAME
+  } = process.env
+
   return createKnex({
     client: 'postgres',
     connection: {

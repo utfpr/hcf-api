@@ -30,8 +30,12 @@ describe('GET /api/v1/paises/:paisSigla/estados', () => {
 
     const estados = await knex('estados')
       .insert([
-        { nome: 'Paraná', sigla: 'XEPR', pais_id: pais.id },
-        { nome: 'São Paulo', sigla: 'XESP', pais_id: pais.id }
+        {
+          nome: 'Paraná', pais_id: pais.id, sigla: 'XEPR'
+        },
+        {
+          nome: 'São Paulo', pais_id: pais.id, sigla: 'XESP'
+        }
       ])
       .returning<Estado[]>(returningEstado)
 

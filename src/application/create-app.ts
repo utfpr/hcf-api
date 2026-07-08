@@ -86,7 +86,7 @@ export function createApp({
   }
 
   if (legacyRouter) {
-    application.use(legacyRouter)
+    application.use('/api', legacyRouter)
   }
   application.use(legacyErrors)
 
