@@ -1,4 +1,5 @@
 import { Op, Sequelize } from 'sequelize';
+
 import models from '../models/index.js';
 
 const { Rfid, TomboFoto, Tombo, Especie, Coletor } = models;
@@ -22,33 +23,33 @@ const getColetorPrincipal = tombo => (
 const codificarParaEpcHex = (tomboHcf, codigoBarra) => {
     const tomboId = parseInt(tomboHcf, 10);
     const match = codigoBarra.match(/([a-zA-Z]+)(\d+)/);
-    
+
     if (!match) {
         throw new Error('Formato de código de barras inválido para gravação RFID.');
     }
-    
-    const herbario = match[1]; 
-    const numero = parseInt(match[2], 10); 
+
+    const herbario = match[1];
+    const numero = parseInt(match[2], 10);
 
     // ID Tombo (4 Bytes = 8 chars hex)
     const bloco1 = tomboId.toString(16).padStart(8, '0').toUpperCase();
 
     // Sigla herbario (4 Bytes = 8 chars hex)
-    const prefixo = `_${herbario}`.substring(0, 4).padEnd(4, ' '); 
+    const prefixo = `_${herbario}`.substring(0, 4).padEnd(4, ' ');
     let bloco2 = '';
 
-    for(let i = 0; i < 4; i++) {
+    for (let i = 0; i < 4; i++) {
         bloco2 += prefixo.charCodeAt(i).toString(16).padStart(2, '0').toUpperCase();
     }
 
     // Numero cog de barras (4 Bytes = 8 chars hex)
     const bloco3 = numero.toString(16).padStart(8, '0').toUpperCase();
 
-    return bloco1 + bloco2 + bloco3; 
+    return bloco1 + bloco2 + bloco3;
 };
 
-const decodificarEpcHex = (epcHex) => {
-    if (!epcHex || epcHex.length !== 24) return epcHex; 
+const decodificarEpcHex = epcHex => {
+    if (!epcHex || epcHex.length !== 24) return epcHex;
 
     try {
         const hexBloco1 = epcHex.substring(0, 8);
@@ -57,7 +58,7 @@ const decodificarEpcHex = (epcHex) => {
         const tomboId = parseInt(hexBloco1, 16);
         let prefixo = '';
 
-        for(let i = 0; i < 8; i += 2) {
+        for (let i = 0; i < 8; i += 2) {
             prefixo += String.fromCharCode(parseInt(hexBloco2.substring(i, i + 2), 16));
         }
 
@@ -67,7 +68,7 @@ const decodificarEpcHex = (epcHex) => {
         const numeroFormatado = String(numero).padStart(9, '0');
 
         return `${tomboId}${prefixo}${numeroFormatado}`;
-    } catch (e) {
+    } catch {
         return epcHex;
     }
 };
@@ -80,7 +81,7 @@ export const iniciarGravacao = async (request, response, next) => {
         if (!foto) return response.status(404).json({ erro: 'Foto não encontrada.' });
 
         let epcHexParaGravar;
-        
+
         try {
             epcHexParaGravar = codificarParaEpcHex(foto.tombo_hcf, foto.codigo_barra);
         } catch (err) {
@@ -92,7 +93,7 @@ export const iniciarGravacao = async (request, response, next) => {
         if (rfid) {
             if (rfid.status === 'CONCLUIDO') {
                 return response.status(409).json({
-                    erro: 'Tombo já possui uma etiqueta RFID vinculada e concluída.'
+                    erro: 'Tombo já possui uma etiqueta RFID vinculada e concluída.',
                 });
             }
 
@@ -104,7 +105,7 @@ export const iniciarGravacao = async (request, response, next) => {
             rfid = await Rfid.create({
                 tombo_foto_id,
                 epc: epcHexParaGravar,
-                status: 'PENDENTE'
+                status: 'PENDENTE',
             });
         }
 
@@ -113,8 +114,8 @@ export const iniciarGravacao = async (request, response, next) => {
             rfid: {
                 id: rfid.id,
                 epc: rfid.epc,
-                status: rfid.status
-            }
+                status: rfid.status,
+            },
         });
 
     } catch (error) {
@@ -132,7 +133,7 @@ export const finalizarGravacao = async (request, response, next) => {
 
         if (rfid.status === 'CONCLUIDO') {
             return response.status(409).json({
-                erro: 'Ttag já registrada como CONCLUIDO e não pode ser modificada.'
+                erro: 'Ttag já registrada como CONCLUIDO e não pode ser modificada.',
             });
         }
 
@@ -149,7 +150,7 @@ export const finalizarGravacao = async (request, response, next) => {
 
                     if (tagExistente && tagExistente.id !== Number(id)) {
                         return response.status(409).json({
-                            erro: 'TID já se encontra vinculado a outro tombo no sistema.'
+                            erro: 'TID já se encontra vinculado a outro tombo no sistema.',
                         });
                     }
 
@@ -159,7 +160,7 @@ export const finalizarGravacao = async (request, response, next) => {
 
             default:
                 return response.status(400).json({
-                    erro: `Operação negada. Status inválido: '${statusFinal}'.`
+                    erro: `Operação negada. Status inválido: '${statusFinal}'.`,
                 });
         }
 
@@ -168,7 +169,7 @@ export const finalizarGravacao = async (request, response, next) => {
 
         return response.status(200).json({
             mensagem: 'Operação finalizada.',
-            rfid
+            rfid,
         });
 
     } catch (error) {
@@ -212,10 +213,10 @@ export const listagem = async (request, response, next) => {
                     model: TomboFoto,
                     attributes: ['id', 'tombo_hcf', 'codigo_barra', 'caminho_foto'],
                     where: Object.keys(whereFoto).length > 0 ? whereFoto : undefined,
-                    required: Object.keys(whereFoto).length > 0
-                }
+                    required: Object.keys(whereFoto).length > 0,
+                },
             ],
-            order: [['created_at', 'DESC']]
+            order: [['created_at', 'DESC']],
         });
 
         return response.status(200).json({
@@ -223,7 +224,7 @@ export const listagem = async (request, response, next) => {
             meta: {
                 total: rfids.count,
                 pagina,
-                limite
+                limite,
             },
         });
 
@@ -242,14 +243,14 @@ export const listarPendentesRfid = async (request, response, next) => {
 
         const whereCondicao = {
             id: {
-                [Op.notIn]: Sequelize.literal(`(SELECT tombo_foto_id FROM rfids WHERE status = 'CONCLUIDO' AND tombo_foto_id IS NOT NULL)`)
-            }
+                [Op.notIn]: Sequelize.literal('(SELECT tombo_foto_id FROM rfids WHERE status = \'CONCLUIDO\' AND tombo_foto_id IS NOT NULL)'),
+            },
         };
 
         if (q) {
             whereCondicao[Op.or] = [
                 Sequelize.where(Sequelize.cast(Sequelize.col('tombo_hcf'), 'varchar'), { [Op.iLike]: `%${q}%` }),
-                Sequelize.where(Sequelize.cast(Sequelize.col('codigo_barra'), 'varchar'), { [Op.iLike]: `%${q}%` })
+                Sequelize.where(Sequelize.cast(Sequelize.col('codigo_barra'), 'varchar'), { [Op.iLike]: `%${q}%` }),
             ];
         }
 
@@ -279,7 +280,7 @@ export const listarPendentesRfid = async (request, response, next) => {
             ],
             limit: limite,
             offset: offset,
-            order: [['id', 'DESC']]
+            order: [['id', 'DESC']],
         });
 
         const dados = tombosPendentes.rows.map(tomboFoto => {
@@ -301,8 +302,8 @@ export const listarPendentesRfid = async (request, response, next) => {
             meta: {
                 total: tombosPendentes.count,
                 pagina,
-                limite
-            }
+                limite,
+            },
         });
 
     } catch (error) {
@@ -326,24 +327,24 @@ export const validarEpc = async (request, response, next) => {
                                 {
                                     model: Especie,
                                     as: 'especie',
-                                    attributes: ['nome']
+                                    attributes: ['nome'],
                                 },
                                 {
                                     model: Coletor,
                                     as: 'coletor',
-                                    attributes: ['nome']
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ]
+                                    attributes: ['nome'],
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
         });
 
         if (!rfid) {
             return response.status(404).json({
                 valido: false,
-                mensagem: 'EPC não encontrado.'
+                mensagem: 'EPC não encontrado.',
             });
         }
 
@@ -361,8 +362,8 @@ export const validarEpc = async (request, response, next) => {
                 status_rfid: rfidJson.status,
                 tombo_hcf: tombo?.hcf || tomboFoto?.tombo_hcf || 'N/A',
                 nome_cientifico: getNomeCientifico(tombo),
-                coletor_principal: getColetorPrincipal(tombo)
-            }
+                coletor_principal: getColetorPrincipal(tombo),
+            },
         });
 
     } catch (error) {
