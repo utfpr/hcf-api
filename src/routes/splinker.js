@@ -1,4 +1,4 @@
-import { obterModeloSPLinker } from '../controllers/splinker-controller';
+import { obterModeloSPLinker, obterUltimaExecucaoSPLinker } from '../controllers/splinker-controller';
 import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middleware';
 
 export default app => {
@@ -10,5 +10,15 @@ export default app => {
                 TIPOS_USUARIOS.IDENTIFICADOR,
             ]),
             obterModeloSPLinker,
+        ]);
+
+    app.route('/splinker/ultima-execucao')
+        .get([
+            tokensMiddleware([
+                TIPOS_USUARIOS.CURADOR,
+                TIPOS_USUARIOS.OPERADOR,
+                TIPOS_USUARIOS.IDENTIFICADOR,
+            ]),
+            obterUltimaExecucaoSPLinker,
         ]);
 };

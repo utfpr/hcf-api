@@ -1787,7 +1787,7 @@ export const verificarCoordenada = async (request, response, next) => {
             return response.status(400).json({ error: 'Parâmetros Inválidos' });
         }
 
-        const query = `
+        const selectedCityQuery = `
             SELECT ST_Contains(
                 poligono,
                 ST_SetSRID(ST_POINT($1, $2), ${SRID.SIRGAS_2000})
@@ -1796,16 +1796,37 @@ export const verificarCoordenada = async (request, response, next) => {
             WHERE id = $3;
         `;
 
-        const rows = await sequelize.query(query, {
+        const selectedCityRows = await sequelize.query(selectedCityQuery, {
             bind: [longitude, latitude, cidadeId],
             type: models.Sequelize.QueryTypes.SELECT,
         });
 
-        if (!rows || rows.length === 0) {
+        if (!selectedCityRows || selectedCityRows.length === 0) {
             return response.status(404).json({ error: 'Cidade não encontrada' });
         }
 
-        return response.json({ dentro: rows[0].dentro });
+        const cidadeEncontradaQuery = `
+            SELECT c.id,
+                   c.nome,
+                   e.nome AS estado_nome,
+                   e.sigla AS estado_sigla
+            FROM cidades c
+            JOIN estados e ON c.estado_id = e.id
+            WHERE c.poligono IS NOT NULL
+              AND c.poligono && ST_SetSRID(ST_POINT($1, $2), 4674)
+              AND ST_Contains(c.poligono, ST_SetSRID(ST_POINT($1, $2), 4674))
+            LIMIT 1;
+        `;
+
+        const cidadeEncontradaRows = await sequelize.query(cidadeEncontradaQuery, {
+            bind: [longitude, latitude],
+            type: models.Sequelize.QueryTypes.SELECT,
+        });
+
+        return response.json({
+            dentro: selectedCityRows[0].dentro === true,
+            cidade_encontrada: cidadeEncontradaRows[0] || null,
+        });
     } catch (err) {
         return next(err);
     }
