@@ -10,11 +10,17 @@ echo "Iniciando processo de backup: ${FILE_NAME}"
 
 echo "Dumping e comprimindo database..."
 PGPASSWORD="${DATABASE_PASSWORD}" pg_dump \
-  -h "${DATABASE_HOST}" \
-  -p "${DATABASE_PORT}" \
-  -U "${DATABASE_USER}" \
-  -d "${DATABASE_NAME}" \
-  -Fp | gzip > "${TMP_FILE}"
+  --host "${DATABASE_HOST}" \
+  --port "${DATABASE_PORT}" \
+  --username "${DATABASE_USER}" \
+  --dbname "${DATABASE_NAME}" \
+  --clean \
+  --if-exists \
+  --format plain \
+  --encoding UTF-8 \
+  --no-privileges \
+  --no-owner \
+  --verbose | gzip > "${TMP_FILE}"
 
 echo "Enviando para o Google Drive..."
 rclone copy "${TMP_FILE}" gdrive:
