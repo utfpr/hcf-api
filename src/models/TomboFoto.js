@@ -2,15 +2,15 @@ function associate(modelos) {
     const {
         Tombo,
         TomboFoto,
-        Rfid
+        Rfid,
     } = modelos;
 
     TomboFoto.belongsTo(Tombo, {
         foreignKey: 'tombo_hcf',
     });
 
-    TomboFoto.hasMany(Rfid, { 
-        foreignKey: 'tombo_foto_id', as: 'rfids' 
+    TomboFoto.hasMany(Rfid, {
+        foreignKey: 'tombo_foto_id', as: 'rfids',
     });
 }
 

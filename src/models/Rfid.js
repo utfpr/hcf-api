@@ -5,7 +5,7 @@ function associate(modelos) {
     } = modelos;
 
     Rfid.belongsTo(TomboFoto, {
-        foreignKey: 'tombo_foto_id'
+        foreignKey: 'tombo_foto_id',
     });
 
 }
@@ -41,7 +41,7 @@ export default (Sequelize, DataTypes) => {
         status: {
             type: DataTypes.STRING(20),
             allowNull: false,
-            defaultValue: 'PENDENTE', 
+            defaultValue: 'PENDENTE',
         },
     };
 
