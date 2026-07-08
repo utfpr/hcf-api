@@ -1,5 +1,12 @@
 import cluster from 'node:cluster'
 import os from 'node:os'
+import { loadEnvFile } from 'node:process'
+
+try {
+  loadEnvFile('.env')
+} catch {
+  // In CI, environment variables are injected directly into the process
+}
 
 import { createKnexInstance } from '@/factory/KnexFactory'
 import { ConsoleLogger } from '@/infrastructure/ConsoleLogger'
