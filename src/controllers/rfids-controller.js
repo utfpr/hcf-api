@@ -219,8 +219,8 @@ export const listagem = async (request, response, next) => {
         }
 
         const rfids = await Rfid.unscoped().findAndCountAll({
-      attributes: ['id', 'tombo_foto_id', 'epc', 'tid', 'status', 'created_at', 'updated_at'],
-      limit: limite,
+            attributes: ['id', 'tombo_foto_id', 'epc', 'tid', 'status', 'created_at', 'updated_at'],
+            limit: limite,
             offset,
             where: whereRfid,
             include: [
