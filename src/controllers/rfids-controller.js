@@ -20,6 +20,13 @@ const getColetorPrincipal = tombo => (
     tombo?.coletor?.nome || tombo?.Coletor?.nome || 'N/A'
 );
 
+const normalizarTid = tid => (typeof tid === 'string' ? tid.trim() : '');
+
+const tidValido = tid => {
+    const tidNormalizado = normalizarTid(tid);
+    return tidNormalizado.length > 0 && tidNormalizado.toUpperCase() !== 'N/A';
+};
+
 const codificarParaEpcHex = (tomboHcf, codigoBarra) => {
     const tomboId = parseInt(tomboHcf, 10);
     const match = codigoBarra.match(/([a-zA-Z]+)(\d+)/);
@@ -145,8 +152,15 @@ export const finalizarGravacao = async (request, response, next) => {
                 break;
 
             case 'CONCLUIDO':
-                if (tid) {
-                    const tagExistente = await Rfid.findOne({ where: { tid } });
+                if (!tidValido(tid)) {
+                    return response.status(400).json({
+                        erro: 'TID obrigatório para concluir a gravação RFID.',
+                    });
+                }
+
+                {
+                    const tidNormalizado = normalizarTid(tid);
+                    const tagExistente = await Rfid.findOne({ where: { tid: tidNormalizado } });
 
                     if (tagExistente && tagExistente.id !== Number(id)) {
                         return response.status(409).json({
@@ -154,7 +168,7 @@ export const finalizarGravacao = async (request, response, next) => {
                         });
                     }
 
-                    rfid.tid = tid;
+                    rfid.tid = tidNormalizado;
                 }
                 break;
 
@@ -311,12 +325,13 @@ export const listarPendentesRfid = async (request, response, next) => {
     }
 };
 
-export const validarEpc = async (request, response, next) => {
-    const { epc } = request.params;
+export const validarTid = async (request, response, next) => {
+    const { tid } = request.params;
+    const tidNormalizado = normalizarTid(tid);
 
     try {
         const rfid = await Rfid.findOne({
-            where: { epc: epc },
+            where: { tid: tidNormalizado },
             include: [
                 {
                     model: TomboFoto,
@@ -344,7 +359,7 @@ export const validarEpc = async (request, response, next) => {
         if (!rfid) {
             return response.status(404).json({
                 valido: false,
-                mensagem: 'EPC não encontrado.',
+                mensagem: 'TID não encontrado.',
             });
         }
 
@@ -354,9 +369,10 @@ export const validarEpc = async (request, response, next) => {
 
         return response.status(200).json({
             valido: true,
-            mensagem: 'EPC validado com sucesso.',
+            mensagem: 'TID validado com sucesso.',
             dados: {
                 id_rfid: rfidJson.id,
+                tid: rfidJson.tid,
                 epc_formatado: rfidJson.epc,
                 epc: decodificarEpcHex(rfidJson.epc),
                 status_rfid: rfidJson.status,
