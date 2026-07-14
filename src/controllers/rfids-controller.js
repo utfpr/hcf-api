@@ -218,8 +218,9 @@ export const listagem = async (request, response, next) => {
             whereFoto.codigo_barra = codigo_barra;
         }
 
-        const rfids = await Rfid.findAndCountAll({
-            limit: limite,
+        const rfids = await Rfid.unscoped().findAndCountAll({
+      attributes: ['id', 'tombo_foto_id', 'epc', 'tid', 'status', 'created_at', 'updated_at'],
+      limit: limite,
             offset,
             where: whereRfid,
             include: [
