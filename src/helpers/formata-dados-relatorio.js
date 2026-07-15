@@ -425,7 +425,11 @@ export function agruparPorCidade(dados) {
         quantidadeTotal += 1;
     });
 
-    const locais = Object.values(agrupado);
+    const locais = Object.values(agrupado).sort((a, b) => {
+        const estadoComparacao = (a.estado || '').localeCompare(b.estado || '', 'pt-BR');
+        if (estadoComparacao !== 0) return estadoComparacao;
+        return (a.municipio || '').localeCompare(b.municipio || '', 'pt-BR');
+    });
     const locaisComResumo = adicionarResumoTaxonomicoPorLocal(locais);
 
     return {
