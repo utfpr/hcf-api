@@ -102,6 +102,6 @@ export default app => {
 
     app.route('/rfids/tombos-pendentes').get(RfidsController.listarPendentesRfid);
 
-    app.route('/rfids/validar/:epc').get(RfidsController.validarEpc);
+    app.route('/rfids/validar-tid/:tid').get(RfidsController.validarTid);
 
 };
