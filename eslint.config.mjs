@@ -1,6 +1,5 @@
 import js from '@eslint/js'
 import stylistic from '@stylistic/eslint-plugin'
-import type { ESLint } from 'eslint'
 // @ts-expect-error: No declaration file found
 import importHelpers from 'eslint-plugin-import-helpers'
 import { defineConfig } from 'eslint/config'
@@ -15,6 +14,8 @@ export default defineConfig([
       'public/',
       'coverage/',
       'node_modules/',
+      'build.mjs',
+      'eslint.config.mjs',
       '.pnp.cjs',
       '.pnp.loader.mjs',
       '.yarn/',
@@ -27,7 +28,7 @@ export default defineConfig([
       js,
       stylistic,
       tseslint,
-      'import-helpers': importHelpers as unknown as ESLint.Plugin
+      "import-helpers": importHelpers 
     },
     languageOptions: {
       parserOptions: {

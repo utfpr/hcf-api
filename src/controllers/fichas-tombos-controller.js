@@ -1,10 +1,8 @@
 import moment from 'moment-timezone';
-import path from 'path';
 
 import { converteDecimalParaGrausMinutosSegundos } from '~/helpers/coordenadas';
 
-// import identificador from '~/routes/identificador';
-
+import { resolveSource } from '../config/directory';
 import formataColunasSeparadas from '../helpers/formata-colunas-separadas';
 import renderizaArquivoHtml from '../helpers/renderiza-arquivo-html';
 import models from '../models';
@@ -342,7 +340,7 @@ export default function fichaTomboController(request, response, next) {
                 codigo_barras_selecionado: code,
             };
 
-            const caminhoArquivoHtml = path.resolve(__dirname, '../views/ficha-tombo.ejs');
+            const caminhoArquivoHtml = resolveSource('views/ficha-tombo.ejs');
             return renderizaArquivoHtml(caminhoArquivoHtml, parametros)
                 .then(html => {
                     response.status(200).send(html);
