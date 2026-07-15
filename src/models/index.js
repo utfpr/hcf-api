@@ -23,8 +23,10 @@ import ReinoDef from './Reino.js';
 import RelevolDef from './Relevo.js';
 import RemessaDef from './Remessa.js';
 import RetiradaExsiccataDef from './RetiradaExsiccata.js';
+import RfidDef from './Rfid.js';
 import SoloDef from './Solo.js';
 import SpecieslinkDef from './Specieslink.js';
+import SplinkerExecucaoDef from './SplinkerExecucao.js';
 import SubespecieDef from './Subespecie.js';
 import SubfamiliaDef from './Subfamilia.js';
 import TipoDef from './Tipo.js';
@@ -62,7 +64,9 @@ const models = {
     Relevo: RelevolDef(sequelize, Sequelize),
     Remessa: RemessaDef(sequelize, Sequelize),
     RetiradaExsiccata: RetiradaExsiccataDef(sequelize, Sequelize),
+    Rfid: RfidDef(sequelize, Sequelize),
     Solo: SoloDef(sequelize, Sequelize),
+    SplinkerExecucao: SplinkerExecucaoDef(sequelize, Sequelize),
     Specieslink: SpecieslinkDef(sequelize, Sequelize),
     Subespecie: SubespecieDef(sequelize, Sequelize),
     Subfamilia: SubfamiliaDef(sequelize, Sequelize),

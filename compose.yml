@@ -29,6 +29,8 @@ services:
     image: herbario-api:local
     container_name: herbario_api
     env_file: .env
+    environment:
+      PG_HOST: postgres
     ports:
       - $PORT:$PORT
     networks:

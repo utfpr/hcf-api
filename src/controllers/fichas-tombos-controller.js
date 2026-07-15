@@ -1,10 +1,8 @@
 import moment from 'moment-timezone';
-import path from 'path';
 
 import { converteDecimalParaGrausMinutosSegundos } from '~/helpers/coordenadas';
 
-// import identificador from '~/routes/identificador';
-
+import { resolveSource } from '../config/directory';
 import formataColunasSeparadas from '../helpers/formata-colunas-separadas';
 import renderizaArquivoHtml from '../helpers/renderiza-arquivo-html';
 import models from '../models';
@@ -88,6 +86,7 @@ export default function fichaTomboController(request, response, next) {
             const include = [
                 {
                     model: Coletor,
+                    as: 'coletor',
                 },
                 {
                     model: Identificador,
@@ -134,6 +133,9 @@ export default function fichaTomboController(request, response, next) {
                     model: Vegetacao,
                 },
                 {
+                    model: FaseSucessional,
+                },
+                {
                     as: 'local_coleta',
                     model: LocalColeta,
                     include: [
@@ -157,6 +159,18 @@ export default function fichaTomboController(request, response, next) {
                 {
                     model: ColetorComplementar,
                     as: 'coletor_complementar',
+                },
+                {
+                    required: false,
+                    model: Cidade,
+                    include: {
+                        model: Estado,
+                        attributes: ['id', 'nome', 'sigla', 'pais_id'],
+                        include: {
+                            as: 'pais',
+                            model: Pais,
+                        },
+                    },
                 },
             ];
 
@@ -236,10 +250,10 @@ export default function fichaTomboController(request, response, next) {
 
             const { tombo, identificacao, fotos } = resultado;
 
-            const coletores = `${!!tombo?.coletore?.nome !== false ? tombo?.coletore?.nome?.concat(' ') : ''}${tombo?.coletor_complementar ? tombo.coletor_complementar?.complementares : ''}`;
+            const coletores = `${!!tombo?.coletor?.nome !== false ? tombo?.coletor?.nome?.concat(' ') : ''}${tombo?.coletor_complementar ? tombo.coletor_complementar?.complementares : ''}`;
 
             const localColeta = tombo?.local_coleta;
-            const cidade = localColeta?.cidade || '';
+            const cidade = localColeta?.cidade || tombo?.cidade || '';
             const estado = cidade?.estado || '';
             const pais = estado?.pais || '';
 
@@ -295,6 +309,7 @@ export default function fichaTomboController(request, response, next) {
 
                 relevo: tombo?.relevo?.nome || '',
                 vegetacao: tombo?.vegetaco?.nome || '',
+                fase_sucessional: tombo?.fase_sucessional?.nome || '',
 
                 familia: tombo.familia,
                 imprimir: request.params.imprimir_cod,
@@ -325,8 +340,8 @@ export default function fichaTomboController(request, response, next) {
                 codigo_barras_selecionado: code,
             };
 
-            const caminhoArquivoHtml = path.resolve('src/views/ficha-tombo.ejs');
-            return renderizaArquivoHtml(caminhoArquivoHtml, parametros, response)
+            const caminhoArquivoHtml = resolveSource('views/ficha-tombo.ejs');
+            return renderizaArquivoHtml(caminhoArquivoHtml, parametros)
                 .then(html => {
                     response.status(200).send(html);
                 });

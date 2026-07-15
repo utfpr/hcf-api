@@ -1,5 +1,4 @@
-import path from 'path';
-
+import { resolveSource } from '../config/directory';
 import BadRequestException from '../errors/bad-request-exception';
 import PreconditionFailedException from '../errors/precondition-failed-exception';
 import knex from '../factories/knex';
@@ -189,7 +188,7 @@ export default function exportacoes(request, response, next) {
                 .sort(a => a == 'codigo_barra' ? 1 : -1);
             const parametros = { colunas, tombos };
 
-            const caminhoArquivoHtml = path.resolve('src/views/exportacao-tombos.ejs');
+            const caminhoArquivoHtml = resolveSource('views/exportacao-tombos.ejs');
             return renderizaArquivoHtml(caminhoArquivoHtml, parametros)
                 .then(html => {
                     response.status(200).send(html);

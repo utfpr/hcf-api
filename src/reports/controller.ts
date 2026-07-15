@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
-import path from 'path'
 import { ComponentType } from 'react'
 
+import { resolveSource } from '@/config/directory'
 import { generateReport } from '@/reports/reports'
 import InventarioEspecies from '@/reports/templates/InventarioEspecies'
 import LocaisColeta from '@/reports/templates/LocaisColeta'
@@ -23,12 +23,8 @@ const TEMPLATES: Record<string, ComponentType<any>> = {
   RelacaoTombosComColeta
 }
 
-// preview.html is a static file served from the project root; its path is
-// resolved via process.cwd() so it works both in dev (tsx) and in the bundle.
-const PREVIEW_HTML = path.resolve('src/reports/preview.html')
-
 export function reportPreview(_: Request, response: Response) {
-  response.sendFile(PREVIEW_HTML)
+  response.sendFile(resolveSource('reports/preview.html'))
 }
 
 export async function generatePreview(request: Request, response: Response) {
