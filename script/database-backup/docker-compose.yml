@@ -3,6 +3,8 @@ services:
     image: database-backup:local
     container_name: database-backup
     build: .
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       # PostgreSQL
       DATABASE_HOST:     "${DATABASE_HOST}"
