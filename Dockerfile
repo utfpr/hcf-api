@@ -54,20 +54,26 @@ RUN \
     --gid $HCF_API_GID \
     --groups audio,video \
     --shell /usr/sbin/nologin \
-    hcf_api
-
-USER hcf_api
+    hcf_api && \
+  mkdir -p /home/hcf_api/app && \
+  chown hcf_api:hcf_api /home/hcf_api/app
 
 WORKDIR /home/hcf_api/app
 
 COPY --chown=hcf_api:hcf_api package.json yarn.lock ./
+
+USER hcf_api
 
 RUN yarn install --frozen-lockfile --production && \
   yarn cache clean --force
 
 COPY --from=build --chown=hcf_api:hcf_api /usr/src/app/dist ./dist
 COPY --chown=hcf_api:hcf_api ./public ./public
-COPY --from=build --chmod=664 /usr/src/app/dist/reports/assets/fonts/*.ttf /usr/share/fonts/truetype/
+
+USER root
+COPY --from=build /usr/src/app/dist/reports/assets/fonts/*.ttf /usr/share/fonts/truetype/
+RUN chmod 664 /usr/share/fonts/truetype/*.ttf
+USER hcf_api
 
 EXPOSE $PORT
 
