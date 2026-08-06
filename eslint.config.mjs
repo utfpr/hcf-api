@@ -28,7 +28,7 @@ export default defineConfig([
       js,
       stylistic,
       tseslint,
-      "import-helpers": importHelpers 
+      "import-helpers": importHelpers
     },
     languageOptions: {
       parserOptions: {
