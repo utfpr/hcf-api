@@ -71,7 +71,8 @@ COPY --from=build --chown=hcf_api:hcf_api /usr/src/app/dist ./dist
 COPY --chown=hcf_api:hcf_api ./public ./public
 
 USER root
-COPY --from=build --chmod=664 /usr/src/app/dist/reports/assets/fonts/*.ttf /usr/share/fonts/truetype/
+COPY --from=build /usr/src/app/dist/reports/assets/fonts/*.ttf /usr/share/fonts/truetype/
+RUN chmod 664 /usr/share/fonts/truetype/*.ttf
 USER hcf_api
 
 EXPOSE $PORT
