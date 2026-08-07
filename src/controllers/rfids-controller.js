@@ -80,6 +80,53 @@ const decodificarEpcHex = epcHex => {
     }
 };
 
+
+const codificarEpcFormatadoParaHex = epcFormatado => {
+    if (typeof epcFormatado !== 'string') return null;
+
+    const termo = epcFormatado.trim();
+    const match = termo.match(/^(\d+)_([a-zA-Z]+)(\d+)$/);
+
+    if (!match) return null;
+
+    const [, tomboHcf, herbario, numero] = match;
+
+    try {
+        return codificarParaEpcHex(tomboHcf, `${herbario}${numero}`);
+    } catch {
+        return null;
+    }
+};
+
+const criarFiltroEpc = epc => {
+    if (typeof epc !== 'string' || !epc.trim()) return null;
+
+    const termo = epc.trim();
+    const epcHex = codificarEpcFormatadoParaHex(termo);
+
+    if (epcHex) {
+        return {
+            [Op.or]: [
+                { epc: epcHex },
+                { epc: { [Op.iLike]: `%${termo}%` } },
+            ],
+        };
+    }
+
+    return {
+        epc: { [Op.iLike]: `%${termo}%` },
+    };
+};
+
+const formatarRfidResposta = rfid => {
+    const rfidJson = typeof rfid.toJSON === 'function' ? rfid.toJSON() : rfid;
+
+    return {
+        ...rfidJson,
+        epc: decodificarEpcHex(rfidJson.epc),
+        epc_hex: rfidJson.epc,
+    };
+};
 export const iniciarGravacao = async (request, response, next) => {
     const { tombo_foto_id } = request.body;
 
@@ -201,7 +248,7 @@ export const listagem = async (request, response, next) => {
         const whereRfid = {};
 
         if (epc) {
-            whereRfid.epc = { [Op.iLike]: `%${epc}%` };
+            Object.assign(whereRfid, criarFiltroEpc(epc));
         }
 
         if (status) {
@@ -234,8 +281,10 @@ export const listagem = async (request, response, next) => {
             order: [['created_at', 'DESC']],
         });
 
+        const dados = rfids.rows.map(formatarRfidResposta);
+
         return response.status(200).json({
-            dados: rfids.rows,
+            dados,
             meta: {
                 total: rfids.count,
                 pagina,
@@ -374,8 +423,9 @@ export const validarTid = async (request, response, next) => {
             dados: {
                 id_rfid: rfidJson.id,
                 tid: rfidJson.tid,
-                epc_formatado: rfidJson.epc,
                 epc: decodificarEpcHex(rfidJson.epc),
+                epc_hex: rfidJson.epc,
+                epc_formatado: rfidJson.epc,
                 status_rfid: rfidJson.status,
                 tombo_hcf: tombo?.hcf || tomboFoto?.tombo_hcf || 'N/A',
                 nome_cientifico: getNomeCientifico(tombo),
