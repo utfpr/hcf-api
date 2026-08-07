@@ -80,7 +80,6 @@ const decodificarEpcHex = epcHex => {
     }
 };
 
-
 const codificarEpcFormatadoParaHex = epcFormatado => {
     if (typeof epcFormatado !== 'string') return null;
 
