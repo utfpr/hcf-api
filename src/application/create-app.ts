@@ -30,16 +30,22 @@ interface Parameters {
 
 const securityConfig = {
   crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: { policy: 'cross-origin' as const },
   contentSecurityPolicy: {
     directives: {
-      defaultSrc: ['"self"'],
-      styleSrc: ['"self"', '"unsafe-inline"'],
-      scriptSrc: ['"self"'],
+      /* eslint-disable @stylistic/quotes -- CSP keywords require single quotes inside the string */
+      defaultSrc: ["'self'"],
+      styleSrc: [
+        "'self'",
+        "'unsafe-inline'"
+      ],
+      scriptSrc: ["'self'"],
       imgSrc: [
-        '"self"',
-        '"data:"',
-        '"https:"'
+        "'self'",
+        'data:',
+        'https:'
       ]
+      /* eslint-enable @stylistic/quotes */
     }
   }
 }
@@ -65,7 +71,7 @@ export function createApp({
       handle() {
         return Promise.resolve({
           statusCode: StatusCode.Ok,
-          body: { status: 'ok' }
+          body: { status: 'OK' }
         })
       }
     })
