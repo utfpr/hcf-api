@@ -77,4 +77,4 @@ USER hcf_api
 
 EXPOSE $PORT
 
-CMD node dist/index.js
+CMD node dist/application/index.js
