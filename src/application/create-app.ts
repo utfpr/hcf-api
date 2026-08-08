@@ -5,6 +5,7 @@ import { Knex } from 'knex'
 import morgan from 'morgan'
 
 import { ExpressApplication } from '@/infrastructure/ExpressApplication'
+import { StatusCode } from '@/library/http/common'
 import { Route } from '@/library/http/Router'
 import { Logger } from '@/library/logger/Logger'
 
@@ -60,6 +61,14 @@ export function createApp({
       allowedHeaders: cors.allowedHeaders
     }))
     .use(morgan('dev'))
+    .get('/health', {
+      handle() {
+        return Promise.resolve({
+          statusCode: StatusCode.Ok,
+          body: { status: 'ok' }
+        })
+      }
+    })
     // .use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
     // .use('/fotos', express.static(upload))
     // .use('/assets', express.static(assets))
