@@ -15,7 +15,7 @@
 		"tsc:check": "tsc --noEmit",
 		"lint:eslint": "eslint --cache",
 		"lint": "run-p tsc:check lint:eslint",
-		"start": "tsx --watch --env-file=.env src/index.js",
+		"start": "tsx --watch --env-file=.env src/application/index.js",
 		"build": "node build.mjs",
 		"clean": "rimraf dist",
 		"test": "vitest --run",
