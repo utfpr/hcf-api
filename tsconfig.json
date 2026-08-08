@@ -1,11 +1,11 @@
 {
   "compilerOptions": {
-    "target": "es2020",
+    "target": "es2022",
     "lib": [
-      "es2020"
+      "es2022"
     ],
     "jsx": "react",
-    "module": "es2020",
+    "module": "es2022",
     "strict": true,
     "skipLibCheck": true,
     "noUnusedLocals": true,

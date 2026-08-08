@@ -17,3 +17,5 @@ reports/data/settings
 
 *.log
 npm-debug.log
+
+NOTES.md

@@ -2,7 +2,7 @@
 	"name": "hcf-api",
 	"version": "0.1.1",
 	"description": "Projeto para construção da API para o sistema do Herbário da UTFPR",
-	"main": "dist/app/index.js",
+	"main": "dist/application/index.js",
 	"author": "Elaine Sangali <e.nani@gmail.com>",
 	"license": "MIT",
 	"private": true,
@@ -15,10 +15,14 @@
 		"tsc:check": "tsc --noEmit",
 		"lint:eslint": "eslint --cache",
 		"lint": "run-p tsc:check lint:eslint",
-		"start": "tsx --watch --env-file=.env src/index.js",
+		"start": "tsx --watch --env-file=.env src/application/index.js",
 		"build": "node build.mjs",
 		"test": "vitest --run",
-		"test:coverage": "vitest --run --coverage",
+		"test:unit": "vitest --run --project unit",
+    "test:unit:watch": "vitest --project unit",
+		"test:integration": "vitest --run --project integration",
+    "test:integration:watch": "vitest --project integration",
+		"test:coverage": "vitest --run --project unit --coverage",
 		"prepare": "husky",
 		"audit": "npm audit --audit-level=moderate",
 		"audit:fix": "npm audit fix"
@@ -62,10 +66,14 @@
 	"devDependencies": {
 		"@eslint/js": "9.39.1",
 		"@stylistic/eslint-plugin": "5.5.0",
+		"@types/cors": "2.8.19",
 		"@types/express": "5.0.5",
+		"@types/morgan": "1.9.10",
 		"@types/pg": "^8.16.0",
 		"@types/react": "19.2.2",
 		"@types/react-dom": "19.2.2",
+		"@types/supertest": "7.2.0",
+		"@types/swagger-ui-express": "^4.1.8",
 		"@vitest/coverage-v8": "4.0.7",
 		"chai": "6.2.0",
 		"chai-http": "^5.1.2",
@@ -77,9 +85,9 @@
 		"husky": "9.1.7",
 		"npm-run-all": "4.1.5",
 		"tsx": "4.21.0",
+		"supertest": "7.2.2",
 		"typescript": "5.9.3",
 		"typescript-eslint": "8.46.3",
 		"vitest": "4.0.7"
-	},
-	"packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+	}
 }

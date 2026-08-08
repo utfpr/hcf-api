@@ -5,7 +5,7 @@ import {
 import { ApplyMigrationService } from '@/database/apply-migration-service'
 import { MigrationFileSystem } from '@/database/migration-file-system'
 import { MigrationRepository } from '@/database/migration-repository'
-import { Logger } from '@/library/logger'
+import { Logger } from '@/library/logger/Logger'
 
 const logger: Logger = {
   debug: vi.fn(),
