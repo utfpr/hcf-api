@@ -66,7 +66,9 @@ export function createApp({
       methods: cors.methods,
       allowedHeaders: cors.allowedHeaders
     }))
-    .use(morgan('dev'))
+    .use(morgan('dev', {
+      skip: req => req.url === '/health'
+    }))
     .get('/health', {
       handle() {
         return Promise.resolve({

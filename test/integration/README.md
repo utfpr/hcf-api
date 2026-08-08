@@ -1,84 +1,75 @@
-# Integration Tests
+# Testes de integração
 
-Integration tests run against a real PostgreSQL database. **You are responsible for
-starting the container and applying migrations before running the tests.**
+Os testes de integração rodam contra um banco PostgreSQL real. **Você é responsável por
+iniciar o container e aplicar as migrations antes de executar os testes.**
 
-## Prerequisites
+## Pré-requisitos
 
-- Docker installed and running
-- Node.js dependencies installed (`npm install`)
+- Docker instalado e em execução
+- Dependências do Node.js instaladas (`yarn install`)
 
-## First-time setup
+## Configuração inicial
 
-### 1. Start the test database
+### 1. Inicie o banco de testes
 
 ```bash
 docker compose -f compose.integration.yml up -d
 ```
 
-This starts a PostgreSQL container on port **5433** using the credentials in `.env`.
+Isso sobe um container PostgreSQL na porta **5433** usando as credenciais do `.env`.
 
-### 2. Apply migrations
+### 2. Aplique as migrations
 
 ```bash
 npm run migration:apply
 ```
 
-This runs the full migration stack against the database defined in `.env`. You only need to
-re-run this when new migrations are added.
+Isso executa o stack completo de migrations no banco definido no `.env`. Você só precisa
+rodar de novo quando novas migrations forem adicionadas.
 
-## Running the tests
+## Executando os testes
 
 ```bash
 npm run test:integration
 ```
 
-The test suite connects to the already-running database and executes all tests
-in `test/integration/`. No schema changes are made at test time.
+A suíte de testes conecta ao banco já em execução e roda todos os testes
+em `test/integration/`. Nenhuma alteração de schema é feita no momento do teste.
 
-For watch mode (re-runs on file changes):
+Para o modo watch (reexecuta ao mudar arquivos):
 
 ```bash
 npm run test:integration:watch
 ```
 
-## Stopping the database
+## Parando o banco
 
 ```bash
 docker compose -f compose.integration.yml down
 ```
 
-Since the container uses `tmpfs`, all data is lost when it stops. Start fresh
-next time with `docker compose up -d` followed by `migration:apply`.
+Como o container usa `tmpfs`, todos os dados são perdidos ao parar. Na próxima vez,
+comece do zero com `docker compose up -d` seguido de `migration:apply`.
 
 ---
 
-## Writing new integration tests
+## Escrevendo novos testes de integração
 
-Each test file must own its data:
+Cada teste deve ser dono dos seus dados:
 
-- **`beforeAll`** — insert only the rows your tests need, using a unique prefix in any
-  identifier column (sigla, nome, etc.) that distinguishes your rows from other test files.
-- **`afterAll`** — delete your rows and call `knex.destroy()` to release the connection pool.
-- Never use `TRUNCATE` — it would wipe data owned by other test files running in parallel.
+- Insira as linhas necessárias **dentro do próprio teste**, usando um prefixo único em qualquer
+  coluna identificadora (sigla, nome, etc.) que distinga suas linhas das de outros arquivos de teste.
+- Limpe os dados inseridos em um bloco `finally`, para que a limpeza rode mesmo se a asserção falhar.
+- **`afterAll`** — chame `knex.destroy()` para liberar o pool de conexões.
+- Nunca use `TRUNCATE` — isso apagaria dados de outros arquivos de teste que rodam em paralelo.
 
-See `test/integration/pais/lista-paises.test.ts` for a concrete example.
+Veja `test/integration/pais/lista-paises.test.ts` para um exemplo concreto.
 
-### Seed helpers
+### Convenção de namespace
 
-Reusable seed/cleanup functions live in `test/integration/setup/seeds/`. Create one file per
-domain entity. Each file should export:
+Use um prefixo curto e único nos identificadores para evitar colisões entre arquivos de teste:
 
-| Export | Purpose |
+| Arquivo de teste | Prefixo usado |
 |---|---|
-| `seed*(knex)` | Inserts rows and returns them with auto-generated IDs |
-| `cleanup*(knex)` | Deletes only the rows owned by that seed file |
-
-### Namespace convention
-
-Use a short, unique prefix for identifiers to avoid collisions between test files:
-
-| Test file | Prefix used |
-|---|---|
-| `lista-paises.test.ts` | `XPBR`/`XPAR` (pais sigla), `XPAI ` (nome prefix) |
-| `lista-estados.test.ts` | `XEBR`/`XEAR` (pais sigla), `XEPR`/`XESP`/`XEBA` (estado sigla) |
+| `lista-paises.test.ts` | `XPBR`/`XPAR`/`XPCB` (sigla do país), `XPAI`/`XPCI` (prefixo do nome) |
+| `lista-estados.test.ts` | `XEBR` (sigla do país), `XEPR`/`XESP` (sigla do estado) |
