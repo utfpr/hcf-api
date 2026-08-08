@@ -9,7 +9,7 @@ import { StatusCode } from '@/library/http/common'
 import { Route } from '@/library/http/Router'
 import { Logger } from '@/library/logger/Logger'
 
-import { upload } from '../config/directory'
+import { assets, upload } from '../config/directory'
 import legacyErrors from '../middlewares/erros-middleware'
 import { generatePreview, reportPreview } from '../reports/controller'
 import { routes as createEstadoRoutes } from './estado'
@@ -71,7 +71,17 @@ export function createApp({
     })
     // .use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
     // .use('/fotos', express.static(upload))
-    // .use('/assets', express.static(assets))
+    .use(
+      '/assets',
+      express.static(assets, {
+        index: false,
+        redirect: false,
+        setHeaders: res => {
+          res.setHeader('Cache-Control', 'public, max-age=2592000, immutable')
+          res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin')
+        }
+      })
+    )
     .use(
       '/uploads',
       express.static(upload, {
