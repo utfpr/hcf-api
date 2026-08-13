@@ -10,7 +10,7 @@ Arquitetura:
 
 Fluxo:
 
-`cron -> backup.sh -> pg_dump -Fp -> gzip -> rclone copy -> retenção`
+`cron -> backup.sh -> pg_dump -Fp -> gzip -> rclone copy -> retenção (-> notificação por e-mail em caso de falha)`
 
 ## Formato do backup
 
@@ -37,6 +37,23 @@ Veja `.env.example` para o contrato completo.
 - `RETENTION_WEEKLY` (default: `4`)
 - `CRON_SCHEDULE` (ex.: `0 2 * * *`)
 - `TZ` (ex.: `America/Sao_Paulo`)
+- `SMTP_HOST`
+- `SMTP_PORT`
+- `SMTP_USER`
+- `SMTP_PASS`
+- `SMTP_FROM`
+- `NOTIFY_EMAIL_TO` (1 ou mais e-mails separados por vírgula)
+- `NOTIFY_EMAIL_ENABLED` (default: `true`)
+
+## Notificação de falha
+
+O container instala e configura o cliente `msmtp` (via `/etc/msmtprc`, gerado no `entrypoint.sh` a partir das variáveis `SMTP_*`).
+
+- O `backup.sh` captura toda a sua saída em um log temporário e usa um `trap ERR` para detectar qualquer falha (`pg_dump`, `rclone`, retenção, etc.).
+- Em caso de falha, um e-mail é enviado via `msmtp` para todos os endereços listados em `NOTIFY_EMAIL_TO` (separados por vírgula), com assunto, horário (`TZ`) e as últimas linhas do log.
+- Em caso de sucesso, nenhum e-mail é enviado.
+- `NOTIFY_EMAIL_ENABLED=false` desliga a notificação sem precisar remover as demais variáveis.
+- Se o próprio envio do e-mail falhar (SMTP fora do ar, credenciais inválidas etc.), isso é apenas logado — o script continua terminando com o código de saída original da falha do backup (a notificação nunca mascara o erro real).
 
 ## Política de retenção
 

@@ -3,6 +3,8 @@ services:
     image: database-backup:local
     container_name: database-backup
     build: .
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       # PostgreSQL
       DATABASE_HOST:     "${DATABASE_HOST}"
@@ -20,3 +22,12 @@ services:
 
       CRON_SCHEDULE:     "${CRON_SCHEDULE}"
       TZ:                "${TZ}"
+
+      # SMTP / Notificações
+      SMTP_HOST:         "${SMTP_HOST}"
+      SMTP_PORT:         "${SMTP_PORT}"
+      SMTP_USER:         "${SMTP_USER}"
+      SMTP_PASS:         "${SMTP_PASS}"
+      SMTP_FROM:         "${SMTP_FROM}"
+      NOTIFY_EMAIL_TO:      "${NOTIFY_EMAIL_TO}"
+      NOTIFY_EMAIL_ENABLED: "${NOTIFY_EMAIL_ENABLED}"
