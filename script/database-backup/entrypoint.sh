@@ -10,9 +10,26 @@ token = ${GDRIVE_TOKEN}
 root_folder_id = ${GDRIVE_FOLDER_ID}
 EOF
 
+echo "Configurando msmtp..."
+cat <<EOF > /etc/msmtprc
+defaults
+auth           on
+tls            on
+tls_trust_file /etc/ssl/certs/ca-certificates.crt
+logfile        /var/log/msmtp.log
+
+account        default
+host           ${SMTP_HOST}
+port           ${SMTP_PORT}
+from           ${SMTP_USER}
+user           ${SMTP_USER}
+password       ${SMTP_PASS}
+EOF
+chmod 600 /etc/msmtprc
+
 echo "Configuring cron job with schedule: $CRON_SCHEDULE ($TZ)"
 
-printenv | grep -E "^(DATABASE_|GDRIVE_|RETENTION_|CRON_SCHEDULE|TZ)" >> /etc/environment
+printenv | grep -E "^(DATABASE_|GDRIVE_|RETENTION_|CRON_SCHEDULE|TZ|SMTP_|NOTIFY_)" >> /etc/environment
 
 echo "$CRON_SCHEDULE /backup.sh 1> /proc/1/fd/1 2> /proc/1/fd/2" | crontab -
 

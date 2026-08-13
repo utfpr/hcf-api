@@ -2,6 +2,55 @@
 
 set -euo pipefail
 
+LOG_FILE=$(mktemp)
+exec > >(tee -a "${LOG_FILE}") 2>&1
+
+notify_failure() {
+  local exit_code=$1
+  local line_no=$2
+
+  if [ "${NOTIFY_EMAIL_ENABLED:-true}" != "true" ]; then
+    return 0
+  fi
+
+  if [ -z "${NOTIFY_EMAIL_TO:-}" ]; then
+    echo "NOTIFY_EMAIL_TO não configurado, pulando notificação por e-mail" >&2
+    return 0
+  fi
+
+  IFS=',' read -ra RAW_RECIPIENTS <<< "${NOTIFY_EMAIL_TO}"
+  local recipients=()
+  for r in "${RAW_RECIPIENTS[@]}"; do
+    r="$(echo -n "$r" | xargs)"
+    [ -n "$r" ] && recipients+=("$r")
+  done
+
+  if [ "${#recipients[@]}" -eq 0 ]; then
+    echo "Nenhum destinatário válido em NOTIFY_EMAIL_TO" >&2
+    return 0
+  fi
+
+  local subject="[FALHA] Backup do banco ${DATABASE_NAME} - $(date '+%Y-%m-%d %H:%M:%S') (${TZ:-UTC})"
+
+  {
+    echo "Subject: ${subject}"
+    echo "From: ${SMTP_FROM}"
+    echo "To: $(IFS=,; echo "${recipients[*]}")"
+    echo "Content-Type: text/plain; charset=UTF-8"
+    echo
+    echo "Falha no backup do banco: ${DATABASE_NAME}"
+    echo "Horário da tentativa: $(date '+%Y-%m-%d %H:%M:%S') (${TZ:-UTC})"
+    echo "Código de saída: ${exit_code} (linha ${line_no})"
+    echo
+    echo "Últimas linhas do log:"
+    tail -n 50 "${LOG_FILE}" 2>/dev/null || echo "(log indisponível)"
+  } | msmtp "${recipients[@]}" || echo "Falha ao enviar e-mail de notificação via msmtp" >&2
+
+  return 0
+}
+
+trap 'notify_failure $? $LINENO' ERR
+
 TIMESTAMP=$(date +%s)
 FILE_NAME="${DATABASE_NAME}_${TIMESTAMP}.sql.gz"
 TMP_FILE="/tmp/${FILE_NAME}"

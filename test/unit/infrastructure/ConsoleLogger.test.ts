@@ -3,7 +3,7 @@ import {
 } from 'vitest'
 import type { MockInstance } from 'vitest'
 
-import { ConsoleLogger } from '@/infrastructure/logger'
+import { ConsoleLogger } from '@/infrastructure/ConsoleLogger'
 
 describe('Infrastructure > ConsoleLogger', () => {
   let consoleDebugSpy: MockInstance
