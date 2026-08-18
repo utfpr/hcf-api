@@ -529,7 +529,7 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
                 Sequelize.where(
                     literal(`
               make_date(
-                (data_coleta_ano)::int,
+                COALESCE(NULLIF(data_coleta_ano, 0), 1)::int,
                 COALESCE(NULLIF(data_coleta_mes, 0), 1)::int,
                 COALESCE(NULLIF(data_coleta_dia, 0), 1)::int
               )

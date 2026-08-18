@@ -252,7 +252,7 @@ export function agruparPorLocal(dados) {
         const genero = (a?.genero?.nome || '').localeCompare(b?.genero?.nome || '');
         if (genero !== 0) return genero;
 
-        return (a?.especy?.nome || '').localeCompare(b?.especy?.nome || '');
+        return (a?.especie?.nome || '').localeCompare(b?.especie?.nome || '');
     }).forEach(entradaOriginal => {
         const locaisColetum = entradaOriginal.locais_coletum;
         const cidade = locaisColetum?.cidade;
@@ -268,7 +268,7 @@ export function agruparPorLocal(dados) {
             latitude: entradaOriginal?.latitude || null,
             longitude: entradaOriginal?.longitude || null,
             variedade: entradaOriginal.variedade || null,
-            sub_especie: entradaOriginal.sub_especy || null,
+            sub_especie: entradaOriginal.sub_especie || null,
         };
 
         if (!agrupado[chave]) {
@@ -321,7 +321,7 @@ export function adicionarResumoTaxonomicoPorLocal(locaisAgrupados) {
             }
 
             // espécie
-            const especieId = reg.especie_id ?? reg.especy?.id;
+            const especieId = reg.especie_id ?? reg.especie?.id;
             if (especieId != null) {
                 especies.add(especieId);
             }
