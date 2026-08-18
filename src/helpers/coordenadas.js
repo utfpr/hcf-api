@@ -6,17 +6,21 @@ const CHAR_SEC = '\u0022';
 const CHAR_SEP = '\u0020';
 
 export const converteParaDecimal = coordenada => {
-    const regex = /^(\d+)\D+(\d+)\D+(\d+(?:[.,]\d+)?)\W+([NSWE])$/;
-    const matches = coordenada.match(regex);
-
-    if (matches.length < 5) {
+    if (typeof coordenada !== 'string') {
         throw new Error('Coordenada inválida');
     }
 
-    const graus = parseInt(matches[1]);
-    const minutos = parseInt(matches[2]);
+    const regex = /^(\d+)\D+(\d+)\D+(\d+(?:[.,]\d+)?)\W+([NSWE])$/i;
+    const matches = coordenada.trim().match(regex);
+
+    if (!matches) {
+        throw new Error('Coordenada inválida');
+    }
+
+    const graus = parseInt(matches[1], 10);
+    const minutos = parseInt(matches[2], 10);
     const segundos = parseFloat(matches[3].replace(',', '.'));
-    const hemisferio = matches[4];
+    const hemisferio = matches[4].toUpperCase();
 
     const sinal = (['S', 'W'].includes(hemisferio)) ? -1 : 1;
 
@@ -180,13 +184,9 @@ export const converteDecimalParaGrausMinutosSegundos = (gDec, ehLat, formatada) 
     segundos = aux;
 
     if (ehLat) {
-        // Eixo X
-        if (graus < 0) direcao = 'W';
-        else direcao = 'E';
+        direcao = graus < 0 ? 'S' : 'N';
     } else {
-        // Eixo Y
-        if (graus >= 0) direcao = 'N';
-        else direcao = 'S';
+        direcao = graus < 0 ? 'W' : 'E';
     }
 
     if (formatada) {
