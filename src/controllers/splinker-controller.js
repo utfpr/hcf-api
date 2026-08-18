@@ -164,10 +164,10 @@ const obterModeloSPlinkerLotes = async (limit, offset, request, response) => {
         const city = tombo.locais_coletum?.cidade?.nome || '\t';
         const locality = tombo.locais_coletum?.descricao || '\t';
         const latitude = tombo.latitude
-            ? converteDecimalParaGrausMinutosSegundos(tombo.latitude, false, true)
+            ? converteDecimalParaGrausMinutosSegundos(tombo.latitude, true, true)
             : '\t';
         const longitude = tombo.longitude
-            ? converteDecimalParaGrausMinutosSegundos(tombo.longitude, true, true)
+            ? converteDecimalParaGrausMinutosSegundos(tombo.longitude, false, true)
             : '\t';
         const elevation = tombo.altitude ? `${tombo.altitude} m` : '\t';
         const identificationDate = [
