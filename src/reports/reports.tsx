@@ -22,64 +22,63 @@ export async function generateReport<P extends React.Attributes>(Component: Comp
     titulo
   )
 
-  const browser = await puppeteer.launch({
-    headless: true,
-    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage', // Avoid /dev/shm usage
-      '--disable-accelerated-2d-canvas',
-      '--disable-gpu', // GPU not typically available in containers
-      '--no-zygote', // Disable Chrome zygote process
-      '--single-process', // Run in single process mode
-      '--no-first-run',
-      '--disable-extensions',
-      '--disable-background-networking',
-      '--disable-background-timer-throttling',
-      '--disable-backgrounding-occluded-windows',
-      '--disable-breakpad',
-      '--disable-client-side-phishing-detection',
-      '--disable-component-extensions-with-background-pages',
-      '--disable-default-apps',
-      '--disable-features=site-per-process,TranslateUI,BlinkGenPropertyTrees',
-      '--disable-hang-monitor',
-      '--disable-ipc-flooding-protection',
-      '--disable-popup-blocking',
-      '--disable-prompt-on-repost',
-      '--disable-renderer-backgrounding',
-      '--disable-sync',
-      '--force-color-profile=srgb',
-      '--metrics-recording-only',
-      '--safebrowsing-disable-auto-update',
-      '--enable-automation',
-      '--password-store=basic',
-      '--use-mock-keychain',
-    ]
-  })
-  const page = await browser.newPage()
+  const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH
+  let browser: Awaited<ReturnType<typeof puppeteer.launch>> | undefined
 
-  await page.setContent(htmlContent, { waitUntil: 'networkidle0' })
-  await Promise.all([
-    page.addStyleTag({
+  try {
+    // --single-process/--no-zygote crash current Chrome in containers (TargetCloseError).
+    browser = await puppeteer.launch({
+      headless: true,
+      ...(executablePath ? { executablePath } : {}),
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--no-first-run',
+        '--disable-extensions',
+        '--disable-background-networking',
+        '--disable-background-timer-throttling',
+        '--disable-backgrounding-occluded-windows',
+        '--disable-breakpad',
+        '--disable-client-side-phishing-detection',
+        '--disable-component-extensions-with-background-pages',
+        '--disable-default-apps',
+        '--disable-hang-monitor',
+        '--disable-ipc-flooding-protection',
+        '--disable-popup-blocking',
+        '--disable-prompt-on-repost',
+        '--disable-renderer-backgrounding',
+        '--disable-sync',
+        '--force-color-profile=srgb',
+        '--metrics-recording-only',
+        '--safebrowsing-disable-auto-update',
+        '--enable-automation',
+        '--password-store=basic',
+        '--use-mock-keychain',
+      ]
+    })
+    const page = await browser.newPage()
+
+    await page.setContent(htmlContent, { waitUntil: 'domcontentloaded' })
+    await page.addStyleTag({
       path: resolveSource('reports/assets/styles/root.css')
     })
-  ])
 
-  const date = new Date().toLocaleDateString('pt-BR')
+    const date = new Date().toLocaleDateString('pt-BR')
 
-  const buffer = await page.pdf({
-    format: 'A4',
-    printBackground: true,
-    timeout: 120000,
-    margin: {
-      top: '0',
-      right: '0',
-      bottom: '50px',
-      left: '0'
-    },
-    displayHeaderFooter: true,
-    footerTemplate: `
+    return await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      timeout: 120000,
+      margin: {
+        top: '0',
+        right: '0',
+        bottom: '50px',
+        left: '0'
+      },
+      displayHeaderFooter: true,
+      footerTemplate: `
       <div style="width: 100%; font-size: 10px; padding: 0 20px; color: #555; display: flex; justify-content: space-between; align-items: center;">
         <span>${date}</span>
         <div>
@@ -87,10 +86,9 @@ export async function generateReport<P extends React.Attributes>(Component: Comp
         </div>
       </div>
     `,
-    headerTemplate: `<div></div>`
-  })
-
-  await browser.close()
-
-  return buffer
+      headerTemplate: `<div></div>`
+    })
+  } finally {
+    await browser?.close()
+  }
 }
