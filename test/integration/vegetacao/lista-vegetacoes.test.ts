@@ -14,7 +14,11 @@ describe('GET /api/v2/vegetacoes', () => {
   afterAll(() => knex.destroy())
 
   test('retorna a lista ordenada por id decrescente como padrão', async () => {
-    const nomes = ['XVEG Mata Atlântica', 'XVEG Restinga', 'XVEG Campo']
+    const nomes = [
+      'XVEG Mata Atlântica',
+      'XVEG Restinga',
+      'XVEG Campo'
+    ]
 
     const inserted = await knex('vegetacoes')
       .insert(nomes.map(nome => ({ nome })))
@@ -30,7 +34,11 @@ describe('GET /api/v2/vegetacoes', () => {
   })
 
   test('filtra por nome sem diferenciar maiúsculas e minúsculas', async () => {
-    const nomes = ['XVEG Floresta', 'XVEG Cerrado', 'XVEG Outros']
+    const nomes = [
+      'XVEG Floresta',
+      'XVEG Cerrado',
+      'XVEG Outros'
+    ]
     const inserted = await knex('vegetacoes')
       .insert(nomes.map(nome => ({ nome })))
       .returning<Vegetacao[]>(returning)
@@ -44,7 +52,11 @@ describe('GET /api/v2/vegetacoes', () => {
   })
 
   test('aceita ordenação customizada por nome e id', async () => {
-    const nomes = ['XVEG Z', 'XVEG A', 'XVEG M']
+    const nomes = [
+      'XVEG Z',
+      'XVEG A',
+      'XVEG M'
+    ]
     const inserted = await knex('vegetacoes')
       .insert(nomes.map(nome => ({ nome })))
       .returning<Vegetacao[]>(returning)
@@ -81,11 +93,15 @@ describe('GET /api/v2/vegetacoes/:vegetacaoId', () => {
 
   test('retorna 404 para id inexistente', async () => {
     const response = await agent.get('/api/v2/vegetacoes/999999').expect(404)
-    expect(response.body.error.message).toMatch(/não encontrado|not found|not found/i)
+    const body = response.body as { error: { message: string } }
+
+    expect(body.error.message).toMatch(/não encontrado|not found/i)
   })
 
   test('retorna 400 para id inválido', async () => {
     const response = await agent.get('/api/v2/vegetacoes/abc').expect(400)
-    expect(response.body.error.message).toMatch(/inválido|invalid/i)
+    const body = response.body as { error: { message: string } }
+
+    expect(body.error.message).toMatch(/inválido|invalid/i)
   })
 })
