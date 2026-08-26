@@ -47,16 +47,16 @@ jobs:
       PG_PORT: 5432
       PG_DATABASE: herbario_test
       PG_USERNAME: postgres
-      PG_PASSWORD: testpassword
+      PG_PASSWORD: secret
       PG_MIGRATION_USERNAME: postgres
-      PG_MIGRATION_PASSWORD: testpassword
+      PG_MIGRATION_PASSWORD: secret
     services:
       postgres:
         image: postgis/postgis:18-3.6
         env:
           POSTGRES_DB: herbario_test
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: testpassword
+          POSTGRES_PASSWORD: secret
         ports:
           - 5432:5432
         options: >-
