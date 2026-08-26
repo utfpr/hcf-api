@@ -95,7 +95,7 @@ describe('GET /api/v2/vegetacoes/:vegetacaoId', () => {
     const response = await agent.get('/api/v2/vegetacoes/999999').expect(404)
     const body = response.body as { error: { message: string } }
 
-    expect(body.error.message).toMatch(/não encontrado|not found/i)
+    expect(body.error.message).toMatch(/não encontrad[ao]|not found/i)
   })
 
   test('retorna 400 para id inválido', async () => {
