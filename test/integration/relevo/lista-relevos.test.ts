@@ -95,13 +95,15 @@ describe('GET /api/v2/relevos/:relevoId', () => {
 
   test('retorna 404 para id inexistente', async () => {
     const response = await agent.get('/api/v2/relevos/999999').expect(404)
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    expect(response.body.error.message).toMatch(/não encontrado|not found|not found/i)
+    const body = response.body as { error: { message: string } }
+
+    expect(body.error.message).toMatch(/não encontrad[ao]|not found/i)
   })
 
   test('retorna 400 para id inválido', async () => {
     const response = await agent.get('/api/v2/relevos/abc').expect(400)
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    expect(response.body.error.message).toMatch(/inválido|invalid/i)
+    const body = response.body as { error: { message: string } }
+
+    expect(body.error.message).toMatch(/inválido|invalid/i)
   })
 })
