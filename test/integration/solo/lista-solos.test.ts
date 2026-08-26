@@ -14,7 +14,11 @@ describe('GET /api/v2/solos', () => {
   afterAll(() => knex.destroy())
 
   test('retorna a lista ordenada por id decrescente como padrão', async () => {
-    const nomes = ['XSOL Arenoso', 'XSOL Argiloso', 'XSOL Pedregoso']
+    const nomes = [
+      'XSOL Arenoso',
+      'XSOL Argiloso',
+      'XSOL Pedregoso'
+    ]
 
     const inserted = await knex('solos')
       .insert(nomes.map(nome => ({ nome })))
@@ -30,7 +34,11 @@ describe('GET /api/v2/solos', () => {
   })
 
   test('filtra por nome sem diferenciar maiúsculas e minúsculas', async () => {
-    const nomes = ['XSOL Arenoso', 'XSOL Argiloso', 'XSOL Pedregoso']
+    const nomes = [
+      'XSOL Arenoso',
+      'XSOL Argiloso',
+      'XSOL Pedregoso'
+    ]
     const inserted = await knex('solos')
       .insert(nomes.map(nome => ({ nome })))
       .returning<Solo[]>(returning)
@@ -44,7 +52,11 @@ describe('GET /api/v2/solos', () => {
   })
 
   test('aceita ordenação customizada por nome e id', async () => {
-    const nomes = ['XSOL Z', 'XSOL A', 'XSOL M']
+    const nomes = [
+      'XSOL Z',
+      'XSOL A',
+      'XSOL M'
+    ]
     const inserted = await knex('solos')
       .insert(nomes.map(nome => ({ nome })))
       .returning<Solo[]>(returning)
@@ -81,11 +93,13 @@ describe('GET /api/v2/solos/:soloId', () => {
 
   test('retorna 404 para id inexistente', async () => {
     const response = await agent.get('/api/v2/solos/999999').expect(404)
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(response.body.error.message).toMatch(/não encontrado|not found|not found/i)
   })
 
   test('retorna 400 para id inválido', async () => {
     const response = await agent.get('/api/v2/solos/abc').expect(400)
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(response.body.error.message).toMatch(/inválido|invalid/i)
   })
 })
