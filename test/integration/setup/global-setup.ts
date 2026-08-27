@@ -39,10 +39,11 @@ export async function setup(): Promise<void> {
   try {
     await knex.raw('SELECT 1')
     await truncateTables(knex)
-  } catch {
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error)
     throw new Error(
-      `Cannot connect to the test database (${PG_HOST}:${PG_PORT}/${PG_DATABASE}). `
-      + 'Start the container and apply the schema before running e2e tests — '
+      `Cannot prepare the test database (${PG_HOST}:${PG_PORT}/${PG_DATABASE}): ${reason}. `
+      + 'Start the container (schema is applied on first boot) — '
       + 'see test/integration/README.md'
     )
   } finally {
@@ -51,5 +52,5 @@ export async function setup(): Promise<void> {
 }
 
 export async function teardown(): Promise<void> {
-  // Container lifecycle is managed by the developer — see test/e2e/README.md
+  // Container lifecycle is managed by the developer — see test/integration/README.md
 }
