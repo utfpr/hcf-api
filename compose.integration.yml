@@ -2,13 +2,12 @@ services:
   postgres:
     image: postgis/postgis:18-3.6
     container_name: herbario_postgresql_test
-    env_file: .env.test
     environment:
-      POSTGRES_DB: $PG_DATABASE
-      POSTGRES_USER: $PG_USERNAME
-      POSTGRES_PASSWORD: $PG_PASSWORD
+      POSTGRES_DB: herbario_test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
     ports:
-      - "${PG_PORT}:5432"
+      - "5433:5432"
     volumes:
       - ./test/integration/setup/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
     tmpfs:

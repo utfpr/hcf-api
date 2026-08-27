@@ -48,8 +48,6 @@ jobs:
       PG_DATABASE: herbario_test
       PG_USERNAME: postgres
       PG_PASSWORD: secret
-      PG_MIGRATION_USERNAME: postgres
-      PG_MIGRATION_PASSWORD: secret
     services:
       postgres:
         image: postgis/postgis:18-3.6
@@ -74,9 +72,9 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
       - name: Apply base schema
-        run: psql -h $PG_HOST -p $PG_PORT -U $PG_MIGRATION_USERNAME -d $PG_DATABASE -f test/integration/setup/schema.sql
+        run: psql -h $PG_HOST -p $PG_PORT -U $PG_USERNAME -d $PG_DATABASE -f test/integration/setup/schema.sql
         env:
-          PGPASSWORD: ${{ env.PG_MIGRATION_PASSWORD }}
+          PGPASSWORD: ${{ env.PG_PASSWORD }}
       - name: Run integration tests
         run: yarn test:integration
 
