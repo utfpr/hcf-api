@@ -1,7 +1,9 @@
 # Testes de integração
 
-Os testes de integração rodam contra um banco PostgreSQL real. **Você é responsável por
-iniciar o container e aplicar as migrations antes de executar os testes.**
+Os testes de integração sobem o Express in-process (via `supertest`) e falam com
+um PostgreSQL/PostGIS real. **Você é responsável por iniciar o container antes
+de executar os testes.** O schema é aplicado automaticamente na primeira
+inicialização do banco (`schema.sql` montado em `docker-entrypoint-initdb.d`).
 
 ## Pré-requisitos
 
@@ -16,30 +18,34 @@ iniciar o container e aplicar as migrations antes de executar os testes.**
 docker compose -f compose.integration.yml up -d
 ```
 
-Isso sobe um container PostgreSQL na porta **5433** usando as credenciais do `.env`.
+Isso sobe um PostgreSQL na porta **5433** (`herbario_test` / `postgres` / `secret`),
+os mesmos valores de `.env.test`. O arquivo Compose já fixa `POSTGRES_*` e a porta;
+não depende do `.env` da aplicação.
 
-### 2. Aplique as migrations
+### 2. Schema (sem migrations)
 
-```bash
-npm run migration:apply
-```
+A suíte **não** executa `migration:apply`. Muitos arquivos em
+`src/database/migration/` são incrementais, dependem de dados reais ou ainda
+usam SQL de MySQL — não dá para replayar o histórico no Postgres de teste.
 
-Isso executa o stack completo de migrations no banco definido no `.env`. Você só precisa
-rodar de novo quando novas migrations forem adicionadas.
+O contrato é: `schema.sql` é um dump do schema **já migrado**. Quando uma
+migration alterar o schema que os testes usam, regenere o dump e commite junto.
 
 ## Executando os testes
 
 ```bash
-npm run test:integration
+yarn test:integration
 ```
 
-A suíte de testes conecta ao banco já em execução e roda todos os testes
-em `test/integration/`. Nenhuma alteração de schema é feita no momento do teste.
+A suíte conecta ao banco já em execução e roda os arquivos em
+`test/integration/**/*.test.ts`. Nenhuma alteração de schema é feita no momento
+do teste. O `globalSetup` apenas verifica a conexão e faz `TRUNCATE` das tabelas
+usadas pelos testes.
 
 Para o modo watch (reexecuta ao mudar arquivos):
 
 ```bash
-npm run test:integration:watch
+yarn test:integration:watch
 ```
 
 ## Parando o banco
@@ -48,8 +54,8 @@ npm run test:integration:watch
 docker compose -f compose.integration.yml down
 ```
 
-Como o container usa `tmpfs`, todos os dados são perdidos ao parar. Na próxima vez,
-comece do zero com `docker compose up -d` seguido de `migration:apply`.
+Como o container usa `tmpfs`, todos os dados (e o schema) são perdidos ao parar.
+Na próxima vez, comece do zero com `docker compose -f compose.integration.yml up -d`.
 
 ---
 
@@ -61,15 +67,6 @@ Cada teste deve ser dono dos seus dados:
   coluna identificadora (sigla, nome, etc.) que distinga suas linhas das de outros arquivos de teste.
 - Limpe os dados inseridos em um bloco `finally`, para que a limpeza rode mesmo se a asserção falhar.
 - **`afterAll`** — chame `knex.destroy()` para liberar o pool de conexões.
-- Nunca use `TRUNCATE` — isso apagaria dados de outros arquivos de teste que rodam em paralelo.
+- Nunca use `TRUNCATE` no arquivo de teste — isso apagaria dados de outros arquivos que rodam em paralelo.
 
 Veja `test/integration/pais/lista-paises.test.ts` para um exemplo concreto.
-
-### Convenção de namespace
-
-Use um prefixo curto e único nos identificadores para evitar colisões entre arquivos de teste:
-
-| Arquivo de teste | Prefixo usado |
-|---|---|
-| `lista-paises.test.ts` | `XPBR`/`XPAR`/`XPCB` (sigla do país), `XPAI`/`XPCI` (prefixo do nome) |
-| `lista-estados.test.ts` | `XEBR` (sigla do país), `XEPR`/`XESP` (sigla do estado) |
