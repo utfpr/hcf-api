@@ -307,7 +307,7 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
 
                 const campos = [
                     'PreservedSpecimen', 'Colecao', 'pt', dataAtualizacao, '02.032.297/0005-26',
-                    'UTFPR', 'Herbario da Universidade Tecnologica Federal do Parana – Campus Campo Mourao – HCF',
+                'UTFPR', 'HCF',
                     license, 'UTFPR', `{"barcode":"${foto.codigo_barra}"}`, `Br:UTFPR:HCF:${tombo.hcf}`,
                     tombo.hcf, coletores,
                     tombo.numero_coleta, '', tombo.observacao, dataColeta,
@@ -329,7 +329,7 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
 
             const campos = [
                 'PreservedSpecimen', 'Colecao', 'pt', dataAtualizacao, '02.032.297/0005-26',
-                'UTFPR', 'Herbario da Universidade Tecnologica Federal do Parana – Campus Campo Mourao – HCF',
+                'UTFPR', 'HCF',
                 license, 'UTFPR', '{"barcode":""}', `Br:UTFPR:HCF:${tombo.hcf}`,
                 tombo.hcf, coletores,
                 tombo.numero_coleta, '', tombo.observacao, dataColeta,
