@@ -35,7 +35,7 @@ COMMENT ON SCHEMA public IS '';
 -- Name: topology; Type: SCHEMA; Schema: -; Owner: -
 --
 
-CREATE SCHEMA topology;
+CREATE SCHEMA IF NOT EXISTS topology;
 
 
 --

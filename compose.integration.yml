@@ -1,11 +1,11 @@
 services:
   postgres:
     image: postgis/postgis:18-3.6
-    container_name: herbario_postgresql_e2e
+    container_name: herbario_postgresql_test
     environment:
-      POSTGRES_DB: herbario_e2e
+      POSTGRES_DB: herbario_test
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: testpassword
+      POSTGRES_PASSWORD: secret
     ports:
       - "5433:5432"
     volumes:
