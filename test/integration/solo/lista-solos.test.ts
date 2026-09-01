@@ -13,11 +13,12 @@ describe('GET /api/v2/solos', () => {
 
   afterAll(() => knex.destroy())
 
-  test('retorna a lista ordenada por id decrescente como padrão', async () => {
+  test('retorna a lista ordenada por id decrescente como padrão dentro do prefixo do teste', async () => {
+    const prefix = 'XSOL'
     const nomes = [
-      'XSOL Arenoso',
-      'XSOL Argiloso',
-      'XSOL Pedregoso'
+      `${prefix} Arenoso`,
+      `${prefix} Argiloso`,
+      `${prefix} Pedregoso`
     ]
 
     const inserted = await knex('solos')
@@ -25,7 +26,7 @@ describe('GET /api/v2/solos', () => {
       .returning<Solo[]>(returning)
 
     try {
-      const response = await agent.get('/api/v2/solos').expect(200)
+      const response = await agent.get(`/api/v2/solos?nome=${prefix}`).expect(200)
       const expected = [...inserted].sort((a, b) => b.id - a.id)
       expect(response.body).toEqual(expected)
     } finally {
@@ -34,39 +35,60 @@ describe('GET /api/v2/solos', () => {
   })
 
   test('filtra por nome sem diferenciar maiúsculas e minúsculas', async () => {
+    const prefix = 'XSOL'
     const nomes = [
-      'XSOL Arenoso',
-      'XSOL Argiloso',
-      'XSOL Pedregoso'
+      `${prefix} Arenoso`,
+      `${prefix} Argiloso`,
+      `${prefix} Pedregoso`
     ]
     const inserted = await knex('solos')
       .insert(nomes.map(nome => ({ nome })))
       .returning<Solo[]>(returning)
 
     try {
-      const response = await agent.get('/api/v2/solos?nome=arenoso').expect(200)
-      expect(response.body).toEqual(inserted.filter(item => item.nome === 'XSOL Arenoso'))
+      const response = await agent.get(`/api/v2/solos?nome=${prefix} arenoso`).expect(200)
+      expect(response.body).toEqual(inserted.filter(item => item.nome === `${prefix} Arenoso`))
     } finally {
       await knex('solos').whereIn('nome', nomes).delete()
     }
   })
 
   test('aceita ordenação customizada por nome e id', async () => {
+    const prefix = 'XSOL'
     const nomes = [
-      'XSOL Z',
-      'XSOL A',
-      'XSOL M'
+      `${prefix} Z`,
+      `${prefix} A`,
+      `${prefix} M`
     ]
     const inserted = await knex('solos')
       .insert(nomes.map(nome => ({ nome })))
       .returning<Solo[]>(returning)
 
     try {
-      const byNameAsc = await agent.get('/api/v2/solos?order=nome:asc').expect(200)
+      const byNameAsc = await agent.get(`/api/v2/solos?nome=${prefix}&order=nome:asc`).expect(200)
       expect(byNameAsc.body).toEqual([...inserted].sort((a, b) => a.nome.localeCompare(b.nome)))
 
-      const byIdAsc = await agent.get('/api/v2/solos?order=id:asc').expect(200)
+      const byIdAsc = await agent.get(`/api/v2/solos?nome=${prefix}&order=id:asc`).expect(200)
       expect(byIdAsc.body).toEqual([...inserted].sort((a, b) => a.id - b.id))
+    } finally {
+      await knex('solos').whereIn('nome', nomes).delete()
+    }
+  })
+
+  test('retorna 400 quando a ordenação é inválida', async () => {
+    const prefix = 'XSOL'
+    const nomes = [
+      `${prefix} Z`,
+      `${prefix} A`,
+      `${prefix} M`
+    ]
+
+    await knex('solos').insert(nomes.map(nome => ({ nome })))
+
+    try {
+      const response = await agent.get(`/api/v2/solos?nome=${prefix}&order=foo:bar`).expect(400)
+      const body = response.body as { error: { message: string } }
+      expect(body.error.message).toMatch(/inválido|invalid/i)
     } finally {
       await knex('solos').whereIn('nome', nomes).delete()
     }
