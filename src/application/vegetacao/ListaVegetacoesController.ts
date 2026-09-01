@@ -2,6 +2,7 @@ import { ListaVegetacoesUseCase } from '@/domain/vegetacao/ListaVegetacoesUseCas
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
+import { BadRequestError } from '@/library/http/error/BadRequestError'
 import { HttpError } from '@/library/http/error/HttpError'
 import { InternalServerError } from '@/library/http/error/InternalServerError'
 import { NextHandler, RequestHandler } from '@/library/http/Server'
@@ -23,9 +24,14 @@ export class ListaVegetacoesController implements RequestHandler {
       order?: string
     }
 
+    const parsedOrder = parseOrder(order)
+    if (parsedOrder instanceof Error) {
+      return new BadRequestError({ message: parsedOrder.message })
+    }
+
     const result = await this.listaVegetacoesUseCase.execute({
       nome,
-      order: parseOrder(order)
+      order: parsedOrder
     })
 
     if (result.left()) {
@@ -36,15 +42,24 @@ export class ListaVegetacoesController implements RequestHandler {
   }
 }
 
-function parseOrder(order?: string): { column: 'id' | 'nome'; direction: 'asc' | 'desc' } | undefined {
+function parseOrder(order?: string): { column: 'id' | 'nome'; direction: 'asc' | 'desc' } | Error | undefined {
   if (!order) return undefined
 
-  const [column, direction] = order.split(':')
-  const normalizedColumn = column === 'nome' || column === 'id' ? column : 'id'
-  const normalizedDirection = direction === 'asc' || direction === 'desc' ? direction : 'desc'
+  const pieces = order.split(':')
+  if (pieces.length !== 2) {
+    return new Error('order inválido. Use o formato "id:asc", "id:desc", "nome:asc" ou "nome:desc"')
+  }
+
+  const [rawColumn, rawDirection] = pieces
+  const column = rawColumn.trim().toLowerCase()
+  const direction = rawDirection.trim().toLowerCase()
+
+  if ((column !== 'id' && column !== 'nome') || (direction !== 'asc' && direction !== 'desc')) {
+    return new Error('order inválido. Use o formato "id:asc", "id:desc", "nome:asc" ou "nome:desc"')
+  }
 
   return {
-    column: normalizedColumn,
-    direction: normalizedDirection
+    column,
+    direction
   }
 }
