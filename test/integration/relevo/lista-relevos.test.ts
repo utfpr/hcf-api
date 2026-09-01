@@ -13,11 +13,12 @@ describe('GET /api/v2/relevos', () => {
 
   afterAll(() => knex.destroy())
 
-  test('retorna a lista ordenada por id decrescente como padrão', async () => {
+  test('retorna a lista ordenada por id decrescente como padrão dentro do prefixo do teste', async () => {
+    const prefix = 'XREL'
     const nomes = [
-      'XREL Plano',
-      'XREL Inclinado',
-      'XREL Ondulado'
+      `${prefix} Plano`,
+      `${prefix} Inclinado`,
+      `${prefix} Ondulado`
     ]
 
     const inserted = await knex('relevos')
@@ -25,7 +26,7 @@ describe('GET /api/v2/relevos', () => {
       .returning<Relevo[]>(returning)
 
     try {
-      const response = await agent.get('/api/v2/relevos').expect(200)
+      const response = await agent.get(`/api/v2/relevos?nome=${prefix}`).expect(200)
       const expected = [...inserted].sort((a, b) => b.id - a.id)
       expect(response.body).toEqual(expected)
     } finally {
@@ -34,10 +35,11 @@ describe('GET /api/v2/relevos', () => {
   })
 
   test('filtra por nome sem diferenciar maiúsculas e minúsculas', async () => {
+    const prefix = 'XREL'
     const nomes = [
-      'XREL Plano',
-      'XREL Inclinado',
-      'XREL Ondulado'
+      `${prefix} Plano`,
+      `${prefix} Inclinado`,
+      `${prefix} Ondulado`
     ]
 
     const inserted = await knex('relevos')
@@ -45,18 +47,19 @@ describe('GET /api/v2/relevos', () => {
       .returning<Relevo[]>(returning)
 
     try {
-      const response = await agent.get('/api/v2/relevos?nome=plano').expect(200)
-      expect(response.body).toEqual(inserted.filter(item => item.nome === 'XREL Plano'))
+      const response = await agent.get(`/api/v2/relevos?nome=${prefix} plano`).expect(200)
+      expect(response.body).toEqual(inserted.filter(item => item.nome === `${prefix} Plano`))
     } finally {
       await knex('relevos').whereIn('nome', nomes).delete()
     }
   })
 
   test('aceita ordenação customizada por nome e id', async () => {
+    const prefix = 'XREL'
     const nomes = [
-      'XREL Z',
-      'XREL A',
-      'XREL M'
+      `${prefix} Z`,
+      `${prefix} A`,
+      `${prefix} M`
     ]
 
     const inserted = await knex('relevos')
@@ -64,11 +67,30 @@ describe('GET /api/v2/relevos', () => {
       .returning<Relevo[]>(returning)
 
     try {
-      const byNameAsc = await agent.get('/api/v2/relevos?order=nome:asc').expect(200)
+      const byNameAsc = await agent.get(`/api/v2/relevos?nome=${prefix}&order=nome:asc`).expect(200)
       expect(byNameAsc.body).toEqual([...inserted].sort((a, b) => a.nome.localeCompare(b.nome)))
 
-      const byIdAsc = await agent.get('/api/v2/relevos?order=id:asc').expect(200)
+      const byIdAsc = await agent.get(`/api/v2/relevos?nome=${prefix}&order=id:asc`).expect(200)
       expect(byIdAsc.body).toEqual([...inserted].sort((a, b) => a.id - b.id))
+    } finally {
+      await knex('relevos').whereIn('nome', nomes).delete()
+    }
+  })
+
+  test('retorna 400 quando a ordenação é inválida', async () => {
+    const prefix = 'XREL'
+    const nomes = [
+      `${prefix} Z`,
+      `${prefix} A`,
+      `${prefix} M`
+    ]
+
+    await knex('relevos').insert(nomes.map(nome => ({ nome })))
+
+    try {
+      const response = await agent.get(`/api/v2/relevos?nome=${prefix}&order=foo:bar`).expect(400)
+      const body = response.body as { error: { message: string } }
+      expect(body.error.message).toMatch(/inválido|invalid/i)
     } finally {
       await knex('relevos').whereIn('nome', nomes).delete()
     }
