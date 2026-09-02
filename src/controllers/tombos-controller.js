@@ -131,7 +131,7 @@ export const cadastro = (request, response, next) => {
                 if (paisagem && paisagem.fase_sucessional_id) {
                     return FaseSucessional.findOne({
                         where: {
-                            numero: paisagem.fase_sucessional_id,
+                            id: paisagem.fase_sucessional_id,
                         },
                         transaction,
                     });
@@ -950,7 +950,7 @@ export const getDadosCadTombo = (request, response, next) => {
             retorno.vegetacoes = vegetacoes.rows;
         })
         .then(() => FaseSucessional.findAndCountAll({
-            attributes: ['numero', 'nome'],
+            attributes: ['id', 'nome'],
             order: [['nome', 'ASC']],
             transaction,
         }))
@@ -1256,7 +1256,7 @@ export const obterTombo = async (request, response, next) => {
                     relevoInicial: tombo.relevo !== null ? tombo.relevo?.nome : '',
                     idVegetacaoInicial: tombo.vegetaco !== null ? tombo.vegetaco?.id : '',
                     vegetacaoInicial: tombo.vegetaco !== null ? tombo.vegetaco?.nome : '',
-                    idFaseInicial: tombo.fase_sucessional !== null ? tombo.fase_sucessional?.numero : '',
+                    idFaseInicial: tombo.fase_sucessional !== null ? tombo.fase_sucessional?.id : '',
                     faseInicial: tombo.fase_sucessional !== null ? tombo.fase_sucessional?.nome : '',
                     colecaoInicial: tombo.colecoes_anexa !== null ? tombo.colecoes_anexa?.tipo : '',
                     complementoInicial: tombo.localizacao !== null && tombo.localizacao !== undefined ? tombo.localizacao?.complemento : '',
