@@ -1,18 +1,33 @@
 import { type Knex } from 'knex'
 
-import { BuscarVegetacaoPorIdUseCase } from '@/domain/vegetacao/BuscarVegetacaoPorIdUseCase'
+import { BuscaVegetacaoPorIdUseCase } from '@/domain/vegetacao/BuscaVegetacaoPorIdUseCase'
+import { CadastraVegetacaoUseCase } from '@/domain/vegetacao/CadastraVegetacaoUseCase'
 import { ListaVegetacoesUseCase } from '@/domain/vegetacao/ListaVegetacoesUseCase'
+import { RemoveVegetacaoUseCase } from '@/domain/vegetacao/RemoveVegetacaoUseCase'
+import { RenomeiaVegetacaoUseCase } from '@/domain/vegetacao/RenomeiaVegetacaoUseCase'
 import { VegetacaoCollectionKnexAdapter } from '@/infrastructure/VegetacaoCollectionKnexAdapter'
 import { Method } from '@/library/http/common'
 import { Route } from '@/library/http/Router'
 
-import { BuscarVegetacaoController } from './BuscarVegetacaoController'
+import { BuscaVegetacaoController } from './BuscaVegetacaoController'
+import { CadastraVegetacaoController } from './CadastraVegetacaoController'
 import { ListaVegetacoesController } from './ListaVegetacoesController'
+import { RemoveVegetacaoController } from './RemoveVegetacaoController'
+import { RenomeiaVegetacaoController } from './RenomeiaVegetacaoController'
 
 export function routes(knex: Knex): Route[] {
   const vegetacaoCollection = new VegetacaoCollectionKnexAdapter({ knex })
 
   return [
+    {
+      handlers: [
+        new CadastraVegetacaoController({
+          cadastraVegetacaoUseCase: new CadastraVegetacaoUseCase({ vegetacaoCollection })
+        })
+      ],
+      method: Method.Post,
+      path: '/v2/vegetacoes'
+    },
     {
       handlers: [
         new ListaVegetacoesController({
@@ -24,11 +39,29 @@ export function routes(knex: Knex): Route[] {
     },
     {
       handlers: [
-        new BuscarVegetacaoController({
-          buscarVegetacaoPorIdUseCase: new BuscarVegetacaoPorIdUseCase({ vegetacaoCollection })
+        new BuscaVegetacaoController({
+          buscaVegetacaoPorIdUseCase: new BuscaVegetacaoPorIdUseCase({ vegetacaoCollection })
         })
       ],
       method: Method.Get,
+      path: '/v2/vegetacoes/:vegetacaoId'
+    },
+    {
+      handlers: [
+        new RenomeiaVegetacaoController({
+          renomeiaVegetacaoUseCase: new RenomeiaVegetacaoUseCase({ vegetacaoCollection })
+        })
+      ],
+      method: Method.Put,
+      path: '/v2/vegetacoes/:vegetacaoId'
+    },
+    {
+      handlers: [
+        new RemoveVegetacaoController({
+          removeVegetacaoUseCase: new RemoveVegetacaoUseCase({ vegetacaoCollection })
+        })
+      ],
+      method: Method.Delete,
       path: '/v2/vegetacoes/:vegetacaoId'
     }
   ]
