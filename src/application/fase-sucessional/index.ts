@@ -1,12 +1,12 @@
 import { type Knex } from 'knex'
 
-import { BuscarFaseSucessionalUseCase } from '@/domain/faseSucessional/BuscarFaseSucessionalUseCase'
+import { BuscaFaseSucessionalUseCase } from '@/domain/faseSucessional/BuscaFaseSucessionalUseCase'
 import { ListaFasesSucessionaisUseCase } from '@/domain/faseSucessional/ListaFasesSucessionaisUseCase'
 import { FaseSucessionalCollectionKnexAdapter } from '@/infrastructure/FaseSucessionalCollectionKnexAdapter'
 import { Method } from '@/library/http/common'
 import { Route } from '@/library/http/Router'
 
-import { BuscarFaseSucessionalController } from './BuscarFaseSucessionalController'
+import { BuscaFaseSucessionalController } from './BuscaFaseSucessionalController'
 import { ListaFasesSucessionaisController } from './ListaFasesSucessionaisController'
 
 export function routes(knex: Knex): Route[] {
@@ -24,8 +24,8 @@ export function routes(knex: Knex): Route[] {
     },
     {
       handlers: [
-        new BuscarFaseSucessionalController({
-          buscarFaseSucessionalUseCase: new BuscarFaseSucessionalUseCase({ faseSucessionalCollection })
+        new BuscaFaseSucessionalController({
+          buscaFaseSucessionalUseCase: new BuscaFaseSucessionalUseCase({ faseSucessionalCollection })
         })
       ],
       method: Method.Get,
