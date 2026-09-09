@@ -1,12 +1,12 @@
 import { type Knex } from 'knex'
 
-import { BuscarSoloPorIdUseCase } from '@/domain/solo/BuscarSoloPorIdUseCase'
+import { BuscaSoloPorIdUseCase } from '@/domain/solo/BuscaSoloPorIdUseCase'
 import { ListaSolosUseCase } from '@/domain/solo/ListaSolosUseCase'
 import { SoloCollectionKnexAdapter } from '@/infrastructure/SoloCollectionKnexAdapter'
 import { Method } from '@/library/http/common'
 import { Route } from '@/library/http/Router'
 
-import { BuscarSoloController } from './BuscarSoloController'
+import { BuscaSoloController } from './BuscaSoloController'
 import { ListaSolosController } from './ListaSolosController'
 
 export function routes(knex: Knex): Route[] {
@@ -24,8 +24,8 @@ export function routes(knex: Knex): Route[] {
     },
     {
       handlers: [
-        new BuscarSoloController({
-          buscarSoloPorIdUseCase: new BuscarSoloPorIdUseCase({ soloCollection })
+        new BuscaSoloController({
+          buscaSoloPorIdUseCase: new BuscaSoloPorIdUseCase({ soloCollection })
         })
       ],
       method: Method.Get,

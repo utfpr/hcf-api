@@ -1,0 +1,32 @@
+---
+description: Type and file names use 3rd-person present verbs, not the infinitive, in Portuguese or English
+globs: "{src,test}/**/*.{ts,js}"
+alwaysApply: false
+---
+
+# Type and file names
+
+Name new controllers, use cases, and their tests after the **action as a finite verb**: 3rd-person singular present (the form that agrees with “it does X”). Do not use the infinitive (“to X”) or the bare uninflected stem.
+
+The same conjugation rule applies in Portuguese and in English. Keep the language of a module consistent; do not mix languages in one type or file name.
+
+## How to name a type
+
+1. Choose the action verb in the module’s language.
+2. Inflect it to 3rd-person singular present.
+3. Append the resource noun (plural for a collection, singular for one entity).
+4. Append the role suffix (`Controller`, `UseCase`, and the same for other application/domain types).
+
+| Role | Pattern |
+| --- | --- |
+| List a collection | `{Verb}{Resources}Controller` / `{Verb}{Resources}UseCase` |
+| Get one by id | `{Verb}{Resource}UseCase` (and matching controller) |
+| Tests | One file per action; kebab-case of the same verb + resource stem |
+
+Type files are PascalCase and match the exported type. Test files use kebab-case of that stem (for example `lists-countries.test.ts`), not a different verb and not several actions in one file.
+
+## When renaming
+
+Delete the old file. Do not leave unused duplicates that use the infinitive or a different inflection.
+
+Do not copy drifted names already in the tree. Match the inflection rule above for every new module.
