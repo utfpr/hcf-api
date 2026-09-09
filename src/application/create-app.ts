@@ -59,7 +59,6 @@ export function createApp({
     ...createPaisRoutes(knex),
     ...createEstadoRoutes(knex),
     ...createFaseSucessionalRoutes(knex),
-    ...createFaseSucessionalRoutes(knex),
     ...createVegetacaoRoutes(knex)
   ]
   const application = new ExpressApplication({ logger })

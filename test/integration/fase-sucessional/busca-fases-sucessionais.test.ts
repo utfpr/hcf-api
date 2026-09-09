@@ -40,7 +40,7 @@ describe('GET /api/v2/fases-sucessionais/:faseSucessionalId', () => {
     expect(body.error.message).toMatch(/inválido|invalid/i)
   })
 
-  test('retorna 400 para id inválido', async () => {
+  test('retorna 400 para id negativo', async () => {
     const response = await agent.get('/api/v2/fases-sucessionais/-12').expect(400)
     const body = response.body as { error: { message: string } }
 
