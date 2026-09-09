@@ -14,8 +14,9 @@ describe('GET /api/v2/fases-sucessionais/:faseSucessionalId', () => {
   afterAll(() => knex.destroy())
 
   test('retorna o registro encontrado', async () => {
+    const nome = `XFAS_BUSCA_${Date.now()}`
     const [faseSucessional] = await knex('fase_sucessional')
-      .insert({ nome: 'XFAS Fase Encontrada' })
+      .insert({ nome })
       .returning<FaseSucessional[]>(returning)
 
     try {

@@ -14,7 +14,7 @@ describe('GET /api/v2/fases-sucessionais', () => {
   afterAll(() => knex.destroy())
 
   test('retorna a lista ordenada por id decrescente como padrão dentro do prefixo do teste', async () => {
-    const prefix = 'XFAS'
+    const prefix = `XFAS_LISTA_${Date.now()}`
     const nomes = [
       `${prefix} Inicial`,
       `${prefix} Médio`,
@@ -35,7 +35,7 @@ describe('GET /api/v2/fases-sucessionais', () => {
   })
 
   test('filtra por nome sem diferenciar maiúsculas e minúsculas', async () => {
-    const prefix = 'XFAS'
+    const prefix = `XFAS_FILTRO_${Date.now()}`
     const nomes = [
       `${prefix} Inicial`,
       `${prefix} Médio`,
@@ -55,7 +55,7 @@ describe('GET /api/v2/fases-sucessionais', () => {
   })
 
   test('aceita ordenação customizada por nome e id', async () => {
-    const prefix = 'XFAS'
+    const prefix = `XFAS_ORDEM_${Date.now()}`
     const nomes = [
       `${prefix} Z`,
       `${prefix} A`,
@@ -78,7 +78,7 @@ describe('GET /api/v2/fases-sucessionais', () => {
   })
 
   test('retorna 400 quando a ordenação é inválida', async () => {
-    const prefix = 'XFAS'
+    const prefix = `XFAS_ORDEM_INVALIDA_${Date.now()}`
     const nomes = [
       `${prefix} Z`,
       `${prefix} A`,
