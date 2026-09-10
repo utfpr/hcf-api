@@ -306,8 +306,7 @@ const obterModeloDarwinCoreLotes = async (limit, offset, request, response) => {
                 const dataAtualizacao = format(tombo.updated_at, 'yyyy-MM-dd');
 
                 const campos = [
-                    'PreservedSpecimen', 'Colecao', 'pt', dataAtualizacao, '02.032.297/0005-26',
-                'UTFPR', 'HCF',
+                    'PreservedSpecimen', 'Colecao', 'pt', dataAtualizacao, '02.032.297/0005-26', 'UTFPR', 'HCF',
                     license, 'UTFPR', `{"barcode":"${foto.codigo_barra}"}`, `Br:UTFPR:HCF:${tombo.hcf}`,
                     tombo.hcf, coletores,
                     tombo.numero_coleta, '', tombo.observacao, dataColeta,
