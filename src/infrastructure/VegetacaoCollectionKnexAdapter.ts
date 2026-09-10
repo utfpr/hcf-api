@@ -6,6 +6,32 @@ import { Either } from '@/library/either/Either'
 
 import { CollectionError } from './error/CollectionError'
 
+const DUPLICATE_VEGETACAO_MESSAGE = 'Já existe uma vegetação com esse nome'
+const VEGETACAO_IN_USE_MESSAGE = 'Vegetação está em uso e não pode ser removida'
+
+function isDuplicateVegetacaoError(error: unknown): boolean {
+  const code = typeof error === 'object' && error !== null && 'code' in error ? String((error as { code?: unknown }).code) : ''
+  const details = typeof error === 'object' && error !== null && 'detail' in error ? String((error as { detail?: unknown }).detail) : ''
+  const message = typeof error === 'object' && error !== null && 'message' in error ? String((error as { message?: unknown }).message) : ''
+  const constraint = typeof error === 'object' && error !== null && 'constraint' in error ? String((error as { constraint?: unknown }).constraint) : ''
+
+  return code === '23505'
+    || (constraint.toLowerCase().includes('vegetacoes') && constraint.toLowerCase().includes('nome'))
+    || details.toLowerCase().includes('already exists')
+    || message.toLowerCase().includes('duplicate key value violates unique constraint')
+}
+
+function isVegetacaoInUseError(error: unknown): boolean {
+  const code = typeof error === 'object' && error !== null && 'code' in error ? String((error as { code?: unknown }).code) : ''
+  const message = typeof error === 'object' && error !== null && 'message' in error ? String((error as { message?: unknown }).message) : ''
+  const constraint = typeof error === 'object' && error !== null && 'constraint' in error ? String((error as { constraint?: unknown }).constraint) : ''
+
+  return code === '23503'
+    || message.toLowerCase().includes('violates foreign key constraint')
+    || message.toLowerCase().includes('is still referenced from table')
+    || constraint.toLowerCase().includes('vegetacao')
+}
+
 interface Dependencies {
   knex: Knex
 }
@@ -71,7 +97,7 @@ export class VegetacaoCollectionKnexAdapter implements VegetacaoCollection {
     }
 
     if (existing.value) {
-      return Either.left(new CollectionError({ message: 'Já existe uma vegetação com esse nome' }))
+      return Either.left(new CollectionError({ message: DUPLICATE_VEGETACAO_MESSAGE }))
     }
 
     try {
@@ -81,6 +107,10 @@ export class VegetacaoCollectionKnexAdapter implements VegetacaoCollection {
 
       return Either.right(vegetacao)
     } catch (error) {
+      if (isDuplicateVegetacaoError(error)) {
+        return Either.left(new CollectionError({ message: DUPLICATE_VEGETACAO_MESSAGE, cause: error }))
+      }
+
       const cause = error instanceof Error ? error : new Error(String(error))
       return Either.left(new CollectionError({ message: cause.message, cause }))
     }
@@ -95,7 +125,7 @@ export class VegetacaoCollectionKnexAdapter implements VegetacaoCollection {
     }
 
     if (existing.value) {
-      return Either.left(new CollectionError({ message: 'Já existe uma vegetação com esse nome' }))
+      return Either.left(new CollectionError({ message: DUPLICATE_VEGETACAO_MESSAGE }))
     }
 
     try {
@@ -106,6 +136,10 @@ export class VegetacaoCollectionKnexAdapter implements VegetacaoCollection {
 
       return Either.right(vegetacao ?? null)
     } catch (error) {
+      if (isDuplicateVegetacaoError(error)) {
+        return Either.left(new CollectionError({ message: DUPLICATE_VEGETACAO_MESSAGE, cause: error }))
+      }
+
       const cause = error instanceof Error ? error : new Error(String(error))
       return Either.left(new CollectionError({ message: cause.message, cause }))
     }
@@ -116,6 +150,10 @@ export class VegetacaoCollectionKnexAdapter implements VegetacaoCollection {
       const deleted = await this.knex<Attributes>('vegetacoes').where({ id }).delete()
       return Either.right(deleted > 0)
     } catch (error) {
+      if (isVegetacaoInUseError(error)) {
+        return Either.left(new CollectionError({ message: VEGETACAO_IN_USE_MESSAGE, cause: error }))
+      }
+
       const cause = error instanceof Error ? error : new Error(String(error))
       return Either.left(new CollectionError({ message: cause.message, cause }))
     }

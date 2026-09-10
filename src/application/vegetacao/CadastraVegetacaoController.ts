@@ -36,8 +36,7 @@ export class CadastraVegetacaoController implements RequestHandler {
     const result = await this.cadastraVegetacaoUseCase.execute({ nome: normalized })
 
     if (result.left()) {
-      const message = result.value.message.toLowerCase()
-      if (message.includes('duplicate') || message.includes('unique') || message.includes('already') || message.includes('exist')) {
+      if (result.value.message === 'Já existe uma vegetação com esse nome') {
         return new ConflictError({ message: 'Já existe uma vegetação com esse nome' })
       }
       return new InternalServerError({ message: result.value.message })

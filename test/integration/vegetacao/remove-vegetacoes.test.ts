@@ -1,3 +1,4 @@
+import jwt from 'jsonwebtoken'
 import {
   afterAll,
   describe,
@@ -8,6 +9,11 @@ import {
 import { createTestApp } from '../setup/app-factory'
 
 type Vegetacao = { id: number; nome: string }
+
+const buildAuthHeader = () => {
+  const token = jwt.sign({ id: 1, tipo_usuario_id: 1 }, process.env.JWT_SECRET ?? 'test-secret')
+  return { Authorization: `Bearer ${token}` }
+}
 
 describe('DELETE /api/v2/vegetacoes/:vegetacaoId', () => {
   const { agent, knex } = createTestApp()
@@ -21,7 +27,7 @@ describe('DELETE /api/v2/vegetacoes/:vegetacaoId', () => {
       .returning(['id', 'nome']) as Vegetacao[]
 
     try {
-      await agent.delete(`/api/v2/vegetacoes/${vegetacao.id}`).expect(204)
+      await agent.delete(`/api/v2/vegetacoes/${vegetacao.id}`).set(buildAuthHeader()).expect(204)
       const found = await knex('vegetacoes').where({ id: vegetacao.id }).first()
       expect(found).toBeUndefined()
     } finally {
@@ -45,7 +51,7 @@ describe('DELETE /api/v2/vegetacoes/:vegetacaoId', () => {
         updated_at: new Date()
       })
 
-      const response = await agent.delete(`/api/v2/vegetacoes/${vegetacao.id}`).expect(409)
+      const response = await agent.delete(`/api/v2/vegetacoes/${vegetacao.id}`).set(buildAuthHeader()).expect(409)
       const body = response.body as { error: { message: string } }
 
       expect(body.error.message).toMatch(/em uso|in use|uso/i)

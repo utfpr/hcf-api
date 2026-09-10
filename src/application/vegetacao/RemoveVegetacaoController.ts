@@ -36,8 +36,7 @@ export class RemoveVegetacaoController implements RequestHandler {
     const result = await this.removeVegetacaoUseCase.execute({ id: Number(vegetacaoId) })
 
     if (result.left()) {
-      const message = result.value.message.toLowerCase()
-      if (message.includes('foreign') || message.includes('integrity') || message.includes('constraint') || message.includes('in use') || message.includes('referenc')) {
+      if (result.value.message === 'Vegetação está em uso e não pode ser removida') {
         return new ConflictError({ message: 'Vegetação está em uso e não pode ser removida' })
       }
       return new InternalServerError({ message: result.value.message })

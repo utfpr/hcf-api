@@ -4,6 +4,7 @@ import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
 import { BadRequestError } from '@/library/http/error/BadRequestError'
+import { ConflictError } from '@/library/http/error/ConflictError'
 import { HttpError } from '@/library/http/error/HttpError'
 import { InternalServerError } from '@/library/http/error/InternalServerError'
 import { NotFoundError } from '@/library/http/error/NotFoundError'
@@ -47,9 +48,8 @@ export class RenomeiaVegetacaoController implements RequestHandler {
     const result = await this.renomeiaVegetacaoUseCase.execute({ id: parsedId, nome: nome.trim() })
 
     if (result.left()) {
-      const message = result.value.message.toLowerCase()
-      if (message.includes('duplicate') || message.includes('unique') || message.includes('already') || message.includes('exist')) {
-        return new BadRequestError({ message: 'Já existe uma vegetação com esse nome' })
+      if (result.value.message === 'Já existe uma vegetação com esse nome') {
+        return new ConflictError({ message: 'Já existe uma vegetação com esse nome' })
       }
       return new InternalServerError({ message: result.value.message })
     }

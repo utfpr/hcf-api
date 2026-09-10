@@ -1,3 +1,4 @@
+import jwt from 'jsonwebtoken'
 import {
   afterAll,
   describe,
@@ -9,6 +10,11 @@ import { createTestApp } from '../setup/app-factory'
 
 type Vegetacao = { id: number; nome: string }
 
+const buildAuthHeader = () => {
+  const token = jwt.sign({ id: 1, tipo_usuario_id: 1 }, process.env.JWT_SECRET ?? 'test-secret')
+  return { Authorization: `Bearer ${token}` }
+}
+
 describe('POST /api/v2/vegetacoes', () => {
   const { agent, knex } = createTestApp()
 
@@ -19,7 +25,7 @@ describe('POST /api/v2/vegetacoes', () => {
     const nome = `${prefix} Mata Atlântica`
 
     try {
-      const response = await agent.post('/api/v2/vegetacoes').send({ nome }).expect(201)
+      const response = await agent.post('/api/v2/vegetacoes').set(buildAuthHeader()).send({ nome }).expect(201)
       const body = response.body as Vegetacao
 
       expect(body).toMatchObject({ nome })
@@ -33,23 +39,23 @@ describe('POST /api/v2/vegetacoes', () => {
   })
 
   test('retorna 400 quando o nome está vazio', async () => {
-    const response = await agent.post('/api/v2/vegetacoes').send({ nome: '   ' }).expect(400)
+    const response = await agent.post('/api/v2/vegetacoes').set(buildAuthHeader()).send({ nome: '   ' }).expect(400)
     const body = response.body as { error: { message: string } }
 
     expect(body.error.message).toMatch(/vazio|empty|obrigat/i)
   })
 
-  test('retorna 400 para nome duplicado', async () => {
+  test('retorna 409 para nome duplicado', async () => {
     const prefix = `DUPVEG-${Date.now()}`
     const nome = `${prefix} Cerrado`
 
     await knex('vegetacoes').insert({ nome })
 
     try {
-      const response = await agent.post('/api/v2/vegetacoes').send({ nome }).expect(409)
+      const response = await agent.post('/api/v2/vegetacoes').set(buildAuthHeader()).send({ nome }).expect(409)
       const body = response.body as { error: { message: string } }
 
-      expect(body.error.message).toMatch(/já existe|duplic|exist/i)
+      expect(body.error.message).toMatch(/já existe|duplic/i)
     } finally {
       await knex('vegetacoes').where({ nome }).delete()
     }
