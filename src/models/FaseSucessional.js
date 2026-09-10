@@ -5,7 +5,7 @@ function associate(/* modelos */) {
 export default (Sequelize, DataTypes) => {
 
     const attributes = {
-        numero: {
+        id: {
             type: DataTypes.INTEGER,
             autoIncrement: true,
             primaryKey: true,
