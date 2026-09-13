@@ -35,7 +35,7 @@ COMMENT ON SCHEMA public IS '';
 -- Name: topology; Type: SCHEMA; Schema: -; Owner: -
 --
 
-CREATE SCHEMA topology;
+CREATE SCHEMA IF NOT EXISTS topology;
 
 
 --
@@ -566,7 +566,7 @@ ALTER SEQUENCE public.familias_id_seq OWNED BY public.familias.id;
 --
 
 CREATE TABLE public.fase_sucessional (
-    numero bigint NOT NULL,
+    id bigint NOT NULL,
     nome character varying(200) NOT NULL,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
@@ -575,6 +575,28 @@ CREATE TABLE public.fase_sucessional (
 
 --
 -- TOC entry 244 (class 1259 OID 30988)
+-- Name: fase_sucessional_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.fase_sucessional_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- TOC entry 5014 (class 0 OID 0)
+-- Dependencies: 244
+-- Name: fase_sucessional_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.fase_sucessional_id_seq OWNED BY public.fase_sucessional.id;
+
+
+--
+-- TOC entry 245 (class 1259 OID 30988)
 -- Name: generos; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1897,7 +1919,15 @@ ALTER TABLE ONLY public.familias
 --
 
 ALTER TABLE ONLY public.fase_sucessional
-    ADD CONSTRAINT idx_41101_primary PRIMARY KEY (numero);
+    ADD CONSTRAINT idx_41101_primary PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4530 (class 2604 OID 32603)
+-- Name: fase_sucessional id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.fase_sucessional ALTER COLUMN id SET DEFAULT nextval('public.fase_sucessional_id_seq'::regclass);
 
 
 --
@@ -2548,7 +2578,7 @@ CREATE INDEX idx_41296_fk_variedades_genero ON public.variedades USING btree (ge
 --
 
 ALTER TABLE ONLY public.locais_coleta
-    ADD CONSTRAINT fk_99i0itontmoklfxmoo8armtnv FOREIGN KEY (fase_numero) REFERENCES public.fase_sucessional(numero) ON UPDATE RESTRICT ON DELETE RESTRICT;
+    ADD CONSTRAINT fk_99i0itontmoklfxmoo8armtnv FOREIGN KEY (fase_numero) REFERENCES public.fase_sucessional(id) ON UPDATE RESTRICT ON DELETE RESTRICT;
 
 
 --
@@ -2665,7 +2695,7 @@ ALTER TABLE ONLY public.locais_coleta
 --
 
 ALTER TABLE ONLY public.locais_coleta
-    ADD CONSTRAINT fk_locais_coleta_fase_sucessional1 FOREIGN KEY (fase_sucessional_id) REFERENCES public.fase_sucessional(numero) ON UPDATE RESTRICT ON DELETE RESTRICT;
+    ADD CONSTRAINT fk_locais_coleta_fase_sucessional1 FOREIGN KEY (fase_sucessional_id) REFERENCES public.fase_sucessional(id) ON UPDATE RESTRICT ON DELETE RESTRICT;
 
 
 --

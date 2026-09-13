@@ -13,7 +13,9 @@ import { assets, upload } from '../config/directory'
 import legacyErrors from '../middlewares/erros-middleware'
 import { generatePreview, reportPreview } from '../reports/controller'
 import { routes as createEstadoRoutes } from './estado'
+import { routes as createFaseSucessionalRoutes } from './fase-sucessional'
 import { routes as createPaisRoutes } from './pais'
+import { routes as createVegetacaoRoutes } from './vegetacao'
 
 interface CorsParameters {
   origins: string[]
@@ -55,7 +57,9 @@ export function createApp({
 }: Parameters) {
   const routes: Route[] = [
     ...createPaisRoutes(knex),
-    ...createEstadoRoutes(knex)
+    ...createEstadoRoutes(knex),
+    ...createFaseSucessionalRoutes(knex),
+    ...createVegetacaoRoutes(knex)
   ]
   const application = new ExpressApplication({ logger })
 
