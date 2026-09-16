@@ -1,12 +1,12 @@
 import { type Knex } from 'knex'
 
-import { BuscarRelevoPorIdUseCase } from '@/domain/relevo/BuscarRelevoPorIdUseCase'
+import { BuscaRelevoPorIdUseCase } from '@/domain/relevo/BuscaRelevoPorIdUseCase'
 import { ListaRelevosUseCase } from '@/domain/relevo/ListaRelevosUseCase'
 import { RelevoCollectionKnexAdapter } from '@/infrastructure/RelevoCollectionKnexAdapter'
 import { Method } from '@/library/http/common'
 import { Route } from '@/library/http/Router'
 
-import { BuscarRelevoController } from './BuscarRelevoController'
+import { BuscaRelevoController } from './BuscaRelevoController'
 import { ListaRelevosController } from './ListaRelevosController'
 
 export function routes(knex: Knex): Route[] {
@@ -24,8 +24,8 @@ export function routes(knex: Knex): Route[] {
     },
     {
       handlers: [
-        new BuscarRelevoController({
-          buscarRelevoPorIdUseCase: new BuscarRelevoPorIdUseCase({ relevoCollection })
+        new BuscaRelevoController({
+          buscaRelevoPorIdUseCase: new BuscaRelevoPorIdUseCase({ relevoCollection })
         })
       ],
       method: Method.Get,

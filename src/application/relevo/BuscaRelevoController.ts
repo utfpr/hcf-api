@@ -1,4 +1,4 @@
-import { BuscarRelevoPorIdUseCase } from '@/domain/relevo/BuscarRelevoPorIdUseCase'
+import { BuscaRelevoPorIdUseCase } from '@/domain/relevo/BuscaRelevoPorIdUseCase'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
@@ -9,14 +9,14 @@ import { NotFoundError } from '@/library/http/error/NotFoundError'
 import { NextHandler, RequestHandler } from '@/library/http/Server'
 
 interface Dependencies {
-  buscarRelevoPorIdUseCase: BuscarRelevoPorIdUseCase
+  buscaRelevoPorIdUseCase: BuscaRelevoPorIdUseCase
 }
 
-export class BuscarRelevoController implements RequestHandler {
-  private readonly buscarRelevoPorIdUseCase: BuscarRelevoPorIdUseCase
+export class BuscaRelevoController implements RequestHandler {
+  private readonly buscaRelevoPorIdUseCase: BuscaRelevoPorIdUseCase
 
   constructor(dependencies: Dependencies) {
-    this.buscarRelevoPorIdUseCase = dependencies.buscarRelevoPorIdUseCase
+    this.buscaRelevoPorIdUseCase = dependencies.buscaRelevoPorIdUseCase
   }
 
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
@@ -26,7 +26,7 @@ export class BuscarRelevoController implements RequestHandler {
       return new BadRequestError({ message: 'relevoId inválido' })
     }
 
-    const result = await this.buscarRelevoPorIdUseCase.execute({ id: Number(relevoId) })
+    const result = await this.buscaRelevoPorIdUseCase.execute({ id: Number(relevoId) })
 
     if (result.left()) {
       return new InternalServerError({ message: result.value.message })

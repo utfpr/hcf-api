@@ -1450,7 +1450,7 @@ export const aprovarPendencia = async (alteracao, hcf, transaction) => {
     if (alteracao.fase_sucessional_id !== undefined) {
         if (alteracao.fase_sucessional_id !== null) {
             const faseSucessional = await FaseSucessional.findOne({
-                where: { numero: alteracao.fase_sucessional_id },
+                where: { id: alteracao.fase_sucessional_id },
                 transaction,
                 raw: true,
                 nest: true,
@@ -1850,7 +1850,7 @@ export async function visualizar(request, response, next) {
         }
 
         if (objetoAlterado.fase_sucessional_id !== undefined) {
-            parametros.faseSucessional = await FaseSucessional.findOne({ where: { numero: objetoAlterado.fase_sucessional_id }, raw: true, nest: true });
+            parametros.faseSucessional = await FaseSucessional.findOne({ where: { id: objetoAlterado.fase_sucessional_id }, raw: true, nest: true });
         }
 
         if (objetoAlterado.vegetacao_id !== undefined) {

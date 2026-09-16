@@ -7,7 +7,7 @@ interface Dependencies {
   relevoCollection: RelevoCollection
 }
 
-export class BuscarRelevoPorIdUseCase {
+export class BuscaRelevoPorIdUseCase {
   private readonly relevoCollection: RelevoCollection
 
   constructor(dependencies: Dependencies) {

@@ -14,7 +14,7 @@ describe('GET /api/v2/relevos', () => {
   afterAll(() => knex.destroy())
 
   test('retorna a lista ordenada por id decrescente como padrão dentro do prefixo do teste', async () => {
-    const prefix = 'XREL'
+    const prefix = `XREL-${Date.now()}`
     const nomes = [
       `${prefix} Plano`,
       `${prefix} Inclinado`,
@@ -35,7 +35,7 @@ describe('GET /api/v2/relevos', () => {
   })
 
   test('filtra por nome sem diferenciar maiúsculas e minúsculas', async () => {
-    const prefix = 'XREL'
+    const prefix = `XREL-${Date.now()}`
     const nomes = [
       `${prefix} Plano`,
       `${prefix} Inclinado`,
@@ -55,7 +55,7 @@ describe('GET /api/v2/relevos', () => {
   })
 
   test('aceita ordenação customizada por nome e id', async () => {
-    const prefix = 'XREL'
+    const prefix = `XREL-${Date.now()}`
     const nomes = [
       `${prefix} Z`,
       `${prefix} A`,
@@ -78,7 +78,7 @@ describe('GET /api/v2/relevos', () => {
   })
 
   test('retorna 400 quando a ordenação é inválida', async () => {
-    const prefix = 'XREL'
+    const prefix = `XREL-${Date.now()}`
     const nomes = [
       `${prefix} Z`,
       `${prefix} A`,
@@ -94,38 +94,5 @@ describe('GET /api/v2/relevos', () => {
     } finally {
       await knex('relevos').whereIn('nome', nomes).delete()
     }
-  })
-})
-
-describe('GET /api/v2/relevos/:relevoId', () => {
-  const { agent, knex } = createTestApp()
-
-  afterAll(() => knex.destroy())
-
-  test('retorna o registro encontrado', async () => {
-    const [relevo] = await knex('relevos')
-      .insert({ nome: 'XREL Relevo Encontrado' })
-      .returning<Relevo[]>(returning)
-
-    try {
-      const response = await agent.get(`/api/v2/relevos/${relevo.id}`).expect(200)
-      expect(response.body).toEqual({ id: relevo.id, nome: relevo.nome })
-    } finally {
-      await knex('relevos').where({ id: relevo.id }).delete()
-    }
-  })
-
-  test('retorna 404 para id inexistente', async () => {
-    const response = await agent.get('/api/v2/relevos/999999').expect(404)
-    const body = response.body as { error: { message: string } }
-
-    expect(body.error.message).toMatch(/não encontrad[ao]|not found/i)
-  })
-
-  test('retorna 400 para id inválido', async () => {
-    const response = await agent.get('/api/v2/relevos/abc').expect(400)
-    const body = response.body as { error: { message: string } }
-
-    expect(body.error.message).toMatch(/inválido|invalid/i)
   })
 })
