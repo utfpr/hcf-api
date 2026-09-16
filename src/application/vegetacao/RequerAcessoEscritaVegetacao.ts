@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken'
 
+import { secret } from '@/config/security'
 import {
   HttpRequest,
   HttpResponse
@@ -11,7 +12,7 @@ import { NextHandler, RequestHandler } from '@/library/http/Server'
 
 const ALLOWED_TIPOS_USUARIOS = new Set([1, 2])
 
-export class RequireVegetacaoWriteAccess implements RequestHandler {
+export class ExigePermissaoEscritaVegetacao implements RequestHandler {
   async handle(request: HttpRequest, next: NextHandler): Promise<HttpResponse | HttpError> {
     const authorization = request.headers.Authorization ?? request.headers.authorization
 
@@ -25,7 +26,11 @@ export class RequireVegetacaoWriteAccess implements RequestHandler {
     }
 
     try {
-      const payload = jwt.verify(token, process.env.JWT_SECRET ?? 'test-secret') as { tipo_usuario_id?: unknown }
+      if (!secret) {
+        return new UnauthorizedError({ message: 'Token de autenticação inválido' })
+      }
+
+      const payload = jwt.verify(token, secret) as { tipo_usuario_id?: unknown }
       const tipoUsuarioId = Number(payload.tipo_usuario_id)
 
       if (!Number.isInteger(tipoUsuarioId) || !ALLOWED_TIPOS_USUARIOS.has(tipoUsuarioId)) {

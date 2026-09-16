@@ -11,7 +11,7 @@ import { createTestApp } from '../setup/app-factory'
 type Vegetacao = { id: number; nome: string }
 
 const buildAuthHeader = () => {
-  const token = jwt.sign({ id: 1, tipo_usuario_id: 1 }, process.env.JWT_SECRET ?? 'test-secret')
+  const token = jwt.sign({ id: 1, tipo_usuario_id: 1 }, process.env.JWT_SECRET as string)
   return { Authorization: `Bearer ${token}` }
 }
 

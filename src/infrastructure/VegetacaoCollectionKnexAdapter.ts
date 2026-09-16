@@ -9,26 +9,75 @@ import { CollectionError } from './error/CollectionError'
 const DUPLICATE_VEGETACAO_MESSAGE = 'Já existe uma vegetação com esse nome'
 const VEGETACAO_IN_USE_MESSAGE = 'Vegetação está em uso e não pode ser removida'
 
+function normalizeErrorString(value: unknown): string {
+  if (value === undefined || value === null) {
+    return ''
+  }
+
+  if (typeof value === 'string') {
+    return value.toLowerCase()
+  }
+
+  if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
+    return String(value).toLowerCase()
+  }
+
+  return Object.prototype.toString.call(value).toLowerCase()
+}
+
 function isDuplicateVegetacaoError(error: unknown): boolean {
-  const code = typeof error === 'object' && error !== null && 'code' in error ? String((error as { code?: unknown }).code) : ''
-  const details = typeof error === 'object' && error !== null && 'detail' in error ? String((error as { detail?: unknown }).detail) : ''
-  const message = typeof error === 'object' && error !== null && 'message' in error ? String((error as { message?: unknown }).message) : ''
-  const constraint = typeof error === 'object' && error !== null && 'constraint' in error ? String((error as { constraint?: unknown }).constraint) : ''
+  const code = typeof error === 'object' && error !== null && 'code' in error
+    ? String((error as { code?: unknown }).code)
+    : ''
+  const details = typeof error === 'object' && error !== null && 'detail' in error
+    ? String((error as { detail?: unknown }).detail)
+    : ''
+  const message = typeof error === 'object' && error !== null && 'message' in error
+    ? String((error as { message?: unknown }).message)
+    : ''
+  const constraint = typeof error === 'object' && error !== null && 'constraint' in error
+    ? String((error as { constraint?: unknown }).constraint)
+    : ''
+  const normalized = [
+    code,
+    details,
+    message,
+    constraint
+  ].map(normalizeErrorString).join(' ')
 
   return code === '23505'
+    || code === 'ER_DUP_ENTRY'
     || (constraint.toLowerCase().includes('vegetacoes') && constraint.toLowerCase().includes('nome'))
     || details.toLowerCase().includes('already exists')
     || message.toLowerCase().includes('duplicate key value violates unique constraint')
+    || message.toLowerCase().includes('duplicate entry')
+    || normalized.includes('unique constraint')
+    || normalized.includes('already exists')
 }
 
 function isVegetacaoInUseError(error: unknown): boolean {
-  const code = typeof error === 'object' && error !== null && 'code' in error ? String((error as { code?: unknown }).code) : ''
-  const message = typeof error === 'object' && error !== null && 'message' in error ? String((error as { message?: unknown }).message) : ''
-  const constraint = typeof error === 'object' && error !== null && 'constraint' in error ? String((error as { constraint?: unknown }).constraint) : ''
+  const code = typeof error === 'object' && error !== null && 'code' in error
+    ? String((error as { code?: unknown }).code)
+    : ''
+  const message = typeof error === 'object' && error !== null && 'message' in error
+    ? String((error as { message?: unknown }).message)
+    : ''
+  const constraint = typeof error === 'object' && error !== null && 'constraint' in error
+    ? String((error as { constraint?: unknown }).constraint)
+    : ''
+  const normalized = [
+    code,
+    message,
+    constraint
+  ].map(normalizeErrorString).join(' ')
 
   return code === '23503'
-    || message.toLowerCase().includes('violates foreign key constraint')
-    || message.toLowerCase().includes('is still referenced from table')
+    || code === 'ER_ROW_IS_REFERENCED_2'
+    || normalized.includes('violates foreign key constraint')
+    || normalized.includes('is still referenced from table')
+    || normalized.includes('cannot delete or update a parent row')
+    || normalized.includes('foreign key constraint fails')
+    || normalized.includes('still referenced')
     || constraint.toLowerCase().includes('vegetacao')
 }
 
@@ -56,8 +105,7 @@ export class VegetacaoCollectionKnexAdapter implements VegetacaoCollection {
       const vegetacao = await query.first()
       return Either.right(vegetacao ?? null)
     } catch (error) {
-      const cause = error instanceof Error ? error : new Error(String(error))
-      return Either.left(new CollectionError({ message: cause.message, cause }))
+      return Either.left(new CollectionError({ message: 'Erro ao buscar vegetação por nome', cause: error }))
     }
   }
 
@@ -111,8 +159,7 @@ export class VegetacaoCollectionKnexAdapter implements VegetacaoCollection {
         return Either.left(new CollectionError({ message: DUPLICATE_VEGETACAO_MESSAGE, cause: error }))
       }
 
-      const cause = error instanceof Error ? error : new Error(String(error))
-      return Either.left(new CollectionError({ message: cause.message, cause }))
+      return Either.left(new CollectionError({ message: 'Erro ao criar vegetação', cause: error }))
     }
   }
 
@@ -140,8 +187,7 @@ export class VegetacaoCollectionKnexAdapter implements VegetacaoCollection {
         return Either.left(new CollectionError({ message: DUPLICATE_VEGETACAO_MESSAGE, cause: error }))
       }
 
-      const cause = error instanceof Error ? error : new Error(String(error))
-      return Either.left(new CollectionError({ message: cause.message, cause }))
+      return Either.left(new CollectionError({ message: 'Erro ao atualizar vegetação', cause: error }))
     }
   }
 
@@ -154,8 +200,7 @@ export class VegetacaoCollectionKnexAdapter implements VegetacaoCollection {
         return Either.left(new CollectionError({ message: VEGETACAO_IN_USE_MESSAGE, cause: error }))
       }
 
-      const cause = error instanceof Error ? error : new Error(String(error))
-      return Either.left(new CollectionError({ message: cause.message, cause }))
+      return Either.left(new CollectionError({ message: 'Erro ao remover vegetação', cause: error }))
     }
   }
 }

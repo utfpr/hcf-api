@@ -14,16 +14,16 @@ import { CadastraVegetacaoController } from './CadastraVegetacaoController'
 import { ListaVegetacoesController } from './ListaVegetacoesController'
 import { RemoveVegetacaoController } from './RemoveVegetacaoController'
 import { RenomeiaVegetacaoController } from './RenomeiaVegetacaoController'
-import { RequireVegetacaoWriteAccess } from './RequireVegetacaoWriteAccess'
+import { ExigePermissaoEscritaVegetacao } from './RequerAcessoEscritaVegetacao'
 
 export function routes(knex: Knex): Route[] {
   const vegetacaoCollection = new VegetacaoCollectionKnexAdapter({ knex })
-  const requireVegetacaoWriteAccess = new RequireVegetacaoWriteAccess()
+  const exigePermissaoEscritaVegetacao = new ExigePermissaoEscritaVegetacao()
 
   return [
     {
       handlers: [
-        requireVegetacaoWriteAccess,
+        exigePermissaoEscritaVegetacao,
         new CadastraVegetacaoController({
           cadastraVegetacaoUseCase: new CadastraVegetacaoUseCase({ vegetacaoCollection })
         })
@@ -51,7 +51,7 @@ export function routes(knex: Knex): Route[] {
     },
     {
       handlers: [
-        requireVegetacaoWriteAccess,
+        exigePermissaoEscritaVegetacao,
         new RenomeiaVegetacaoController({
           renomeiaVegetacaoUseCase: new RenomeiaVegetacaoUseCase({ vegetacaoCollection })
         })
@@ -61,7 +61,7 @@ export function routes(knex: Knex): Route[] {
     },
     {
       handlers: [
-        requireVegetacaoWriteAccess,
+        exigePermissaoEscritaVegetacao,
         new RemoveVegetacaoController({
           removeVegetacaoUseCase: new RemoveVegetacaoUseCase({ vegetacaoCollection })
         })

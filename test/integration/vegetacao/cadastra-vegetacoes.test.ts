@@ -3,7 +3,8 @@ import {
   afterAll,
   describe,
   expect,
-  test
+  test,
+  vi
 } from 'vitest'
 
 import { createTestApp } from '../setup/app-factory'
@@ -11,7 +12,7 @@ import { createTestApp } from '../setup/app-factory'
 type Vegetacao = { id: number; nome: string }
 
 const buildAuthHeader = () => {
-  const token = jwt.sign({ id: 1, tipo_usuario_id: 1 }, process.env.JWT_SECRET ?? 'test-secret')
+  const token = jwt.sign({ id: 1, tipo_usuario_id: 1 }, process.env.JWT_SECRET as string)
   return { Authorization: `Bearer ${token}` }
 }
 
@@ -35,6 +36,30 @@ describe('POST /api/v2/vegetacoes', () => {
     } catch (error) {
       await knex('vegetacoes').where('nome', 'like', `${prefix}%`).delete()
       throw error
+    }
+  })
+
+  test('rejeita token assinado com segredo de teste quando o JWT_SECRET não está configurado', async () => {
+    const originalSecret = process.env.JWT_SECRET
+    vi.resetModules()
+    delete process.env.JWT_SECRET
+
+    try {
+      const { createTestApp } = await import('../setup/app-factory')
+      const { agent: isolatedAgent, knex: isolatedKnex } = createTestApp()
+      const token = jwt.sign({ id: 1, tipo_usuario_id: 1 }, 'test-secret')
+      const response = await isolatedAgent.post('/api/v2/vegetacoes').set({ Authorization: `Bearer ${token}` }).send({ nome: 'NOME SEM SECRET' }).expect(401)
+      const body = response.body as { error: { message: string } }
+
+      expect(body.error.message).toMatch(/token de autenticação inválido|token expirado|invalid/i)
+      await isolatedKnex.destroy()
+    } finally {
+      if (originalSecret === undefined) {
+        delete process.env.JWT_SECRET
+      } else {
+        process.env.JWT_SECRET = originalSecret
+      }
+      vi.resetModules()
     }
   })
 
