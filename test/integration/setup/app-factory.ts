@@ -4,7 +4,7 @@ import supertest from 'supertest'
 import { createApp } from '@/application/create-app'
 import { ConsoleLogger } from '@/infrastructure/ConsoleLogger'
 
-function createTestKnex(): Knex {
+export function createTestKnex(): Knex {
   return knex({
     client: 'postgres',
     connection: {

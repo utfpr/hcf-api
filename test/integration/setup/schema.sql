@@ -3011,3 +3011,502 @@ ALTER TABLE ONLY public.variedades
 --
 
 \unrestrict 6jAa2KinsvKEOg1UbHoVMtEdyuVatRpHS5aFz6F6xH4vaNfTZHZIHyPU01e9TJ8
+
+
+--
+-- Modulo Expedicao: expedicoes, expedicoes_participantes, expedicoes_rotas,
+-- eventos, eventos_coletas, evidencias
+-- Migrations 20260914100000..02 e 20260915100000..02
+--
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: eventos; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.eventos (
+    id integer NOT NULL,
+    expedicao_id integer NOT NULL,
+    tipo text NOT NULL,
+    capturado_em timestamp with time zone NOT NULL,
+    latitude double precision,
+    longitude double precision,
+    altitude double precision,
+    observacoes text,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    created_by bigint,
+    updated_by bigint,
+    CONSTRAINT eventos_tipo_check CHECK ((tipo = ANY (ARRAY['DIARIO'::text, 'COLETA'::text])))
+);
+
+
+--
+-- Name: eventos_coletas; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.eventos_coletas (
+    evento_id integer NOT NULL,
+    familia text,
+    nome_popular text,
+    nome_cientifico text,
+    municipio text,
+    estado text,
+    referencia_local text,
+    tipo_vegetacao text,
+    solo text,
+    relevo text,
+    substrato text,
+    tronco_com_casca text,
+    associacoes text,
+    folhas text,
+    habito text,
+    frutos text,
+    flores text,
+    luminosidade text
+);
+
+
+--
+-- Name: eventos_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.eventos_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: eventos_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.eventos_id_seq OWNED BY public.eventos.id;
+
+
+--
+-- Name: evidencias; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.evidencias (
+    id integer NOT NULL,
+    evento_id integer NOT NULL,
+    nome character varying(255) NOT NULL,
+    capturado_em timestamp with time zone NOT NULL,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    created_by bigint,
+    updated_by bigint
+);
+
+
+--
+-- Name: evidencias_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.evidencias_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: evidencias_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.evidencias_id_seq OWNED BY public.evidencias.id;
+
+
+--
+-- Name: expedicoes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.expedicoes (
+    id integer NOT NULL,
+    descricao text,
+    data_inicio date NOT NULL,
+    data_fim date NOT NULL,
+    cidade_id bigint NOT NULL,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    created_by bigint,
+    updated_by bigint
+);
+
+
+--
+-- Name: expedicoes_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.expedicoes_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: expedicoes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.expedicoes_id_seq OWNED BY public.expedicoes.id;
+
+
+--
+-- Name: expedicoes_participantes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.expedicoes_participantes (
+    id integer NOT NULL,
+    expedicao_id integer NOT NULL,
+    usuario_id bigint NOT NULL,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    created_by bigint,
+    updated_by bigint
+);
+
+
+--
+-- Name: expedicoes_participantes_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.expedicoes_participantes_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: expedicoes_participantes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.expedicoes_participantes_id_seq OWNED BY public.expedicoes_participantes.id;
+
+
+--
+-- Name: expedicoes_rotas; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.expedicoes_rotas (
+    id integer NOT NULL,
+    expedicao_id integer NOT NULL,
+    cidade_id bigint NOT NULL,
+    ordem smallint NOT NULL,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    created_by bigint,
+    updated_by bigint
+);
+
+
+--
+-- Name: expedicoes_rotas_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.expedicoes_rotas_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: expedicoes_rotas_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.expedicoes_rotas_id_seq OWNED BY public.expedicoes_rotas.id;
+
+
+--
+-- Name: eventos id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.eventos ALTER COLUMN id SET DEFAULT nextval('public.eventos_id_seq'::regclass);
+
+
+--
+-- Name: evidencias id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.evidencias ALTER COLUMN id SET DEFAULT nextval('public.evidencias_id_seq'::regclass);
+
+
+--
+-- Name: expedicoes id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.expedicoes ALTER COLUMN id SET DEFAULT nextval('public.expedicoes_id_seq'::regclass);
+
+
+--
+-- Name: expedicoes_participantes id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.expedicoes_participantes ALTER COLUMN id SET DEFAULT nextval('public.expedicoes_participantes_id_seq'::regclass);
+
+
+--
+-- Name: expedicoes_rotas id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.expedicoes_rotas ALTER COLUMN id SET DEFAULT nextval('public.expedicoes_rotas_id_seq'::regclass);
+
+
+--
+-- Name: eventos_coletas eventos_coletas_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.eventos_coletas
+    ADD CONSTRAINT eventos_coletas_pkey PRIMARY KEY (evento_id);
+
+
+--
+-- Name: eventos eventos_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.eventos
+    ADD CONSTRAINT eventos_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: evidencias evidencias_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.evidencias
+    ADD CONSTRAINT evidencias_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: expedicoes_participantes expedicoes_participantes_expedicao_id_usuario_id_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.expedicoes_participantes
+    ADD CONSTRAINT expedicoes_participantes_expedicao_id_usuario_id_unique UNIQUE (expedicao_id, usuario_id);
+
+
+--
+-- Name: expedicoes_participantes expedicoes_participantes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.expedicoes_participantes
+    ADD CONSTRAINT expedicoes_participantes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: expedicoes expedicoes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.expedicoes
+    ADD CONSTRAINT expedicoes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: expedicoes_rotas expedicoes_rotas_expedicao_id_ordem_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.expedicoes_rotas
+    ADD CONSTRAINT expedicoes_rotas_expedicao_id_ordem_unique UNIQUE (expedicao_id, ordem);
+
+
+--
+-- Name: expedicoes_rotas expedicoes_rotas_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.expedicoes_rotas
+    ADD CONSTRAINT expedicoes_rotas_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: eventos_capturado_em_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX eventos_capturado_em_index ON public.eventos USING btree (capturado_em);
+
+
+--
+-- Name: eventos_expedicao_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX eventos_expedicao_id_index ON public.eventos USING btree (expedicao_id);
+
+
+--
+-- Name: evidencias_evento_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX evidencias_evento_id_index ON public.evidencias USING btree (evento_id);
+
+
+--
+-- Name: expedicoes_cidade_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX expedicoes_cidade_id_index ON public.expedicoes USING btree (cidade_id);
+
+
+--
+-- Name: expedicoes_rotas_cidade_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX expedicoes_rotas_cidade_id_index ON public.expedicoes_rotas USING btree (cidade_id);
+
+
+--
+-- Name: eventos_coletas eventos_coletas_evento_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.eventos_coletas
+    ADD CONSTRAINT eventos_coletas_evento_id_foreign FOREIGN KEY (evento_id) REFERENCES public.eventos(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: eventos eventos_created_by_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.eventos
+    ADD CONSTRAINT eventos_created_by_foreign FOREIGN KEY (created_by) REFERENCES public.usuarios(id) ON UPDATE CASCADE;
+
+
+--
+-- Name: eventos eventos_expedicao_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.eventos
+    ADD CONSTRAINT eventos_expedicao_id_foreign FOREIGN KEY (expedicao_id) REFERENCES public.expedicoes(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: eventos eventos_updated_by_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.eventos
+    ADD CONSTRAINT eventos_updated_by_foreign FOREIGN KEY (updated_by) REFERENCES public.usuarios(id) ON UPDATE CASCADE;
+
+
+--
+-- Name: evidencias evidencias_created_by_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.evidencias
+    ADD CONSTRAINT evidencias_created_by_foreign FOREIGN KEY (created_by) REFERENCES public.usuarios(id) ON UPDATE CASCADE;
+
+
+--
+-- Name: evidencias evidencias_evento_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.evidencias
+    ADD CONSTRAINT evidencias_evento_id_foreign FOREIGN KEY (evento_id) REFERENCES public.eventos(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: evidencias evidencias_updated_by_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.evidencias
+    ADD CONSTRAINT evidencias_updated_by_foreign FOREIGN KEY (updated_by) REFERENCES public.usuarios(id) ON UPDATE CASCADE;
+
+
+--
+-- Name: expedicoes expedicoes_cidade_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.expedicoes
+    ADD CONSTRAINT expedicoes_cidade_id_foreign FOREIGN KEY (cidade_id) REFERENCES public.cidades(id) ON UPDATE CASCADE;
+
+
+--
+-- Name: expedicoes expedicoes_created_by_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.expedicoes
+    ADD CONSTRAINT expedicoes_created_by_foreign FOREIGN KEY (created_by) REFERENCES public.usuarios(id) ON UPDATE CASCADE;
+
+
+--
+-- Name: expedicoes_participantes expedicoes_participantes_created_by_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.expedicoes_participantes
+    ADD CONSTRAINT expedicoes_participantes_created_by_foreign FOREIGN KEY (created_by) REFERENCES public.usuarios(id) ON UPDATE CASCADE;
+
+
+--
+-- Name: expedicoes_participantes expedicoes_participantes_expedicao_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.expedicoes_participantes
+    ADD CONSTRAINT expedicoes_participantes_expedicao_id_foreign FOREIGN KEY (expedicao_id) REFERENCES public.expedicoes(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: expedicoes_participantes expedicoes_participantes_updated_by_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.expedicoes_participantes
+    ADD CONSTRAINT expedicoes_participantes_updated_by_foreign FOREIGN KEY (updated_by) REFERENCES public.usuarios(id) ON UPDATE CASCADE;
+
+
+--
+-- Name: expedicoes_participantes expedicoes_participantes_usuario_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.expedicoes_participantes
+    ADD CONSTRAINT expedicoes_participantes_usuario_id_foreign FOREIGN KEY (usuario_id) REFERENCES public.usuarios(id) ON UPDATE CASCADE;
+
+
+--
+-- Name: expedicoes_rotas expedicoes_rotas_cidade_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.expedicoes_rotas
+    ADD CONSTRAINT expedicoes_rotas_cidade_id_foreign FOREIGN KEY (cidade_id) REFERENCES public.cidades(id) ON UPDATE CASCADE;
+
+
+--
+-- Name: expedicoes_rotas expedicoes_rotas_created_by_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.expedicoes_rotas
+    ADD CONSTRAINT expedicoes_rotas_created_by_foreign FOREIGN KEY (created_by) REFERENCES public.usuarios(id) ON UPDATE CASCADE;
+
+
+--
+-- Name: expedicoes_rotas expedicoes_rotas_expedicao_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.expedicoes_rotas
+    ADD CONSTRAINT expedicoes_rotas_expedicao_id_foreign FOREIGN KEY (expedicao_id) REFERENCES public.expedicoes(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: expedicoes_rotas expedicoes_rotas_updated_by_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.expedicoes_rotas
+    ADD CONSTRAINT expedicoes_rotas_updated_by_foreign FOREIGN KEY (updated_by) REFERENCES public.usuarios(id) ON UPDATE CASCADE;
+
+
+--
+-- Name: expedicoes expedicoes_updated_by_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.expedicoes
+    ADD CONSTRAINT expedicoes_updated_by_foreign FOREIGN KEY (updated_by) REFERENCES public.usuarios(id) ON UPDATE CASCADE;
+
