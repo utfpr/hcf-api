@@ -13,6 +13,7 @@ import { assets, upload } from '../config/directory'
 import legacyErrors from '../middlewares/erros-middleware'
 import { generatePreview, reportPreview } from '../reports/controller'
 import { routes as createEstadoRoutes } from './estado'
+import { routes as createEventoRoutes } from './evento'
 import { routes as createFaseSucessionalRoutes } from './fase-sucessional'
 import { routes as createPaisRoutes } from './pais'
 import { routes as createVegetacaoRoutes } from './vegetacao'
@@ -59,7 +60,8 @@ export function createApp({
     ...createPaisRoutes(knex),
     ...createEstadoRoutes(knex),
     ...createFaseSucessionalRoutes(knex),
-    ...createVegetacaoRoutes(knex)
+    ...createVegetacaoRoutes(knex),
+    ...createEventoRoutes(knex)
   ]
   const application = new ExpressApplication({ logger })
 
