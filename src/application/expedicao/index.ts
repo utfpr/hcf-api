@@ -6,6 +6,8 @@ import { Route } from '@/library/http/Router'
 
 import { CadastraExpedicaoController } from './CadastraExpedicaoController'
 import { createExpedicaoCollection } from '@/factory/ExpedicaoCollectionFactory' 
+import { ListaExpedicoesUseCase } from '@/domain/expedicao/ListaExpedicoesUseCase'
+import { ListaExpedicoesController } from './ListaExpedicoesController'
 
 export function routes(knex: Knex): Route[] {
   const expedicaoCollection = createExpedicaoCollection()
@@ -17,6 +19,15 @@ export function routes(knex: Knex): Route[] {
       handlers: [
         new CadastraExpedicaoController({
           cadastraExpedicaoUseCase: new CadastraExpedicaoUseCase({ expedicaoCollection })
+        })
+      ]
+    },
+    {
+      method: Method.Get,
+      path: '/v2/expedicoes',
+      handlers: [
+        new ListaExpedicoesController({
+          listaExpedicoesUseCase: new ListaExpedicoesUseCase({ expedicaoCollection })
         })
       ]
     }
