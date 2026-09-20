@@ -94,7 +94,32 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
   async findById(id: number): Promise<Either<Error, Attributes | null>> {
     try {
       const row = await this.select().where('expedicoes.id', id).first() as Row | undefined
-      return Either.right(row ? toAttributes(row) : null)
+      
+      if (!row) {
+        return Either.right(null)
+      }
+
+      const participantes = await this.knex('expedicoes_participantes')
+        .join('usuarios', 'usuarios.id', 'expedicoes_participantes.usuario_id')
+        .where('expedicoes_participantes.expedicao_id', id)
+        .select('usuarios.id', 'usuarios.nome', 'usuarios.email')
+
+      const rotas = await this.knex('expedicoes_rotas')
+        .join('cidades', 'cidades.id', 'expedicoes_rotas.cidade_id')
+        .where('expedicoes_rotas.expedicao_id', id)
+        .select(
+          'cidades.id as cidade_id', 
+          'expedicoes_rotas.ordem', 
+          'cidades.nome as nome_cidade', 
+          'cidades.estado_id'
+        )
+        .orderBy('expedicoes_rotas.ordem', 'asc')
+
+      return Either.right({
+        ...toAttributes(row),
+        participantes,
+        rotas
+      } as unknown as Attributes)
     } catch (error) {
       return Either.left(new CollectionError({ message: 'Failed to find expedição by id', cause: error }))
     }
