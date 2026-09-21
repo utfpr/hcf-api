@@ -4,6 +4,7 @@ import {
 } from '@/library/http/common'
 import { BadRequestError } from '@/library/http/error/BadRequestError'
 import { HttpError } from '@/library/http/error/HttpError'
+import { InternalServerError } from '@/library/http/error/InternalServerError'
 import { NotFoundError } from '@/library/http/error/NotFoundError'
 import { NextHandler, RequestHandler } from '@/library/http/Server'
 
@@ -26,20 +27,25 @@ export class DeletaExpedicaoController implements RequestHandler {
   }
 
   async handle(request: CustomHttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
-    const { expedicaoId } = request.params
+    try {
+      const { expedicaoId } = request.params
 
-    if (!expedicaoId || Number.isNaN(Number(expedicaoId))) {
-      return new BadRequestError({ message: 'O ID da expedição é inválido.' })
-    }
+      if (!expedicaoId || Number.isNaN(Number(expedicaoId))) {
+        return new BadRequestError({ message: 'O ID da expedição é inválido.' })
+      }
 
-    const result = await this.deletaExpedicaoUseCase.execute(Number(expedicaoId))
+      const result = await this.deletaExpedicaoUseCase.execute(Number(expedicaoId))
 
-    if (result.left()) {
-      return new NotFoundError({ message: result.value.message })
-    }
+      if (result.left()) {
+        return new NotFoundError({ message: result.value.message })
+      }
 
-    return {
-      statusCode: StatusCode.NoContent
+      return {
+        statusCode: StatusCode.NoContent
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro inesperado ao deletar a expedição.'
+      return new InternalServerError({ message: errorMessage })
     }
   }
 }
