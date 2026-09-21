@@ -44,7 +44,7 @@ export class AtualizarEventoController implements RequestHandler {
     const body = (request.body ?? {}) as Body
 
     // Substituir por request.usuario.id assim que a 
-    // autenticação (JWT) da nova arquitetura (v2) for integrada.
+    // autenticação for integrada.
     const input: AtualizarEventoInput = { id: eventoId, updated_by: null }
 
     if (body.tipo !== undefined) {
