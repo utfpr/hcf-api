@@ -13,10 +13,20 @@ export interface ExpedicaoFilters {
   data_inicio_de?: string
   data_fim_ate?: string
   order?: ExpedicaoOrder
+  // Novos campos de paginação
+  limite?: number
+  pagina?: number
+}
+
+export interface Paginated<T> {
+  itens: T[]
+  total: number
+  limite: number
+  pagina: number
 }
 
 export interface ExpedicaoCollection {
-  findAll(filters: ExpedicaoFilters): Promise<Either<Error, Attributes[]>>
+  findAll(filters: ExpedicaoFilters): Promise<Either<Error, Paginated<Attributes>>>
   findById(id: number): Promise<Either<Error, Attributes | null>>
   create(attributes: CreateAttributes): Promise<Either<Error, Attributes>>
 }

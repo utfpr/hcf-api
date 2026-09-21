@@ -43,7 +43,9 @@ export class ListaExpedicoesController implements RequestHandler {
         data_inicio_de, 
         data_fim_ate, 
         order_column, 
-        order_direction 
+        order_direction,
+        limite,  
+        pagina    
       } = request.params
 
       const filters: ExpedicaoFilters = {}
@@ -64,6 +66,13 @@ export class ListaExpedicoesController implements RequestHandler {
           column: order_column as 'id' | 'data_inicio' | 'data_fim',
           direction: order_direction as 'asc' | 'desc'
         }
+      }
+
+      if (limite && !Number.isNaN(Number(limite))) {
+        filters.limite = Number(limite)
+      }
+      if (pagina && !Number.isNaN(Number(pagina))) {
+        filters.pagina = Number(pagina)
       }
 
       const result = await this.listaExpedicoesUseCase.execute(filters)
