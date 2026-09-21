@@ -65,7 +65,7 @@ export class CriarEventoController implements RequestHandler {
     if (coleta instanceof Error) return new BadRequestError({ message: coleta.message })
 
     // Substituir por request.usuario.id assim que a 
-    // autenticação (JWT) da nova arquitetura (v2) for integrada.
+    // autenticação for integrada.
     const usuarioId = null
 
     const result = await this.criarEventoUseCase.execute({
