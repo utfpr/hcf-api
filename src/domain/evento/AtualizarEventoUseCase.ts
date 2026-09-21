@@ -28,8 +28,7 @@ export interface Input {
  * - vira COLETA com `coleta` no corpo -> substitui a ficha
  *
  * A coerência do estado final é validada reaproveitando Evento.create() sobre
- * o objeto já mesclado — é a mesma regra usada na criação, só que aplicada
- * depois do merge em vez de sobre um payload novo.
+ * o objeto já mesclado.
  */
 export class AtualizarEventoUseCase {
   private readonly eventoCollection: EventoCollection
