@@ -1467,6 +1467,9 @@ CREATE TABLE public.vegetacoes (
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
+CREATE UNIQUE INDEX vegetacoes_nome_unique
+    ON public.vegetacoes (LOWER(nome));
+
 
 --
 -- TOC entry 291 (class 1259 OID 31265)

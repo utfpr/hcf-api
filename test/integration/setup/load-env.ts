@@ -8,4 +8,6 @@ try {
   // In CI, environment variables are injected directly into the process
 }
 
+process.env.JWT_SECRET ??= 'test-secret'
+
 mkdirSync(path.resolve(process.cwd(), 'uploads'), { recursive: true })
