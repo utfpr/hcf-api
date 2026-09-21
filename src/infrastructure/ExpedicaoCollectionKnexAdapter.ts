@@ -1,6 +1,6 @@
 import { Knex } from 'knex'
 
-import { Attributes, CreateAttributes } from '@/domain/expedicao/Expedicao'
+import { Attributes, CreateAttributes, UpdateAttributes } from '@/domain/expedicao/Expedicao'
 import { ExpedicaoCollection, ExpedicaoFilters, Paginated } from '@/domain/expedicao/ExpedicaoCollection'
 import { Either } from '@/library/either/Either'
 
@@ -228,6 +228,20 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
       return Either.right(undefined)
     } catch (error) {
       return Either.left(new CollectionError({ message: 'Failed to delete expedição', cause: error }))
+    }
+  }
+
+  async update(id: number, attributes: UpdateAttributes) {
+    try {
+      const [row] = await this.knex('expedicoes')
+        .where({ id })
+        .update({ ...attributes, updated_at: this.knex.fn.now() })
+        .returning('*')
+
+      if (!row) return Either.left(new Error('Expedição não encontrada'))
+      return Either.right(row)
+    } catch (error) {
+      return Either.left(error as Error)
     }
   }
 }
