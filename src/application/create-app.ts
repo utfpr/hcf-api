@@ -15,6 +15,7 @@ import { generatePreview, reportPreview } from '../reports/controller'
 import { routes as createEstadoRoutes } from './estado'
 import { routes as createFaseSucessionalRoutes } from './fase-sucessional'
 import { routes as createPaisRoutes } from './pais'
+import { routes as createSoloRoutes } from './solo'
 import { routes as createRelevoRoutes } from './relevo'
 import { routes as createVegetacaoRoutes } from './vegetacao'
 
@@ -59,6 +60,7 @@ export function createApp({
   const routes: Route[] = [
     ...createPaisRoutes(knex),
     ...createEstadoRoutes(knex),
+    ...createSoloRoutes(knex),
     ...createRelevoRoutes(knex),
     ...createFaseSucessionalRoutes(knex),
     ...createVegetacaoRoutes(knex)
