@@ -31,10 +31,10 @@ export class ListaExpedicoesController implements RequestHandler {
   // GET /api/v2/expedicoes?cidade_id=1100049
 
   // Filtrar por intervalo de datas:
-  // GET /api/v2/expedicoes?data_inicio_de=2026-01-01&data_fim_ate=2026-12-31]
+  // GET /api/v2/expedicoes?data_inicio_de=2026-01-01&data_fim_ate=2026-12-31
 
-  // Filtrar com ordenação:
-  // GET /api/v2/expedicoes?order_column=id&order_direction=asc
+  // Filtrar com ordenação segura:
+  // GET /api/v2/expedicoes?order=data_inicio:desc
 
   async handle(request: CustomHttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     try {
@@ -43,8 +43,7 @@ export class ListaExpedicoesController implements RequestHandler {
         usuario_id,
         data_inicio_de,
         data_fim_ate,
-        order_column,
-        order_direction,
+        order,
         limite,
         pagina
       } = request.params
@@ -62,10 +61,25 @@ export class ListaExpedicoesController implements RequestHandler {
       if (data_inicio_de) filters.data_inicio_de = data_inicio_de
       if (data_fim_ate) filters.data_fim_ate = data_fim_ate
 
-      if (order_column && order_direction) {
+      // Validação da ordenação
+      if (order) {
+        const [column, direction] = order.split(':')
+        const colunasValidas = [
+          'id',
+          'data_inicio',
+          'data_fim'
+        ]
+        const direcoesValidas = ['asc', 'desc']
+
+        if (!colunasValidas.includes(column) || !direcoesValidas.includes(direction)) {
+          return new BadRequestError({
+            message: 'order inválido. Use o formato "id:asc", "id:desc", "data_inicio:asc" ou "data_fim:desc"'
+          })
+        }
+
         filters.order = {
-          column: order_column as 'id' | 'data_inicio' | 'data_fim',
-          direction: order_direction as 'asc' | 'desc'
+          column: column as 'id' | 'data_inicio' | 'data_fim',
+          direction: direction as 'asc' | 'desc'
         }
       }
 
@@ -78,8 +92,9 @@ export class ListaExpedicoesController implements RequestHandler {
 
       const result = await this.listaExpedicoesUseCase.execute(filters)
 
+      // erro de infra
       if (result.left()) {
-        return new BadRequestError({ message: result.value.message })
+        return new InternalServerError({ message: result.value.message })
       }
 
       return {
