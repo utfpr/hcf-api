@@ -4,7 +4,7 @@ import {
   Attributes, CreateAttributes, UpdateAttributes
 } from '@/domain/expedicao/Expedicao'
 import {
-  ExpedicaoCollection, ExpedicaoFilters, Paginated
+  ExpedicaoCollection, ExpedicaoFilters, ExpedicaoListItem, Paginated
 } from '@/domain/expedicao/ExpedicaoCollection'
 import { Either } from '@/library/either/Either'
 
@@ -63,7 +63,7 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
     ])
   }
 
-  async findAll(filters: ExpedicaoFilters): Promise<Either<Error, Paginated<Attributes>>> {
+  async findAll(filters: ExpedicaoFilters): Promise<Either<Error, Paginated<ExpedicaoListItem>>> {
     try {
       const query = this.select()
 
