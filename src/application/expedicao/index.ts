@@ -8,6 +8,8 @@ import { ListaExpedicoesUseCase } from '@/domain/expedicao/ListaExpedicoesUseCas
 import { ListaExpedicoesController } from './ListaExpedicoesController'
 import { BuscaExpedicaoUseCase } from '@/domain/expedicao/BuscaExpedicaoUseCase'
 import { BuscaExpedicaoController } from './BuscaExpedicaoController'
+import { DeletaExpedicaoUseCase } from '@/domain/expedicao/DeletaExpedicaoUseCase'
+import { DeletaExpedicaoController } from './DeletaExpedicaoController'
 
 export function routes(knex: Knex): Route[] {
   const expedicaoCollection = createExpedicaoCollection()
@@ -33,10 +35,19 @@ export function routes(knex: Knex): Route[] {
     },
     {
       method: Method.Get,
-      path: '/v2/expedicoes/:expedicaoId', // <-- O :expedicaoId é o que chega no request.params
+      path: '/v2/expedicoes/:expedicaoId', 
       handlers: [
         new BuscaExpedicaoController({
           buscaExpedicaoUseCase: new BuscaExpedicaoUseCase({ expedicaoCollection })
+        })
+      ]
+    },
+    {
+      method: Method.Delete,
+      path: '/v2/expedicoes/:expedicaoId', 
+      handlers: [
+        new DeletaExpedicaoController({
+          deletaExpedicaoUseCase: new DeletaExpedicaoUseCase({ expedicaoCollection })
         })
       ]
     }

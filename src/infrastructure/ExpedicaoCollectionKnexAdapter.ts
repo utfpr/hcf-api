@@ -216,4 +216,18 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
       return Either.left(new CollectionError({ message: 'Failed to create expedição', cause: error }))
     }
   }
+
+  async delete(id: number): Promise<Either<Error, void>> {
+    try {
+      await this.knex.transaction(async trx => {
+        await trx('expedicoes_participantes').where('expedicao_id', id).delete()
+        await trx('expedicoes_rotas').where('expedicao_id', id).delete()
+        await trx('expedicoes').where('id', id).delete()
+      })
+
+      return Either.right(undefined)
+    } catch (error) {
+      return Either.left(new CollectionError({ message: 'Failed to delete expedição', cause: error }))
+    }
+  }
 }

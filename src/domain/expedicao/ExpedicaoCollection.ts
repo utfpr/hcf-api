@@ -29,4 +29,5 @@ export interface ExpedicaoCollection {
   findAll(filters: ExpedicaoFilters): Promise<Either<Error, Paginated<Attributes>>>
   findById(id: number): Promise<Either<Error, Attributes | null>>
   create(attributes: CreateAttributes): Promise<Either<Error, Attributes>>
+  delete(id: number): Promise<Either<Error, void>>
 }
