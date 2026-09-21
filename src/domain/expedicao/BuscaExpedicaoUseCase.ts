@@ -1,6 +1,4 @@
-import {
-  Either, Left, Right
-} from '@/library/either/Either'
+import { Either } from '@/library/either/Either'
 
 import { Attributes } from './Expedicao'
 import { ExpedicaoCollection } from './ExpedicaoCollection'
@@ -16,22 +14,7 @@ export class BuscaExpedicaoUseCase {
     this.expedicaoCollection = dependencies.expedicaoCollection
   }
 
-  async execute(id: number): Promise<Either<Error, Attributes>> {
-    const result = await this.expedicaoCollection.findById(id)
-
-    // operação de banco falhou
-    if (result.left()) {
-      return new Left(result.value)
-    }
-
-    const expedicao = result.value
-
-    // buscou man não encontrou o ID (null ou undefined)
-    if (!expedicao) {
-      return new Left(new Error('Expedição não encontrada.'))
-    }
-
-    // sucesso
-    return new Right(expedicao)
+  async execute({ id }: { id: number }): Promise<Either<Error, Attributes | null>> {
+    return this.expedicaoCollection.findById(id)
   }
 }

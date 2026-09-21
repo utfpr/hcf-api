@@ -30,17 +30,23 @@ export class BuscaExpedicaoController implements RequestHandler {
       const { expedicaoId } = request.params
 
       // validação id
-      if (!expedicaoId || Number.isNaN(Number(expedicaoId))) {
-        return new BadRequestError({ message: 'O ID da expedição é inválido.' })
+      if (expedicaoId === undefined || expedicaoId === null || expedicaoId === '' || !/^\d+$/.test(expedicaoId)) {
+        return new BadRequestError({ message: 'expedicaoId inválido' })
       }
 
-      const result = await this.buscaExpedicaoUseCase.execute(Number(expedicaoId))
+      const result = await this.buscaExpedicaoUseCase.execute({ id: Number(expedicaoId) })
 
-      // se falhouo assumimos que não encontrou a expedição, então retornamos 404
+      // Falha na infra ou exceção de regra de negócio
       if (result.left()) {
-        return new NotFoundError({ message: result.value.message })
+        return new InternalServerError({ message: result.value.message })
       }
 
+      // sucesso na querry, mas a expedição não encontrada
+      if (!result.value) {
+        return new NotFoundError({ message: 'Expedição não encontrada' })
+      }
+
+      // sucesso
       return {
         statusCode: StatusCode.Ok,
         body: result.value
