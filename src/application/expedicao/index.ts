@@ -1,17 +1,19 @@
 import { type Knex } from 'knex'
+
+import { AtualizaExpedicaoUseCase } from '@/domain/expedicao/AtualizaExpedicaoUseCase'
+import { BuscaExpedicaoUseCase } from '@/domain/expedicao/BuscaExpedicaoUseCase'
+import { CadastraExpedicaoUseCase } from '@/domain/expedicao/CadastraExpedicaoUseCase'
+import { DeletaExpedicaoUseCase } from '@/domain/expedicao/DeletaExpedicaoUseCase'
+import { ListaExpedicoesUseCase } from '@/domain/expedicao/ListaExpedicoesUseCase'
+import { createExpedicaoCollection } from '@/factory/ExpedicaoCollectionFactory'
 import { Method } from '@/library/http/common'
 import { Route } from '@/library/http/Router'
-import { CadastraExpedicaoUseCase } from '@/domain/expedicao/CadastraExpedicaoUseCase'
-import { CadastraExpedicaoController } from './CadastraExpedicaoController'
-import { createExpedicaoCollection } from '@/factory/ExpedicaoCollectionFactory' 
-import { ListaExpedicoesUseCase } from '@/domain/expedicao/ListaExpedicoesUseCase'
-import { ListaExpedicoesController } from './ListaExpedicoesController'
-import { BuscaExpedicaoUseCase } from '@/domain/expedicao/BuscaExpedicaoUseCase'
-import { BuscaExpedicaoController } from './BuscaExpedicaoController'
-import { DeletaExpedicaoUseCase } from '@/domain/expedicao/DeletaExpedicaoUseCase'
-import { DeletaExpedicaoController } from './DeletaExpedicaoController'
-import { AtualizaExpedicaoUseCase } from '@/domain/expedicao/AtualizaExpedicaoUseCase'
+
 import { AtualizaExpedicaoController } from './AtualizaExpedicaoController'
+import { BuscaExpedicaoController } from './BuscaExpedicaoController'
+import { CadastraExpedicaoController } from './CadastraExpedicaoController'
+import { DeletaExpedicaoController } from './DeletaExpedicaoController'
+import { ListaExpedicoesController } from './ListaExpedicoesController'
 
 export function routes(knex: Knex): Route[] {
   const expedicaoCollection = createExpedicaoCollection()
@@ -37,7 +39,7 @@ export function routes(knex: Knex): Route[] {
     },
     {
       method: Method.Get,
-      path: '/v2/expedicoes/:expedicaoId', 
+      path: '/v2/expedicoes/:expedicaoId',
       handlers: [
         new BuscaExpedicaoController({
           buscaExpedicaoUseCase: new BuscaExpedicaoUseCase({ expedicaoCollection })
@@ -46,7 +48,7 @@ export function routes(knex: Knex): Route[] {
     },
     {
       method: Method.Delete,
-      path: '/v2/expedicoes/:expedicaoId', 
+      path: '/v2/expedicoes/:expedicaoId',
       handlers: [
         new DeletaExpedicaoController({
           deletaExpedicaoUseCase: new DeletaExpedicaoUseCase({ expedicaoCollection })
@@ -55,7 +57,7 @@ export function routes(knex: Knex): Route[] {
     },
     {
       method: Method.Put,
-      path: '/v2/expedicoes/:expedicaoId', 
+      path: '/v2/expedicoes/:expedicaoId',
       handlers: [
         new AtualizaExpedicaoController({
           atualizaExpedicaoUseCase: new AtualizaExpedicaoUseCase({ expedicaoCollection })

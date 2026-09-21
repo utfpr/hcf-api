@@ -1,6 +1,8 @@
-import { ListaExpedicoesUseCase } from '@/domain/expedicao/ListaExpedicoesUseCase'
 import { ExpedicaoFilters } from '@/domain/expedicao/ExpedicaoCollection'
-import { HttpRequest, HttpResponse, StatusCode } from '@/library/http/common'
+import { ListaExpedicoesUseCase } from '@/domain/expedicao/ListaExpedicoesUseCase'
+import {
+  HttpRequest, HttpResponse, StatusCode
+} from '@/library/http/common'
 import { BadRequestError } from '@/library/http/error/BadRequestError'
 import { HttpError } from '@/library/http/error/HttpError'
 import { InternalServerError } from '@/library/http/error/InternalServerError'
@@ -34,18 +36,17 @@ export class ListaExpedicoesController implements RequestHandler {
   // Filtrar com ordenação:
   // GET /api/v2/expedicoes?order_column=id&order_direction=asc
 
-
   async handle(request: CustomHttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     try {
-      const { 
-        cidade_id, 
-        usuario_id, 
-        data_inicio_de, 
-        data_fim_ate, 
-        order_column, 
+      const {
+        cidade_id,
+        usuario_id,
+        data_inicio_de,
+        data_fim_ate,
+        order_column,
         order_direction,
-        limite,  
-        pagina    
+        limite,
+        pagina
       } = request.params
 
       const filters: ExpedicaoFilters = {}

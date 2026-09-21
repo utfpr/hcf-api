@@ -1,6 +1,9 @@
-import { Either, Left, Right } from '@/library/either/Either'
+import { Either } from '@/library/either/Either'
+
+import {
+  Attributes, Expedicao, UpdateAttributes
+} from './Expedicao'
 import { ExpedicaoCollection } from './ExpedicaoCollection'
-import { Attributes, Expedicao, UpdateAttributes } from './Expedicao'
 
 interface Dependencies {
   expedicaoCollection: ExpedicaoCollection

@@ -29,17 +29,24 @@ export class CadastraExpedicaoController implements RequestHandler {
 
   async handle(request: CustomHttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     try {
-       
       //  TODO: AUTENTICAÇÃO TEMPORARIAMENTE DESABILITADA
       //  A infraestrutura de request HTTP autenticada está sendo desenvolvida.
       //  Assim que integrada, descomentar a validação abaixo e remover o mock do 'created_by'.
-       
-      
+
       // if (!request.usuario || ![TIPOS_USUARIOS.CURADOR, TIPOS_USUARIOS.OPERADOR].includes(request.usuario.tipo_usuario_id)) {
-      //   return new UnauthorizedError({ message: 'Não tem permissão para realizar esta ação' }) 
+      //   return new UnauthorizedError({ message: 'Não tem permissão para realizar esta ação' })
       // }
 
-      const { descricao, data_inicio, data_fim, cidade_id, participantes, rotas } = request.body as any
+      const {
+        descricao, data_inicio, data_fim, cidade_id, participantes, rotas
+      } = request.body as {
+        descricao?: string | null
+        data_inicio: string
+        data_fim: string
+        cidade_id: number
+        participantes?: number[]
+        rotas?: number[]
+      }
 
       // VALIDAÇÃO MANUAL DE DADOS
       if (!data_inicio || Number.isNaN(Date.parse(data_inicio))) {
@@ -59,7 +66,7 @@ export class CadastraExpedicaoController implements RequestHandler {
       }
 
       // MOCK TEMPORÁRIO: Substituir pelo request.usuario.id quando a autenticação estiver pronta
-      const created_by = 9; // Id válido de usuário para teste
+      const created_by = 9 // Id válido de usuário para teste
 
       // EXECUÇÃO DO CASO DE USO
       const result = await this.cadastraExpedicaoUseCase.execute({
@@ -76,11 +83,10 @@ export class CadastraExpedicaoController implements RequestHandler {
         return new BadRequestError({ message: result.value.message })
       }
 
-      return { 
-        statusCode: StatusCode.Created, 
-        body: result.value 
+      return {
+        statusCode: StatusCode.Created,
+        body: result.value
       }
-      
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro inesperado ao cadastrar expedição'
       return new InternalServerError({ message: errorMessage })

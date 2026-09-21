@@ -1,4 +1,7 @@
-import { Either, Left, Right } from '@/library/either/Either'
+import {
+  Either, Left, Right
+} from '@/library/either/Either'
+
 import { ExpedicaoCollection } from './ExpedicaoCollection'
 
 interface Dependencies {
@@ -13,7 +16,7 @@ export class DeletaExpedicaoUseCase {
 
   async execute(id: number): Promise<Either<Error, void>> {
     const expedicaoResult = await this.expedicaoCollection.findById(id)
-    
+
     if (expedicaoResult.left() || !expedicaoResult.value) {
       return new Left(new Error('Expedição não encontrada para exclusão.'))
     }
@@ -21,7 +24,7 @@ export class DeletaExpedicaoUseCase {
     const deleteResult = await this.expedicaoCollection.delete(id)
 
     if (deleteResult.left()) {
-      return new Left(deleteResult.value as Error)
+      return new Left(deleteResult.value)
     }
 
     return new Right(undefined)

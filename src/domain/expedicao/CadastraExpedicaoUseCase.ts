@@ -1,6 +1,8 @@
 import { Either } from '@/library/either/Either'
 
-import { Attributes, CreateAttributes, Expedicao } from './Expedicao'
+import {
+  Attributes, CreateAttributes, Expedicao
+} from './Expedicao'
 import { ExpedicaoCollection } from './ExpedicaoCollection'
 
 interface Dependencies {
@@ -29,7 +31,7 @@ export class CadastraExpedicaoUseCase {
       return Either.left(validacao.value)
     }
 
-    // Adapter para persistir no banco 
+    // Adapter para persistir no banco
     return await this.expedicaoCollection.create(dados)
   }
 }

@@ -1,5 +1,8 @@
 import { Either } from '@/library/either/Either'
-import { Attributes, CreateAttributes, UpdateAttributes } from './Expedicao'
+
+import {
+  Attributes, CreateAttributes, UpdateAttributes
+} from './Expedicao'
 
 export interface ExpedicaoOrder {
   column: 'id' | 'data_inicio' | 'data_fim'

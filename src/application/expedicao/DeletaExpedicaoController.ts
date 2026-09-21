@@ -1,5 +1,7 @@
 import { DeletaExpedicaoUseCase } from '@/domain/expedicao/DeletaExpedicaoUseCase'
-import { HttpRequest, HttpResponse, StatusCode } from '@/library/http/common'
+import {
+  HttpRequest, HttpResponse, StatusCode
+} from '@/library/http/common'
 import { BadRequestError } from '@/library/http/error/BadRequestError'
 import { HttpError } from '@/library/http/error/HttpError'
 import { NotFoundError } from '@/library/http/error/NotFoundError'
@@ -37,7 +39,7 @@ export class DeletaExpedicaoController implements RequestHandler {
     }
 
     return {
-      statusCode: StatusCode.NoContent 
+      statusCode: StatusCode.NoContent
     }
   }
 }

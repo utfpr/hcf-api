@@ -1,4 +1,7 @@
-import { Either, Left, Right } from '@/library/either/Either'
+import {
+  Either, Left, Right
+} from '@/library/either/Either'
+
 import { Attributes } from './Expedicao'
 import { ExpedicaoCollection } from './ExpedicaoCollection'
 
@@ -14,12 +17,11 @@ export class BuscaExpedicaoUseCase {
   }
 
   async execute(id: number): Promise<Either<Error, Attributes>> {
-
     const result = await this.expedicaoCollection.findById(id)
-    
+
     // operação de banco falhou
     if (result.left()) {
-      return new Left(result.value as Error)
+      return new Left(result.value)
     }
 
     const expedicao = result.value

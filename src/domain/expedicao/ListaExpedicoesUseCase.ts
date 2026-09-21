@@ -1,6 +1,9 @@
 import { Either } from '@/library/either/Either'
+
 import { Attributes } from './Expedicao'
-import { ExpedicaoCollection, ExpedicaoFilters, Paginated } from './ExpedicaoCollection'
+import {
+  ExpedicaoCollection, ExpedicaoFilters, Paginated
+} from './ExpedicaoCollection'
 
 interface Dependencies {
   expedicaoCollection: ExpedicaoCollection

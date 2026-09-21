@@ -1,5 +1,7 @@
 import { AtualizaExpedicaoUseCase } from '@/domain/expedicao/AtualizaExpedicaoUseCase'
-import { HttpRequest, HttpResponse, StatusCode } from '@/library/http/common'
+import {
+  HttpRequest, HttpResponse, StatusCode
+} from '@/library/http/common'
 import { BadRequestError } from '@/library/http/error/BadRequestError'
 import { HttpError } from '@/library/http/error/HttpError'
 import { InternalServerError } from '@/library/http/error/InternalServerError'
@@ -32,7 +34,14 @@ export class AtualizaExpedicaoController implements RequestHandler {
         return new BadRequestError({ message: 'O ID da expedição é inválido.' })
       }
 
-      const { descricao, data_inicio, data_fim, cidade_id } = request.body as any
+      const {
+        descricao, data_inicio, data_fim, cidade_id
+      } = request.body as {
+        descricao: string | null
+        data_inicio: string
+        data_fim: string
+        cidade_id: number
+      }
 
       const DATA = /^\d{4}-\d{2}-\d{2}$/
 
@@ -56,19 +65,17 @@ export class AtualizaExpedicaoController implements RequestHandler {
         data_inicio,
         data_fim,
         cidade_id,
-        updated_by,
+        updated_by
       })
-
 
       if (result.left()) {
         return new BadRequestError({ message: result.value.message })
       }
 
-      return { 
-        statusCode: StatusCode.Ok, 
-        body: result.value 
+      return {
+        statusCode: StatusCode.Ok,
+        body: result.value
       }
-      
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro inesperado ao atualizar expedição'
       return new InternalServerError({ message: errorMessage })

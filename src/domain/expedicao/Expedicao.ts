@@ -78,15 +78,15 @@ export class Expedicao {
       created_at: this.created_at,
       updated_at: this.updated_at,
       created_by: this.created_by,
-      updated_by: this.updated_by,
+      updated_by: this.updated_by
     }
   }
 
   update(changes: UpdateAttributes): Either<Error, Expedicao> {
-  return Expedicao.create({
-    ...this.toAttributes(),
-    ...changes,
-    updated_at: new Date(),
-  })
-}
+    return Expedicao.create({
+      ...this.toAttributes(),
+      ...changes,
+      updated_at: new Date()
+    })
+  }
 }

@@ -1,9 +1,11 @@
 import { BuscaExpedicaoUseCase } from '@/domain/expedicao/BuscaExpedicaoUseCase'
-import { HttpRequest, HttpResponse, StatusCode } from '@/library/http/common'
+import {
+  HttpRequest, HttpResponse, StatusCode
+} from '@/library/http/common'
 import { BadRequestError } from '@/library/http/error/BadRequestError'
-import { NotFoundError } from '@/library/http/error/NotFoundError'
 import { HttpError } from '@/library/http/error/HttpError'
 import { InternalServerError } from '@/library/http/error/InternalServerError'
+import { NotFoundError } from '@/library/http/error/NotFoundError'
 import { NextHandler, RequestHandler } from '@/library/http/Server'
 
 interface Dependencies {
