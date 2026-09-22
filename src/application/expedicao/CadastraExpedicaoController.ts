@@ -80,6 +80,12 @@ export class CadastraExpedicaoController implements RequestHandler {
       })
 
       if (result.left()) {
+        // Se for um erro que sabemos ser de banco/infraestrutura devolve 500
+        if (result.value.name === 'CollectionError' || result.value.message.includes('Failed to create')) {
+          return new InternalServerError({ message: 'Falha interna ao cadastrar expedição' })
+        }
+
+        // Se for um erro de validação de domínio (ex: data_fim antes de data_inicio) devolve 400
         return new BadRequestError({ message: result.value.message })
       }
 
