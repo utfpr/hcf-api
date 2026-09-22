@@ -1,5 +1,5 @@
 import {
-  Either, Left, Right
+  Either
 } from '@/library/either/Either'
 
 import { ExpedicaoCollection } from './ExpedicaoCollection'
@@ -14,19 +14,7 @@ export class DeletaExpedicaoUseCase {
     this.expedicaoCollection = dependencies.expedicaoCollection
   }
 
-  async execute(id: number): Promise<Either<Error, void>> {
-    const expedicaoResult = await this.expedicaoCollection.findById(id)
-
-    if (expedicaoResult.left() || !expedicaoResult.value) {
-      return new Left(new Error('Expedição não encontrada para exclusão.'))
-    }
-
-    const deleteResult = await this.expedicaoCollection.delete(id)
-
-    if (deleteResult.left()) {
-      return new Left(deleteResult.value)
-    }
-
-    return new Right(undefined)
+  async execute({ id }: { id: number }): Promise<Either<Error, void>> {
+    return this.expedicaoCollection.delete(id)
   }
 }

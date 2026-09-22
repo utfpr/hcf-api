@@ -13,10 +13,7 @@ interface Dependencies {
 }
 
 interface CustomHttpRequest extends HttpRequest {
-  usuario?: {
-    id: number
-    tipo_usuario_id: number
-  }
+  params: Record<string, string | undefined>
 }
 
 export class DeletaExpedicaoController implements RequestHandler {
@@ -30,14 +27,18 @@ export class DeletaExpedicaoController implements RequestHandler {
     try {
       const { expedicaoId } = request.params
 
-      if (!expedicaoId || Number.isNaN(Number(expedicaoId))) {
+      if (expedicaoId === undefined || expedicaoId === null || expedicaoId === '' || !/^\d+$/.test(expedicaoId)) {
         return new BadRequestError({ message: 'O ID da expedição é inválido.' })
       }
 
-      const result = await this.deletaExpedicaoUseCase.execute(Number(expedicaoId))
+      const result = await this.deletaExpedicaoUseCase.execute({ id: Number(expedicaoId) })
 
       if (result.left()) {
-        return new NotFoundError({ message: result.value.message })
+        // Distingue não encontrado (404) de erro no banco (500)
+        if (result.value.message === 'Expedição não encontrada') {
+          return new NotFoundError({ message: result.value.message })
+        }
+        return new InternalServerError({ message: result.value.message })
       }
 
       return {

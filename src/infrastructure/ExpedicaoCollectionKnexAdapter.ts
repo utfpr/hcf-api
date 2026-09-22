@@ -226,11 +226,20 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
 
   async delete(id: number): Promise<Either<Error, void>> {
     try {
-      await this.knex.transaction(async trx => {
+      const affectedRows = await this.knex.transaction(async trx => {
+        // Deleta as tabelas filhas primeiro
         await trx('expedicoes_participantes').where('expedicao_id', id).delete()
         await trx('expedicoes_rotas').where('expedicao_id', id).delete()
-        await trx('expedicoes').where('id', id).delete()
+
+        // Deleta a expedição e converte a tipagem do resultado explicitamente para number
+        const count = await trx('expedicoes').where('id', id).delete()
+        return count
       })
+
+      // Se apagou 0 linhas, é porque o ID não existia
+      if (affectedRows === 0) {
+        return Either.left(new Error('Expedição não encontrada'))
+      }
 
       return Either.right(undefined)
     } catch (error) {
