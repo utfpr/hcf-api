@@ -4,6 +4,9 @@ export interface Attributes {
   id: number
   evento_id: number
   nome: string
+  arquivo: string
+  mime_type: string
+  tamanho: number
   capturado_em: Date
   created_at: Date
   updated_at: Date
@@ -17,6 +20,9 @@ export class Evidencia {
   readonly id: number
   readonly evento_id: number
   readonly nome: string
+  readonly arquivo: string
+  readonly mime_type: string
+  readonly tamanho: number
   readonly capturado_em: Date
   readonly created_at: Date
   readonly updated_at: Date
@@ -27,6 +33,9 @@ export class Evidencia {
     this.id = attributes.id
     this.evento_id = attributes.evento_id
     this.nome = attributes.nome
+    this.arquivo = attributes.arquivo
+    this.mime_type = attributes.mime_type
+    this.tamanho = attributes.tamanho
     this.capturado_em = attributes.capturado_em
     this.created_at = attributes.created_at
     this.updated_at = attributes.updated_at
@@ -41,6 +50,18 @@ export class Evidencia {
 
     if (!attributes.nome.trim()) {
       return Either.left(new Error('Nome da evidência não pode ser vazio'))
+    }
+
+    if (!attributes.arquivo.trim()) {
+      return Either.left(new Error('Arquivo da evidência é obrigatório'))
+    }
+
+    if (!attributes.mime_type.trim()) {
+      return Either.left(new Error('Tipo do arquivo da evidência é obrigatório'))
+    }
+
+    if (!Number.isInteger(attributes.tamanho) || attributes.tamanho <= 0) {
+      return Either.left(new Error('Tamanho do arquivo da evidência é inválido'))
     }
 
     if (Number.isNaN(attributes.capturado_em.getTime())) {

@@ -793,6 +793,13 @@
   dependencies:
     "@types/node" "*"
 
+"@types/multer@^2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@types/multer/-/multer-2.2.0.tgz#f987c770cbe309d1b5e60c251851d6550f121f61"
+  integrity sha512-3U1troeqGV8Ntp7Q3klwf4zr23VEoqYVocYXaswm9+8z3O9UHDYAqLxjJ/h550iRADTjKdOdhhasXw6gD6kYtg==
+  dependencies:
+    "@types/express" "*"
+
 "@types/node@*":
   version "25.9.3"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-25.9.3.tgz#11dfe7a33e68fa5c560f0aa76cc5595621ef26b9"

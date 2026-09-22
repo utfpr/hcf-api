@@ -50,6 +50,9 @@ describe('EvidenciaCollectionKnexAdapter', () => {
     const created = await collection.create({
       evento_id: eventoId,
       nome: 'IMG_0042.jpg',
+      arquivo: '1_20260215143000-a1b2.jpg',
+      mime_type: 'image/jpeg',
+      tamanho: 204800,
       capturado_em: capturadoEm,
       created_by: fixtures.usuarios[0]
     })
@@ -68,10 +71,22 @@ describe('EvidenciaCollectionKnexAdapter', () => {
 
   test('lista as evidências de um evento ordenadas por instante de captura', async () => {
     const tarde = await collection.create({
-      evento_id: eventoId, nome: 'b.jpg', capturado_em: new Date('2026-02-15T18:00:00.000Z'), created_by: null
+      evento_id: eventoId,
+      nome: 'b.jpg',
+      arquivo: '1_20260215180000-c3d4.jpg',
+      mime_type: 'image/jpeg',
+      tamanho: 1024,
+      capturado_em: new Date('2026-02-15T18:00:00.000Z'),
+      created_by: null
     })
     const cedo = await collection.create({
-      evento_id: eventoId, nome: 'a.jpg', capturado_em: new Date('2026-02-15T08:00:00.000Z'), created_by: null
+      evento_id: eventoId,
+      nome: 'a.jpg',
+      arquivo: '1_20260215080000-e5f6.jpg',
+      mime_type: 'image/jpeg',
+      tamanho: 1024,
+      capturado_em: new Date('2026-02-15T08:00:00.000Z'),
+      created_by: null
     })
 
     expect(tarde.right() && cedo.right()).toBe(true)
@@ -94,7 +109,13 @@ describe('EvidenciaCollectionKnexAdapter', () => {
 
   test('rejeita evidência de um evento inexistente', async () => {
     const created = await collection.create({
-      evento_id: -1, nome: 'c.jpg', capturado_em: new Date(), created_by: null
+      evento_id: -1,
+      nome: 'c.jpg',
+      arquivo: '-1_1700000000000-0000.jpg',
+      mime_type: 'image/jpeg',
+      tamanho: 1024,
+      capturado_em: new Date(),
+      created_by: null
     })
 
     expect(created.left()).toBe(true)
@@ -108,7 +129,13 @@ describe('EvidenciaCollectionKnexAdapter', () => {
       .returning<Array<{ id: number }>>(['id'])
 
     const created = await collection.create({
-      evento_id: evento.id, nome: 'd.jpg', capturado_em: new Date(), created_by: null
+      evento_id: evento.id,
+      nome: 'd.jpg',
+      arquivo: `${evento.id}_1700000000000-0000.jpg`,
+      mime_type: 'image/jpeg',
+      tamanho: 1024,
+      capturado_em: new Date(),
+      created_by: null
     })
     expect(created.right()).toBe(true)
     if (!created.right()) return

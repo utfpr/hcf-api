@@ -14,6 +14,7 @@ import legacyErrors from '../middlewares/erros-middleware'
 import { generatePreview, reportPreview } from '../reports/controller'
 import { routes as createEstadoRoutes } from './estado'
 import { routes as createEventoRoutes } from './evento'
+import { routes as createEvidenciaRoutes } from './evidencia'
 import { routes as createFaseSucessionalRoutes } from './fase-sucessional'
 import { routes as createPaisRoutes } from './pais'
 import { routes as createVegetacaoRoutes } from './vegetacao'
@@ -61,7 +62,8 @@ export function createApp({
     ...createEstadoRoutes(knex),
     ...createFaseSucessionalRoutes(knex),
     ...createVegetacaoRoutes(knex),
-    ...createEventoRoutes(knex)
+    ...createEventoRoutes(knex),
+    ...createEvidenciaRoutes(knex)
   ]
   const application = new ExpressApplication({ logger })
 
@@ -115,7 +117,7 @@ export function createApp({
 
   for (const route of routes) {
     const sanitizedPath = `/api/${route.path}`.replaceAll(/\/{2,}/g, '/').replaceAll(/\/$/g, '')
-    application.endpoint(route.method, sanitizedPath, ...route.handlers)
+    application.endpoint(route.method, sanitizedPath, route.handlers, route.middlewares)
   }
 
   if (legacyRouter) {

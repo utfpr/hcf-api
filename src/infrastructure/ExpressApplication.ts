@@ -34,13 +34,20 @@ export class ExpressApplication implements Application {
     return this
   }
 
-  endpoint(method: Method, path: string, ...handlers: RequestHandler[]): this {
+  endpoint(
+    method: Method,
+    path: string,
+    handlers: RequestHandler[],
+    expressMiddlewares: express.RequestHandler[] = []
+  ): this {
     this.app[method](
       path,
+      ...expressMiddlewares,
       async (expressRequest: express.Request, expressResponse: express.Response) => {
         const params = {
           ...expressRequest.params,
-          ...expressRequest.query
+          ...expressRequest.query,
+          ...(expressRequest.file ? { file: expressRequest.file } : {})
         }
         const headers: Headers = {
           ...expressRequest.headers as Record<string, string>,
@@ -80,19 +87,19 @@ export class ExpressApplication implements Application {
   }
 
   get(path: string, ...handlers: RequestHandler[]): this {
-    return this.endpoint(Method.Get, path, ...handlers)
+    return this.endpoint(Method.Get, path, handlers)
   }
 
   post(path: string, ...handlers: RequestHandler[]): this {
-    return this.endpoint(Method.Post, path, ...handlers)
+    return this.endpoint(Method.Post, path, handlers)
   }
 
   put(path: string, ...handlers: RequestHandler[]): this {
-    return this.endpoint(Method.Put, path, ...handlers)
+    return this.endpoint(Method.Put, path, handlers)
   }
 
   delete(path: string, ...handlers: RequestHandler[]): this {
-    return this.endpoint(Method.Delete, path, ...handlers)
+    return this.endpoint(Method.Delete, path, handlers)
   }
 
   start(port: number): Promise<void> {
