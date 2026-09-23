@@ -3,7 +3,7 @@ import errors from '../resources/errors';
 
 function handleHttpException(error, request, response) {
     const code = error.errorCode;
-    const message = errors[code];
+    const message = errors[code] || error.message || 'Erro inválido.';
     const { report } = error;
 
     response.status(error.statusCode)
