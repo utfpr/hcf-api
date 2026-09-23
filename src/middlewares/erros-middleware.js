@@ -25,18 +25,6 @@ export default (error, request, response, next) => {
         return;
     }
 
-    if (error?.statusCode) {
-        response.status(error.statusCode)
-            .json({
-                error: {
-                    code: error.statusCode,
-                    message: error.message || 'Erro inválido.',
-                },
-            });
-
-        return;
-    }
-
     if (error.name === 'TokenExpiredError') {
         response.status(401)
             .json({

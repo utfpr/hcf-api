@@ -223,9 +223,7 @@ const validarLocalColetaDuplicado = async ({ cidadeId, descricao, idIgnorado = n
     });
 
     if (localColetaExistente) {
-        const error = new Error('Já existe um local de coleta com essa descrição na cidade informada.');
-        error.statusCode = 400;
-        throw error;
+        throw new BadRequestExeption(null, 'Já existe um local de coleta com essa descrição na cidade informada.');
     }
 
     return localColetaExistente;
