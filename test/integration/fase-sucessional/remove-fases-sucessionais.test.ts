@@ -10,8 +10,10 @@ import { createTestApp } from '../setup/app-factory'
 
 type FaseSucessionalAttributes = { id: number; nome: string }
 
+const TEST_JWT_SECRET = process.env.JWT_SECRET ?? 'test-secret'
+
 const buildAuthHeader = () => {
-  const token = jwt.sign({ id: 1, tipo_usuario_id: 1 }, process.env.JWT_SECRET as string)
+  const token = jwt.sign({ id: 1, tipo_usuario_id: 1 }, TEST_JWT_SECRET)
   return { Authorization: `Bearer ${token}` }
 }
 
