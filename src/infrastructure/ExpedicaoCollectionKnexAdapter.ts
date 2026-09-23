@@ -1,7 +1,11 @@
 import { Knex } from 'knex'
 
-import { Attributes, CreateAttributes } from '@/domain/expedicao/Expedicao'
-import { ExpedicaoCollection, ExpedicaoFilters } from '@/domain/expedicao/ExpedicaoCollection'
+import {
+  Attributes, CreateAttributes, UpdateAttributes
+} from '@/domain/expedicao/Expedicao'
+import {
+  ExpedicaoCollection, ExpedicaoFilters, ExpedicaoListItem, Paginated
+} from '@/domain/expedicao/ExpedicaoCollection'
 import { Either } from '@/library/either/Either'
 
 import { CollectionError } from './error/CollectionError'
@@ -59,13 +63,11 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
     ])
   }
 
-  async findAll(filters: ExpedicaoFilters): Promise<Either<Error, Attributes[]>> {
+  async findAll(filters: ExpedicaoFilters): Promise<Either<Error, Paginated<ExpedicaoListItem>>> {
     try {
       const query = this.select()
 
-      if (filters.cidade_id) {
-        query.where('expedicoes.cidade_id', filters.cidade_id)
-      }
+      if (filters.cidade_id) query.where('expedicoes.cidade_id', filters.cidade_id)
 
       if (filters.usuario_id) {
         query.whereIn('expedicoes.id', this.knex('expedicoes_participantes')
@@ -73,19 +75,66 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
           .where('usuario_id', filters.usuario_id))
       }
 
-      if (filters.data_inicio_de) {
-        query.where('expedicoes.data_inicio', '>=', filters.data_inicio_de)
-      }
+      if (filters.data_inicio_de) query.where('expedicoes.data_inicio', '>=', filters.data_inicio_de)
+      if (filters.data_fim_ate) query.where('expedicoes.data_fim', '<=', filters.data_fim_ate)
 
-      if (filters.data_fim_ate) {
-        query.where('expedicoes.data_fim', '<=', filters.data_fim_ate)
-      }
+      // contagem de total de registros
+      const countQuery = query.clone()
+      const [result] = await countQuery.clearSelect().count<{ count: string | number }[]>('* as count')
+      const count = result?.count ?? 0
+      const total = Number(count)
 
+      // valores padrão da paginação(20 e 1)
+      const limite = filters.limite && filters.limite > 0 ? filters.limite : 20
+      const pagina = filters.pagina && filters.pagina > 0 ? filters.pagina : 1
+      const offset = (pagina - 1) * limite
+
+      query.limit(limite).offset(offset)
+
+      // ordenação
       const order = filters.order ?? { column: 'id' as const, direction: 'desc' as const }
       query.orderBy(`expedicoes.${order.column}`, order.direction)
 
       const rows = await query as Row[]
-      return Either.right(rows.map(toAttributes))
+
+      // página vazia, já retorna
+      if (rows.length === 0) {
+        return Either.right({
+          itens: [], total, limite, pagina
+        })
+      }
+
+      const expedicoesIds = rows.map(row => row.id)
+
+      const [participantesRows, rotasRows] = await Promise.all([
+        this.knex<{ expedicao_id: number; usuario_id: number }>('expedicoes_participantes')
+          .select('expedicao_id', 'usuario_id')
+          .whereIn('expedicao_id', expedicoesIds),
+
+        this.knex<{ expedicao_id: number; cidade_id: number }>('expedicoes_rotas')
+          .select('expedicao_id', 'cidade_id')
+          .whereIn('expedicao_id', expedicoesIds)
+          .orderBy('ordem', 'asc')
+      ])
+
+      const itens = rows.map(row => {
+        return {
+          ...toAttributes(row),
+          participantes: participantesRows
+            .filter(p => p.expedicao_id === row.id)
+            .map(p => p.usuario_id),
+          rotas: rotasRows
+            .filter(r => r.expedicao_id === row.id)
+            .map(r => r.cidade_id)
+        }
+      })
+
+      return Either.right({
+        itens,
+        total,
+        limite,
+        pagina
+      })
     } catch (error) {
       return Either.left(new CollectionError({ message: 'Failed to list expedições', cause: error }))
     }
@@ -94,7 +143,32 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
   async findById(id: number): Promise<Either<Error, Attributes | null>> {
     try {
       const row = await this.select().where('expedicoes.id', id).first() as Row | undefined
-      return Either.right(row ? toAttributes(row) : null)
+
+      if (!row) {
+        return Either.right(null)
+      }
+
+      const participantes = await this.knex('expedicoes_participantes')
+        .join('usuarios', 'usuarios.id', 'expedicoes_participantes.usuario_id')
+        .where('expedicoes_participantes.expedicao_id', id)
+        .select('usuarios.id', 'usuarios.nome', 'usuarios.email')
+
+      const rotas = await this.knex('expedicoes_rotas')
+        .join('cidades', 'cidades.id', 'expedicoes_rotas.cidade_id')
+        .where('expedicoes_rotas.expedicao_id', id)
+        .select(
+          'cidades.id as cidade_id',
+          'expedicoes_rotas.ordem',
+          'cidades.nome as nome_cidade',
+          'cidades.estado_id'
+        )
+        .orderBy('expedicoes_rotas.ordem', 'asc')
+
+      return Either.right({
+        ...toAttributes(row),
+        participantes,
+        rotas
+      } as unknown as Attributes)
     } catch (error) {
       return Either.left(new CollectionError({ message: 'Failed to find expedição by id', cause: error }))
     }
@@ -147,6 +221,45 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
       return Either.right(toAttributes(created))
     } catch (error) {
       return Either.left(new CollectionError({ message: 'Failed to create expedição', cause: error }))
+    }
+  }
+
+  async delete(id: number): Promise<Either<Error, void>> {
+    try {
+      const affectedRows = await this.knex.transaction(async trx => {
+        // Deleta as tabelas filhas primeiro
+        await trx('expedicoes_participantes').where('expedicao_id', id).delete()
+        await trx('expedicoes_rotas').where('expedicao_id', id).delete()
+
+        // Deleta a expedição e converte a tipagem do resultado explicitamente para number
+        const count = await trx('expedicoes').where('id', id).delete()
+        return count
+      })
+
+      // Se apagou 0 linhas, é porque o ID não existia
+      if (affectedRows === 0) {
+        return Either.left(new Error('Expedição não encontrada'))
+      }
+
+      return Either.right(undefined)
+    } catch (error) {
+      return Either.left(new CollectionError({ message: 'Failed to delete expedição', cause: error }))
+    }
+  }
+
+  async update(id: number, attributes: UpdateAttributes): Promise<Either<Error, Attributes>> {
+    try {
+      await this.knex('expedicoes')
+        .where({ id })
+        .update({ ...attributes, updated_at: this.knex.fn.now() })
+
+      const row = await this.select().where('expedicoes.id', id).first() as Row | undefined
+
+      if (!row) return Either.left(new Error('Expedição não encontrada'))
+
+      return Either.right(toAttributes(row))
+    } catch (error) {
+      return Either.left(new CollectionError({ message: 'Failed to update expedição', cause: error }))
     }
   }
 }
