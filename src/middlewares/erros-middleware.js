@@ -3,7 +3,7 @@ import errors from '../resources/errors';
 
 function handleHttpException(error, request, response) {
     const code = error.errorCode;
-    const message = errors[code];
+    const message = errors[code] || error.message || 'Erro inválido.';
     const { report } = error;
 
     response.status(error.statusCode)
@@ -22,6 +22,18 @@ export default (error, request, response, next) => {
 
     if (error instanceof HttpException) {
         handleHttpException(error, request, response);
+        return;
+    }
+
+    if (error?.statusCode) {
+        response.status(error.statusCode)
+            .json({
+                error: {
+                    code: error.statusCode,
+                    message: error.message || 'Erro inválido.',
+                },
+            });
+
         return;
     }
 
