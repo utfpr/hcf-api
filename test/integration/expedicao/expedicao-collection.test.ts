@@ -122,7 +122,7 @@ describe('ExpedicaoCollectionKnexAdapter', () => {
       expect(found.right()).toBe(true)
       if (!found.right()) return
 
-      expect(found.value.map(expedicao => expedicao.id)).toEqual([comBruno.value.id])
+      expect(found.value.itens.map(expedicao => expedicao.id)).toEqual([comBruno.value.id])
     } finally {
       await knex('expedicoes').whereIn('id', [comAna.value.id, comBruno.value.id]).delete()
     }
