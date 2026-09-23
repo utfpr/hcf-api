@@ -25,8 +25,13 @@ export interface Paginated<T> {
   limite: number
   pagina: number
 }
+export interface ParticipanteExpedicao {
+  id: number
+  nome: string
+}
+
 export interface ExpedicaoListItem extends Attributes {
-  participantes: number[]
+  participantes: ParticipanteExpedicao[]
   rotas: number[]
 }
 

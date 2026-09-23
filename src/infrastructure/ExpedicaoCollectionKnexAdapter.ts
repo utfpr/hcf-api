@@ -4,7 +4,7 @@ import {
   Attributes, CreateAttributes, UpdateAttributes
 } from '@/domain/expedicao/Expedicao'
 import {
-  ExpedicaoCollection, ExpedicaoFilters, ExpedicaoListItem, Paginated
+  ExpedicaoCollection, ExpedicaoFilters, ExpedicaoListItem, ParticipanteExpedicao, Paginated
 } from '@/domain/expedicao/ExpedicaoCollection'
 import { Either } from '@/library/either/Either'
 
@@ -25,6 +25,12 @@ interface Row {
   updated_at: Date
   created_by: string | null
   updated_by: string | null
+}
+
+interface ParticipanteRow {
+  expedicao_id: number
+  usuario_id: number
+  nome: string
 }
 
 function toAttributes(row: Row): Attributes {
@@ -107,9 +113,10 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
       const expedicoesIds = rows.map(row => row.id)
 
       const [participantesRows, rotasRows] = await Promise.all([
-        this.knex<{ expedicao_id: number; usuario_id: number }>('expedicoes_participantes')
-          .select('expedicao_id', 'usuario_id')
-          .whereIn('expedicao_id', expedicoesIds),
+        this.knex('expedicoes_participantes')
+          .join('usuarios', 'usuarios.id', 'expedicoes_participantes.usuario_id')
+          .select('expedicoes_participantes.expedicao_id', 'expedicoes_participantes.usuario_id', 'usuarios.nome')
+          .whereIn('expedicoes_participantes.expedicao_id', expedicoesIds) as Promise<ParticipanteRow[]>,
 
         this.knex<{ expedicao_id: number; cidade_id: number }>('expedicoes_rotas')
           .select('expedicao_id', 'cidade_id')
@@ -122,7 +129,7 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
           ...toAttributes(row),
           participantes: participantesRows
             .filter(p => p.expedicao_id === row.id)
-            .map(p => p.usuario_id),
+            .map((p): ParticipanteExpedicao => ({ id: p.usuario_id, nome: p.nome })),
           rotas: rotasRows
             .filter(r => r.expedicao_id === row.id)
             .map(r => r.cidade_id)
