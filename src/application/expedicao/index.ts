@@ -1,14 +1,15 @@
 import { type Knex } from 'knex'
+
+import { AdicionaParticipanteUseCase } from '@/domain/expedicao/AdcionaParticipanteUseCase'
+import { RemoveParticipanteUseCase } from '@/domain/expedicao/RemoveParticipanteUseCase'
+import { SubstituiRotasUseCase } from '@/domain/expedicao/SubstituiRotaUseCase'
+import { createExpedicaoCollection } from '@/factory/ExpedicaoCollectionFactory'
 import { Method } from '@/library/http/common'
 import { Route } from '@/library/http/Router'
-import { createExpedicaoCollection } from '@/factory/ExpedicaoCollectionFactory'
-import { AdicionaParticipanteUseCase } from '@/domain/expedicao/AdcionaParticipanteUseCase'
+
 import { AdicionaParticipanteController } from './AdicionaParticipanteController'
-import { RemoveParticipanteUseCase } from '@/domain/expedicao/RemoveParticipanteUseCase'
 import { RemoveParticipanteController } from './RemoveParticipanteController'
 import { SubstituiRotasController } from './SubstituirRotaController'
-import { SubstituiRotasUseCase } from '@/domain/expedicao/SubstituiRotaUseCase'
-
 
 export function routes(knex: Knex): Route[] {
   const expedicaoCollection = createExpedicaoCollection()

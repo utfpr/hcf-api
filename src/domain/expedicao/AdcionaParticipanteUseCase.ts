@@ -1,4 +1,5 @@
 import { Either } from '@/library/either/Either'
+
 import { ExpedicaoCollection } from './ExpedicaoCollection'
 
 interface Dependencies {

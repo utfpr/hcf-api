@@ -231,9 +231,10 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
         usuario_id: usuarioId
       })
       return Either.right(undefined)
-    } catch (error: any) {
-      //Código 23505 é a violação de constraint unique no Postgres
-      if (error.code === '23505') {
+    } catch (error: unknown) {
+      const dbError = error as { code?: string }
+
+      if (dbError.code === '23505') {
         return Either.left(new Error('Participante já está nesta expedição.'))
       }
       return Either.left(new CollectionError({ message: 'Falha ao adicionar participante', cause: error }))
@@ -251,15 +252,15 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
     }
   }
 
-    async substituteRoute(expedicaoId: number, rotas: number[]): Promise<Either<Error, void>> {
+  async substituteRoute(expedicaoId: number, rotas: number[]): Promise<Either<Error, void>> {
     try {
-      await this.knex.transaction(async (trx) => {
+      await this.knex.transaction(async trx => {
         // usa uma transaction para garantir que a exclusão e a inserção ocorram sem a perda de dados em caso de falha.
         // se qualquer operação falhar, a transação será revertida e nenhuma alteração será feita no banco de dados.
         // devido a constraint unique, estamos deletando todas as rotas da expedição e inserindo novamente,
-        // já na ordem correta e seguindo a constraint. 
+        // já na ordem correta e seguindo a constraint.
         await trx('expedicoes_rotas').where('expedicao_id', expedicaoId).delete()
-        
+
         if (rotas.length > 0) {
           const insertData = rotas.map((cidadeId, index) => ({
             expedicao_id: expedicaoId,

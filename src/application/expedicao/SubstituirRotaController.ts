@@ -1,5 +1,7 @@
 import { SubstituiRotasUseCase } from '@/domain/expedicao/SubstituiRotaUseCase'
-import { HttpRequest, HttpResponse, StatusCode } from '@/library/http/common'
+import {
+  HttpRequest, HttpResponse, StatusCode
+} from '@/library/http/common'
 import { BadRequestError } from '@/library/http/error/BadRequestError'
 import { HttpError } from '@/library/http/error/HttpError'
 import { InternalServerError } from '@/library/http/error/InternalServerError'

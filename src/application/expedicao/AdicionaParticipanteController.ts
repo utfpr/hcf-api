@@ -14,7 +14,7 @@ interface Dependencies {
 
 interface CustomHttpRequest extends HttpRequest {
   params: Record<string, string | undefined>
-  body: any
+  body: unknown
   usuario?: {
     id: number
     tipo_usuario_id: number
