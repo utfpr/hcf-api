@@ -1,4 +1,6 @@
 import { RemoverEventoUseCase } from '@/domain/evento/RemoverEventoUseCase'
+import { CheckViolationError } from '@/infrastructure/error/CheckViolationError'
+import { ForeignKeyViolationError } from '@/infrastructure/error/ForeignKeyViolationError'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
@@ -6,6 +8,7 @@ import { BadRequestError } from '@/library/http/error/BadRequestError'
 import { HttpError } from '@/library/http/error/HttpError'
 import { InternalServerError } from '@/library/http/error/InternalServerError'
 import { NotFoundError } from '@/library/http/error/NotFoundError'
+import { UnprocessableEntityError } from '@/library/http/error/UnprocessableEntityError'
 import { NextHandler, RequestHandler } from '@/library/http/Server'
 
 interface Dependencies {
@@ -27,9 +30,11 @@ export class RemoverEventoController implements RequestHandler {
     const result = await this.removerEventoUseCase.execute({ id: eventoId })
 
     if (result.left()) {
-      return new InternalServerError({ message: result.value.message })
+      const error = result.value
+      if (error instanceof ForeignKeyViolationError) return new NotFoundError({ message: error.message })
+      if (error instanceof CheckViolationError) return new UnprocessableEntityError({ message: error.message })
+      return new InternalServerError({ message: error.message })
     }
-
     if (!result.value) {
       return new NotFoundError({ message: 'Evento não encontrado' })
     }
