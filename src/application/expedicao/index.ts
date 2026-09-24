@@ -1,26 +1,23 @@
 import { type Knex } from 'knex'
 
+import { AdicionaParticipanteUseCase } from '@/domain/expedicao/AdcionaParticipanteUseCase'
 import { AtualizaExpedicaoUseCase } from '@/domain/expedicao/AtualizaExpedicaoUseCase'
 import { BuscaExpedicaoUseCase } from '@/domain/expedicao/BuscaExpedicaoUseCase'
 import { CadastraExpedicaoUseCase } from '@/domain/expedicao/CadastraExpedicaoUseCase'
 import { DeletaExpedicaoUseCase } from '@/domain/expedicao/DeletaExpedicaoUseCase'
 import { ListaExpedicoesUseCase } from '@/domain/expedicao/ListaExpedicoesUseCase'
-import { createExpedicaoCollection } from '@/factory/ExpedicaoCollectionFactory'
-
-import { AdicionaParticipanteUseCase } from '@/domain/expedicao/AdcionaParticipanteUseCase'
 import { RemoveParticipanteUseCase } from '@/domain/expedicao/RemoveParticipanteUseCase'
 import { SubstituiRotasUseCase } from '@/domain/expedicao/SubstituiRotaUseCase'
-
+import { createExpedicaoCollection } from '@/factory/ExpedicaoCollectionFactory'
 import { Method } from '@/library/http/common'
 import { Route } from '@/library/http/Router'
 
+import { AdicionaParticipanteController } from './AdicionaParticipanteController'
 import { AtualizaExpedicaoController } from './AtualizaExpedicaoController'
 import { BuscaExpedicaoController } from './BuscaExpedicaoController'
 import { CadastraExpedicaoController } from './CadastraExpedicaoController'
 import { DeletaExpedicaoController } from './DeletaExpedicaoController'
 import { ListaExpedicoesController } from './ListaExpedicoesController'
-
-import { AdicionaParticipanteController } from './AdicionaParticipanteController'
 import { RemoveParticipanteController } from './RemoveParticipanteController'
 import { SubstituiRotasController } from './SubstituirRotaController'
 
