@@ -60,6 +60,7 @@ export function createApp({
   const routes: Route[] = [
     ...createPaisRoutes(knex),
     ...createEstadoRoutes(knex),
+    ...createEventoRoutes(knex),
     ...createFaseSucessionalRoutes(knex),
     ...createVegetacaoRoutes(knex),
     ...createEventoRoutes(knex),
