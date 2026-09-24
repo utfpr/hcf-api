@@ -41,7 +41,13 @@ export type CreateAttributes =
     participantes: number[]
     rotas: number[]
   }
-
+export interface UpdateAttributes {
+  descricao: string | null
+  data_inicio: string
+  data_fim: string
+  cidade_id: number
+  updated_by: number
+}
 export class Expedicao {
   readonly id: number
   readonly descricao: string | null
@@ -83,5 +89,27 @@ export class Expedicao {
     }
 
     return Either.right(new Expedicao(attributes))
+  }
+
+  toAttributes(): Attributes {
+    return {
+      id: this.id,
+      descricao: this.descricao,
+      data_inicio: this.data_inicio,
+      data_fim: this.data_fim,
+      cidade_id: this.cidade_id,
+      created_at: this.created_at,
+      updated_at: this.updated_at,
+      created_by: this.created_by,
+      updated_by: this.updated_by
+    }
+  }
+
+  update(changes: UpdateAttributes): Either<Error, Expedicao> {
+    return Expedicao.create({
+      ...this.toAttributes(),
+      ...changes,
+      updated_at: new Date()
+    })
   }
 }

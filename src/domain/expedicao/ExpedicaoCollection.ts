@@ -1,6 +1,8 @@
 import { Either } from '@/library/either/Either'
 
-import { Attributes, CreateAttributes } from './Expedicao'
+import {
+  Attributes, CreateAttributes, UpdateAttributes
+} from './Expedicao'
 
 export interface ExpedicaoOrder {
   column: 'id' | 'data_inicio' | 'data_fim'
@@ -23,8 +25,13 @@ export interface Paginated<T> {
   limite: number
   pagina: number
 }
+export interface ParticipanteExpedicao {
+  id: number
+  nome: string
+}
+
 export interface ExpedicaoListItem extends Attributes {
-  participantes: number[]
+  participantes: ParticipanteExpedicao[]
   rotas: number[]
 }
 
@@ -38,4 +45,6 @@ export interface ExpedicaoCollection {
 
   substituteRoute(expedicaoId: number, rotas: number[]): Promise<Either<Error, void>>
 
+  delete(id: number): Promise<Either<Error, void>>
+  update(id: number, attributes: UpdateAttributes): Promise<Either<Error, Attributes>>
 }
