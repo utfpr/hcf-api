@@ -1,7 +1,9 @@
 import { Either } from '@/library/either/Either'
 
 import { Attributes } from './Evento'
-import { EventoCollection, EventoFilters } from './EventoCollection'
+import {
+  EventoCollection, EventoFilters, Paginated
+} from './EventoCollection'
 
 interface Dependencies {
   eventoCollection: EventoCollection
@@ -14,7 +16,7 @@ export class ListaEventosUseCase {
     this.eventoCollection = dependencies.eventoCollection
   }
 
-  execute(filters: EventoFilters): Promise<Either<Error, Attributes[]>> {
+  execute(filters: EventoFilters): Promise<Either<Error, Paginated<Attributes>>> {
     return this.eventoCollection.findAll(filters)
   }
 }

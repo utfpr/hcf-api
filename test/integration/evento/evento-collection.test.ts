@@ -168,7 +168,7 @@ describe('EventoCollectionKnexAdapter', () => {
       expect(found.right()).toBe(true)
       if (!found.right()) return
 
-      expect(found.value.map(evento => evento.id)).toEqual([tarde.value.id, cedo.value.id])
+      expect(found.value.itens.map(evento => evento.id)).toEqual([tarde.value.id, cedo.value.id])
     } finally {
       await knex('eventos').whereIn('id', [cedo.value.id, tarde.value.id]).delete()
     }
@@ -186,10 +186,55 @@ describe('EventoCollectionKnexAdapter', () => {
       expect(found.right()).toBe(true)
       if (!found.right()) return
 
-      expect(found.value.map(evento => evento.id)).toEqual([coleta.value.id])
-      expect(found.value[0].coleta).toEqual(ficha)
+      expect(found.value.itens.map(evento => evento.id)).toEqual([coleta.value.id])
+      expect(found.value.itens[0].coleta).toEqual(ficha)
     } finally {
       await knex('eventos').whereIn('id', [diario.value.id, coleta.value.id]).delete()
+    }
+  })
+
+  test('filtra por intervalo de captura e pagina os resultados', async () => {
+    const antes = await collection.create({
+      ...novoDiario(), capturado_em: new Date('2026-02-14T10:00:00.000Z')
+    })
+    const dentro1 = await collection.create({
+      ...novoDiario(), capturado_em: new Date('2026-02-15T10:00:00.000Z')
+    })
+    const dentro2 = await collection.create({
+      ...novaColeta(), capturado_em: new Date('2026-02-15T14:00:00.000Z')
+    })
+    const depois = await collection.create({
+      ...novoDiario(), capturado_em: new Date('2026-02-16T10:00:00.000Z')
+    })
+
+    expect(antes.right() && dentro1.right() && dentro2.right() && depois.right()).toBe(true)
+    if (!antes.right() || !dentro1.right() || !dentro2.right() || !depois.right()) return
+
+    try {
+      const found = await collection.findAll({
+        expedicao_id: expedicaoId,
+        capturado_de: new Date('2026-02-15T00:00:00.000Z'),
+        capturado_ate: new Date('2026-02-15T23:59:59.999Z'),
+        limite: 1,
+        pagina: 2
+      })
+
+      expect(found.right()).toBe(true)
+      if (!found.right()) return
+
+      expect(found.value.total).toBe(2)
+      expect(found.value.limite).toBe(1)
+      expect(found.value.pagina).toBe(2)
+      expect(found.value.itens.map(evento => evento.id)).toEqual([dentro1.value.id])
+    } finally {
+      await knex('eventos')
+        .whereIn('id', [
+          antes.value.id,
+          dentro1.value.id,
+          dentro2.value.id,
+          depois.value.id
+        ])
+        .delete()
     }
   })
 

@@ -3,7 +3,9 @@ import { Knex } from 'knex'
 import {
   Attributes, ColetaAttributes, CreateAttributes, EventoTipo
 } from '@/domain/evento/Evento'
-import { EventoCollection, EventoFilters } from '@/domain/evento/EventoCollection'
+import {
+  EventoCollection, EventoFilters, Paginated
+} from '@/domain/evento/EventoCollection'
 import { Either } from '@/library/either/Either'
 
 import { CollectionError } from './error/CollectionError'
@@ -105,7 +107,7 @@ export class EventoCollectionKnexAdapter implements EventoCollection {
       ])
   }
 
-  async findAll(filters: EventoFilters): Promise<Either<Error, Attributes[]>> {
+  async findAll(filters: EventoFilters): Promise<Either<Error, Paginated<Attributes>>> {
     try {
       const query = this.select()
 
@@ -125,11 +127,28 @@ export class EventoCollectionKnexAdapter implements EventoCollection {
         query.where('eventos.capturado_em', '<=', filters.capturado_ate)
       }
 
-      const order = filters.order ?? { column: 'capturado_em' as const, direction: 'desc' as const }
-      query.orderBy(`eventos.${order.column}`, order.direction)
+      const countQuery = query.clone()
+
+      const countRows = await countQuery
+        .clearSelect()
+        .count<Array<{ count: string }>>('* as count')
+      const [{ count }] = countRows
+
+      const limite = filters.limite && filters.limite > 0 ? filters.limite : 20
+      const pagina = filters.pagina && filters.pagina > 0 ? filters.pagina : 1
+      const offset = (pagina - 1) * limite
+
+      query.orderBy('eventos.capturado_em', 'desc')
+      query.orderBy('eventos.id', 'desc')
+      query.limit(limite).offset(offset)
 
       const rows = await query as Array<Row & Record<string, unknown>>
-      return Either.right(rows.map(toAttributes))
+      return Either.right({
+        itens: rows.map(toAttributes),
+        total: Number(count),
+        limite,
+        pagina
+      })
     } catch (error) {
       return Either.left(new CollectionError({ message: 'Failed to list eventos', cause: error }))
     }
