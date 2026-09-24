@@ -1,39 +1,24 @@
 import { Knex } from 'knex'
 
 import {
-  Attributes, ColetaAttributes, CreateAttributes, EventoTipo
+  Attributes, COLETA_FIELDS, ColetaAttributes, CreateAttributes, EventoTipo
 } from '@/domain/evento/Evento'
 import {
-  EventoCollection, EventoFilters, Paginated
+  AtualizarEventoAttributes, EventoCollection, EventoFilters, Paginated
 } from '@/domain/evento/EventoCollection'
 import { Either } from '@/library/either/Either'
 
+import { CheckViolationError } from './error/CheckViolationError'
 import { CollectionError } from './error/CollectionError'
+import { ForeignKeyViolationError } from './error/ForeignKeyViolationError'
 import { toNullableNumber } from './pg-column'
+import {
+  PG_CHECK_VIOLATION, PG_FOREIGN_KEY_VIOLATION, pgErrorCode
+} from './pg-error'
 
 interface Dependencies {
   knex: Knex
 }
-
-const CAMPOS_DA_FICHA = [
-  'familia',
-  'nome_popular',
-  'nome_cientifico',
-  'municipio',
-  'estado',
-  'referencia_local',
-  'tipo_vegetacao',
-  'solo',
-  'relevo',
-  'substrato',
-  'tronco_com_casca',
-  'associacoes',
-  'folhas',
-  'habito',
-  'frutos',
-  'flores',
-  'luminosidade'
-] as const
 
 interface Row {
   id: number
@@ -56,7 +41,7 @@ function toAttributes(row: Row & Record<string, unknown>): Attributes {
 
   if (row.coleta_evento_id !== null) {
     coleta = Object.fromEntries(
-      CAMPOS_DA_FICHA.map(campo => [campo, row[`coleta_${campo}`] ?? null])
+      COLETA_FIELDS.map(campo => [campo, row[`coleta_${campo}`] ?? null])
     ) as unknown as ColetaAttributes
   }
 
@@ -75,6 +60,20 @@ function toAttributes(row: Row & Record<string, unknown>): Attributes {
     created_by: toNullableNumber(row.created_by),
     updated_by: toNullableNumber(row.updated_by)
   }
+}
+
+function toInfrastructureError(message: string, error: unknown): Error {
+  const code = pgErrorCode(error)
+
+  if (code === PG_FOREIGN_KEY_VIOLATION) {
+    return new ForeignKeyViolationError({ message: 'Expedição não encontrada', cause: error })
+  }
+
+  if (code === PG_CHECK_VIOLATION) {
+    return new CheckViolationError({ message: 'tipo deve ser "DIARIO" ou "COLETA"', cause: error })
+  }
+
+  return new CollectionError({ message, cause: error })
 }
 
 export class EventoCollectionKnexAdapter implements EventoCollection {
@@ -103,7 +102,7 @@ export class EventoCollectionKnexAdapter implements EventoCollection {
         'eventos.created_by',
         'eventos.updated_by',
         'eventos_coletas.evento_id as coleta_evento_id',
-        ...CAMPOS_DA_FICHA.map(campo => `eventos_coletas.${campo} as coleta_${campo}`)
+        ...COLETA_FIELDS.map(campo => `eventos_coletas.${campo} as coleta_${campo}`)
       ])
   }
 
@@ -198,7 +197,66 @@ export class EventoCollectionKnexAdapter implements EventoCollection {
 
       return Either.right(toAttributes(created))
     } catch (error) {
-      return Either.left(new CollectionError({ message: 'Failed to create evento', cause: error }))
+      return Either.left(toInfrastructureError('Failed to create evento', error))
+    }
+  }
+
+  /**
+   * O PUT do agregado: trocar tipo de COLETA para DIARIO apaga a ficha; o
+   * caminho inverso cria a ficha; manter o tipo e mandar `coleta` faz upsert
+   * (evento_id é PK de eventos_coletas).
+   */
+  async update(id: number, attributes: AtualizarEventoAttributes): Promise<Either<Error, Attributes | null>> {
+    try {
+      const updated = await this.knex.transaction(async trx => {
+        const updatedRows = await trx('eventos')
+          .where({ id })
+          .update({
+            tipo: attributes.tipo,
+            capturado_em: attributes.capturado_em,
+            latitude: attributes.latitude,
+            longitude: attributes.longitude,
+            altitude: attributes.altitude,
+            observacoes: attributes.observacoes,
+            updated_by: attributes.updated_by,
+            updated_at: trx.fn.now()
+          })
+          .returning<Array<{ id: number }>>(['id'])
+
+        if (updatedRows.length === 0) {
+          return null
+        }
+
+        if (attributes.coleta) {
+          await trx('eventos_coletas')
+            .insert({ evento_id: id, ...attributes.coleta })
+            .onConflict('evento_id')
+            .merge()
+        } else {
+          await trx('eventos_coletas').where({ evento_id: id }).delete()
+        }
+
+        return await this.select(trx)
+          .where('eventos.id', id)
+          .first() as (Row & Record<string, unknown>) | undefined
+      })
+
+      return Either.right(updated ? toAttributes(updated) : null)
+    } catch (error) {
+      return Either.left(toInfrastructureError('Failed to update evento', error))
+    }
+  }
+
+  /**
+   * ON DELETE CASCADE de eventos_coletas.evento_id cuida da ficha; impedindo
+   * limpeza duplicada.
+   */
+  async delete(id: number): Promise<Either<Error, boolean>> {
+    try {
+      const deletedCount = await this.knex('eventos').where({ id }).delete()
+      return Either.right(deletedCount > 0)
+    } catch (error) {
+      return Either.left(new CollectionError({ message: 'Failed to delete evento', cause: error }))
     }
   }
 }
