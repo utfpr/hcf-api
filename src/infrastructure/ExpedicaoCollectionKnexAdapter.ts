@@ -6,6 +6,7 @@ import {
 import {
   ExpedicaoCollection, ExpedicaoFilters, ExpedicaoListItem, ParticipanteExpedicao, Paginated
 } from '@/domain/expedicao/ExpedicaoCollection'
+import { DuplicateParticipantError } from '@/infrastructure/error/DuplicateParticipantError'
 import { Either } from '@/library/either/Either'
 
 import { CollectionError } from './error/CollectionError'
@@ -281,7 +282,10 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
       const dbError = error as { code?: string }
 
       if (dbError.code === '23505') {
-        return Either.left(new Error('Participante já está nesta expedição.'))
+        return Either.left(new DuplicateParticipantError({
+          message: 'O usuário já está nesta expedição',
+          cause: dbError
+        }))
       }
       return Either.left(new CollectionError({ message: 'Falha ao adicionar participante', cause: error }))
     }
