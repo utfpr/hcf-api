@@ -12,11 +12,6 @@ export interface Attributes {
   updated_by: number | null
 }
 
-export interface ExpedicaoListItem extends Attributes {
-  participantes: number[]
-  rotas: number[]
-}
-
 export interface ParticipanteDetalhado {
   id: number
   nome: string
