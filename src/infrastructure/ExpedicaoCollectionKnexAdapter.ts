@@ -6,6 +6,7 @@ import {
 import {
   ExpedicaoCollection, ExpedicaoFilters, ExpedicaoListItem, ParticipanteExpedicao, Paginated
 } from '@/domain/expedicao/ExpedicaoCollection'
+import { DuplicateParticipantError } from '@/infrastructure/error/DuplicateParticipantError'
 import { Either } from '@/library/either/Either'
 
 import { CollectionError } from './error/CollectionError'
@@ -267,6 +268,61 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
       return Either.right(toAttributes(row))
     } catch (error) {
       return Either.left(new CollectionError({ message: 'Failed to update expedição', cause: error }))
+    }
+  }
+
+  async addParticipant(expedicaoId: number, usuarioId: number): Promise<Either<Error, void>> {
+    try {
+      await this.knex('expedicoes_participantes').insert({
+        expedicao_id: expedicaoId,
+        usuario_id: usuarioId
+      })
+      return Either.right(undefined)
+    } catch (error: unknown) {
+      const dbError = error as { code?: string }
+
+      if (dbError.code === '23505') {
+        return Either.left(new DuplicateParticipantError({
+          message: 'O usuário já está nesta expedição',
+          cause: dbError
+        }))
+      }
+      return Either.left(new CollectionError({ message: 'Falha ao adicionar participante', cause: error }))
+    }
+  }
+
+  async removeParticipant(expedicaoId: number, usuarioId: number): Promise<Either<Error, void>> {
+    try {
+      await this.knex('expedicoes_participantes')
+        .where({ expedicao_id: expedicaoId, usuario_id: usuarioId })
+        .delete()
+      return Either.right(undefined)
+    } catch (error) {
+      return Either.left(new CollectionError({ message: 'Falha ao remover participante', cause: error }))
+    }
+  }
+
+  async substituteRoute(expedicaoId: number, rotas: number[]): Promise<Either<Error, void>> {
+    try {
+      await this.knex.transaction(async trx => {
+        // usa uma transaction para garantir que a exclusão e a inserção ocorram sem a perda de dados em caso de falha.
+        // se qualquer operação falhar, a transação será revertida e nenhuma alteração será feita no banco de dados.
+        // devido a constraint unique, estamos deletando todas as rotas da expedição e inserindo novamente,
+        // já na ordem correta e seguindo a constraint.
+        await trx('expedicoes_rotas').where('expedicao_id', expedicaoId).delete()
+
+        if (rotas.length > 0) {
+          const insertData = rotas.map((cidadeId, index) => ({
+            expedicao_id: expedicaoId,
+            cidade_id: cidadeId,
+            ordem: index
+          }))
+          await trx('expedicoes_rotas').insert(insertData)
+        }
+      })
+      return Either.right(undefined)
+    } catch (error) {
+      return Either.left(new CollectionError({ message: 'Falha ao substituir rotas', cause: error }))
     }
   }
 }
