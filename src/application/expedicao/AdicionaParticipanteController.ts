@@ -43,16 +43,16 @@ export class AdicionaParticipanteController implements RequestHandler {
       }
 
       const result = await this.adicionaParticipanteUseCase.execute(Number(expedicaoId), usuarioId)
-      if (result.left()) {
-        if (result.value.message.includes('já está nesta expedição')) {
-          return new ConflictError({ message: result.value.message })
-        }
 
-        if (result.value.name === 'CollectionError' || result.value.message.includes('Falha ao adicionar')) {
+      if (result.left()) {
+        const error = result.value
+        if (error.name === 'DuplicateParticipantError') {
+          return new ConflictError({ message: error.message })
+        }
+        if (error.name === 'CollectionError') {
           return new InternalServerError({ message: 'Falha interna ao adicionar participante' })
         }
-
-        return new BadRequestError({ message: result.value.message })
+        return new BadRequestError({ message: error.message })
       }
 
       return {

@@ -41,10 +41,11 @@ export class SubstituiRotasController implements RequestHandler {
       const result = await this.SubstituiRotasUseCase.execute(Number(expedicaoId), rotas)
 
       if (result.left()) {
-        if (result.value.name === 'CollectionError' || result.value.message.includes('Falha')) {
+        const error = result.value
+        if (error.name === 'CollectionError') {
           return new InternalServerError({ message: 'Falha interna ao substituir rotas' })
         }
-        return new BadRequestError({ message: result.value.message })
+        return new BadRequestError({ message: error.message })
       }
 
       return {
