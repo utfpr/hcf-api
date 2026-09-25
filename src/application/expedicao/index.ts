@@ -19,7 +19,7 @@ import { CadastraExpedicaoController } from './CadastraExpedicaoController'
 import { DeletaExpedicaoController } from './DeletaExpedicaoController'
 import { ListaExpedicoesController } from './ListaExpedicoesController'
 import { RemoveParticipanteController } from './RemoveParticipanteController'
-import { SubstituiRotasController } from './SubstituirRotaController'
+import { SubstituiRotasController } from './SubstituiRotaController'
 
 export function routes(knex: Knex): Route[] {
   const expedicaoCollection = createExpedicaoCollection()
