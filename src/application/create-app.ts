@@ -18,7 +18,7 @@ import { routes as createPaisRoutes } from './pais'
 import { routes as createVegetacaoRoutes } from './vegetacao'
 
 interface CorsParameters {
-  origins: string[]
+  origins: string | string[]
   methods: string[]
   allowedHeaders: string[]
 }
