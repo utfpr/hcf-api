@@ -1,0 +1,35 @@
+import { unlink } from 'node:fs/promises'
+import path from 'node:path'
+
+import { Either } from '@/library/either/Either'
+
+import { EvidenciaCollection } from './EvidenciaCollection'
+
+const UPLOADS_DIR = path.join(process.cwd(), 'uploads', 'evidencias')
+
+interface Dependencies {
+    evidenciaCollection: EvidenciaCollection
+}
+
+export class RemoverEvidenciaUseCase {
+    private readonly evidenciaCollection: EvidenciaCollection
+
+    constructor(dependencies: Dependencies) {
+        this.evidenciaCollection = dependencies.evidenciaCollection
+    }
+
+    async execute({ id }: { id: number }): Promise<Either<Error, boolean>> {
+        const evidencia = await this.evidenciaCollection.findById(id)
+        if (evidencia.left()) return Either.left(evidencia.value)
+        if (!evidencia.value) return Either.right(false)
+
+        const deleted = await this.evidenciaCollection.delete(id)
+        if (deleted.left()) return Either.left(deleted.value)
+
+        if (deleted.value) {
+            await unlink(path.join(UPLOADS_DIR, evidencia.value.arquivo)).catch(() => {})
+        }
+
+        return deleted
+    }
+}

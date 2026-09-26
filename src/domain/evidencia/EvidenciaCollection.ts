@@ -17,4 +17,5 @@ export interface EvidenciaCollection {
   findAll(filters: EvidenciaFilters): Promise<Either<Error, Attributes[]>>
   findById(id: number): Promise<Either<Error, Attributes | null>>
   create(attributes: CreateAttributes): Promise<Either<Error, Attributes>>
+  delete(id: number): Promise<Either<Error, boolean>>
 }

@@ -125,4 +125,13 @@ export class EvidenciaCollectionKnexAdapter implements EvidenciaCollection {
       return Either.left(toInfrastructureError('Failed to create evidência', error))
     }
   }
+
+  async delete(id: number): Promise<Either<Error, boolean>> {
+    try {
+      const deletedCount = await this.knex('evidencias').where({id}).delete()
+      return Either.right(deletedCount > 0)
+    } catch (error) {
+      return Either.left(new CollectionError({ message: 'Failed to delete evidencia', cause: error }))
+    }
+  }
 }
