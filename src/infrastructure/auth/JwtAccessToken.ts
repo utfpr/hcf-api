@@ -21,14 +21,13 @@ export class JwtAccessToken implements AccessToken {
     this.secret = params.secret
   }
 
-  sign(params: { sub: number; sid: string; role: number }): Either<AccessTokenError, string> {
+  sign(params: { sub: number; sid: string }): Either<AccessTokenError, string> {
     try {
       return Either.right(jwt.sign(
         {
           sub: String(params.sub),
           sid: params.sid,
-          typ: ACCESS_TYP,
-          role: params.role
+          typ: ACCESS_TYP
         },
         this.secret,
         {
@@ -72,7 +71,6 @@ export class JwtAccessToken implements AccessToken {
     const sub = Number(decoded.sub)
     const sid = claims.sid
     const typ = claims.typ
-    const role = claims.role
     const iat = claims.iat
     const exp = claims.exp
 
@@ -81,8 +79,6 @@ export class JwtAccessToken implements AccessToken {
       || typeof sid !== 'string'
       || sid.length === 0
       || typ !== ACCESS_TYP
-      || typeof role !== 'number'
-      || !Number.isInteger(role)
       || typeof iat !== 'number'
       || typeof exp !== 'number'
     ) {
@@ -93,7 +89,6 @@ export class JwtAccessToken implements AccessToken {
       sub,
       sid,
       typ: ACCESS_TYP,
-      role,
       iat,
       exp
     }

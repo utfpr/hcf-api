@@ -45,7 +45,7 @@ export class UsuarioSessao {
       return Either.left(new Error('Id da sessão deve ser um UUID'))
     }
 
-    if (!Number.isInteger(attributes.usuarioId) || attributes.usuarioId <= 0) {
+    if (!Number.isInteger(Number(attributes.usuarioId)) || attributes.usuarioId <= 0) {
       return Either.left(new Error('usuarioId da sessão deve ser um inteiro positivo'))
     }
 
