@@ -122,7 +122,7 @@ describe('ExpedicaoCollectionKnexAdapter', () => {
       expect(found.right()).toBe(true)
       if (!found.right()) return
 
-      expect(found.value.map(expedicao => expedicao.id)).toEqual([comBruno.value.id])
+      expect(found.value.itens.map(expedicao => expedicao.id)).toEqual([comBruno.value.id])
     } finally {
       await knex('expedicoes').whereIn('id', [comAna.value.id, comBruno.value.id]).delete()
     }
@@ -133,5 +133,102 @@ describe('ExpedicaoCollectionKnexAdapter', () => {
     expect(found.right()).toBe(true)
     if (!found.right()) return
     expect(found.value).toBeNull()
+  })
+  describe('filtros e paginação no findAll', () => {
+    let ids: number[] = []
+
+    beforeAll(async () => {
+      // Cria 3 expedições distintas para testar ordenação, paginação e filtros
+      const exp1 = await collection.create({
+        ...novaExpedicao(),
+        cidade_id: fixtures.cidades[0],
+        data_inicio: '2026-05-01',
+        data_fim: '2026-05-10'
+      })
+      const exp2 = await collection.create({
+        ...novaExpedicao(),
+        cidade_id: fixtures.cidades[1],
+        data_inicio: '2026-06-01',
+        data_fim: '2026-06-10'
+      })
+      const exp3 = await collection.create({
+        ...novaExpedicao(),
+        cidade_id: fixtures.cidades[0], // Mesma cidade da exp1
+        data_inicio: '2026-07-01',
+        data_fim: '2026-07-10'
+      })
+
+      if (exp1.right() && exp2.right() && exp3.right()) {
+        ids = [
+          exp1.value.id,
+          exp2.value.id,
+          exp3.value.id
+        ]
+      }
+    })
+
+    afterAll(async () => {
+      await knex('expedicoes').whereIn('id', ids).delete()
+    })
+
+    test('devolve metadados de paginação padrão e limite de itens', async () => {
+      const found = await collection.findAll({ limite: 2, pagina: 1 })
+      expect(found.right()).toBe(true)
+      if (!found.right()) return
+
+      // Deve ter limite 2, estar na página 1 e totalizar no mínimo 3
+      expect(found.value.limite).toBe(2)
+      expect(found.value.pagina).toBe(1)
+      expect(found.value.total).toBeGreaterThanOrEqual(3)
+      expect(found.value.itens.length).toBeLessThanOrEqual(2)
+    })
+
+    test('filtra por cidade_id', async () => {
+      const found = await collection.findAll({ cidade_id: fixtures.cidades[1] })
+      expect(found.right()).toBe(true)
+      if (!found.right()) return
+
+      // Deve achar apenas a exp2
+      expect(found.value.itens.map(e => e.id)).toContain(ids[1])
+      expect(found.value.itens.map(e => e.id)).not.toContain(ids[0])
+      expect(found.value.itens.map(e => e.id)).not.toContain(ids[2])
+    })
+
+    test('filtra por intervalo de datas (data_inicio_de e data_fim_ate)', async () => {
+      // Busca expedições que comecem a partir de junho e terminem até meio de julho
+      const found = await collection.findAll({
+        data_inicio_de: '2026-06-01',
+        data_fim_ate: '2026-07-15'
+      })
+      expect(found.right()).toBe(true)
+      if (!found.right()) return
+
+      // Deve achar exp2 (junho) e exp3 (julho), mas ignorar exp1 (maio)
+      const returnedIds = found.value.itens.map(e => e.id)
+      expect(returnedIds).toContain(ids[1])
+      expect(returnedIds).toContain(ids[2])
+      expect(returnedIds).not.toContain(ids[0])
+    })
+
+    test('aplica ordenação (order) corretamente', async () => {
+      const foundDesc = await collection.findAll({ order: { column: 'data_inicio', direction: 'desc' } })
+      expect(foundDesc.right()).toBe(true)
+      if (!foundDesc.right()) return
+
+      const foundAsc = await collection.findAll({ order: { column: 'data_inicio', direction: 'asc' } })
+      expect(foundAsc.right()).toBe(true)
+      if (!foundAsc.right()) return
+
+      const idxDesc3 = foundDesc.value.itens.findIndex(e => e.id === ids[2]) // Julho
+      const idxDesc1 = foundDesc.value.itens.findIndex(e => e.id === ids[0]) // Maio
+
+      const idxAsc3 = foundAsc.value.itens.findIndex(e => e.id === ids[2]) // Julho
+      const idxAsc1 = foundAsc.value.itens.findIndex(e => e.id === ids[0]) // Maio
+
+      // DESC: Julho (exp3) vem antes de Maio (exp1)
+      expect(idxDesc3).toBeLessThan(idxDesc1)
+      // ASC: Maio (exp1) vem antes de Julho (exp3)
+      expect(idxAsc1).toBeLessThan(idxAsc3)
+    })
   })
 })

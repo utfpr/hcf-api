@@ -24,6 +24,29 @@ export interface ColetaAttributes {
   luminosidade: string | null
 }
 
+/**
+ * Lista de campos da ficha de coleta.
+ */
+export const COLETA_FIELDS = [
+  'familia',
+  'nome_popular',
+  'nome_cientifico',
+  'municipio',
+  'estado',
+  'referencia_local',
+  'tipo_vegetacao',
+  'solo',
+  'relevo',
+  'substrato',
+  'tronco_com_casca',
+  'associacoes',
+  'folhas',
+  'habito',
+  'frutos',
+  'flores',
+  'luminosidade'
+] as const satisfies ReadonlyArray<keyof ColetaAttributes>
+
 export interface Attributes {
   id: number
   expedicao_id: number

@@ -77,9 +77,12 @@ describe('Eventos (escrita, HTTP)', () => {
       .expect(201)
 
     const body = asEvento(response.body)
-    expect(body).toMatchObject({ coleta: null, tipo: 'DIARIO' })
 
-    await knex('eventos').where({ id: body.id }).delete()
+    try {
+      expect(body).toMatchObject({ coleta: null, tipo: 'DIARIO' })
+    } finally {
+      await knex('eventos').where({ id: body.id }).delete()
+    }
   })
 
   test('POST cria um evento COLETA com a ficha', async () => {
@@ -91,9 +94,12 @@ describe('Eventos (escrita, HTTP)', () => {
       .expect(201)
 
     const body = asEvento(response.body)
-    expect(body.coleta).toEqual(ficha)
 
-    await knex('eventos').where({ id: body.id }).delete()
+    try {
+      expect(body.coleta).toEqual(ficha)
+    } finally {
+      await knex('eventos').where({ id: body.id }).delete()
+    }
   })
 
   test('POST retorna 400 quando COLETA não envia ficha', async () => {

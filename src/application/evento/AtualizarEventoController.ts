@@ -1,7 +1,5 @@
 import { AtualizarEventoUseCase, Input as AtualizarEventoInput } from '@/domain/evento/AtualizarEventoUseCase'
-import {
-  ColetaAttributes, EVENTO_TIPOS, EventoTipo
-} from '@/domain/evento/Evento'
+import { EVENTO_TIPOS, EventoTipo } from '@/domain/evento/Evento'
 import { CheckViolationError } from '@/infrastructure/error/CheckViolationError'
 import { ForeignKeyViolationError } from '@/infrastructure/error/ForeignKeyViolationError'
 import { InfrastructureError } from '@/infrastructure/error/InfrastructureError'
@@ -14,6 +12,8 @@ import { InternalServerError } from '@/library/http/error/InternalServerError'
 import { NotFoundError } from '@/library/http/error/NotFoundError'
 import { UnprocessableEntityError } from '@/library/http/error/UnprocessableEntityError'
 import { NextHandler, RequestHandler } from '@/library/http/Server'
+
+import { parseColeta } from './coleta-parsing'
 
 interface Dependencies {
   atualizarEventoUseCase: AtualizarEventoUseCase
@@ -43,7 +43,7 @@ export class AtualizarEventoController implements RequestHandler {
 
     const body = (request.body ?? {}) as Body
 
-    // Substituir por request.usuario.id assim que a 
+    // Substituir por request.usuario.id assim que a
     // autenticação for integrada.
     const input: AtualizarEventoInput = { id: eventoId, updated_by: null }
 
@@ -107,30 +107,6 @@ export class AtualizarEventoController implements RequestHandler {
   }
 }
 
-const CAMPOS_DA_FICHA = [
-  'familia',
-  'nome_popular',
-  'nome_cientifico',
-  'municipio',
-  'estado',
-  'referencia_local',
-  'tipo_vegetacao',
-  'solo',
-  'relevo',
-  'substrato',
-  'tronco_com_casca',
-  'associacoes',
-  'folhas',
-  'habito',
-  'frutos',
-  'flores',
-  'luminosidade'
-] as const satisfies ReadonlyArray<keyof ColetaAttributes>
-
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
-
 function parseId(raw: unknown, field: string): number | Error {
   if (typeof raw !== 'string' || !/^\d+$/.test(raw)) {
     return new Error(`${field} inválido`)
@@ -174,24 +150,4 @@ function parseOptionalString(raw: unknown, field: string): string | null | Error
     return new Error(`${field} inválido`)
   }
   return raw
-}
-
-function parseColeta(raw: unknown): ColetaAttributes | Error {
-  if (!isPlainObject(raw)) {
-    return new Error('coleta inválido. Envie um objeto com os campos da ficha')
-  }
-
-  const result = {} as Record<string, string | null>
-  for (const campo of CAMPOS_DA_FICHA) {
-    const value = raw[campo]
-    if (value === undefined) {
-      result[campo] = null
-      continue
-    }
-    if (value !== null && typeof value !== 'string') {
-      return new Error(`coleta.${campo} inválido`)
-    }
-    result[campo] = value
-  }
-  return result as unknown as ColetaAttributes
 }

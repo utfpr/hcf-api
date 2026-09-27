@@ -1,10 +1,10 @@
 import { Knex } from 'knex'
 
 import {
-  Attributes, ColetaAttributes, CreateAttributes, EventoTipo
+  Attributes, COLETA_FIELDS, ColetaAttributes, CreateAttributes, EventoTipo
 } from '@/domain/evento/Evento'
 import {
-  AtualizarEventoAttributes, EventoCollection, EventoFilters
+  AtualizarEventoAttributes, EventoCollection, EventoFilters, Paginated
 } from '@/domain/evento/EventoCollection'
 import { Either } from '@/library/either/Either'
 
@@ -19,26 +19,6 @@ import {
 interface Dependencies {
   knex: Knex
 }
-
-const CAMPOS_DA_FICHA = [
-  'familia',
-  'nome_popular',
-  'nome_cientifico',
-  'municipio',
-  'estado',
-  'referencia_local',
-  'tipo_vegetacao',
-  'solo',
-  'relevo',
-  'substrato',
-  'tronco_com_casca',
-  'associacoes',
-  'folhas',
-  'habito',
-  'frutos',
-  'flores',
-  'luminosidade'
-] as const
 
 interface Row {
   id: number
@@ -61,7 +41,7 @@ function toAttributes(row: Row & Record<string, unknown>): Attributes {
 
   if (row.coleta_evento_id !== null) {
     coleta = Object.fromEntries(
-      CAMPOS_DA_FICHA.map(campo => [campo, row[`coleta_${campo}`] ?? null])
+      COLETA_FIELDS.map(campo => [campo, row[`coleta_${campo}`] ?? null])
     ) as unknown as ColetaAttributes
   }
 
@@ -122,11 +102,11 @@ export class EventoCollectionKnexAdapter implements EventoCollection {
         'eventos.created_by',
         'eventos.updated_by',
         'eventos_coletas.evento_id as coleta_evento_id',
-        ...CAMPOS_DA_FICHA.map(campo => `eventos_coletas.${campo} as coleta_${campo}`)
+        ...COLETA_FIELDS.map(campo => `eventos_coletas.${campo} as coleta_${campo}`)
       ])
   }
 
-  async findAll(filters: EventoFilters): Promise<Either<Error, Attributes[]>> {
+  async findAll(filters: EventoFilters): Promise<Either<Error, Paginated<Attributes>>> {
     try {
       const query = this.select()
 
@@ -146,11 +126,28 @@ export class EventoCollectionKnexAdapter implements EventoCollection {
         query.where('eventos.capturado_em', '<=', filters.capturado_ate)
       }
 
-      const order = filters.order ?? { column: 'capturado_em' as const, direction: 'desc' as const }
-      query.orderBy(`eventos.${order.column}`, order.direction)
+      const countQuery = query.clone()
+
+      const countRows = await countQuery
+        .clearSelect()
+        .count<Array<{ count: string }>>('* as count')
+      const [{ count }] = countRows
+
+      const limite = filters.limite && filters.limite > 0 ? filters.limite : 20
+      const pagina = filters.pagina && filters.pagina > 0 ? filters.pagina : 1
+      const offset = (pagina - 1) * limite
+
+      query.orderBy('eventos.capturado_em', 'desc')
+      query.orderBy('eventos.id', 'desc')
+      query.limit(limite).offset(offset)
 
       const rows = await query as Array<Row & Record<string, unknown>>
-      return Either.right(rows.map(toAttributes))
+      return Either.right({
+        itens: rows.map(toAttributes),
+        total: Number(count),
+        limite,
+        pagina
+      })
     } catch (error) {
       return Either.left(new CollectionError({ message: 'Failed to list eventos', cause: error }))
     }
