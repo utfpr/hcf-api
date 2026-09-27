@@ -1,6 +1,7 @@
 import { type Knex } from 'knex'
 
 import { CriarEvidenciaUseCase } from '@/domain/evidencia/CriarEvidenciaUseCase'
+import { RemoverEvidenciaUseCase } from '@/domain/evidencia/RemoverEvidenciaUseCase'
 import { EventoCollectionKnexAdapter } from '@/infrastructure/EventoCollectionKnexAdapter'
 import { EvidenciaCollectionKnexAdapter } from '@/infrastructure/EvidenciaCollectionKnexAdapter'
 import { evidenciaUpload } from '@/infrastructure/EvidenciaUploadMiddleware'
@@ -9,6 +10,7 @@ import { Route } from '@/library/http/Router'
 
 import { CriarEvidenciaController } from './CriarEvidenciaController'
 import { ListarEvidenciasController } from './ListarEvidenciasController'
+import { RemoverEvidenciaController } from './RemoverEvidenciaController'
 import { validarEventoExisteMiddleware } from './ValidarEventoExisteMiddleware'
 
 export function routes(knex: Knex): Route[] {
@@ -30,6 +32,15 @@ export function routes(knex: Knex): Route[] {
       handlers: [new ListarEvidenciasController({ evidenciaCollection })],
       method: Method.Get,
       path: '/v2/eventos/:eventoId/evidencias'
+    },
+    {
+      handlers: [
+        new RemoverEvidenciaController({
+          removerEvidenciaUseCase: new RemoverEvidenciaUseCase({ evidenciaCollection })
+        })
+      ],
+      method: Method.Delete,
+      path: '/v2/evidencias/:evidenciaId'
     }
   ]
 }
