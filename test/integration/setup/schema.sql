@@ -3101,7 +3101,10 @@ CREATE TABLE public.evidencias (
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     created_by bigint,
-    updated_by bigint
+    updated_by bigint,
+    arquivo character varying(255) NOT NULL,
+    mime_type character varying(100) NOT NULL,
+    tamanho bigint NOT NULL
 );
 
 
