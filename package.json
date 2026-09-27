@@ -28,6 +28,7 @@
 		"audit:fix": "npm audit fix"
 	},
 	"dependencies": {
+		"@casl/ability": "6.8.0",
 		"axios": "1.13.2",
 		"bcrypt": "6.0.0",
 		"body-parser": "2.2.0",
@@ -68,6 +69,7 @@
 		"@stylistic/eslint-plugin": "5.5.0",
 		"@types/cors": "2.8.19",
 		"@types/express": "5.0.5",
+		"@types/jsonwebtoken": "9.0.10",
 		"@types/morgan": "1.9.10",
 		"@types/multer": "^2.2.0",
 		"@types/pg": "^8.16.0",

@@ -1,0 +1,13 @@
+---
+description: Declare each error class in its own file, not beside the type that uses it
+globs: "{src,test}/**/*.{ts,js}"
+alwaysApply: false
+---
+
+# Error classes in their own files
+
+Put every error class in a dedicated file whose name matches the exported type. Do not declare error classes in the same file as a port, adapter, use case, controller, or other primary type that throws or returns them.
+
+Group those files in an `error` directory next to the module they belong to. Import the error type from that file wherever it is constructed or checked.
+
+A base error and each specialized subclass are separate files. One public error class per file.

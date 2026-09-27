@@ -18,10 +18,12 @@ import { routes as createEvidenciaRoutes } from './evidencia'
 import { routes as createExpedicoesRoutes } from './expedicao'
 import { routes as createFaseSucessionalRoutes } from './fase-sucessional'
 import { routes as createPaisRoutes } from './pais'
+import { routes as createRelevoRoutes } from './relevo'
+import { routes as createSoloRoutes } from './solo'
 import { routes as createVegetacaoRoutes } from './vegetacao'
 
 interface CorsParameters {
-  origins: string[]
+  origins: string | string[]
   methods: string[]
   allowedHeaders: string[]
 }
@@ -62,6 +64,8 @@ export function createApp({
     ...createPaisRoutes(knex),
     ...createEstadoRoutes(knex),
     ...createEventoRoutes(knex),
+    ...createSoloRoutes(knex),
+    ...createRelevoRoutes(knex),
     ...createFaseSucessionalRoutes(knex),
     ...createVegetacaoRoutes(knex),
     ...createEventoRoutes(knex),
