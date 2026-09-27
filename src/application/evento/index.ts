@@ -6,6 +6,7 @@ import { CriarEventoUseCase } from '@/domain/evento/CriarEventoUseCase'
 import { ListaEventosUseCase } from '@/domain/evento/ListaEventosUseCase'
 import { RemoverEventoUseCase } from '@/domain/evento/RemoverEventoUseCase'
 import { EventoCollectionKnexAdapter } from '@/infrastructure/EventoCollectionKnexAdapter'
+import { EvidenciaCollectionKnexAdapter } from '@/infrastructure/EvidenciaCollectionKnexAdapter'
 import { Method } from '@/library/http/common'
 import { Route } from '@/library/http/Router'
 
@@ -17,6 +18,7 @@ import { RemoverEventoController } from './RemoverEventoController'
 
 export function routes(knex: Knex): Route[] {
   const eventoCollection = new EventoCollectionKnexAdapter({ knex })
+  const evidenciaCollection = new EvidenciaCollectionKnexAdapter({ knex })
 
   // TODO: adicionar autenticação quando a camada HTTP de autenticação estiver disponível.
 
@@ -60,7 +62,7 @@ export function routes(knex: Knex): Route[] {
     {
       handlers: [
         new RemoverEventoController({
-          removerEventoUseCase: new RemoverEventoUseCase({ eventoCollection })
+          removerEventoUseCase: new RemoverEventoUseCase({ eventoCollection, evidenciaCollection })
         })
       ],
       method: Method.Delete,
