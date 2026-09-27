@@ -8,28 +8,36 @@ import { EvidenciaCollection } from './EvidenciaCollection'
 const UPLOADS_DIR = path.join(process.cwd(), 'uploads', 'evidencias')
 
 interface Dependencies {
-    evidenciaCollection: EvidenciaCollection
+  evidenciaCollection: EvidenciaCollection
 }
 
 export class RemoverEvidenciaUseCase {
-    private readonly evidenciaCollection: EvidenciaCollection
+  private readonly evidenciaCollection: EvidenciaCollection
 
-    constructor(dependencies: Dependencies) {
-        this.evidenciaCollection = dependencies.evidenciaCollection
+  constructor(dependencies: Dependencies) {
+    this.evidenciaCollection = dependencies.evidenciaCollection
+  }
+
+  async execute({ id }: { id: number }): Promise<Either<Error, boolean>> {
+    const evidencia = await this.evidenciaCollection.findById(id)
+    if (evidencia.left()) return Either.left(evidencia.value)
+    if (!evidencia.value) return Either.right(false)
+
+    const deleted = await this.evidenciaCollection.delete(id)
+    if (deleted.left()) return Either.left(deleted.value)
+
+    if (deleted.value) {
+      const { arquivo } = evidencia.value
+
+      await unlink(path.join(UPLOADS_DIR, arquivo)).catch((error: unknown) => {
+        // eslint-disable-next-line no-console -- evidência já apagada do banco; sem log aqui, o arquivo órfão nunca seria detectável depois
+        console.error(
+          `Falha ao remover arquivo órfão de evidência (evidencia_id=${id}, arquivo=${arquivo})`,
+          error
+        )
+      })
     }
 
-    async execute({ id }: { id: number }): Promise<Either<Error, boolean>> {
-        const evidencia = await this.evidenciaCollection.findById(id)
-        if (evidencia.left()) return Either.left(evidencia.value)
-        if (!evidencia.value) return Either.right(false)
-
-        const deleted = await this.evidenciaCollection.delete(id)
-        if (deleted.left()) return Either.left(deleted.value)
-
-        if (deleted.value) {
-            await unlink(path.join(UPLOADS_DIR, evidencia.value.arquivo)).catch(() => {})
-        }
-
-        return deleted
-    }
+    return deleted
+  }
 }

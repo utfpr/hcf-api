@@ -31,12 +31,18 @@ export class RemoverEventoUseCase {
 
     if (deleted.value) {
       await Promise.all(
-        evidencias.value.map((evidencia) =>
-        unlink(path.join(UPLOADS_DIR, evidencia.arquivo)).catch(() => {})
+        evidencias.value.map(evidencia =>
+          unlink(path.join(UPLOADS_DIR, evidencia.arquivo)).catch((error: unknown) => {
+            // eslint-disable-next-line no-console -- evento já apagado do banco; sem log aqui, o arquivo órfão nunca seria detectável depois
+            console.error(
+              `Falha ao remover arquivo órfão de evidência (evento_id=${id}, arquivo=${evidencia.arquivo})`,
+              error
+            )
+          })
         )
       )
     }
-    
+
     return deleted
   }
 }
