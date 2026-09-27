@@ -1,5 +1,5 @@
 import { UserSessionNotFoundError } from '@/domain/usuarioSessao/error/UserSessionNotFoundError'
-import { type MostraSessaoUseCase } from '@/domain/usuarioSessao/MostraSessaoUseCase'
+import { type MostraUsuarioSessaoUseCase } from '@/domain/usuarioSessao/MostraUsuarioSessaoUseCase'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
@@ -8,30 +8,30 @@ import { InternalServerError } from '@/library/http/error/InternalServerError'
 import { type NextHandler, type RequestHandler } from '@/library/http/Server'
 
 import {
-  meResponseBody, naoAutorizado, readBearerAccess
+  meResponseBody, notAuthorized, readBearerAccess
 } from './sessaoHttp'
 
 interface Dependencies {
-  mostraSessaoUseCase: MostraSessaoUseCase
+  mostraUsuarioSessaoUseCase: MostraUsuarioSessaoUseCase
 }
 
-export class MostraSessaoController implements RequestHandler {
-  private readonly mostraSessaoUseCase: MostraSessaoUseCase
+export class MostraUsuarioSessaoController implements RequestHandler {
+  private readonly mostraUsuarioSessaoUseCase: MostraUsuarioSessaoUseCase
 
   constructor(dependencies: Dependencies) {
-    this.mostraSessaoUseCase = dependencies.mostraSessaoUseCase
+    this.mostraUsuarioSessaoUseCase = dependencies.mostraUsuarioSessaoUseCase
   }
 
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const token = readBearerAccess(request)
     if (!token) {
-      return naoAutorizado()
+      return notAuthorized()
     }
 
-    const result = await this.mostraSessaoUseCase.execute({ accessToken: token })
+    const result = await this.mostraUsuarioSessaoUseCase.execute({ accessToken: token })
     if (result.left()) {
       if (result.value instanceof UserSessionNotFoundError) {
-        return naoAutorizado()
+        return notAuthorized()
       }
       return new InternalServerError({ message: result.value.message })
     }

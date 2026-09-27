@@ -1,29 +1,22 @@
 import { type Knex } from 'knex'
 
-import { RateLimitMiddleware } from '@/application/RateLimitMiddleware'
-import { ApagaUsuarioSessaoUseCase } from '@/domain/usuarioSessao/ApagaUsuarioSessaoUseCase'
-import { ApagaUsuarioSessoesUseCase } from '@/domain/usuarioSessao/ApagaUsuarioSessoesUseCase'
-import { BuscaUsuarioSessaoPorHashUseCase } from '@/domain/usuarioSessao/BuscaUsuarioSessaoPorHashUseCase'
-import { BuscaUsuarioSessaoPorIdUseCase } from '@/domain/usuarioSessao/BuscaUsuarioSessaoPorIdUseCase'
 import { CriaUsuarioSessaoUseCase } from '@/domain/usuarioSessao/CriaUsuarioSessaoUseCase'
-import { EntraSessaoUseCase } from '@/domain/usuarioSessao/EntraSessaoUseCase'
-import { MostraSessaoUseCase } from '@/domain/usuarioSessao/MostraSessaoUseCase'
-import { RenovaSessaoUseCase } from '@/domain/usuarioSessao/RenovaSessaoUseCase'
-import { RotacionaUsuarioSessaoUseCase } from '@/domain/usuarioSessao/RotacionaUsuarioSessaoUseCase'
+import { EncerraUsuarioSessaoUseCase } from '@/domain/usuarioSessao/EncerraUsuarioSessaoUseCase'
+import { MostraUsuarioSessaoUseCase } from '@/domain/usuarioSessao/MostraUsuarioSessaoUseCase'
+import { RenovaUsuarioSessaoUseCase } from '@/domain/usuarioSessao/RenovaUsuarioSessaoUseCase'
 import { createAccessToken } from '@/factory/AccessTokenFactory'
-import { createRateLimiter } from '@/factory/RateLimiterFactory'
+import { rateLimitMiddleware } from '@/factory/RateLimiterFactory'
 import { createRefreshToken } from '@/factory/RefreshTokenFactory'
 import { comparaSenha } from '@/helpers/senhas'
 import { UsuarioCollectionKnexAdapter } from '@/infrastructure/UsuarioCollectionKnexAdapter'
 import { UsuarioSessaoCollectionKnexAdapter } from '@/infrastructure/UsuarioSessaoCollectionKnexAdapter'
 import { Method } from '@/library/http/common'
-import { HttpError } from '@/library/http/error/HttpError'
 import { Route } from '@/library/http/Router'
 
-import { EncerraSessaoController } from './EncerraSessaoController'
-import { EntraSessaoController } from './EntraSessaoController'
-import { MostraSessaoController } from './MostraSessaoController'
-import { RenovaSessaoController } from './RenovaSessaoController'
+import { CriaUsuarioSessaoController } from './CriaUsuarioSessaoController'
+import { EncerraUsuarioSessaoController } from './EncerraUsuarioSessaoController'
+import { MostraUsuarioSessaoController } from './MostraUsuarioSessaoController'
+import { RenovaUsuarioSessaoController } from './RenovaUsuarioSessaoController'
 
 export function routes(knex: Knex): Route[] {
   const usuarioCollection = new UsuarioCollectionKnexAdapter({ knex })
@@ -31,36 +24,17 @@ export function routes(knex: Knex): Route[] {
   const refreshToken = createRefreshToken()
   const accessToken = createAccessToken()
 
-  const criaUsuarioSessaoUseCase = new CriaUsuarioSessaoUseCase({
-    usuarioSessaoCollection,
-    refreshToken
-  })
-  const rotacionaUsuarioSessaoUseCase = new RotacionaUsuarioSessaoUseCase({
-    usuarioSessaoCollection,
-    refreshToken
-  })
-  const apagaUsuarioSessaoUseCase = new ApagaUsuarioSessaoUseCase({ usuarioSessaoCollection })
-  const apagaUsuarioSessoesUseCase = new ApagaUsuarioSessoesUseCase({ usuarioSessaoCollection })
-  const buscaUsuarioSessaoPorIdUseCase = new BuscaUsuarioSessaoPorIdUseCase({
-    usuarioSessaoCollection
-  })
-  const buscaUsuarioSessaoPorHashUseCase = new BuscaUsuarioSessaoPorHashUseCase({
-    usuarioSessaoCollection
-  })
-
   return [
     {
       method: Method.Post,
       path: '/auth/login',
       handlers: [
-        new RateLimitMiddleware({
-          limiter: createRateLimiter(),
-          isFailure: response => response instanceof HttpError && response.statusCode === 401
-        }),
-        new EntraSessaoController({
-          entraSessaoUseCase: new EntraSessaoUseCase({
+        rateLimitMiddleware,
+        new CriaUsuarioSessaoController({
+          criaUsuarioSessaoUseCase: new CriaUsuarioSessaoUseCase({
             usuarioCollection,
-            criaUsuarioSessaoUseCase,
+            usuarioSessaoCollection,
+            refreshToken,
             accessToken,
             comparaSenha
           })
@@ -71,11 +45,11 @@ export function routes(knex: Knex): Route[] {
       method: Method.Post,
       path: '/auth/refresh',
       handlers: [
-        new RenovaSessaoController({
-          renovaSessaoUseCase: new RenovaSessaoUseCase({
+        new RenovaUsuarioSessaoController({
+          renovaUsuarioSessaoUseCase: new RenovaUsuarioSessaoUseCase({
             usuarioCollection,
-            rotacionaUsuarioSessaoUseCase,
-            apagaUsuarioSessaoUseCase,
+            usuarioSessaoCollection,
+            refreshToken,
             accessToken
           })
         })
@@ -85,12 +59,13 @@ export function routes(knex: Knex): Route[] {
       method: Method.Post,
       path: '/auth/logout',
       handlers: [
-        new EncerraSessaoController({
-          refreshToken,
+        new EncerraUsuarioSessaoController({
           accessToken,
-          buscaUsuarioSessaoPorHashUseCase,
-          apagaUsuarioSessaoUseCase,
-          apagaUsuarioSessoesUseCase
+          encerraUsuarioSessaoUseCase: new EncerraUsuarioSessaoUseCase({
+            usuarioSessaoCollection,
+            refreshToken,
+            accessToken
+          })
         })
       ]
     },
@@ -98,11 +73,11 @@ export function routes(knex: Knex): Route[] {
       method: Method.Get,
       path: '/auth/me',
       handlers: [
-        new MostraSessaoController({
-          mostraSessaoUseCase: new MostraSessaoUseCase({
+        new MostraUsuarioSessaoController({
+          mostraUsuarioSessaoUseCase: new MostraUsuarioSessaoUseCase({
             accessToken,
             usuarioCollection,
-            buscaUsuarioSessaoPorIdUseCase
+            usuarioSessaoCollection
           })
         })
       ]

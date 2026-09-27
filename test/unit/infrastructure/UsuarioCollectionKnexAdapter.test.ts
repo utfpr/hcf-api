@@ -3,6 +3,7 @@ import {
   describe, expect, test, vi
 } from 'vitest'
 
+import { Usuario } from '@/domain/usuario/Usuario'
 import { UsuarioCollectionKnexAdapter } from '@/infrastructure/UsuarioCollectionKnexAdapter'
 
 const row = {
@@ -38,7 +39,8 @@ describe('UsuarioCollectionKnexAdapter', () => {
     const result = await adapter.findByEmail('ana@example.test')
 
     expect(result.right()).toBe(true)
-    expect(result.value).toEqual({
+    expect(result.value).toBeInstanceOf(Usuario)
+    expect(result.value).toMatchObject({
       id: 4,
       nome: 'Ana',
       email: 'ana@example.test',
@@ -61,12 +63,14 @@ describe('UsuarioCollectionKnexAdapter', () => {
     const result = await adapter.findById(4)
 
     expect(result.right()).toBe(true)
-    expect(result.value).toEqual({
+    expect(result.value).toBeInstanceOf(Usuario)
+    expect(result.value).toMatchObject({
       id: 4,
       nome: 'Ana',
       email: 'ana@example.test',
       tipoUsuarioId: 2
     })
+    expect(result.value).toMatchObject({ senha: undefined })
     expect(knex.builder.where).toHaveBeenCalledWith({ id: 4 })
   })
 

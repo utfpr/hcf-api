@@ -59,4 +59,15 @@ export class UsuarioSessao {
 
     return Either.right(new UsuarioSessao(attributes))
   }
+
+  toAttributes(): Attributes {
+    return {
+      id: this.id,
+      usuarioId: this.usuarioId,
+      refreshTokenHash: this.refreshTokenHash,
+      createdAt: this.createdAt,
+      lastUsedAt: this.lastUsedAt,
+      expiresAt: this.expiresAt
+    }
+  }
 }

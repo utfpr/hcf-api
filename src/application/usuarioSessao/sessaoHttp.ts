@@ -18,8 +18,8 @@ export function credenciaisInvalidas(): UnauthorizedError {
   return new UnauthorizedError({ message: 'Credenciais inválidas' })
 }
 
-export function naoAutorizado(): UnauthorizedError {
-  return new UnauthorizedError({ message: 'Não autorizado' })
+export function notAuthorized(): UnauthorizedError {
+  return new UnauthorizedError({ message: 'Unauthorized' })
 }
 
 export function toSessaoUsuario(user: Attributes): SessaoUsuario {

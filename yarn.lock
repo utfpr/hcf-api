@@ -4225,7 +4225,7 @@ range-parser@^1.2.1:
   resolved "https://registry.yarnpkg.com/range-parser/-/range-parser-1.2.1.tgz#3cf37023d199e1c24d1a55b84800c2f3e6468031"
   integrity sha512-Hrgsx+orqoygnmhFbKaHE6c296J+HTAQXoxEF6gNupROmmGJRoyzfG3ccAveqCBrwr/2yxQ5BVd/GTl5agOwSg==
 
-rate-limiter-flexible@^11.2.1:
+rate-limiter-flexible@11.2.1:
   version "11.2.1"
   resolved "https://registry.npmjs.org/rate-limiter-flexible/-/rate-limiter-flexible-11.2.1.tgz#1d0518f7a118e017eb7dfd2bb818942fbd2b2764"
   integrity sha512-JAaz01HZ893zAw+Hx5MdM1z3lLAkyVvNpqR+GNp0k3kjuQB8gY91fXhf5C0osWs+A7iKgFv585qzwmjS3aBHlA==

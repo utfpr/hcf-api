@@ -41,4 +41,13 @@ export class Usuario {
 
     return Either.right(new Usuario(attributes))
   }
+
+  toAttributes(): Attributes {
+    return {
+      id: this.id,
+      nome: this.nome,
+      email: this.email,
+      tipoUsuarioId: this.tipoUsuarioId
+    }
+  }
 }

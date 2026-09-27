@@ -1,5 +1,5 @@
-import { CredenciaisInvalidasError } from '@/domain/usuario/error/CredenciaisInvalidasError'
-import { type EntraSessaoUseCase } from '@/domain/usuarioSessao/EntraSessaoUseCase'
+import { InvalidCredentialsError } from '@/domain/usuario/error/InvalidCredentialsError'
+import { type CriaUsuarioSessaoUseCase } from '@/domain/usuarioSessao/CriaUsuarioSessaoUseCase'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
@@ -11,14 +11,14 @@ import { serializeRefreshCookie } from './refreshCookie'
 import { credenciaisInvalidas, sessaoResponseBody } from './sessaoHttp'
 
 interface Dependencies {
-  entraSessaoUseCase: EntraSessaoUseCase
+  criaUsuarioSessaoUseCase: CriaUsuarioSessaoUseCase
 }
 
-export class EntraSessaoController implements RequestHandler {
-  private readonly entraSessaoUseCase: EntraSessaoUseCase
+export class CriaUsuarioSessaoController implements RequestHandler {
+  private readonly criaUsuarioSessaoUseCase: CriaUsuarioSessaoUseCase
 
   constructor(dependencies: Dependencies) {
-    this.entraSessaoUseCase = dependencies.entraSessaoUseCase
+    this.criaUsuarioSessaoUseCase = dependencies.criaUsuarioSessaoUseCase
   }
 
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
@@ -26,9 +26,9 @@ export class EntraSessaoController implements RequestHandler {
     const email = typeof body?.email === 'string' ? body.email : ''
     const senha = typeof body?.senha === 'string' ? body.senha : ''
 
-    const result = await this.entraSessaoUseCase.execute({ email, senha })
+    const result = await this.criaUsuarioSessaoUseCase.execute({ email, senha })
     if (result.left()) {
-      if (result.value instanceof CredenciaisInvalidasError) {
+      if (result.value instanceof InvalidCredentialsError) {
         return credenciaisInvalidas()
       }
       return new InternalServerError({ message: result.value.message })
