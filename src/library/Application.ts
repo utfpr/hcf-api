@@ -1,7 +1,6 @@
-import express from 'express'
 import http from 'node:http'
 
-import { Method } from './http/common'
+import { Method, RawMiddleware } from './http/common'
 import { RequestHandler } from './http/Server'
 
 export interface Application {
@@ -12,7 +11,7 @@ export interface Application {
     method: Method,
     path: string,
     handlers: RequestHandler[],
-    expressMiddlewares?: express.RequestHandler[]
+    middlewares?: RawMiddleware[]
   ): this
   get(path: string, ...handlers: RequestHandler[]): this
   post(path: string, ...handlers: RequestHandler[]): this

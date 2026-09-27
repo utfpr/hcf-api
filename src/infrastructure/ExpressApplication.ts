@@ -4,7 +4,7 @@ import http from 'node:http'
 
 import { Application } from '@/library/Application'
 import {
-  Headers, HttpRequest, HttpResponse, Method
+  Headers, HttpRequest, HttpResponse, Method, RawMiddleware
 } from '@/library/http/common'
 import { HttpError } from '@/library/http/error/HttpError'
 import { InternalServerError } from '@/library/http/error/InternalServerError'
@@ -38,8 +38,10 @@ export class ExpressApplication implements Application {
     method: Method,
     path: string,
     handlers: RequestHandler[],
-    expressMiddlewares: express.RequestHandler[] = []
+    middlewares: RawMiddleware[] = []
   ): this {
+    const expressMiddlewares = middlewares as express.RequestHandler[]
+
     this.app[method](
       path,
       ...expressMiddlewares,
