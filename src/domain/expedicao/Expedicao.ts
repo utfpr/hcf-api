@@ -12,6 +12,24 @@ export interface Attributes {
   updated_by: number | null
 }
 
+export interface ParticipanteDetalhado {
+  id: number
+  nome: string
+  email: string
+}
+
+export interface RotaDetalhada {
+  cidade_id: number
+  ordem: number
+  nome_cidade: string
+  estado: string
+}
+
+export interface ExpedicaoDetalhada extends Attributes {
+  participantes: ParticipanteDetalhado[]
+  rotas: RotaDetalhada[]
+}
+
 export type CreateAttributes =
   Omit<Attributes, 'id' | 'created_at' | 'updated_at' | 'updated_by'>
   & {
