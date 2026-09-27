@@ -28,6 +28,7 @@ describe('ListaPaisesController', () => {
 
     const request = {
       body: {},
+      cookies: {},
       headers,
       method: Method.Get as Method,
       params: { nome: 'Bra' },
@@ -51,6 +52,7 @@ describe('ListaPaisesController', () => {
 
     const request = {
       body: {},
+      cookies: {},
       headers,
       method: Method.Get as Method,
       params: {},

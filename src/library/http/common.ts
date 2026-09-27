@@ -18,13 +18,14 @@ export const StatusCode = {
   Forbidden: 403,
   NotFound: 404,
   Conflict: 409,
+  TooManyRequests: 429,
   UnprocessableEntity: 422,
   InternalServerError: 500
 } as const
 
 export type StatusCode = EnumOf<typeof StatusCode>
 
-type HeaderValue = string | number | boolean | null | undefined
+type HeaderValue = string | number | boolean | null | undefined | string[]
 
 type ContentTypeHeaderValue =
   | 'application/json'
@@ -38,6 +39,7 @@ export interface Headers {
   Authorization?: string
   'Content-Length': number
   'Content-Type': ContentTypeHeaderValue
+  'Set-Cookie'?: string | string[]
   [name: string]: HeaderValue
 }
 
@@ -48,6 +50,7 @@ export interface HttpRequest<
   method: Method
   path: string
   headers: Headers
+  cookies: Record<string, string>
   params: Params
   body: Body
 }

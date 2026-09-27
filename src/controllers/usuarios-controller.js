@@ -1,7 +1,9 @@
 import nodemailer from 'nodemailer';
 
+import { ApagaUsuarioSessoesUseCase } from '../domain/usuarioSessao/ApagaUsuarioSessoesUseCase';
 import { UserRegistrationDTO } from '../dtos/UserRegistrationDTO';
 import BadRequestExeption from '../errors/bad-request-exception';
+import { createUsuarioSessaoCollection } from '../factory/UsuarioSessaoCollectionFactory';
 import limparEspacos from '../helpers/limpa-espaco';
 import { comparaSenha, gerarSenha } from '../helpers/senhas';
 import { constroiPayloadUsuario, geraTokenResetSenha, geraTokenUsuario } from '../helpers/tokens';
@@ -11,6 +13,16 @@ import codigos from '../resources/codigos-http';
 const {
     Sequelize: { Op }, Usuario, TipoUsuario, Coletor, Identificador,
 } = models;
+
+export async function apagaSessoesDoUsuario(usuarioId) {
+    const useCase = new ApagaUsuarioSessoesUseCase({
+        usuarioSessaoCollection: createUsuarioSessaoCollection(),
+    });
+    const result = await useCase.execute({ usuarioId });
+    if (result.left()) {
+        throw result.value;
+    }
+}
 
 export const encontraUsuarioAtivoPorEmail = email => {
     const where = {
@@ -236,6 +248,7 @@ export const desativar = (request, response, next) => {
                 throw new BadRequestExeption('Usuário não pode ser excluído porque possui dependentes.');
             }
         })
+        .then(() => apagaSessoesDoUsuario(usuarioId))
         .then(() => Usuario.destroy({
             where: { id: usuarioId },
         }))

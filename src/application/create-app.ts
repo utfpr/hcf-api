@@ -12,17 +12,19 @@ import { Logger } from '@/library/logger/Logger'
 import { assets, upload } from '../config/directory'
 import legacyErrors from '../middlewares/erros-middleware'
 import { generatePreview, reportPreview } from '../reports/controller'
+import { routes as createAuthRoutes } from './auth'
 import { routes as createEstadoRoutes } from './estado'
 import { routes as createFaseSucessionalRoutes } from './fase-sucessional'
 import { routes as createPaisRoutes } from './pais'
-import { routes as createSoloRoutes } from './solo'
 import { routes as createRelevoRoutes } from './relevo'
+import { routes as createSoloRoutes } from './solo'
 import { routes as createVegetacaoRoutes } from './vegetacao'
 
 interface CorsParameters {
   origins: string | string[]
   methods: string[]
   allowedHeaders: string[]
+  credentials: boolean
 }
 
 interface Parameters {
@@ -72,7 +74,8 @@ export function createApp({
     .use(makeCors({
       origin: cors.origins,
       methods: cors.methods,
-      allowedHeaders: cors.allowedHeaders
+      allowedHeaders: cors.allowedHeaders,
+      credentials: cors.credentials
     }))
     .use(morgan('dev', {
       skip: req => req.url === '/health'
@@ -114,6 +117,10 @@ export function createApp({
   reportsRouter.get('/:fileName', reportPreview)
   reportsRouter.post('/:fileName', generatePreview)
   application.use('/reports', reportsRouter)
+
+  for (const route of createAuthRoutes(knex)) {
+    application.endpoint(route.method, route.path, ...route.handlers)
+  }
 
   for (const route of routes) {
     const sanitizedPath = `/api/${route.path}`.replaceAll(/\/{2,}/g, '/').replaceAll(/\/$/g, '')

@@ -28,6 +28,7 @@ describe('ListaEstadosController', () => {
 
     const request = {
       body: {},
+      cookies: {},
       headers,
       method: Method.Get,
       params: { paisSigla: 'BRA' },
@@ -50,6 +51,7 @@ describe('ListaEstadosController', () => {
 
     const request = {
       body: {},
+      cookies: {},
       headers,
       method: Method.Get,
       params: {},
@@ -71,6 +73,7 @@ describe('ListaEstadosController', () => {
 
     const request = {
       body: {},
+      cookies: {},
       headers,
       method: Method.Get,
       params: { paisSigla: 'BRA' },

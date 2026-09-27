@@ -25,7 +25,8 @@ export function createTestApp() {
     cors: {
       origins: ['*'],
       methods: ['GET'],
-      allowedHeaders: ['Content-Type']
+      allowedHeaders: ['Content-Type'],
+      credentials: false
     }
   })
 

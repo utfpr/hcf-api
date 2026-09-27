@@ -12,7 +12,7 @@ const environment = process.env.NODE_ENV ?? 'development'
 const corsOriginsRaw = process.env.CORS_ORIGINS ?? '*'
 const corsOrigins = corsOriginsRaw === '*' ? '*' : corsOriginsRaw.split(',')
 const corsMethods = process.env.CORS_METHODS ?? 'HEAD,GET,POST,PUT,PATCH,DELETE'
-const corsAllowedHeaders = process.env.CORS_ALLOWED_HEADERS ?? 'Content-Type,Authorization'
+const corsAllowedHeaders = process.env.CORS_ALLOWED_HEADERS ?? 'Content-Type,Authorization,X-Requested-With'
 
 const logger = new ConsoleLogger()
 const application = createApp({
@@ -20,7 +20,8 @@ const application = createApp({
   cors: {
     origins: corsOrigins,
     methods: corsMethods.split(','),
-    allowedHeaders: corsAllowedHeaders.split(',')
+    allowedHeaders: corsAllowedHeaders.split(','),
+    credentials: corsOrigins !== '*'
   },
   knex: createKnexInstance(),
   legacyRouter: legacyRoutes
