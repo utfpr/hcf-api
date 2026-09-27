@@ -1,13 +1,12 @@
 import path from 'node:path'
-
 import {
   beforeEach, describe, expect, test, vi
 } from 'vitest'
 
-import { Attributes as EvidenciaAttributes } from '@/domain/evidencia/Evidencia'
-import { EvidenciaCollection } from '@/domain/evidencia/EvidenciaCollection'
 import { EventoCollection } from '@/domain/evento/EventoCollection'
 import { RemoverEventoUseCase } from '@/domain/evento/RemoverEventoUseCase'
+import { Attributes as EvidenciaAttributes } from '@/domain/evidencia/Evidencia'
+import { EvidenciaCollection } from '@/domain/evidencia/EvidenciaCollection'
 import { Either } from '@/library/either/Either'
 
 const { unlinkMock } = vi.hoisted(() => ({
@@ -20,8 +19,7 @@ vi.mock('node:fs/promises', () => ({
 
 const UPLOADS_DIR = path.join(process.cwd(), 'uploads', 'evidencias')
 
-const makeMockEventoCollection = (overrides?: Partial<EventoCollection>): EventoCollection =>
-({
+const makeMockEventoCollection = (overrides?: Partial<EventoCollection>): EventoCollection => ({
   create: vi.fn(),
   delete: vi.fn().mockResolvedValue(Either.right(true)),
   findAll: vi.fn(),
@@ -30,8 +28,7 @@ const makeMockEventoCollection = (overrides?: Partial<EventoCollection>): Evento
   ...overrides
 })
 
-const makeMockEvidenciaCollection = (overrides?: Partial<EvidenciaCollection>): EvidenciaCollection =>
-({
+const makeMockEvidenciaCollection = (overrides?: Partial<EvidenciaCollection>): EvidenciaCollection => ({
   create: vi.fn(),
   delete: vi.fn(),
   findAll: vi.fn().mockResolvedValue(Either.right([])),
@@ -39,8 +36,7 @@ const makeMockEvidenciaCollection = (overrides?: Partial<EvidenciaCollection>): 
   ...overrides
 })
 
-const makeEvidencia = (overrides?: Partial<EvidenciaAttributes>): EvidenciaAttributes =>
-({
+const makeEvidencia = (overrides?: Partial<EvidenciaAttributes>): EvidenciaAttributes => ({
   arquivo: 'foto.jpg',
   capturado_em: new Date(),
   created_at: new Date(),
@@ -116,7 +112,7 @@ describe('RemoverEventoUseCase', () => {
     expect(eventoCollection.delete).not.toHaveBeenCalled()
   })
 
-  test('apaga os arquivos das evidências do evento removido', async() => {
+  test('apaga os arquivos das evidências do evento removido', async () => {
     const evidencias = [
       makeEvidencia({ arquivo: 'foto1.jpg', id: 1 }),
       makeEvidencia({ arquivo: 'foto2.jpg', id: 2 })
@@ -136,7 +132,7 @@ describe('RemoverEventoUseCase', () => {
   })
 
   test('não apaga arquivos quando o evento não é removido', async () => {
-    const evidencias = [makeEvidencia({ arquivo: 'foto1.jpg '})]
+    const evidencias = [makeEvidencia({ arquivo: 'foto1.jpg' })]
     const eventoCollection = makeMockEventoCollection({
       delete: vi.fn().mockResolvedValue(Either.right(false))
     })
