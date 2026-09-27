@@ -1,11 +1,10 @@
 import { unlink } from 'node:fs/promises'
 import path from 'node:path'
 
+import { EVIDENCIA_DIR } from '@/config/evidencia'
 import { Either } from '@/library/either/Either'
 
 import { EvidenciaCollection } from './EvidenciaCollection'
-
-const UPLOADS_DIR = path.join(process.cwd(), 'uploads', 'evidencias')
 
 interface Dependencies {
   evidenciaCollection: EvidenciaCollection
@@ -29,7 +28,7 @@ export class RemoverEvidenciaUseCase {
     if (deleted.value) {
       const { arquivo } = evidencia.value
 
-      await unlink(path.join(UPLOADS_DIR, arquivo)).catch((error: unknown) => {
+      await unlink(path.join(EVIDENCIA_DIR, arquivo)).catch((error: unknown) => {
         // eslint-disable-next-line no-console -- evidência já apagada do banco; sem log aqui, o arquivo órfão nunca seria detectável depois
         console.error(
           `Falha ao remover arquivo órfão de evidência (evidencia_id=${id}, arquivo=${arquivo})`,

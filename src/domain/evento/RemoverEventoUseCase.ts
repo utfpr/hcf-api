@@ -1,12 +1,11 @@
 import { unlink } from 'node:fs/promises'
 import path from 'node:path'
 
+import { EVIDENCIA_DIR } from '@/config/evidencia'
 import { EvidenciaCollection } from '@/domain/evidencia/EvidenciaCollection'
 import { Either } from '@/library/either/Either'
 
 import { EventoCollection } from './EventoCollection'
-
-const UPLOADS_DIR = path.join(process.cwd(), 'uploads', 'evidencias')
 
 interface Dependencies {
   eventoCollection: EventoCollection
@@ -32,7 +31,7 @@ export class RemoverEventoUseCase {
     if (deleted.value) {
       await Promise.all(
         evidencias.value.map(evidencia =>
-          unlink(path.join(UPLOADS_DIR, evidencia.arquivo)).catch((error: unknown) => {
+          unlink(path.join(EVIDENCIA_DIR, evidencia.arquivo)).catch((error: unknown) => {
             // eslint-disable-next-line no-console -- evento já apagado do banco; sem log aqui, o arquivo órfão nunca seria detectável depois
             console.error(
               `Falha ao remover arquivo órfão de evidência (evento_id=${id}, arquivo=${evidencia.arquivo})`,
