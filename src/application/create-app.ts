@@ -68,7 +68,6 @@ export function createApp({
     ...createRelevoRoutes(knex),
     ...createFaseSucessionalRoutes(knex),
     ...createVegetacaoRoutes(knex),
-    ...createEventoRoutes(knex),
     ...createEvidenciaRoutes(knex),
     ...createExpedicoesRoutes(knex)
   ]
