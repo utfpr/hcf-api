@@ -20,7 +20,7 @@ import { routes as createRelevoRoutes } from './relevo'
 import { routes as createVegetacaoRoutes } from './vegetacao'
 
 interface CorsParameters {
-  origins: string[]
+  origins: string | string[]
   methods: string[]
   allowedHeaders: string[]
 }
