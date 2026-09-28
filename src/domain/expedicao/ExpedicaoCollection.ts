@@ -31,6 +31,8 @@ export interface ParticipanteExpedicao {
 }
 
 export interface ExpedicaoListItem extends Attributes {
+  cidade_nome: string | null
+  estado_sigla: string | null
   participantes: ParticipanteExpedicao[]
   rotas: number[]
 }

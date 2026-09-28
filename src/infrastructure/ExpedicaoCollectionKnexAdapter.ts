@@ -28,6 +28,11 @@ interface Row {
   updated_by: string | null
 }
 
+interface ListRow extends Row {
+  cidade_nome: string | null
+  estado_sigla: string | null
+}
+
 interface ParticipanteRow {
   expedicao_id: number
   usuario_id: number
@@ -72,7 +77,15 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
 
   async findAll(filters: ExpedicaoFilters): Promise<Either<Error, Paginated<ExpedicaoListItem>>> {
     try {
+      // nome da cidade e sigla da UF vêm junto para o cliente não precisar de uma requisição por cidade
       const query = this.select()
+        .leftJoin('cidades', 'cidades.id', 'expedicoes.cidade_id')
+        .leftJoin('estados', 'estados.id', 'cidades.estado_id')
+        .select([
+          'cidades.nome as cidade_nome',
+          // estados.sigla é char(4): remove o preenchimento com espaços
+          this.knex.raw('trim(estados.sigla) as estado_sigla')
+        ])
 
       if (filters.cidade_id) query.where('expedicoes.cidade_id', filters.cidade_id)
 
@@ -102,7 +115,7 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
       const order = filters.order ?? { column: 'id' as const, direction: 'desc' as const }
       query.orderBy(`expedicoes.${order.column}`, order.direction)
 
-      const rows = await query as Row[]
+      const rows = await query as ListRow[]
 
       // página vazia, já retorna
       if (rows.length === 0) {
@@ -128,6 +141,8 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
       const itens = rows.map(row => {
         return {
           ...toAttributes(row),
+          cidade_nome: row.cidade_nome,
+          estado_sigla: row.estado_sigla,
           participantes: participantesRows
             .filter(p => p.expedicao_id === row.id)
             .map((p): ParticipanteExpedicao => ({ id: p.usuario_id, nome: p.nome })),
