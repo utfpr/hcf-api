@@ -21,9 +21,9 @@ The same conjugation rule applies in Portuguese and in English. Keep the languag
 | --- | --- |
 | List a collection | `{Verb}{Resources}Controller` / `{Verb}{Resources}UseCase` |
 | Get one by id | `{Verb}{Resource}UseCase` (and matching controller) |
-| Tests | One file per action; kebab-case of the same verb + resource stem |
+| Tests | One file per type: `{TypeName}.test.ts` |
 
-Type files are PascalCase and match the exported type. Test files use kebab-case of that stem (for example `lists-countries.test.ts`), not a different verb and not several actions in one file.
+Type files are PascalCase and match the exported type. Test files use the same TitleCase name as the type (for example `ListaPaisesUseCase.test.ts`). Folders use camelCase when the name is compound (for example `src/domain/usuarioSessao`, `src/domain/faseSucessional`). Tests live under the same folder name as `src` (for example `test/unit/domain/usuarioSessao/`). Do not use kebab-case or TitleCase for those folders.
 
 ## When renaming
 
