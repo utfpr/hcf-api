@@ -19,6 +19,7 @@ export const StatusCode = {
   NotFound: 404,
   Conflict: 409,
   UnprocessableEntity: 422,
+  TooManyRequests: 429,
   InternalServerError: 500
 } as const
 
@@ -38,6 +39,7 @@ export interface Headers {
   Authorization?: string
   'Content-Length': number
   'Content-Type': ContentTypeHeaderValue
+  'Set-Cookie'?: string
   [name: string]: HeaderValue
 }
 
@@ -48,6 +50,7 @@ export interface HttpRequest<
   method: Method
   path: string
   headers: Headers
+  cookies?: Record<string, string>
   params: Params
   body: Body
 }

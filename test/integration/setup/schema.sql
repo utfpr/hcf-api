@@ -53,6 +53,7 @@ COMMENT ON SCHEMA topology IS 'PostGIS Topology schema';
 --
 
 CREATE EXTENSION IF NOT EXISTS postgis WITH SCHEMA public;
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
 
 
 --
@@ -1392,6 +1393,23 @@ CREATE TABLE public.usuarios (
     token_troca_senha character varying(255) DEFAULT NULL::character varying,
     token_troca_senha_expiracao timestamp with time zone
 );
+
+
+CREATE TABLE public.usuarios_sessoes (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    usuario_id integer NOT NULL,
+    refresh_token_hash character varying(64) NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    last_used_at timestamp without time zone NOT NULL,
+    expires_at timestamp without time zone NOT NULL
+);
+
+ALTER TABLE ONLY public.usuarios_sessoes
+    ADD CONSTRAINT usuarios_sessoes_pkey PRIMARY KEY (id);
+
+CREATE UNIQUE INDEX usuarios_sessoes_refresh_token_hash_unique ON public.usuarios_sessoes USING btree (refresh_token_hash);
+
+CREATE INDEX usuarios_sessoes_usuario_id_index ON public.usuarios_sessoes USING btree (usuario_id);
 
 
 --

@@ -48,6 +48,8 @@ jobs:
       PG_DATABASE: herbario_test
       PG_USERNAME: postgres
       PG_PASSWORD: secret
+      JWT_SECRET: test-jwt-secret-for-auth-sessions
+      CORS_ORIGINS: http://localhost:5173
     services:
       postgres:
         image: postgis/postgis:18-3.6
