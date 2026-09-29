@@ -72,6 +72,7 @@
 		"@types/express": "5.0.5",
 		"@types/jsonwebtoken": "9.0.10",
 		"@types/morgan": "1.9.10",
+		"@types/multer": "^2.2.0",
 		"@types/pg": "^8.16.0",
 		"@types/react": "19.2.2",
 		"@types/react-dom": "19.2.2",
