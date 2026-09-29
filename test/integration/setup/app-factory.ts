@@ -24,8 +24,19 @@ export function createTestApp() {
     logger: new ConsoleLogger(),
     cors: {
       origins: ['http://localhost:5173'],
-      methods: ['HEAD', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+      methods: [
+        'HEAD',
+        'GET',
+        'POST',
+        'PUT',
+        'PATCH',
+        'DELETE'
+      ],
+      allowedHeaders: [
+        'Content-Type',
+        'Authorization',
+        'X-Requested-With'
+      ]
     }
   })
 

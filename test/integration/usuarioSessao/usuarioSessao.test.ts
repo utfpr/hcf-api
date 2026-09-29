@@ -128,7 +128,9 @@ describe('usuario sessao HTTP', () => {
     const firstRefresh = refreshFromSetCookie(login.headers['set-cookie'])
     expect(firstRefresh).toBe(loginBody.refresh_token)
     expect(cookieHeader(login.headers['set-cookie'])).toContain('HttpOnly')
-    expect(cookieHeader(login.headers['set-cookie'])).toContain('SameSite=None')
+    expect(cookieHeader(login.headers['set-cookie'])).toContain('SameSite=Lax')
+    expect(cookieHeader(login.headers['set-cookie'])).not.toContain('SameSite=None')
+    expect(cookieHeader(login.headers['set-cookie'])).not.toContain('Secure')
     expect(cookieHeader(login.headers['set-cookie'])).toContain('Path=/api/auth')
 
     const me = await agent
