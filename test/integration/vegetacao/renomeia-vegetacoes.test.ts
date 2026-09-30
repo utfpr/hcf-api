@@ -50,6 +50,22 @@ describe('PUT /api/v2/vegetacoes/:vegetacaoId', () => {
     expect(body.error.message).toMatch(/inválido|invalid/i)
   })
 
+  test('retorna 400 quando o nome está vazio', async () => {
+    const prefix = `EMPTYUPD-${Date.now()}`
+    const [vegetacao] = await knex<Vegetacao>('vegetacoes')
+      .insert({ nome: `${prefix} Original` })
+      .returning(['id', 'nome']) as Vegetacao[]
+
+    try {
+      const response = await agent.put(`/api/v2/vegetacoes/${vegetacao.id}`).set(buildAuthHeader()).send({ nome: '   ' }).expect(400)
+      const body = response.body as { error: { message: string } }
+
+      expect(body.error.message).toMatch(/vazio|empty|obrigat/i)
+    } finally {
+      await knex('vegetacoes').where({ id: vegetacao.id }).delete()
+    }
+  })
+
   test('retorna 409 para nome duplicado', async () => {
     const prefix = `DUPUPD-${Date.now()}`
     const [original] = await knex<Vegetacao>('vegetacoes')

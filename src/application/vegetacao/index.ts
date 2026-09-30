@@ -11,10 +11,10 @@ import { Route } from '@/library/http/Router'
 
 import { BuscaVegetacaoController } from './BuscaVegetacaoController'
 import { CadastraVegetacaoController } from './CadastraVegetacaoController'
+import { ExigePermissaoEscritaVegetacao } from './ExigePermissaoEscritaVegetacao'
 import { ListaVegetacoesController } from './ListaVegetacoesController'
 import { RemoveVegetacaoController } from './RemoveVegetacaoController'
 import { RenomeiaVegetacaoController } from './RenomeiaVegetacaoController'
-import { ExigePermissaoEscritaVegetacao } from './RequerAcessoEscritaVegetacao'
 
 export function routes(knex: Knex): Route[] {
   const vegetacaoCollection = new VegetacaoCollectionKnexAdapter({ knex })

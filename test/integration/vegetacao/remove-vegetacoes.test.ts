@@ -35,6 +35,20 @@ describe('DELETE /api/v2/vegetacoes/:vegetacaoId', () => {
     }
   })
 
+  test('retorna 404 para id inexistente', async () => {
+    const response = await agent.delete('/api/v2/vegetacoes/999999').set(buildAuthHeader()).expect(404)
+    const body = response.body as { error: { message: string } }
+
+    expect(body.error.message).toMatch(/não encontrad|not found/i)
+  })
+
+  test('retorna 400 para id inválido', async () => {
+    const response = await agent.delete('/api/v2/vegetacoes/abc').set(buildAuthHeader()).expect(400)
+    const body = response.body as { error: { message: string } }
+
+    expect(body.error.message).toMatch(/inválido|invalid/i)
+  })
+
   test('retorna 409 quando a vegetação está em uso em um tombo', async () => {
     const prefix = `USEVEG-${Date.now()}`
     const [vegetacao] = await knex<Vegetacao>('vegetacoes')
