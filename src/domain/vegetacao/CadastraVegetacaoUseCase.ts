@@ -7,14 +7,14 @@ interface Dependencies {
   vegetacaoCollection: VegetacaoCollection
 }
 
-export class BuscarVegetacaoPorIdUseCase {
+export class CadastraVegetacaoUseCase {
   private readonly vegetacaoCollection: VegetacaoCollection
 
   constructor(dependencies: Dependencies) {
     this.vegetacaoCollection = dependencies.vegetacaoCollection
   }
 
-  execute({ id }: { id: number }): Promise<Either<Error, Attributes | null>> {
-    return this.vegetacaoCollection.findById(id)
+  execute({ nome }: { nome: string }): Promise<Either<Error, Attributes>> {
+    return this.vegetacaoCollection.create({ nome })
   }
 }
