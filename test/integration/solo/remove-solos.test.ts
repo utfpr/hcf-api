@@ -10,9 +10,11 @@ import { createTestApp } from '../setup/app-factory'
 
 type Solo = { id: number; nome: string }
 
-const TEST_JWT_SECRET = process.env.JWT_SECRET ?? 'test-secret'
-const buildAuthHeader = () => ({
-  Authorization: `Bearer ${jwt.sign({ id: 1, tipo_usuario_id: 1 }, TEST_JWT_SECRET)}`
+const buildAuthHeader = (
+  payload = { id: 1, tipo_usuario_id: 1 },
+  secret = process.env.JWT_SECRET as string
+) => ({
+  Authorization: `Bearer ${jwt.sign(payload, secret)}`
 })
 
 describe('DELETE /api/v2/solos/:soloId', () => {
