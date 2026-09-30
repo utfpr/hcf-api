@@ -13,11 +13,16 @@ import { assets, upload } from '../config/directory'
 import legacyErrors from '../middlewares/erros-middleware'
 import { generatePreview, reportPreview } from '../reports/controller'
 import { routes as createEstadoRoutes } from './estado'
+import { routes as createFaseSucessionalRoutes } from './fase-sucessional'
 import { routes as createPaisRoutes } from './pais'
+import { assertCookieSafeOrigins } from './parseCorsOrigins'
+import { routes as createRelevoRoutes } from './relevo'
+import { routes as createSoloRoutes } from './solo'
+import { routes as createUsuarioSessaoRoutes } from './usuarioSessao'
 import { routes as createVegetacaoRoutes } from './vegetacao'
 
 interface CorsParameters {
-  origins: string[]
+  origins: string | string[]
   methods: string[]
   allowedHeaders: string[]
 }
@@ -57,14 +62,20 @@ export function createApp({
   const routes: Route[] = [
     ...createPaisRoutes(knex),
     ...createEstadoRoutes(knex),
-    ...createVegetacaoRoutes(knex)
+    ...createSoloRoutes(knex),
+    ...createRelevoRoutes(knex),
+    ...createFaseSucessionalRoutes(knex),
+    ...createVegetacaoRoutes(knex),
+    ...createUsuarioSessaoRoutes(knex)
   ]
+  const origins = assertCookieSafeOrigins(cors.origins)
   const application = new ExpressApplication({ logger })
 
   application
     .use(makeHelmet(securityConfig))
     .use(makeCors({
-      origin: cors.origins,
+      origin: origins,
+      credentials: true,
       methods: cors.methods,
       allowedHeaders: cors.allowedHeaders
     }))
