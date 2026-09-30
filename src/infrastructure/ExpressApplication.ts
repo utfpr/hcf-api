@@ -135,8 +135,7 @@ export class ExpressApplication implements Application {
       if (response instanceof HttpError) {
         expressResponse.status(response.statusCode).json({
           error: {
-            statusCode: response.statusCode,
-            name: response.name,
+            type: response.type,
             message: response.message,
             report: response.report
           }
@@ -159,7 +158,7 @@ export class ExpressApplication implements Application {
 
       if (body instanceof Error) {
         expressResponse.json({
-          error: { name: body.name, message: body.message }
+          error: { type: body.name, message: body.message }
         })
         return
       }
@@ -174,7 +173,7 @@ export class ExpressApplication implements Application {
       this.logger.error(error instanceof Error ? (error.stack ?? error.message) : String(error))
       expressResponse.status(500).json({
         error: {
-          statusCode: 500, name: 'InternalServerError', message: 'Unexpected error'
+          type: 'internal_server_error', message: 'Unexpected error'
         }
       })
     }
