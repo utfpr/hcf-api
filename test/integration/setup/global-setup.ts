@@ -19,7 +19,9 @@ const TABLES = [
   'expedicoes_participantes',
   'expedicoes',
   'expedicoes_rotas_locais_coleta',
-  'locais_coleta'
+  'locais_coleta',
+  'solos',
+  'tombos'
 ]
 
 async function truncateTables(knex: Knex): Promise<void> {
