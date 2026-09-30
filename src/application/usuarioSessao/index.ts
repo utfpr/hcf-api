@@ -2,9 +2,9 @@ import { type Knex } from 'knex'
 
 import { CriaUsuarioSessaoUseCase } from '@/domain/usuarioSessao/CriaUsuarioSessaoUseCase'
 import { EncerraUsuarioSessaoUseCase } from '@/domain/usuarioSessao/EncerraUsuarioSessaoUseCase'
-import { MostraUsuarioSessaoUseCase } from '@/domain/usuarioSessao/MostraUsuarioSessaoUseCase'
 import { RenovaUsuarioSessaoUseCase } from '@/domain/usuarioSessao/RenovaUsuarioSessaoUseCase'
 import { createAccessToken } from '@/factory/AccessTokenFactory'
+import { createAuthorize } from '@/factory/AuthorizeMiddlewareFactory'
 import { rateLimitMiddleware } from '@/factory/RateLimiterFactory'
 import { createRefreshToken } from '@/factory/RefreshTokenFactory'
 import { comparaSenha } from '@/helpers/senhas'
@@ -23,6 +23,11 @@ export function routes(knex: Knex): Route[] {
   const usuarioSessaoCollection = new UsuarioSessaoCollectionKnexAdapter({ knex })
   const refreshToken = createRefreshToken()
   const accessToken = createAccessToken()
+  const authorize = createAuthorize({
+    accessToken,
+    usuarioCollection,
+    usuarioSessaoCollection
+  })
 
   return [
     {
@@ -73,13 +78,8 @@ export function routes(knex: Knex): Route[] {
       method: Method.Get,
       path: '/auth/me',
       handlers: [
-        new MostraUsuarioSessaoController({
-          mostraUsuarioSessaoUseCase: new MostraUsuarioSessaoUseCase({
-            accessToken,
-            usuarioCollection,
-            usuarioSessaoCollection
-          })
-        })
+        authorize('read', 'UsuarioSessao'),
+        new MostraUsuarioSessaoController()
       ]
     }
   ]

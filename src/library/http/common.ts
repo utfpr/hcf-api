@@ -1,5 +1,8 @@
 import '@/library/enum'
 
+import { type Action, type Resource } from '@/library/auth/createRules'
+import { type Manager } from '@/library/auth/Manager'
+
 export const Method = {
   Get: 'get',
   Post: 'post',
@@ -43,6 +46,13 @@ export interface Headers {
   [name: string]: HeaderValue
 }
 
+export interface RequestUser {
+  id: number
+  nome: string
+  email: string
+  tipo_usuario_id: number
+}
+
 export interface HttpRequest<
   Body = unknown,
   Params extends Record<string, unknown> = Record<string, unknown>
@@ -53,6 +63,8 @@ export interface HttpRequest<
   cookies?: Record<string, string>
   params: Params
   body: Body
+  user?: RequestUser
+  auth?: Manager<Resource, Action>
 }
 
 export interface HttpResponse<Body = unknown> {
