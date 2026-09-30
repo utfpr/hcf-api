@@ -15,4 +15,9 @@ export interface RelevoFilters {
 export interface RelevoCollection {
   findAll(filters: RelevoFilters): Promise<Either<Error, Attributes[]>>
   findById(id: number): Promise<Either<Error, Attributes | null>>
+  findByNome(nome: string): Promise<Either<Error, Attributes | null>>
+  create(attributes: Attributes): Promise<Either<Error, Attributes>>
+  updateById(id: number, attributes: Partial<Attributes>): Promise<Either<Error, Attributes | null>>
+  deleteById(id: number): Promise<Either<Error, boolean>>
+  countTomboReferences(id: number): Promise<Either<Error, number>>
 }

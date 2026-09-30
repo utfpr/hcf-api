@@ -43,4 +43,63 @@ export class RelevoCollectionKnexAdapter implements RelevoCollection {
       return Either.left(new CollectionError({ message: 'Failed to find relevo', cause: error }))
     }
   }
+
+  async findByNome(nome: string): Promise<Either<Error, Attributes | null>> {
+    try {
+      const relevo = await this.knex<Attributes>('relevos')
+        .select(['id', 'nome'])
+        .whereRaw('LOWER(nome) = LOWER(?)', [nome.trim()])
+        .first()
+      return Either.right(relevo ?? null)
+    } catch (error) {
+      return Either.left(new CollectionError({ message: 'Failed to find relevo by name', cause: error }))
+    }
+  }
+
+  async create(attributes: Attributes): Promise<Either<Error, Attributes>> {
+    try {
+      const [relevo] = await this.knex<Attributes>('relevos')
+        .insert({ nome: attributes.nome })
+        .returning(['id', 'nome'])
+
+      return Either.right(relevo)
+    } catch (error) {
+      return Either.left(new CollectionError({ message: 'Failed to create relevo', cause: error }))
+    }
+  }
+
+  async updateById(id: number, attributes: Partial<Attributes>): Promise<Either<Error, Attributes | null>> {
+    try {
+      const [relevo] = await this.knex<Attributes>('relevos')
+        .where({ id })
+        .update({ nome: attributes.nome })
+        .returning(['id', 'nome'])
+
+      return Either.right(relevo ?? null)
+    } catch (error) {
+      return Either.left(new CollectionError({ message: 'Failed to update relevo', cause: error }))
+    }
+  }
+
+  async deleteById(id: number): Promise<Either<Error, boolean>> {
+    try {
+      const deleted = await this.knex('relevos').where({ id }).delete()
+      return Either.right(deleted > 0)
+    } catch (error) {
+      return Either.left(new CollectionError({ message: 'Failed to delete relevo', cause: error }))
+    }
+  }
+
+  async countTomboReferences(id: number): Promise<Either<Error, number>> {
+    try {
+      const result = await this.knex.raw<{ rows: Array<{ count: string | number }> }>(
+        'SELECT COUNT(*)::int AS count FROM tombos WHERE relevo_id = ?',
+        [id]
+      )
+
+      return Either.right(Number(result.rows[0]?.count ?? 0))
+    } catch (error) {
+      return Either.left(new CollectionError({ message: 'Failed to count tombos referencing relevo', cause: error }))
+    }
+  }
 }
