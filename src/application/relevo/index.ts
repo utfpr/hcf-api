@@ -11,12 +11,14 @@ import { Route } from '@/library/http/Router'
 
 import { BuscaRelevoController } from './BuscaRelevoController'
 import { CadastraRelevoController } from './CadastraRelevoController'
+import { ExigePermissaoEscritaRelevo } from './ExigePermissaoEscritaRelevo'
 import { ListaRelevosController } from './ListaRelevosController'
 import { RemoveRelevoController } from './RemoveRelevoController'
 import { RenomeiaRelevoController } from './RenomeiaRelevoController'
 
 export function routes(knex: Knex): Route[] {
   const relevoCollection = new RelevoCollectionKnexAdapter({ knex })
+  const exigePermissaoEscritaRelevo = new ExigePermissaoEscritaRelevo()
 
   return [
     {
@@ -30,6 +32,7 @@ export function routes(knex: Knex): Route[] {
     },
     {
       handlers: [
+        exigePermissaoEscritaRelevo,
         new CadastraRelevoController({
           cadastraRelevoUseCase: new CadastraRelevoUseCase({ relevoCollection })
         })
@@ -48,6 +51,7 @@ export function routes(knex: Knex): Route[] {
     },
     {
       handlers: [
+        exigePermissaoEscritaRelevo,
         new RenomeiaRelevoController({
           renomeiaRelevoUseCase: new RenomeiaRelevoUseCase({ relevoCollection })
         })
@@ -57,6 +61,7 @@ export function routes(knex: Knex): Route[] {
     },
     {
       handlers: [
+        exigePermissaoEscritaRelevo,
         new RemoveRelevoController({
           removeRelevoUseCase: new RemoveRelevoUseCase({ relevoCollection })
         })
