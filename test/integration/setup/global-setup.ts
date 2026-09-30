@@ -9,7 +9,8 @@ try {
 
 const TABLES = [
   'estados',
-  'paises'
+  'paises',
+  'fase_sucessional'
 ]
 
 async function truncateTables(knex: Knex): Promise<void> {

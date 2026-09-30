@@ -8,6 +8,8 @@ try {
   // In CI, environment variables are injected directly into the process
 }
 
-process.env.JWT_SECRET ??= 'test-secret'
+if (!process.env.JWT_SECRET) {
+  process.env.JWT_SECRET = 'test-jwt-secret-for-auth-sessions'
+}
 
 mkdirSync(path.resolve(process.cwd(), 'uploads'), { recursive: true })

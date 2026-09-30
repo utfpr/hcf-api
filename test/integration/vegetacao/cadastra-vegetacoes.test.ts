@@ -39,16 +39,14 @@ describe('POST /api/v2/vegetacoes', () => {
     }
   })
 
-  test('rejeita token assinado com segredo de teste quando o JWT_SECRET não está configurado', async () => {
+  test('rejeita token assinado com segredo diferente do configurado', async () => {
     const originalSecret = process.env.JWT_SECRET
-    vi.resetModules()
-    delete process.env.JWT_SECRET
+    process.env.JWT_SECRET = 'test-jwt-secret-for-auth-sessions'
 
     try {
-      const { createTestApp } = await import('../setup/app-factory')
       const { agent: isolatedAgent, knex: isolatedKnex } = createTestApp()
-      const token = jwt.sign({ id: 1, tipo_usuario_id: 1 }, 'test-secret')
-      const response = await isolatedAgent.post('/api/v2/vegetacoes').set({ Authorization: `Bearer ${token}` }).send({ nome: 'NOME SEM SECRET' }).expect(401)
+      const token = jwt.sign({ id: 1, tipo_usuario_id: 1 }, 'segredo-diferente')
+      const response = await isolatedAgent.post('/api/v2/vegetacoes').set({ Authorization: `Bearer ${token}` }).send({ nome: 'NOME COM SECRET DIFERENTE' }).expect(401)
       const body = response.body as { error: { message: string } }
 
       expect(body.error.message).toMatch(/token de autenticação inválido|token expirado|invalid/i)
@@ -59,7 +57,6 @@ describe('POST /api/v2/vegetacoes', () => {
       } else {
         process.env.JWT_SECRET = originalSecret
       }
-      vi.resetModules()
     }
   })
 

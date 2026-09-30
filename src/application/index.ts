@@ -6,18 +6,20 @@ import { ConsoleLogger } from '@/infrastructure/ConsoleLogger'
 
 import legacyRoutes from '../routes'
 import { createApp } from './create-app'
+import { parseCorsOrigins } from './parseCorsOrigins'
 
 const environment = process.env.NODE_ENV ?? 'development'
 
-const corsOrigins = process.env.CORS_ORIGINS ?? '*'
+const corsOrigins = parseCorsOrigins(process.env.CORS_ORIGINS)
 const corsMethods = process.env.CORS_METHODS ?? 'HEAD,GET,POST,PUT,PATCH,DELETE'
-const corsAllowedHeaders = process.env.CORS_ALLOWED_HEADERS ?? 'Content-Type,Authorization'
+const corsAllowedHeaders = process.env.CORS_ALLOWED_HEADERS
+  ?? 'Content-Type,Authorization,X-Requested-With'
 
 const logger = new ConsoleLogger()
 const application = createApp({
   logger,
   cors: {
-    origins: corsOrigins.split(','),
+    origins: corsOrigins,
     methods: corsMethods.split(','),
     allowedHeaders: corsAllowedHeaders.split(',')
   },
