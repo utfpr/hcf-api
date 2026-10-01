@@ -3,7 +3,7 @@ import { UsuarioSessao } from '@/domain/usuarioSessao/UsuarioSessao'
 import { type UsuarioSessaoCollection } from '@/domain/usuarioSessao/UsuarioSessaoCollection'
 import { type AccessToken } from '@/library/auth/AccessToken'
 import {
-  type Action, createRules, GUEST_USER, type Resource
+  type Action, createRules, type Resource
 } from '@/library/auth/createRules'
 import { AccessTokenExpiredError } from '@/library/auth/error/AccessTokenExpiredError'
 import { Manager } from '@/library/auth/Manager'
@@ -26,7 +26,7 @@ interface Dependencies {
   usuarioSessaoCollection: UsuarioSessaoCollection
   legacyFallback?: boolean
   now?: () => Date
-  verifyLegacyUser?: (token: string) => RequestUser | null | Promise<RequestUser | null>
+  verifyLegacyUser?: (token: string) => RequestUser | undefined | Promise<RequestUser | undefined>
 }
 
 export class AuthorizeMiddleware implements RequestHandler {
@@ -68,13 +68,12 @@ export class AuthorizeMiddleware implements RequestHandler {
     request: HttpRequest,
     next: NextHandler
   ): Promise<HttpResponse | HttpError> {
-    const guest: RequestUser = { ...GUEST_USER }
-    const auth = new Manager({ rules: createRules(guest) })
+    const auth = new Manager({ rules: createRules() })
     if (!auth.can(this.action, this.resource)) {
       return Promise.resolve(unauthorized())
     }
 
-    request.user = guest
+    request.user = undefined
     request.auth = auth
     return next()
   }
@@ -93,7 +92,7 @@ export class AuthorizeMiddleware implements RequestHandler {
       if (this.legacyFallback && this.verifyLegacyUser) {
         try {
           const legacy = await this.verifyLegacyUser(token)
-          if (legacy) {
+          if (legacy !== undefined) {
             return legacy
           }
         } catch (error) {

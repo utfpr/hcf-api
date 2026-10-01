@@ -4,7 +4,7 @@ import {
   test
 } from 'vitest'
 
-import { createRules, GUEST_USER } from '@/library/auth/createRules'
+import { createRules } from '@/library/auth/createRules'
 
 const publicReads = [
   { action: 'read', resource: 'Pais' },
@@ -13,7 +13,8 @@ const publicReads = [
 
 describe('createRules', () => {
   test('grants Guest only public reads', () => {
-    expect(createRules(GUEST_USER)).toEqual(publicReads)
+    expect(createRules()).toEqual(publicReads)
+    expect(createRules(undefined)).toEqual(publicReads)
   })
 
   test('grants authenticated users public reads and UsuarioSessao', () => {

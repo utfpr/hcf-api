@@ -41,20 +41,15 @@ export const RESOURCES = [
 export type Action = typeof ACTIONS[number]
 export type Resource = typeof RESOURCES[number]
 
-export const GUEST_USER = {
-  id: 0,
-  nome: 'Guest',
-  email: '',
-  tipo_usuario_id: 0
-} as const
+export type RulesUser = { id: number; tipo_usuario_id: number }
 
 const publicReads: Rule<Resource, Action>[] = [
   { action: 'read', resource: 'Pais' },
   { action: 'read', resource: 'Estado' }
 ]
 
-export function createRules(user: { id: number; tipo_usuario_id: number }): Rule<Resource, Action>[] {
-  if (user.tipo_usuario_id === 0) {
+export function createRules(user?: RulesUser): Rule<Resource, Action>[] {
+  if (user === undefined) {
     return [...publicReads]
   }
 

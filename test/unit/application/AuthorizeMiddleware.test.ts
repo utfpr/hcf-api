@@ -78,7 +78,7 @@ describe('AuthorizeMiddleware', () => {
     const response = await middleware.handle(request, () => Promise.resolve(ok))
 
     expect(response).toEqual(ok)
-    expect(request.user?.tipo_usuario_id).toBe(0)
+    expect(request.user).toBeUndefined()
     expect(request.auth?.can('read', 'Pais')).toBe(true)
   })
 

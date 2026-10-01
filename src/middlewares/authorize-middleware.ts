@@ -1,13 +1,15 @@
 import type {
   NextFunction, Request, Response
 } from 'express'
+import { type Knex } from 'knex'
 
+import { AuthorizeMiddleware } from '@/application/AuthorizeMiddleware'
+import { type UsuarioCollection } from '@/domain/usuario/UsuarioCollection'
 import { createAccessToken } from '@/factory/AccessTokenFactory'
-import { createAuthorize } from '@/factory/AuthorizeMiddlewareFactory'
 import { createKnexInstance } from '@/factory/KnexFactory'
-import { createUsuarioSessaoCollection } from '@/factory/UsuarioSessaoCollectionFactory'
 import { decodificaTokenUsuario } from '@/helpers/tokens'
 import { UsuarioCollectionKnexAdapter } from '@/infrastructure/UsuarioCollectionKnexAdapter'
+import { UsuarioSessaoCollectionKnexAdapter } from '@/infrastructure/UsuarioSessaoCollectionKnexAdapter'
 import { type Action, type Resource } from '@/library/auth/createRules'
 import {
   type HttpRequest, Method, type RequestUser
@@ -20,17 +22,9 @@ import { singleton } from '@/library/singleton'
 import ForbiddenException from '../errors/forbidden-exception'
 import UnauthorizedException from '../errors/unauthorized-exception'
 
-type AuthorizeDependencies = Parameters<typeof createAuthorize>[0]
+type Authorize = (action: Action, resource: Resource) => AuthorizeMiddleware
 
-export function createExpressAuthorize(dependencies: AuthorizeDependencies) {
-  const authorizeHandler = createAuthorize({
-    ...dependencies,
-    legacyFallback: dependencies.legacyFallback ?? true,
-    verifyLegacyUser: dependencies.verifyLegacyUser ?? (token => {
-      return loadLegacyUser(token, dependencies.usuarioCollection)
-    })
-  })
-
+export function wrapExpressAuthorize(authorizeHandler: Authorize) {
   return (action: Action, resource: Resource) => {
     const handler = authorizeHandler(action, resource)
 
@@ -50,15 +44,30 @@ export function createExpressAuthorize(dependencies: AuthorizeDependencies) {
   }
 }
 
-const defaultExpressAuthorize = singleton(() => {
-  const knex = createKnexInstance()
+interface Dependencies {
+  knex: Knex
+}
+
+export function createExpressAuthorize({ knex }: Dependencies) {
+  const accessToken = createAccessToken()
   const usuarioCollection = new UsuarioCollectionKnexAdapter({ knex })
-  return createExpressAuthorize({
-    accessToken: createAccessToken(),
-    usuarioCollection,
-    usuarioSessaoCollection: createUsuarioSessaoCollection(),
-    legacyFallback: true
+  const usuarioSessaoCollection = new UsuarioSessaoCollectionKnexAdapter({ knex })
+
+  return wrapExpressAuthorize((action, resource) => {
+    return new AuthorizeMiddleware({
+      action,
+      resource,
+      accessToken,
+      usuarioCollection,
+      usuarioSessaoCollection,
+      legacyFallback: true,
+      verifyLegacyUser: token => loadLegacyUser(token, usuarioCollection)
+    })
   })
+}
+
+const defaultExpressAuthorize = singleton(() => {
+  return createExpressAuthorize({ knex: createKnexInstance() })
 })
 
 export function authorize(action: Action, resource: Resource) {
@@ -67,17 +76,17 @@ export function authorize(action: Action, resource: Resource) {
 
 async function loadLegacyUser(
   token: string,
-  usuarioCollection: AuthorizeDependencies['usuarioCollection']
-): Promise<RequestUser | null> {
+  usuarioCollection: UsuarioCollection
+): Promise<RequestUser | undefined> {
   const payload = decodificaTokenUsuario(token) as { id?: unknown }
   const id = Number(payload.id)
   if (!Number.isInteger(id) || id <= 0) {
-    return null
+    return undefined
   }
 
   const usuario = await usuarioCollection.findById(id)
   if (usuario.left() || !usuario.value) {
-    return null
+    return undefined
   }
 
   return {
