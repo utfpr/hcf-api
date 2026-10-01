@@ -4,10 +4,9 @@ import type {
 import { type Knex } from 'knex'
 
 import { AuthorizeMiddleware } from '@/application/AuthorizeMiddleware'
-import { type UsuarioCollection } from '@/domain/usuario/UsuarioCollection'
+import { loadLegacyUsuario } from '@/application/loadLegacyUsuario'
 import { createAccessToken } from '@/factory/AccessTokenFactory'
 import { createKnexInstance } from '@/factory/KnexFactory'
-import { decodificaTokenUsuario } from '@/helpers/tokens'
 import { UsuarioCollectionKnexAdapter } from '@/infrastructure/UsuarioCollectionKnexAdapter'
 import { UsuarioSessaoCollectionKnexAdapter } from '@/infrastructure/UsuarioSessaoCollectionKnexAdapter'
 import { type Action, type Resource } from '@/library/auth/createRules'
@@ -61,7 +60,7 @@ export function createExpressAuthorize({ knex }: Dependencies) {
       usuarioCollection,
       usuarioSessaoCollection,
       legacyFallback: true,
-      verifyLegacyUser: token => loadLegacyUser(token, usuarioCollection)
+      verifyLegacyUser: token => loadLegacyUsuario(token, usuarioCollection)
     })
   })
 }
@@ -72,29 +71,6 @@ const defaultExpressAuthorize = singleton(() => {
 
 export function authorize(action: Action, resource: Resource) {
   return defaultExpressAuthorize()(action, resource)
-}
-
-async function loadLegacyUser(
-  token: string,
-  usuarioCollection: UsuarioCollection
-): Promise<RequestUser | undefined> {
-  const payload = decodificaTokenUsuario(token) as { id?: unknown }
-  const id = Number(payload.id)
-  if (!Number.isInteger(id) || id <= 0) {
-    return undefined
-  }
-
-  const usuario = await usuarioCollection.findById(id)
-  if (usuario.left() || !usuario.value) {
-    return undefined
-  }
-
-  return {
-    id: usuario.value.id,
-    nome: usuario.value.nome,
-    email: usuario.value.email,
-    tipo_usuario_id: usuario.value.tipoUsuarioId
-  }
 }
 
 function toHttpRequest(request: Request): HttpRequest {

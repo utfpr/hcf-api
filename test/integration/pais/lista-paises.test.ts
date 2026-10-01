@@ -54,18 +54,28 @@ describe('GET /api/v1/paises', () => {
     expect(response.body).toEqual([])
   })
 
-  test('recusa um JWT de 2 dias no /v1', async () => {
+  test('aceita um JWT de 2 dias no /v1 quando o usuário existe', async () => {
+    const usuario = await knex('usuarios').orderBy('id', 'asc').first<{
+      id: number
+      nome: string
+      email: string
+      tipo_usuario_id: number
+    }>()
+    if (!usuario) {
+      return
+    }
+
     const token = String(geraTokenUsuario({
-      id: 1,
-      nome: 'Legacy',
-      email: 'legacy@example.test',
-      tipo_usuario_id: 1
+      id: Number(usuario.id),
+      nome: usuario.nome,
+      email: usuario.email,
+      tipo_usuario_id: Number(usuario.tipo_usuario_id)
     }))
     const response = await agent
       .get('/api/v1/paises')
       .set('Authorization', `Bearer ${token}`)
-      .expect(401)
-    expect(response.body).toMatchObject({ error: { type: 'unauthorized' } })
+      .expect(200)
+    expect(Array.isArray(response.body)).toBe(true)
   })
 
   test('access JWT expirado retorna access_expired', async () => {

@@ -6,6 +6,7 @@ import { type Action, type Resource } from '@/library/auth/createRules'
 import { singleton } from '@/library/singleton'
 
 import { AuthorizeMiddleware } from './AuthorizeMiddleware'
+import { loadLegacyUsuario } from './loadLegacyUsuario'
 
 const createAuthorize = singleton(() => {
   const knex = createKnexInstance()
@@ -19,7 +20,9 @@ const createAuthorize = singleton(() => {
       resource,
       accessToken,
       usuarioCollection,
-      usuarioSessaoCollection
+      usuarioSessaoCollection,
+      legacyFallback: true,
+      verifyLegacyUser: token => loadLegacyUsuario(token, usuarioCollection)
     })
   }
 })

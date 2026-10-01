@@ -116,7 +116,7 @@ describe('AuthorizeMiddleware', () => {
     expect(response instanceof HttpError && response.type).toBe('access_expired')
   })
 
-  test('does not use the 2-day fallback on the new stack', async () => {
+  test('does not use the 2-day fallback unless legacyFallback is on', async () => {
     const middleware = new AuthorizeMiddleware({
       action: 'read',
       resource: 'Pais',
