@@ -96,6 +96,8 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
       }
 
       if (filters.data_inicio_de) query.where('expedicoes.data_inicio', '>=', filters.data_inicio_de)
+      if (filters.data_inicio_ate) query.where('expedicoes.data_inicio', '<=', filters.data_inicio_ate)
+      if (filters.data_fim_de) query.where('expedicoes.data_fim', '>=', filters.data_fim_de)
       if (filters.data_fim_ate) query.where('expedicoes.data_fim', '<=', filters.data_fim_ate)
 
       // contagem de total de registros
