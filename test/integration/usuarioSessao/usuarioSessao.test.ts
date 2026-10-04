@@ -1,8 +1,10 @@
+import jwt from 'jsonwebtoken'
 import {
   afterAll, describe, expect, test
 } from 'vitest'
 
 import { gerarSenha } from '@/helpers/senhas'
+import { createRules } from '@/library/auth/createRules'
 
 import { createTestApp } from '../setup/app-factory'
 
@@ -120,7 +122,10 @@ describe('usuario sessao HTTP', () => {
         email: usuario.email,
         tipo_usuario_id: usuario.tipo_usuario_id
       },
-      rules: []
+      rules: createRules({
+        id: usuario.id,
+        tipo_usuario_id: usuario.tipo_usuario_id
+      })
     })
     expect(loginBody.access_token).toEqual(expect.any(String))
     expect(loginBody.refresh_token).toEqual(expect.any(String))
@@ -144,7 +149,10 @@ describe('usuario sessao HTTP', () => {
         email: usuario.email,
         tipo_usuario_id: usuario.tipo_usuario_id
       },
-      rules: []
+      rules: createRules({
+        id: usuario.id,
+        tipo_usuario_id: usuario.tipo_usuario_id
+      })
     })
 
     const refresh = await agent
@@ -174,9 +182,15 @@ describe('usuario sessao HTTP', () => {
       .set('Origin', 'http://evil.example')
       .expect(401)
 
-    await agent
+    const meUnauthorized = await agent
       .get('/api/auth/me')
       .expect(401)
+    const meError = meUnauthorized.body as { error: { type: string } }
+    expect(meError).toMatchObject({
+      error: { type: 'unauthorized' }
+    })
+    expect(meError.error).not.toHaveProperty('statusCode')
+    expect(meError.error).not.toHaveProperty('name')
 
     const logout = await agent
       .post('/api/auth/logout')
@@ -194,6 +208,21 @@ describe('usuario sessao HTTP', () => {
       .set('X-Forwarded-For', '198.51.100.11')
       .send({ email: usuario.email, senha: 'errada' })
       .expect(401)
+
+    const expiredAccess = jwt.sign(
+      {
+        sub: String(usuario.id),
+        sid: '11111111-1111-4111-8111-111111111111',
+        typ: 'access'
+      },
+      process.env.JWT_SECRET ?? '',
+      { algorithm: 'HS256', expiresIn: 0 }
+    )
+    const expiredMe = await agent
+      .get('/api/auth/me')
+      .set('Authorization', `Bearer ${expiredAccess}`)
+      .expect(401)
+    expect(expiredMe.body).toMatchObject({ error: { type: 'access_expired' } })
   })
 
   test('logout all deletes every session for the user', async () => {
