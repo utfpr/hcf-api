@@ -1,5 +1,5 @@
 import {
-  beforeEach, describe, expect, test, vi
+  beforeEach, describe, expect, test, vi, type Mock
 } from 'vitest'
 
 import { loadLegacyUsuario } from '@/application/loadLegacyUsuario'
@@ -11,7 +11,14 @@ vi.mock('@/helpers/tokens', () => ({
   decodificaTokenUsuario: vi.fn()
 }))
 
-const decode = vi.mocked(decodificaTokenUsuario)
+type LegacyPayload = {
+  id?: unknown
+  nome?: string
+  email?: string
+  tipo_usuario_id?: number
+}
+
+const decode = decodificaTokenUsuario as unknown as Mock<(token: string) => LegacyPayload>
 
 describe('loadLegacyUsuario', () => {
   const usuarios = new FakeUsuarioCollection()
@@ -45,7 +52,9 @@ describe('loadLegacyUsuario', () => {
   })
 
   test('returns undefined when the user is missing', async () => {
-    decode.mockReturnValue({ id: 99 })
+    decode.mockReturnValue({
+      id: 99
+    })
 
     await expect(loadLegacyUsuario('two-day', usuarios)).resolves.toBeUndefined()
   })
