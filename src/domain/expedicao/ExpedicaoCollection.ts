@@ -1,7 +1,7 @@
 import { Either } from '@/library/either/Either'
 
 import {
-  Attributes, CreateAttributes, UpdateAttributes
+  Attributes, CreateAttributes, UpdateAttributes, RotaInput
 } from './Expedicao'
 
 export interface ExpedicaoOrder {
@@ -34,7 +34,7 @@ export interface ExpedicaoListItem extends Attributes {
   cidade_nome: string | null
   estado_sigla: string | null
   participantes: ParticipanteExpedicao[]
-  rotas: number[]
+  rotas: number[] // array de IDs
 }
 
 export interface ExpedicaoCollection {
@@ -45,7 +45,7 @@ export interface ExpedicaoCollection {
   addParticipant(expedicaoId: number, usuarioId: number): Promise<Either<Error, void>>
   removeParticipant(expedicaoId: number, usuarioId: number): Promise<Either<Error, void>>
 
-  substituteRoute(expedicaoId: number, rotas: number[]): Promise<Either<Error, void>>
+  substituteRoute(expedicaoId: number, rotas: RotaInput[]): Promise<Either<Error, void>>
 
   delete(id: number): Promise<Either<Error, void>>
   update(id: number, attributes: UpdateAttributes): Promise<Either<Error, Attributes>>
