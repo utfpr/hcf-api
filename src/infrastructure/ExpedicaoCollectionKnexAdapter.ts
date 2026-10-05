@@ -1,7 +1,7 @@
 import { Knex } from 'knex'
 
 import {
-  Attributes, CreateAttributes, UpdateAttributes
+  Attributes, CreateAttributes, RotaInput, UpdateAttributes
 } from '@/domain/expedicao/Expedicao'
 import {
   ExpedicaoCollection, ExpedicaoFilters, ExpedicaoListItem, ParticipanteExpedicao, Paginated
@@ -38,6 +38,19 @@ interface ParticipanteRow {
   usuario_id: number
   nome: string
 }
+interface RotaBancoRow {
+  rota_id: number
+  cidade_id: number
+  ordem: number
+  nome_cidade: string
+  estado_id: string
+}
+
+interface LocalBancoRow {
+  expedicao_rota_id: number
+  id: string | number
+  descricao: string | null
+}
 
 function toAttributes(row: Row): Attributes {
   return {
@@ -73,6 +86,33 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
       'expedicoes.created_by',
       'expedicoes.updated_by'
     ])
+  }
+
+  // --- FUNÇÃO PARA VALIDAÇÃO GEOGRÁFICA ---
+  private async validaLocaisColeta(trx: Knex.Transaction, rotas: RotaInput[]): Promise<void> {
+    const todosLocaisIds = rotas.flatMap(r => r.locais_coleta_ids)
+    if (todosLocaisIds.length === 0) return
+
+    // Cria um tipo para a resposta do banco
+    type LocalColetaRow = { id: string | number; cidade_id: string | number | null }
+
+    const locaisBanco = await trx('locais_coleta')
+      .whereIn('id', todosLocaisIds)
+      .select('id', 'cidade_id') as LocalColetaRow[]
+
+    // Valida cada local de coleta para garantir que ele existe e pertence à cidade correta
+    for (const rota of rotas) {
+      for (const localId of rota.locais_coleta_ids) {
+        const local = locaisBanco.find((l: LocalColetaRow) => Number(l.id) === localId)
+
+        if (!local) {
+          throw new Error(`Local de coleta com ID ${localId} não existe.`)
+        }
+        if (!local.cidade_id || Number(local.cidade_id) !== rota.cidade_id) {
+          throw new Error(`Local de coleta com ID ${localId} pertence a outra cidade (ou a cidade é nula) e não pode ser adicionado à rota da cidade ${rota.cidade_id}.`)
+        }
+      }
+    }
   }
 
   async findAll(filters: ExpedicaoFilters): Promise<Either<Error, Paginated<ExpedicaoListItem>>> {
@@ -178,16 +218,42 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
         .where('expedicoes_participantes.expedicao_id', id)
         .select('usuarios.id', 'usuarios.nome', 'usuarios.email')
 
-      const rotas = await this.knex('expedicoes_rotas')
+      // Busca as rotas
+      const rotasBanco = await this.knex('expedicoes_rotas')
         .join('cidades', 'cidades.id', 'expedicoes_rotas.cidade_id')
         .where('expedicoes_rotas.expedicao_id', id)
         .select(
+          'expedicoes_rotas.id as rota_id',
           'cidades.id as cidade_id',
           'expedicoes_rotas.ordem',
           'cidades.nome as nome_cidade',
           'cidades.estado_id'
         )
-        .orderBy('expedicoes_rotas.ordem', 'asc')
+        .orderBy('expedicoes_rotas.ordem', 'asc') as RotaBancoRow[]
+
+      // Busca os locais de coleta de todas as rotas dessa expedição de uma vez
+      const rotasIds = rotasBanco.map((r: RotaBancoRow) => r.rota_id)
+      const locaisBanco = rotasIds.length > 0
+        ? await this.knex('expedicoes_rotas_locais_coleta')
+          .join('locais_coleta', 'locais_coleta.id', 'expedicoes_rotas_locais_coleta.local_coleta_id')
+          .whereIn('expedicoes_rotas_locais_coleta.expedicao_rota_id', rotasIds)
+          .select(
+            'expedicoes_rotas_locais_coleta.expedicao_rota_id',
+            'locais_coleta.id',
+            'locais_coleta.descricao'
+          ) as LocalBancoRow[]
+        : []
+
+      // Monta a árvore aninhada na memória
+      const rotas = rotasBanco.map((rota: RotaBancoRow) => ({
+        cidade_id: rota.cidade_id,
+        ordem: rota.ordem,
+        nome_cidade: rota.nome_cidade,
+        estado: rota.estado_id,
+        locais_coleta: locaisBanco
+          .filter((l: LocalBancoRow) => l.expedicao_rota_id === rota.rota_id)
+          .map((l: LocalBancoRow) => ({ id: Number(l.id), descricao: l.descricao }))
+      }))
 
       return Either.right({
         ...toAttributes(row),
@@ -210,6 +276,9 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
 
     try {
       const created = await this.knex.transaction(async trx => {
+        // Valida locais de coleta antes de inserir
+        await this.validaLocaisColeta(trx, rotas)
+
         const [{ id }] = await trx('expedicoes')
           .insert({
             descricao: expedicao.descricao,
@@ -231,13 +300,29 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
         }
 
         if (rotas.length > 0) {
-          await trx('expedicoes_rotas').insert(rotas.map((cidadeId, ordem) => ({
-            expedicao_id: id,
-            cidade_id: cidadeId,
-            ordem,
-            created_by: expedicao.created_by,
-            updated_by: expedicao.created_by
-          })))
+          for (let i = 0; i < rotas.length; i++) {
+            const rota = rotas[i]
+            // Insere a rota e pega o ID gerado para vincular os locais
+            const [{ rota_id }] = await trx('expedicoes_rotas')
+              .insert({
+                expedicao_id: id,
+                cidade_id: rota.cidade_id,
+                ordem: i,
+                created_by: expedicao.created_by,
+                updated_by: expedicao.created_by
+              })
+              .returning<{ rota_id: number }[]>(['id as rota_id'])
+
+            // Se essa rota tiver locais, insere na tabela pivot
+            if (rota.locais_coleta_ids.length > 0) {
+              await trx('expedicoes_rotas_locais_coleta').insert(
+                rota.locais_coleta_ids.map(localId => ({
+                  expedicao_rota_id: rota_id,
+                  local_coleta_id: localId
+                }))
+              )
+            }
+          }
         }
 
         return await this.select(trx).where('expedicoes.id', id).first() as Row
@@ -245,6 +330,16 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
 
       return Either.right(toAttributes(created))
     } catch (error) {
+      if (error instanceof Error) {
+        // Verifica se é um dos erros de validação de negócio
+        const isValidationError = error.message.includes('pertence a outra cidade') || error.message.includes('não existe')
+
+        if (isValidationError) {
+          return Either.left(error) // Devolve o erro
+        }
+      }
+
+      // Encapsula qualquer outro erro (infraestrutura, BD, sintaxe) para proteger a aplicação
       return Either.left(new CollectionError({ message: 'Failed to create expedição', cause: error }))
     }
   }
@@ -319,26 +414,52 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
     }
   }
 
-  async substituteRoute(expedicaoId: number, rotas: number[]): Promise<Either<Error, void>> {
+  async substituteRoute(expedicaoId: number, rotas: RotaInput[]): Promise<Either<Error, void>> {
     try {
       await this.knex.transaction(async trx => {
+        // Valida locais de coleta
+        await this.validaLocaisColeta(trx, rotas)
+
         // usa uma transaction para garantir que a exclusão e a inserção ocorram sem a perda de dados em caso de falha.
         // se qualquer operação falhar, a transação será revertida e nenhuma alteração será feita no banco de dados.
         // devido a constraint unique, estamos deletando todas as rotas da expedição e inserindo novamente,
         // já na ordem correta e seguindo a constraint.
+        // o ON DELETE CASCADE da tabela nova apagará os vínculos de locais de coleta automaticamente
         await trx('expedicoes_rotas').where('expedicao_id', expedicaoId).delete()
 
+        // Insere as novas rotas e os seus locais
         if (rotas.length > 0) {
-          const insertData = rotas.map((cidadeId, index) => ({
-            expedicao_id: expedicaoId,
-            cidade_id: cidadeId,
-            ordem: index
-          }))
-          await trx('expedicoes_rotas').insert(insertData)
+          for (let i = 0; i < rotas.length; i++) {
+            const rota = rotas[i]
+
+            const [{ rota_id }] = await trx('expedicoes_rotas')
+              .insert({
+                expedicao_id: expedicaoId,
+                cidade_id: rota.cidade_id,
+                ordem: i
+              })
+              .returning<{ rota_id: number }[]>(['id as rota_id'])
+
+            if (rota.locais_coleta_ids.length > 0) {
+              await trx('expedicoes_rotas_locais_coleta').insert(
+                rota.locais_coleta_ids.map(localId => ({
+                  expedicao_rota_id: rota_id,
+                  local_coleta_id: localId
+                }))
+              )
+            }
+          }
         }
       })
       return Either.right(undefined)
     } catch (error) {
+      if (error instanceof Error) {
+        const isValidationError = error.message.includes('pertence a outra cidade') || error.message.includes('não existe')
+
+        if (isValidationError) {
+          return Either.left(error)
+        }
+      }
       return Either.left(new CollectionError({ message: 'Falha ao substituir rotas', cause: error }))
     }
   }
