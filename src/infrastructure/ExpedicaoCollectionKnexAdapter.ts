@@ -328,9 +328,16 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
 
       return Either.right(toAttributes(created))
     } catch (error) {
-      if (error instanceof Error && error.message.includes('pertence a outra cidade')) {
-        return Either.left(new Error(error.message)) // Erro de negócio (400)
+      if (error instanceof Error) {
+        // Verifica se é um dos erros de validação de negócio
+        const isValidationError = error.message.includes('pertence a outra cidade') || error.message.includes('não existe')
+
+        if (isValidationError) {
+          return Either.left(error) // Devolve o erro
+        }
       }
+
+      // Encapsula qualquer outro erro (infraestrutura, BD, sintaxe) para proteger a aplicação
       return Either.left(new CollectionError({ message: 'Failed to create expedição', cause: error }))
     }
   }
@@ -444,8 +451,12 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
       })
       return Either.right(undefined)
     } catch (error) {
-      if (error instanceof Error && error.message.includes('pertence a outra cidade')) {
-        return Either.left(new Error(error.message)) // Erro de negócio (400)
+      if (error instanceof Error) {
+        const isValidationError = error.message.includes('pertence a outra cidade') || error.message.includes('não existe')
+
+        if (isValidationError) {
+          return Either.left(error)
+        }
       }
       return Either.left(new CollectionError({ message: 'Falha ao substituir rotas', cause: error }))
     }
