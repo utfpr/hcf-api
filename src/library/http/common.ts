@@ -72,3 +72,13 @@ export interface HttpResponse<Body = unknown> {
   headers?: Partial<Headers>
   body?: Body
 }
+
+/**
+ * Assinatura estrutural de um middleware de framework (ex: Express), usada
+ * pela camada http/Application agnóstica de framework. `req`/`res` ficam
+ * como `any` de propósito: o formato real (Request/Response do Express) é
+ * decidido por quem implementa `Application` — esta camada não deve
+ * importar `express` diretamente.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- req/res assumem o shape do framework concreto (ex: Express), decidido por quem implementa `Application`
+export type RawMiddleware = (req: any, res: any, next: (err?: unknown) => void) => void
