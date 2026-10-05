@@ -13,7 +13,7 @@ interface Dependencies {
 }
 
 // interface do formato da nossa query
-interface CustomHttpRequest extends HttpRequest {
+export interface CustomHttpRequest extends HttpRequest {
   params: Record<string, string | undefined>
 }
 
@@ -33,6 +33,12 @@ export class ListaExpedicoesController implements RequestHandler {
   // Filtrar por intervalo de datas:
   // GET /api/v2/expedicoes?data_inicio_de=2026-01-01&data_fim_ate=2026-12-31
 
+  // Filtrar próximas expedições (ainda não terminaram, com a que começa primeiro antes):
+  // GET /api/v2/expedicoes?data_fim_de=2026-10-04&order=data_inicio:asc
+
+  // Filtrar expedições realizadas (já terminaram, com a mais recente antes):
+  // GET /api/v2/expedicoes?data_fim_ate=2026-10-03&order=data_fim:desc
+
   // Filtrar com ordenação segura:
   // GET /api/v2/expedicoes?order=data_inicio:desc
 
@@ -42,6 +48,8 @@ export class ListaExpedicoesController implements RequestHandler {
         cidade_id,
         usuario_id,
         data_inicio_de,
+        data_inicio_ate,
+        data_fim_de,
         data_fim_ate,
         order,
         limite,
@@ -59,6 +67,8 @@ export class ListaExpedicoesController implements RequestHandler {
       }
 
       if (data_inicio_de) filters.data_inicio_de = data_inicio_de
+      if (data_inicio_ate) filters.data_inicio_ate = data_inicio_ate
+      if (data_fim_de) filters.data_fim_de = data_fim_de
       if (data_fim_ate) filters.data_fim_ate = data_fim_ate
 
       // Validação da ordenação

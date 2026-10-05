@@ -23,8 +23,7 @@ describe('JwtAccessToken', () => {
   test('round-trips access claims', () => {
     const signed = accessToken.sign({
       sub: 7,
-      sid: 'session-1',
-      role: 2
+      sid: 'session-1'
     })
 
     expect(signed.right()).toBe(true)
@@ -38,9 +37,9 @@ describe('JwtAccessToken', () => {
     expect(result.value).toMatchObject({
       sub: 7,
       sid: 'session-1',
-      typ: 'access',
-      role: 2
+      typ: 'access'
     })
+    expect(result.value).not.toHaveProperty('role')
     expect(typeof result.value.iat).toBe('number')
     expect(typeof result.value.exp).toBe('number')
   })
@@ -51,8 +50,7 @@ describe('JwtAccessToken', () => {
 
     const signed = accessToken.sign({
       sub: 1,
-      sid: 'session-expired',
-      role: 1
+      sid: 'session-expired'
     })
     expect(signed.right()).toBe(true)
     if (!signed.right()) return
@@ -76,8 +74,7 @@ describe('JwtAccessToken', () => {
       {
         sub: '1',
         sid: 'session-2',
-        typ: 'refresh',
-        role: 1
+        typ: 'refresh'
       },
       SECRET,
       { expiresIn: '15m' }
@@ -93,8 +90,7 @@ describe('JwtAccessToken', () => {
       {
         sub: '1',
         sid: 'session-3',
-        typ: 'access',
-        role: 1
+        typ: 'access'
       },
       SECRET,
       {

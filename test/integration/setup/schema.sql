@@ -53,6 +53,7 @@ COMMENT ON SCHEMA topology IS 'PostGIS Topology schema';
 --
 
 CREATE EXTENSION IF NOT EXISTS postgis WITH SCHEMA public;
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
 
 
 --
@@ -1392,6 +1393,23 @@ CREATE TABLE public.usuarios (
     token_troca_senha character varying(255) DEFAULT NULL::character varying,
     token_troca_senha_expiracao timestamp with time zone
 );
+
+
+CREATE TABLE public.usuarios_sessoes (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    usuario_id integer NOT NULL,
+    refresh_token_hash character varying(64) NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    last_used_at timestamp without time zone NOT NULL,
+    expires_at timestamp without time zone NOT NULL
+);
+
+ALTER TABLE ONLY public.usuarios_sessoes
+    ADD CONSTRAINT usuarios_sessoes_pkey PRIMARY KEY (id);
+
+CREATE UNIQUE INDEX usuarios_sessoes_refresh_token_hash_unique ON public.usuarios_sessoes USING btree (refresh_token_hash);
+
+CREATE INDEX usuarios_sessoes_usuario_id_index ON public.usuarios_sessoes USING btree (usuario_id);
 
 
 --
@@ -3513,3 +3531,59 @@ ALTER TABLE ONLY public.expedicoes_rotas
 ALTER TABLE ONLY public.expedicoes
     ADD CONSTRAINT expedicoes_updated_by_foreign FOREIGN KEY (updated_by) REFERENCES public.usuarios(id) ON UPDATE CASCADE;
 
+
+
+--
+-- Modulo Expedicao: lembretes
+-- Migration 20261005120000
+--
+
+CREATE TABLE public.lembretes (
+    id integer NOT NULL,
+    data_coleta date NOT NULL,
+    local_coleta text NOT NULL,
+    familia text,
+    nome_popular text,
+    nome_cientifico text,
+    municipio text,
+    estado text,
+    referencia_local text,
+    tipo_vegetacao text,
+    solo text,
+    relevo text,
+    substrato text,
+    tronco_com_casca text,
+    associacoes text,
+    folhas text,
+    habito text,
+    frutos text,
+    flores text,
+    luminosidade text,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    created_by bigint,
+    updated_by bigint
+);
+
+CREATE SEQUENCE public.lembretes_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE public.lembretes_id_seq OWNED BY public.lembretes.id;
+
+ALTER TABLE ONLY public.lembretes ALTER COLUMN id SET DEFAULT nextval('public.lembretes_id_seq'::regclass);
+
+ALTER TABLE ONLY public.lembretes
+    ADD CONSTRAINT lembretes_pkey PRIMARY KEY (id);
+
+CREATE INDEX lembretes_data_coleta_index ON public.lembretes USING btree (data_coleta);
+
+ALTER TABLE ONLY public.lembretes
+    ADD CONSTRAINT lembretes_created_by_foreign FOREIGN KEY (created_by) REFERENCES public.usuarios(id) ON UPDATE CASCADE;
+
+ALTER TABLE ONLY public.lembretes
+    ADD CONSTRAINT lembretes_updated_by_foreign FOREIGN KEY (updated_by) REFERENCES public.usuarios(id) ON UPDATE CASCADE;
