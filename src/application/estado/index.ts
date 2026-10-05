@@ -1,5 +1,6 @@
 import { type Knex } from 'knex'
 
+import { authorize } from '@/application/AuthorizeMiddlewareFactory'
 import { ListaEstadosUseCase } from '@/domain/estado/ListaEstadosUseCase'
 import { EstadoCollectionKnexAdapter } from '@/infrastructure/EstadoCollectionKnexAdapter'
 import { Method } from '@/library/http/common'
@@ -13,6 +14,7 @@ export function routes(knex: Knex): Route[] {
   return [
     {
       handlers: [
+        authorize('read', 'Estado'),
         new ListaEstadosController({
           listaEstadosUseCase: new ListaEstadosUseCase({ estadoCollection })
         })
