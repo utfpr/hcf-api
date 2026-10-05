@@ -11,6 +11,7 @@ const TABLES = [
   'estados',
   'paises',
   'fase_sucessional',
+  'lembretes',
   'evidencias',
   'eventos_coletas',
   'eventos',

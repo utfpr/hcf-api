@@ -15,6 +15,8 @@ export interface ExpedicaoFilters {
   cidade_id?: number
   usuario_id?: number
   data_inicio_de?: string
+  data_inicio_ate?: string
+  data_fim_de?: string
   data_fim_ate?: string
   order?: ExpedicaoOrder
 }

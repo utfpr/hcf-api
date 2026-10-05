@@ -314,6 +314,34 @@ describe('ExpedicaoCollectionKnexAdapter', () => {
       expect(returnedIds).not.toContain(ids[0])
     })
 
+    test('filtra por data_fim_de (data_fim maior ou igual a uma data)', async () => {
+      // Busca expedições com data_fim a partir de 2026-06-01 (exp2 e exp3)
+      const found = await collection.findAll({
+        data_fim_de: '2026-06-01'
+      })
+      expect(found.right()).toBe(true)
+      if (!found.right()) return
+
+      const returnedIds = found.value.itens.map(e => e.id)
+      expect(returnedIds).toContain(ids[1])
+      expect(returnedIds).toContain(ids[2])
+      expect(returnedIds).not.toContain(ids[0])
+    })
+
+    test('filtra por data_inicio_ate (data_inicio menor ou igual a uma data)', async () => {
+      // Busca expedições com data_inicio até 2026-06-01 (exp1 e exp2)
+      const found = await collection.findAll({
+        data_inicio_ate: '2026-06-01'
+      })
+      expect(found.right()).toBe(true)
+      if (!found.right()) return
+
+      const returnedIds = found.value.itens.map(e => e.id)
+      expect(returnedIds).toContain(ids[0])
+      expect(returnedIds).toContain(ids[1])
+      expect(returnedIds).not.toContain(ids[2])
+    })
+
     test('aplica ordenação (order) corretamente', async () => {
       const foundDesc = await collection.findAll({ order: { column: 'data_inicio', direction: 'desc' } })
       expect(foundDesc.right()).toBe(true)

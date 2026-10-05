@@ -3554,6 +3554,45 @@ CREATE SEQUENCE public.expedicoes_rotas_locais_coleta_id_seq
     CACHE 1;
 
 --
+-- Modulo Expedicao: lembretes
+-- Migration 20261005120000
+--
+CREATE TABLE public.lembretes (
+    id integer NOT NULL,
+    data_coleta date NOT NULL,
+    local_coleta text NOT NULL,
+    familia text,
+    nome_popular text,
+    nome_cientifico text,
+    municipio text,
+    estado text,
+    referencia_local text,
+    tipo_vegetacao text,
+    solo text,
+    relevo text,
+    substrato text,
+    tronco_com_casca text,
+    associacoes text,
+    folhas text,
+    habito text,
+    frutos text,
+    flores text,
+    luminosidade text,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    created_by bigint,
+    updated_by bigint
+);
+
+CREATE SEQUENCE public.lembretes_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+--
 -- Name: expedicoes_rotas_locais_coleta_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 ALTER SEQUENCE public.expedicoes_rotas_locais_coleta_id_seq OWNED BY public.expedicoes_rotas_locais_coleta.id;
@@ -3596,3 +3635,21 @@ ALTER TABLE ONLY public.expedicoes_rotas_locais_coleta
 --
 ALTER TABLE ONLY public.expedicoes_rotas_locais_coleta
     ADD CONSTRAINT expedicoes_rotas_locais_coleta_local_coleta_id_foreign FOREIGN KEY (local_coleta_id) REFERENCES public.locais_coleta(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+--
+-- Lembretes constraints & indexes
+--
+ALTER SEQUENCE public.lembretes_id_seq OWNED BY public.lembretes.id;
+
+ALTER TABLE ONLY public.lembretes ALTER COLUMN id SET DEFAULT nextval('public.lembretes_id_seq'::regclass);
+
+ALTER TABLE ONLY public.lembretes
+    ADD CONSTRAINT lembretes_pkey PRIMARY KEY (id);
+
+CREATE INDEX lembretes_data_coleta_index ON public.lembretes USING btree (data_coleta);
+
+ALTER TABLE ONLY public.lembretes
+    ADD CONSTRAINT lembretes_created_by_foreign FOREIGN KEY (created_by) REFERENCES public.usuarios(id) ON UPDATE CASCADE;
+
+ALTER TABLE ONLY public.lembretes
+    ADD CONSTRAINT lembretes_updated_by_foreign FOREIGN KEY (updated_by) REFERENCES public.usuarios(id) ON UPDATE CASCADE;

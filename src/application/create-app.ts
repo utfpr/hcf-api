@@ -17,6 +17,7 @@ import { routes as createEventoRoutes } from './evento'
 import { routes as createEvidenciaRoutes } from './evidencia'
 import { routes as createExpedicoesRoutes } from './expedicao'
 import { routes as createFaseSucessionalRoutes } from './fase-sucessional'
+import { routes as createLembreteRoutes } from './lembrete'
 import { routes as createPaisRoutes } from './pais'
 import { assertCookieSafeOrigins } from './parseCorsOrigins'
 import { routes as createRelevoRoutes } from './relevo'
@@ -72,6 +73,7 @@ export function createApp({
     ...createVegetacaoRoutes(knex),
     ...createEvidenciaRoutes(knex),
     ...createExpedicoesRoutes(knex),
+    ...createLembreteRoutes(knex),
     ...createUsuarioSessaoRoutes(knex)
   ]
   const origins = assertCookieSafeOrigins(cors.origins)
