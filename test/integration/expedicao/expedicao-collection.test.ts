@@ -14,13 +14,30 @@ describe('ExpedicaoCollectionKnexAdapter', () => {
   const collection = new ExpedicaoCollectionKnexAdapter({ knex })
 
   let fixtures: ExpedicaoFixtures
+  let locaisIds: number[] = []
 
   beforeAll(async () => {
     fixtures = await seedExpedicaoFixtures(knex)
+
+    // Seed: Criar locais de coleta para as cidades das fixtures para os testes novos
+    const locaisCriados = await knex('locais_coleta')
+      .insert([
+        { descricao: 'Local Teste 1', cidade_id: fixtures.cidades[1] },
+        { descricao: 'Local Teste 2', cidade_id: fixtures.cidades[1] },
+        { descricao: 'Local Teste 3', cidade_id: fixtures.cidades[2] }
+      ])
+      .returning('id') as Array<{ id: string | number }>
+
+    locaisIds = [
+      Number(locaisCriados[0].id),
+      Number(locaisCriados[1].id),
+      Number(locaisCriados[2].id)
+    ]
   })
 
   afterAll(async () => {
     await knex('expedicoes').whereIn('cidade_id', fixtures.cidades).delete()
+    await knex('locais_coleta').whereIn('id', locaisIds).delete()
     await cleanupExpedicaoFixtures(knex, fixtures)
     await knex.destroy()
   })
@@ -34,14 +51,14 @@ describe('ExpedicaoCollectionKnexAdapter', () => {
       created_by: fixtures.usuarios[0],
       participantes: fixtures.usuarios,
       rotas: [
-        fixtures.cidades[1],
-        fixtures.cidades[2],
-        fixtures.cidades[1]
+        { cidade_id: fixtures.cidades[1], locais_coleta_ids: [locaisIds[0], locaisIds[1]] },
+        { cidade_id: fixtures.cidades[2], locais_coleta_ids: [locaisIds[2]] },
+        { cidade_id: fixtures.cidades[1], locais_coleta_ids: [] } // Passagem sem locais
       ]
     }
   }
 
-  test('grava a expedição, seus participantes e suas rotas na mesma transação', async () => {
+  test('grava a expedição, seus participantes, rotas e locais de coleta na mesma transação', async () => {
     const created = await collection.create(novaExpedicao())
 
     expect(created.right()).toBe(true)
@@ -53,8 +70,7 @@ describe('ExpedicaoCollectionKnexAdapter', () => {
         data_inicio: '2026-03-01',
         data_fim: '2026-03-10',
         cidade_id: fixtures.cidades[0],
-        created_by: fixtures.usuarios[0],
-        updated_by: fixtures.usuarios[0]
+        created_by: fixtures.usuarios[0]
       })
 
       const participantes = await knex('expedicoes_participantes')
@@ -64,12 +80,100 @@ describe('ExpedicaoCollectionKnexAdapter', () => {
 
       const rotas = await knex('expedicoes_rotas')
         .where({ expedicao_id: created.value.id })
-        .orderBy('ordem') as Array<{ ordem: number; cidade_id: string }>
+        .orderBy('ordem') as Array<{ id: number; ordem: number; cidade_id: string }>
+
       expect(rotas.map(rota => [rota.ordem, Number(rota.cidade_id)])).toEqual([
         [0, fixtures.cidades[1]],
         [1, fixtures.cidades[2]],
         [2, fixtures.cidades[1]]
       ])
+
+      // Verifica inserção na nova tabela intermediária
+      const locaisDaRota0 = await knex<{ local_coleta_id: number | string }>('expedicoes_rotas_locais_coleta')
+        .where('expedicao_rota_id', rotas[0].id).orderBy('local_coleta_id')
+
+      expect(locaisDaRota0.length).toBe(2)
+      expect(Number(locaisDaRota0[0].local_coleta_id)).toBe(locaisIds[0])
+      expect(Number(locaisDaRota0[1].local_coleta_id)).toBe(locaisIds[1])
+
+      const locaisDaRota2 = await knex<{ local_coleta_id: number | string }>('expedicoes_rotas_locais_coleta')
+        .where('expedicao_rota_id', rotas[2].id)
+      expect(locaisDaRota2.length).toBe(0)
+    } finally {
+      await knex('expedicoes').where({ id: created.value.id }).delete()
+    }
+  })
+
+  test('rejeita criação quando local_coleta_id for de cidade diferente da rota (Teste Integração)', async () => {
+    const payload = novaExpedicao()
+    // Tentando vincular o local 3 (que é da cidade 2) à rota da cidade 1
+    payload.rotas[0].locais_coleta_ids.push(locaisIds[2])
+
+    const created = await collection.create(payload)
+    expect(created.left()).toBe(true)
+    if (!created.left()) return
+    expect(created.value.message).toContain('pertence a outra cidade')
+  })
+
+  test('rejeita criação quando local_coleta_id não existir (Teste Integração)', async () => {
+    const payload = novaExpedicao()
+    payload.rotas[0].locais_coleta_ids.push(999999) // ID Inexistente
+
+    const created = await collection.create(payload)
+    expect(created.left()).toBe(true)
+    if (!created.left()) return
+    expect(created.value.message).toContain('não existe')
+  })
+
+  test('substitui as rotas e locais de coleta (PUT /v2/expedicoes/:id/rotas)', async () => {
+    const created = await collection.create(novaExpedicao())
+    if (!created.right()) return
+
+    try {
+      // Nova rota
+      const novasRotas = [{ cidade_id: fixtures.cidades[2], locais_coleta_ids: [locaisIds[2]] }]
+
+      const subResult = await collection.substituteRoute(created.value.id, novasRotas)
+      expect(subResult.right()).toBe(true)
+
+      // Verifica no BD se limpou as antigas e pôs a nova
+      const rotasFinais = await knex<{ cidade_id: number | string }>('expedicoes_rotas')
+        .where('expedicao_id', created.value.id)
+
+      expect(rotasFinais.length).toBe(1)
+      expect(Number(rotasFinais[0].cidade_id)).toBe(fixtures.cidades[2])
+    } finally {
+      await knex('expedicoes').where({ id: created.value.id }).delete()
+    }
+  })
+
+  test('Verificação de ON DELETE CASCADE ao remover a rota/expedição', async () => {
+    const created = await collection.create(novaExpedicao())
+    if (!created.right()) return
+
+    // Busca IDs das rotas para conferir depois
+    const rotas = await knex<{ id: number }>('expedicoes_rotas').where('expedicao_id', created.value.id)
+    const rotasIds = rotas.map(r => r.id)
+
+    // Verifica que existem vínculos
+    const vinculosAntes = await knex('expedicoes_rotas_locais_coleta').whereIn('expedicao_rota_id', rotasIds)
+    expect(vinculosAntes.length).toBeGreaterThan(0)
+
+    // Deleta a expedição
+    await collection.delete(created.value.id)
+
+    // Verifica CASCADE
+    const vinculosDepois = await knex('expedicoes_rotas_locais_coleta').whereIn('expedicao_rota_id', rotasIds)
+    expect(vinculosDepois.length).toBe(0)
+  })
+
+  test('Verificação de ON DELETE RESTRICT ao tentar apagar um locais_coleta vinculado a uma rota ativa', async () => {
+    const created = await collection.create(novaExpedicao())
+    if (!created.right()) return
+
+    try {
+      // Tenta deletar o local 1 que está atrelado à rota 0 desta expedição
+      await expect(knex('locais_coleta').where('id', locaisIds[0]).delete()).rejects.toThrowError()
     } finally {
       await knex('expedicoes').where({ id: created.value.id }).delete()
     }
