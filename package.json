@@ -12,6 +12,7 @@
 	"scripts": {
 		"migration:create": "tsx --env-file=.env src/database/cli.ts migration:create",
 		"migration:apply": "tsx --env-file=.env src/database/cli.ts migration:apply",
+		"fotos:sync": "tsx src/utils/scripts/sync_tombo_fotos.ts",
 		"tsc:check": "tsc --noEmit",
 		"lint:eslint": "eslint --cache",
 		"lint": "run-p tsc:check lint:eslint",
