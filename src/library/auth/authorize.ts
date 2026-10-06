@@ -9,10 +9,8 @@ import { NextHandler, RequestHandler } from '@/library/http/Server'
 
 import {
   Action,
-  createRules,
   Resource
 } from './createRules'
-import { Manager } from './Manager'
 
 function parseBearerToken(request: HttpRequest): string | undefined {
   const authorization = request.headers.Authorization ?? request.headers.authorization
@@ -48,8 +46,8 @@ export function authorize(action: Action, resource: Resource): RequestHandler {
           tipo_usuario_id: Number(payload.tipo_usuario_id ?? 0)
         }
 
-        const manager = new Manager({ rules: createRules(user) })
-        if (!manager.can(action, resource)) {
+        const isAllowedToWrite = [1, 2].includes(user.tipo_usuario_id)
+        if (!isAllowedToWrite) {
           return new ForbiddenError({ message: 'Usuário sem permissão para alterar vegetações' })
         }
 
