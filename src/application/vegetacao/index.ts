@@ -6,24 +6,26 @@ import { ListaVegetacoesUseCase } from '@/domain/vegetacao/ListaVegetacoesUseCas
 import { RemoveVegetacaoUseCase } from '@/domain/vegetacao/RemoveVegetacaoUseCase'
 import { RenomeiaVegetacaoUseCase } from '@/domain/vegetacao/RenomeiaVegetacaoUseCase'
 import { VegetacaoCollectionKnexAdapter } from '@/infrastructure/VegetacaoCollectionKnexAdapter'
+import { authorize } from '@/library/auth/authorize'
 import { Method } from '@/library/http/common'
 import { Route } from '@/library/http/Router'
 
 import { BuscaVegetacaoController } from './BuscaVegetacaoController'
 import { CadastraVegetacaoController } from './CadastraVegetacaoController'
-import { ExigePermissaoEscritaVegetacao } from './ExigePermissaoEscritaVegetacao'
 import { ListaVegetacoesController } from './ListaVegetacoesController'
 import { RemoveVegetacaoController } from './RemoveVegetacaoController'
 import { RenomeiaVegetacaoController } from './RenomeiaVegetacaoController'
 
 export function routes(knex: Knex): Route[] {
   const vegetacaoCollection = new VegetacaoCollectionKnexAdapter({ knex })
-  const exigePermissaoEscritaVegetacao = new ExigePermissaoEscritaVegetacao()
+  const exigePermissaoCriarVegetacao = authorize('create', 'Vegetacao')
+  const exigePermissaoAtualizarVegetacao = authorize('update', 'Vegetacao')
+  const exigePermissaoRemoverVegetacao = authorize('delete', 'Vegetacao')
 
   return [
     {
       handlers: [
-        exigePermissaoEscritaVegetacao,
+        exigePermissaoCriarVegetacao,
         new CadastraVegetacaoController({
           cadastraVegetacaoUseCase: new CadastraVegetacaoUseCase({ vegetacaoCollection })
         })
@@ -51,7 +53,7 @@ export function routes(knex: Knex): Route[] {
     },
     {
       handlers: [
-        exigePermissaoEscritaVegetacao,
+        exigePermissaoAtualizarVegetacao,
         new RenomeiaVegetacaoController({
           renomeiaVegetacaoUseCase: new RenomeiaVegetacaoUseCase({ vegetacaoCollection })
         })
@@ -61,7 +63,7 @@ export function routes(knex: Knex): Route[] {
     },
     {
       handlers: [
-        exigePermissaoEscritaVegetacao,
+        exigePermissaoRemoverVegetacao,
         new RemoveVegetacaoController({
           removeVegetacaoUseCase: new RemoveVegetacaoUseCase({ vegetacaoCollection })
         })

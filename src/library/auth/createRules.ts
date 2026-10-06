@@ -21,6 +21,7 @@ export const RESOURCES = [
   'Autor',
   'Pais',
   'Estado',
+  'Vegetacao',
   'Cidade',
   'Usuario',
   'Identificador',
@@ -40,6 +41,22 @@ export const RESOURCES = [
 export type Action = typeof ACTIONS[number]
 export type Resource = typeof RESOURCES[number]
 
-export function createRules(_user: { id: number; tipo_usuario_id: number }): Rule<Resource, Action>[] {
-  return []
+export function createRules(user: { id: number; tipo_usuario_id: number }): Rule<Resource, Action>[] {
+  const isAllowedToWrite = [1, 2].includes(user.tipo_usuario_id)
+
+  if (!isAllowedToWrite) {
+    return []
+  }
+
+  return [
+    {
+      action: [
+        'read',
+        'create',
+        'update',
+        'delete'
+      ],
+      resource: 'Vegetacao'
+    }
+  ]
 }

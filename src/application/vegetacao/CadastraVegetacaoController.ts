@@ -1,5 +1,4 @@
 import { CadastraVegetacaoUseCase } from '@/domain/vegetacao/CadastraVegetacaoUseCase'
-import { Vegetacao } from '@/domain/vegetacao/Vegetacao'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
@@ -28,11 +27,6 @@ export class CadastraVegetacaoController implements RequestHandler {
     }
 
     const normalized = nome.trim()
-    const created = Vegetacao.create({ id: 0, nome: normalized })
-    if (created.left()) {
-      return new BadRequestError({ message: created.value.message })
-    }
-
     const result = await this.cadastraVegetacaoUseCase.execute({ nome: normalized })
 
     if (result.left()) {

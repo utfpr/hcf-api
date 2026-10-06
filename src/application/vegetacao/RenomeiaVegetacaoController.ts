@@ -1,5 +1,4 @@
 import { RenomeiaVegetacaoUseCase } from '@/domain/vegetacao/RenomeiaVegetacaoUseCase'
-import { Vegetacao } from '@/domain/vegetacao/Vegetacao'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
@@ -40,22 +39,16 @@ export class RenomeiaVegetacaoController implements RequestHandler {
     }
 
     const parsedId = Number(vegetacaoId)
-    const created = Vegetacao.create({ id: parsedId, nome: nome.trim() })
-    if (created.left()) {
-      return new BadRequestError({ message: created.value.message })
-    }
-
     const result = await this.renomeiaVegetacaoUseCase.execute({ id: parsedId, nome: nome.trim() })
 
     if (result.left()) {
       if (result.value.message === 'Já existe uma vegetação com esse nome') {
         return new ConflictError({ message: 'Já existe uma vegetação com esse nome' })
       }
+      if (result.value.message === 'Vegetação não encontrada') {
+        return new NotFoundError({ message: 'Vegetação não encontrada' })
+      }
       return new InternalServerError({ message: result.value.message })
-    }
-
-    if (!result.value) {
-      return new NotFoundError({ message: 'Vegetação não encontrada' })
     }
 
     return { statusCode: StatusCode.Ok, body: result.value }

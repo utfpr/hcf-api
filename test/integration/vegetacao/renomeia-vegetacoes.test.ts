@@ -66,7 +66,7 @@ describe('PUT /api/v2/vegetacoes/:vegetacaoId', () => {
     }
   })
 
-  test('retorna 409 para nome duplicado', async () => {
+  test('retorna 409 para nome duplicado sem diferenciar maiúsculas e minúsculas', async () => {
     const prefix = `DUPUPD-${Date.now()}`
     const [original] = await knex<Vegetacao>('vegetacoes')
       .insert({ nome: `${prefix} Original` })
@@ -77,7 +77,7 @@ describe('PUT /api/v2/vegetacoes/:vegetacaoId', () => {
       .returning(['id', 'nome']) as Vegetacao[]
 
     try {
-      const response = await agent.put(`/api/v2/vegetacoes/${other.id}`).set(buildAuthHeader()).send({ nome: original.nome }).expect(409)
+      const response = await agent.put(`/api/v2/vegetacoes/${other.id}`).set(buildAuthHeader()).send({ nome: original.nome.toUpperCase() }).expect(409)
       const body = response.body as { error: { message: string } }
 
       expect(body.error.message).toMatch(/já existe|duplic/i)

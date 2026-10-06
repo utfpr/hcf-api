@@ -39,11 +39,10 @@ export class RemoveVegetacaoController implements RequestHandler {
       if (result.value.message === 'Vegetação está em uso e não pode ser removida') {
         return new ConflictError({ message: 'Vegetação está em uso e não pode ser removida' })
       }
+      if (result.value.message === 'Vegetação não encontrada') {
+        return new NotFoundError({ message: 'Vegetação não encontrada' })
+      }
       return new InternalServerError({ message: result.value.message })
-    }
-
-    if (!result.value) {
-      return new NotFoundError({ message: 'Vegetação não encontrada' })
     }
 
     return { statusCode: StatusCode.NoContent, body: undefined }

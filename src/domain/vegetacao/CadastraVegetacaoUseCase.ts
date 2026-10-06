@@ -1,6 +1,6 @@
 import { Either } from '@/library/either/Either'
 
-import { Attributes } from './Vegetacao'
+import { Attributes, Vegetacao } from './Vegetacao'
 import { VegetacaoCollection } from './VegetacaoCollection'
 
 interface Dependencies {
@@ -14,7 +14,12 @@ export class CadastraVegetacaoUseCase {
     this.vegetacaoCollection = dependencies.vegetacaoCollection
   }
 
-  execute({ nome }: { nome: string }): Promise<Either<Error, Attributes>> {
-    return this.vegetacaoCollection.create({ nome })
+  async execute({ nome }: { nome: string }): Promise<Either<Error, Attributes>> {
+    const vegetacao = Vegetacao.create({ nome })
+    if (vegetacao.left()) {
+      return Either.left(vegetacao.value)
+    }
+
+    return this.vegetacaoCollection.create({ nome: vegetacao.value.nome })
   }
 }
