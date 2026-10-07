@@ -8,6 +8,8 @@ import { ApplyMigrationService } from './apply-migration-service'
 import { CreateMigrationService } from './create-migration-service'
 import { MigrationFileSystem } from './migration-file-system'
 import { MigrationRepository } from './migration-repository'
+import { runExpedicoesSeed } from './seeds/expedicoes-seed'
+
 
 const {
   PG_DATABASE,
@@ -56,5 +58,14 @@ program
 
 program.command('migration:apply')
   .action(applyMigrations)
+
+async function seedExpedicoes() {
+  await runExpedicoesSeed(migrationKnex, logger)
+  await migrationKnex.destroy()
+}
+
+program.command('seed:expedicoes')
+  .description('Popula o banco com dados de teste para expedições, eventos e evidências')
+  .action(seedExpedicoes)
 
 program.parse(process.argv)
