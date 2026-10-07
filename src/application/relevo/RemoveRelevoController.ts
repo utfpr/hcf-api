@@ -1,3 +1,5 @@
+import { RelevoEmUsoError } from '@/domain/relevo/error/RelevoEmUsoError'
+import { RelevoNaoEncontradoError } from '@/domain/relevo/error/RelevoNaoEncontradoError'
 import { RemoveRelevoUseCase } from '@/domain/relevo/RemoveRelevoUseCase'
 import {
   HttpRequest, HttpResponse, StatusCode
@@ -30,14 +32,13 @@ export class RemoveRelevoController implements RequestHandler {
     const existing = await this.removeRelevoUseCase.execute({ id: Number(relevoId) })
 
     if (existing.left()) {
-      if (existing.value.message === 'Relevo está em uso em tombos e não pode ser removido') {
-        return new ConflictError({ message: 'Relevo está em uso em tombos e não pode ser removido' })
+      if (existing.value instanceof RelevoEmUsoError) {
+        return new ConflictError({ message: existing.value.message })
+      }
+      if (existing.value instanceof RelevoNaoEncontradoError) {
+        return new NotFoundError({ message: existing.value.message })
       }
       return new InternalServerError({ message: existing.value.message })
-    }
-
-    if (existing.value === null) {
-      return new NotFoundError({ message: 'Relevo não encontrado' })
     }
 
     return { statusCode: StatusCode.NoContent }

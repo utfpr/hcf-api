@@ -1,5 +1,6 @@
 import { Knex } from 'knex'
 
+import { RelevoNomeDuplicadoError } from '@/domain/relevo/error/RelevoNomeDuplicadoError'
 import { Attributes } from '@/domain/relevo/Relevo'
 import { RelevoCollection, RelevoFilters } from '@/domain/relevo/RelevoCollection'
 import { Either } from '@/library/either/Either'
@@ -56,7 +57,7 @@ export class RelevoCollectionKnexAdapter implements RelevoCollection {
     }
   }
 
-  async create(attributes: Attributes): Promise<Either<Error, Attributes>> {
+  async create(attributes: Pick<Attributes, 'nome'>): Promise<Either<Error, Attributes>> {
     try {
       const [relevo] = await this.knex<Attributes>('relevos')
         .insert({ nome: attributes.nome })
@@ -64,11 +65,14 @@ export class RelevoCollectionKnexAdapter implements RelevoCollection {
 
       return Either.right(relevo)
     } catch (error) {
+      if (this.isUniqueViolation(error)) {
+        return Either.left(new RelevoNomeDuplicadoError({ cause: error }))
+      }
       return Either.left(new CollectionError({ message: 'Failed to create relevo', cause: error }))
     }
   }
 
-  async updateById(id: number, attributes: Partial<Attributes>): Promise<Either<Error, Attributes | null>> {
+  async updateById(id: number, attributes: Pick<Attributes, 'nome'>): Promise<Either<Error, Attributes | null>> {
     try {
       const [relevo] = await this.knex<Attributes>('relevos')
         .where({ id })
@@ -77,6 +81,9 @@ export class RelevoCollectionKnexAdapter implements RelevoCollection {
 
       return Either.right(relevo ?? null)
     } catch (error) {
+      if (this.isUniqueViolation(error)) {
+        return Either.left(new RelevoNomeDuplicadoError({ cause: error }))
+      }
       return Either.left(new CollectionError({ message: 'Failed to update relevo', cause: error }))
     }
   }
@@ -88,6 +95,11 @@ export class RelevoCollectionKnexAdapter implements RelevoCollection {
     } catch (error) {
       return Either.left(new CollectionError({ message: 'Failed to delete relevo', cause: error }))
     }
+  }
+
+  private isUniqueViolation(error: unknown): boolean {
+    const pgError = error as { code?: string; message?: string }
+    return pgError.code === '23505' || /duplicate key|unique constraint/i.test(pgError.message ?? '')
   }
 
   async countTomboReferences(id: number): Promise<Either<Error, number>> {

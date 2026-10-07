@@ -1,3 +1,5 @@
+import { RelevoNaoEncontradoError } from '@/domain/relevo/error/RelevoNaoEncontradoError'
+import { RelevoNomeDuplicadoError } from '@/domain/relevo/error/RelevoNomeDuplicadoError'
 import { RenomeiaRelevoUseCase } from '@/domain/relevo/RenomeiaRelevoUseCase'
 import {
   HttpRequest, HttpResponse, StatusCode
@@ -35,14 +37,13 @@ export class RenomeiaRelevoController implements RequestHandler {
     const result = await this.renomeiaRelevoUseCase.execute({ id: Number(relevoId), nome: nome.trim() })
 
     if (result.left()) {
-      if (result.value.message === 'Já existe um relevo com esse nome') {
-        return new ConflictError({ message: 'Já existe um relevo com esse nome' })
+      if (result.value instanceof RelevoNomeDuplicadoError) {
+        return new ConflictError({ message: result.value.message })
+      }
+      if (result.value instanceof RelevoNaoEncontradoError) {
+        return new NotFoundError({ message: result.value.message })
       }
       return new InternalServerError({ message: result.value.message })
-    }
-
-    if (!result.value) {
-      return new NotFoundError({ message: 'Relevo não encontrado' })
     }
 
     return { statusCode: StatusCode.Ok, body: result.value }

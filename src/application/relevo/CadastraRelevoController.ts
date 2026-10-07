@@ -1,4 +1,5 @@
 import { CadastraRelevoUseCase } from '@/domain/relevo/CadastraRelevoUseCase'
+import { RelevoNomeDuplicadoError } from '@/domain/relevo/error/RelevoNomeDuplicadoError'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
@@ -30,8 +31,8 @@ export class CadastraRelevoController implements RequestHandler {
     const result = await this.cadastraRelevoUseCase.execute({ nome: normalized })
 
     if (result.left()) {
-      if (result.value.message === 'Já existe um relevo com esse nome') {
-        return new ConflictError({ message: 'Já existe um relevo com esse nome' })
+      if (result.value instanceof RelevoNomeDuplicadoError) {
+        return new ConflictError({ message: result.value.message })
       }
       return new InternalServerError({ message: result.value.message })
     }

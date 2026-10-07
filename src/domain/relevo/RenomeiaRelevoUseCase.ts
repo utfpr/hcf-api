@@ -1,6 +1,8 @@
 import { Either } from '@/library/either/Either'
 
-import { Attributes } from './Relevo'
+import { RelevoNaoEncontradoError } from './error/RelevoNaoEncontradoError'
+import { RelevoNomeDuplicadoError } from './error/RelevoNomeDuplicadoError'
+import { Relevo, Attributes } from './Relevo'
 import { RelevoCollection } from './RelevoCollection'
 
 interface Dependencies {
@@ -14,8 +16,13 @@ export class RenomeiaRelevoUseCase {
     this.relevoCollection = dependencies.relevoCollection
   }
 
-  async execute({ id, nome }: { id: number; nome: string }): Promise<Either<Error, Attributes | null>> {
+  async execute({ id, nome }: { id: number; nome: string }): Promise<Either<Error, Attributes>> {
     const normalizedNome = nome.trim()
+
+    const relevo = Relevo.create({ nome: normalizedNome })
+    if (relevo.left()) {
+      return Either.left(relevo.value)
+    }
 
     const existing = await this.relevoCollection.findByNome(normalizedNome)
     if (existing.left()) {
@@ -23,9 +30,18 @@ export class RenomeiaRelevoUseCase {
     }
 
     if (existing.value && existing.value.id !== id) {
-      return Either.left(new Error('Já existe um relevo com esse nome'))
+      return Either.left(new RelevoNomeDuplicadoError())
     }
 
-    return this.relevoCollection.updateById(id, { id, nome: normalizedNome })
+    const updated = await this.relevoCollection.updateById(id, { nome: relevo.value.nome })
+    if (updated.left()) {
+      return Either.left(updated.value)
+    }
+
+    if (!updated.value) {
+      return Either.left(new RelevoNaoEncontradoError())
+    }
+
+    return Either.right(updated.value)
   }
 }
