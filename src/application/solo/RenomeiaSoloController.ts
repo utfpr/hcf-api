@@ -1,5 +1,6 @@
+import { SoloNaoEncontradoError } from '@/domain/solo/error/SoloNaoEncontradoError'
+import { SoloNomeDuplicadoError } from '@/domain/solo/error/SoloNomeDuplicadoError'
 import { RenomeiaSoloUseCase } from '@/domain/solo/RenomeiaSoloUseCase'
-import { Solo } from '@/domain/solo/Solo'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
@@ -33,23 +34,16 @@ export class RenomeiaSoloController implements RequestHandler {
       return new BadRequestError({ message: 'Nome do solo não pode ser vazio' })
     }
 
-    const normalized = nome.trim()
-    const created = Solo.create({ id: 0, nome: normalized })
-    if (created.left()) {
-      return new BadRequestError({ message: created.value.message })
-    }
-
-    const result = await this.renomeiaSoloUseCase.execute({ id: Number(soloId), nome: normalized })
+    const result = await this.renomeiaSoloUseCase.execute({ id: Number(soloId), nome: nome.trim() })
 
     if (result.left()) {
-      if (result.value.message === 'Já existe um solo com esse nome') {
-        return new ConflictError({ message: 'Já existe um solo com esse nome' })
+      if (result.value instanceof SoloNomeDuplicadoError) {
+        return new ConflictError({ message: result.value.message })
+      }
+      if (result.value instanceof SoloNaoEncontradoError) {
+        return new NotFoundError({ message: result.value.message })
       }
       return new InternalServerError({ message: result.value.message })
-    }
-
-    if (!result.value) {
-      return new NotFoundError({ message: 'Solo não encontrado' })
     }
 
     return { statusCode: StatusCode.Ok, body: result.value }
