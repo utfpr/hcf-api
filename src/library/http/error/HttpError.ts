@@ -4,7 +4,13 @@ export class HttpError extends BaseError {
   readonly statusCode: number
   readonly report?: unknown
 
-  constructor(params: { statusCode: number; message: string; report?: unknown; cause?: unknown }) {
+  constructor(params: {
+    statusCode: number
+    type?: string
+    message: string
+    report?: unknown
+    cause?: unknown
+  }) {
     super({
       message: params.message,
       cause: params.cause
