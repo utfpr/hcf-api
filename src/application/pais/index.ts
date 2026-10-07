@@ -1,5 +1,6 @@
 import { type Knex } from 'knex'
 
+import { authorize } from '@/application/AuthorizeMiddlewareFactory'
 import { ListaPaisesUseCase } from '@/domain/pais/ListaPaisesUseCase'
 import { PaisCollectionKnexAdapter } from '@/infrastructure/PaisCollectionKnexAdapter'
 import { Method } from '@/library/http/common'
@@ -13,6 +14,7 @@ export function routes(knex: Knex): Route[] {
   return [
     {
       handlers: [
+        authorize('read', 'Pais'),
         new ListaPaisesController({
           listaPaisesUseCase: new ListaPaisesUseCase({ paisCollection })
         })

@@ -24,6 +24,7 @@ export const RESOURCES = [
   'Vegetacao',
   'Cidade',
   'Usuario',
+  'UsuarioSessao',
   'Identificador',
   'Herbario',
   'Coletor',
@@ -41,6 +42,17 @@ export const RESOURCES = [
 export type Action = typeof ACTIONS[number]
 export type Resource = typeof RESOURCES[number]
 
-export function createRules(_user: { id: number; tipo_usuario_id: number }): Rule<Resource, Action>[] {
-  return []
+export type RulesUser = { id: number; tipo_usuario_id: number }
+
+const publicReads: Rule<Resource, Action>[] = [
+  { action: 'read', resource: 'Pais' },
+  { action: 'read', resource: 'Estado' }
+]
+
+export function createRules(user?: RulesUser): Rule<Resource, Action>[] {
+  if (user === undefined) {
+    return [...publicReads]
+  }
+
+  return [...publicReads, { action: 'read', resource: 'UsuarioSessao' }]
 }
