@@ -14,7 +14,7 @@ describe('GET /api/v2/solos', () => {
   afterAll(() => knex.destroy())
 
   test('retorna a lista ordenada por id decrescente como padrão dentro do prefixo do teste', async () => {
-    const prefix = 'XSOL'
+    const prefix = `XSOL-${Date.now()}`
     const nomes = [
       `${prefix} Arenoso`,
       `${prefix} Argiloso`,
@@ -35,7 +35,7 @@ describe('GET /api/v2/solos', () => {
   })
 
   test('filtra por nome sem diferenciar maiúsculas e minúsculas', async () => {
-    const prefix = 'XSOL'
+    const prefix = `XSOL-${Date.now()}`
     const nomes = [
       `${prefix} Arenoso`,
       `${prefix} Argiloso`,
@@ -54,7 +54,7 @@ describe('GET /api/v2/solos', () => {
   })
 
   test('aceita ordenação customizada por nome e id', async () => {
-    const prefix = 'XSOL'
+    const prefix = `XSOL-${Date.now()}`
     const nomes = [
       `${prefix} Z`,
       `${prefix} A`,
@@ -76,7 +76,7 @@ describe('GET /api/v2/solos', () => {
   })
 
   test('retorna 400 quando a ordenação é inválida', async () => {
-    const prefix = 'XSOL'
+    const prefix = `XSOL-${Date.now()}`
     const nomes = [
       `${prefix} Z`,
       `${prefix} A`,
