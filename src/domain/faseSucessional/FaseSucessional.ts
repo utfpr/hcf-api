@@ -14,11 +14,13 @@ export class FaseSucessional {
     this.nome = attributes.nome
   }
 
-  static create(attributes: Attributes): Either<Error, FaseSucessional> {
-    if (!attributes.nome.trim()) {
+  static create(attributes: Pick<Attributes, 'nome'>): Either<Error, FaseSucessional> {
+    const nome = attributes.nome.trim()
+
+    if (!nome) {
       return Either.left(new Error('Nome da fase sucessional não pode ser vazio'))
     }
 
-    return Either.right(new FaseSucessional(attributes))
+    return Either.right(new FaseSucessional({ id: 0, nome }))
   }
 }

@@ -13,4 +13,8 @@ export interface FaseSucessionalFilters {
 export interface FaseSucessionalCollection {
   findAll(filters: FaseSucessionalFilters): Promise<Either<Error, Attributes[]>>
   findById(id: number): Promise<Either<Error, Attributes | null>>
+  findByNome(nome: string): Promise<Either<Error, Attributes | null>>
+  create(attributes: Pick<Attributes, 'nome'>): Promise<Either<Error, Attributes>>
+  update(id: number, attributes: Pick<Attributes, 'nome'>): Promise<Either<Error, Attributes | null>>
+  delete(id: number): Promise<Either<Error, boolean>>
 }
