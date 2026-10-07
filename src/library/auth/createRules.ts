@@ -22,6 +22,7 @@ export const RESOURCES = [
   'Pais',
   'Estado',
   'Cidade',
+  'Solo',
   'Usuario',
   'UsuarioSessao',
   'Identificador',

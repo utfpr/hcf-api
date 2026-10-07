@@ -1,22 +1,25 @@
-import { BuscarSoloPorIdUseCase } from '@/domain/solo/BuscarSoloPorIdUseCase'
+import { SoloEmUsoError } from '@/domain/solo/error/SoloEmUsoError'
+import { SoloNaoEncontradoError } from '@/domain/solo/error/SoloNaoEncontradoError'
+import { RemoveSoloUseCase } from '@/domain/solo/RemoveSoloUseCase'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
 import { BadRequestError } from '@/library/http/error/BadRequestError'
+import { ConflictError } from '@/library/http/error/ConflictError'
 import { HttpError } from '@/library/http/error/HttpError'
 import { InternalServerError } from '@/library/http/error/InternalServerError'
 import { NotFoundError } from '@/library/http/error/NotFoundError'
 import { NextHandler, RequestHandler } from '@/library/http/Server'
 
 interface Dependencies {
-  buscarSoloPorIdUseCase: BuscarSoloPorIdUseCase
+  removeSoloUseCase: RemoveSoloUseCase
 }
 
-export class BuscarSoloController implements RequestHandler {
-  private readonly buscarSoloPorIdUseCase: BuscarSoloPorIdUseCase
+export class RemoveSoloController implements RequestHandler {
+  private readonly removeSoloUseCase: RemoveSoloUseCase
 
   constructor(dependencies: Dependencies) {
-    this.buscarSoloPorIdUseCase = dependencies.buscarSoloPorIdUseCase
+    this.removeSoloUseCase = dependencies.removeSoloUseCase
   }
 
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
@@ -26,16 +29,18 @@ export class BuscarSoloController implements RequestHandler {
       return new BadRequestError({ message: 'soloId inválido' })
     }
 
-    const result = await this.buscarSoloPorIdUseCase.execute({ id: Number(soloId) })
+    const result = await this.removeSoloUseCase.execute({ id: Number(soloId) })
 
     if (result.left()) {
+      if (result.value instanceof SoloEmUsoError) {
+        return new ConflictError({ message: result.value.message })
+      }
+      if (result.value instanceof SoloNaoEncontradoError) {
+        return new NotFoundError({ message: result.value.message })
+      }
       return new InternalServerError({ message: result.value.message })
     }
 
-    if (!result.value) {
-      return new NotFoundError({ message: 'Solo não encontrado' })
-    }
-
-    return { statusCode: StatusCode.Ok, body: result.value }
+    return { statusCode: StatusCode.NoContent, body: null }
   }
 }

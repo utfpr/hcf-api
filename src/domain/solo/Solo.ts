@@ -1,12 +1,12 @@
 import { Either } from '@/library/either/Either'
 
 export interface Attributes {
-  id: number
+  id?: number
   nome: string
 }
 
 export class Solo {
-  readonly id: number
+  readonly id?: number
   readonly nome: string
 
   private constructor(attributes: Attributes) {
@@ -14,7 +14,7 @@ export class Solo {
     this.nome = attributes.nome
   }
 
-  static create(attributes: Attributes): Either<Error, Solo> {
+  static create(attributes: Pick<Attributes, 'nome'>): Either<Error, Solo> {
     if (!attributes.nome.trim()) {
       return Either.left(new Error('Nome do solo não pode ser vazio'))
     }
