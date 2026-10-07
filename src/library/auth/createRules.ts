@@ -25,6 +25,7 @@ export const RESOURCES = [
   'FaseSucessional',
   'Vegetacao',
   'Cidade',
+  'Solo',
   'Usuario',
   'UsuarioSessao',
   'Identificador',

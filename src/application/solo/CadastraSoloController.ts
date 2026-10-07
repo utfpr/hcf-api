@@ -1,5 +1,5 @@
 import { CadastraSoloUseCase } from '@/domain/solo/CadastraSoloUseCase'
-import { Solo } from '@/domain/solo/Solo'
+import { SoloNomeDuplicadoError } from '@/domain/solo/error/SoloNomeDuplicadoError'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
@@ -28,16 +28,11 @@ export class CadastraSoloController implements RequestHandler {
     }
 
     const normalized = nome.trim()
-    const created = Solo.create({ id: 0, nome: normalized })
-    if (created.left()) {
-      return new BadRequestError({ message: created.value.message })
-    }
-
     const result = await this.cadastraSoloUseCase.execute({ nome: normalized })
 
     if (result.left()) {
-      if (result.value.message === 'Já existe um solo com esse nome') {
-        return new ConflictError({ message: 'Já existe um solo com esse nome' })
+      if (result.value instanceof SoloNomeDuplicadoError) {
+        return new ConflictError({ message: result.value.message })
       }
       return new InternalServerError({ message: result.value.message })
     }
