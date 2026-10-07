@@ -1,4 +1,5 @@
-import { FaseSucessional } from '@/domain/faseSucessional/FaseSucessional'
+import { FaseSucessionalNaoEncontradoError } from '@/domain/faseSucessional/error/FaseSucessionalNaoEncontradoError'
+import { FaseSucessionalNomeDuplicadoError } from '@/domain/faseSucessional/error/FaseSucessionalNomeDuplicadoError'
 import { RenomeiaFaseSucessionalUseCase } from '@/domain/faseSucessional/RenomeiaFaseSucessionalUseCase'
 import {
   HttpRequest, HttpResponse, StatusCode
@@ -40,22 +41,18 @@ export class RenomeiaFaseSucessionalController implements RequestHandler {
     }
 
     const parsedId = Number(faseSucessionalId)
-    const created = FaseSucessional.create({ id: parsedId, nome: nome.trim() })
-    if (created.left()) {
-      return new BadRequestError({ message: created.value.message })
-    }
-
     const result = await this.renomeiaFaseSucessionalUseCase.execute({ id: parsedId, nome: nome.trim() })
 
     if (result.left()) {
-      if (result.value.message === 'Já existe uma fase sucessional com esse nome') {
-        return new ConflictError({ message: 'Já existe uma fase sucessional com esse nome' })
+      if (result.value instanceof FaseSucessionalNomeDuplicadoError) {
+        return new ConflictError({ message: result.value.message })
       }
-      return new InternalServerError({ message: result.value.message })
-    }
 
-    if (!result.value) {
-      return new NotFoundError({ message: 'Fase sucessional não encontrada' })
+      if (result.value instanceof FaseSucessionalNaoEncontradoError) {
+        return new NotFoundError({ message: result.value.message })
+      }
+
+      return new InternalServerError({ message: result.value.message })
     }
 
     return { statusCode: StatusCode.Ok, body: result.value }

@@ -1,5 +1,5 @@
 import { CadastraFaseSucessionalUseCase } from '@/domain/faseSucessional/CadastraFaseSucessionalUseCase'
-import { FaseSucessional } from '@/domain/faseSucessional/FaseSucessional'
+import { FaseSucessionalNomeDuplicadoError } from '@/domain/faseSucessional/error/FaseSucessionalNomeDuplicadoError'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
@@ -27,17 +27,13 @@ export class CadastraFaseSucessionalController implements RequestHandler {
       return new BadRequestError({ message: 'Nome da fase sucessional não pode ser vazio' })
     }
 
-    const created = FaseSucessional.create({ id: 0, nome: nome.trim() })
-    if (created.left()) {
-      return new BadRequestError({ message: created.value.message })
-    }
-
     const result = await this.cadastraFaseSucessionalUseCase.execute({ nome: nome.trim() })
 
     if (result.left()) {
-      if (result.value.message === 'Já existe uma fase sucessional com esse nome') {
-        return new ConflictError({ message: 'Já existe uma fase sucessional com esse nome' })
+      if (result.value instanceof FaseSucessionalNomeDuplicadoError) {
+        return new ConflictError({ message: result.value.message })
       }
+
       return new InternalServerError({ message: result.value.message })
     }
 

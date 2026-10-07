@@ -573,6 +573,9 @@ CREATE TABLE public.fase_sucessional (
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
+CREATE UNIQUE INDEX fase_sucessional_nome_lower_uidx
+    ON public.fase_sucessional USING btree (lower((nome)::text));
+
 
 --
 -- TOC entry 244 (class 1259 OID 30988)

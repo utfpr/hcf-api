@@ -1,10 +1,47 @@
 import { Knex } from 'knex'
 
+import { FaseSucessionalEmUsoError } from '@/domain/faseSucessional/error/FaseSucessionalEmUsoError'
+import { FaseSucessionalNomeDuplicadoError } from '@/domain/faseSucessional/error/FaseSucessionalNomeDuplicadoError'
 import { Attributes } from '@/domain/faseSucessional/FaseSucessional'
 import { FaseSucessionalCollection, FaseSucessionalFilters } from '@/domain/faseSucessional/FaseSucessionalCollection'
 import { Either } from '@/library/either/Either'
 
 import { CollectionError } from './error/CollectionError'
+
+function isDuplicateFaseSucessionalError(error: unknown): boolean {
+  const code = typeof error === 'object' && error !== null && 'code' in error
+    ? String((error as { code?: unknown }).code)
+    : ''
+  const detail = typeof error === 'object' && error !== null && 'detail' in error
+    ? String((error as { detail?: unknown }).detail)
+    : ''
+  const message = typeof error === 'object' && error !== null && 'message' in error
+    ? String((error as { message?: unknown }).message)
+    : ''
+  const constraint = typeof error === 'object' && error !== null && 'constraint' in error
+    ? String((error as { constraint?: unknown }).constraint)
+    : ''
+
+  return code === '23505'
+    || /duplicate key|already exists|unique constraint/i.test(`${detail} ${message} ${constraint}`)
+    || (/nome/i.test(constraint) && /fase/i.test(constraint))
+}
+
+function isFaseSucessionalInUseError(error: unknown): boolean {
+  const code = typeof error === 'object' && error !== null && 'code' in error
+    ? String((error as { code?: unknown }).code)
+    : ''
+  const message = typeof error === 'object' && error !== null && 'message' in error
+    ? String((error as { message?: unknown }).message)
+    : ''
+  const constraint = typeof error === 'object' && error !== null && 'constraint' in error
+    ? String((error as { constraint?: unknown }).constraint)
+    : ''
+
+  return code === '23503'
+    || /foreign key|still referenced|cannot delete or update a parent row|violates foreign key constraint/i.test(`${message} ${constraint}`)
+    || /fase/i.test(constraint)
+}
 
 interface Dependencies {
   knex: Knex
@@ -68,25 +105,32 @@ export class FaseSucessionalCollectionKnexAdapter implements FaseSucessionalColl
     }
   }
 
+  async findByNome(nome: string): Promise<Either<Error, Attributes | null>> {
+    try {
+      const tableName = await this.resolveTableName()
+      const faseSucessional = await this.knex<Attributes>(tableName)
+        .select(['id', 'nome'])
+        .whereRaw('LOWER(nome) = LOWER(?)', [nome.trim()])
+        .first()
+
+      return Either.right(faseSucessional ?? null)
+    } catch (error) {
+      return Either.left(new CollectionError({ message: 'Failed to find fase sucessional by name', cause: error }))
+    }
+  }
+
   async create({ nome }: Pick<Attributes, 'nome'>): Promise<Either<Error, Attributes>> {
     try {
       const tableName = await this.resolveTableName()
-      const duplicate = await this.knex<Attributes>(tableName)
-        .whereILike('nome', nome.trim())
-        .first()
-
-      if (duplicate) {
-        return Either.left(new Error('Já existe uma fase sucessional com esse nome'))
-      }
-
-      const [created] = await this.knex<Attributes>(tableName)
+      const createdRows = await this.knex<Attributes>(tableName)
         .insert({ nome: nome.trim() })
-        .returning(['id', 'nome'])
+        .returning(['id', 'nome']) as unknown as Attributes[]
+      const [created] = createdRows
 
       return Either.right(created)
     } catch (error) {
-      if (error instanceof Error && /duplicate|já existe|unique/i.test(error.message)) {
-        return Either.left(new Error('Já existe uma fase sucessional com esse nome'))
+      if (isDuplicateFaseSucessionalError(error)) {
+        return Either.left(new FaseSucessionalNomeDuplicadoError({ cause: error }))
       }
 
       return Either.left(new CollectionError({ message: 'Failed to create fase sucessional', cause: error }))
@@ -96,34 +140,16 @@ export class FaseSucessionalCollectionKnexAdapter implements FaseSucessionalColl
   async update(id: number, { nome }: Pick<Attributes, 'nome'>): Promise<Either<Error, Attributes | null>> {
     try {
       const tableName = await this.resolveTableName()
-      const existing = await this.knex<Attributes>(tableName)
-        .where({ id })
-        .first()
-
-      if (!existing) {
-        return Either.right(null)
-      }
-
-      const duplicate = await this.knex<Attributes>(tableName)
-        .whereILike('nome', nome.trim())
-        .whereNot({ id })
-        .first()
-
-      if (duplicate) {
-        return Either.left(new Error('Já existe uma fase sucessional com esse nome'))
-      }
-
-      const updatedRows = (await this.knex<Attributes>(tableName)
+      const updatedRows = await this.knex<Attributes>(tableName)
         .where({ id })
         .update({ nome: nome.trim() })
-        .returning(['id', 'nome'])) as unknown as Attributes[]
+        .returning(['id', 'nome']) as unknown as Attributes[]
+      const [updated] = updatedRows
 
-      const updatedEntity: Attributes = updatedRows[0] ?? { ...existing, nome: nome.trim() }
-
-      return Either.right(updatedEntity)
+      return Either.right(updated ?? null)
     } catch (error) {
-      if (error instanceof Error && /duplicate|já existe|unique/i.test(error.message)) {
-        return Either.left(new Error('Já existe uma fase sucessional com esse nome'))
+      if (isDuplicateFaseSucessionalError(error)) {
+        return Either.left(new FaseSucessionalNomeDuplicadoError({ cause: error }))
       }
 
       return Either.left(new CollectionError({ message: 'Failed to update fase sucessional', cause: error }))
@@ -141,22 +167,28 @@ export class FaseSucessionalCollectionKnexAdapter implements FaseSucessionalColl
         return Either.right(false)
       }
 
-      const inUse = await this.knex<{ id: number }>('tombos')
+      const inTombos: { id: number } | undefined = await this.knex<{ id: number }>('tombos')
         .where('fase_sucessional_id', id)
         .first()
+      const inLocaisColeta: { id: number } | undefined = await this.knex<{ id: number }>('locais_coleta')
+        .where(builder => {
+          void builder.where('fase_sucessional_id', id)
+          void builder.orWhere('fase_numero', id)
+        })
+        .first()
 
-      if (inUse) {
-        return Either.left(new Error('Fase sucessional está em uso e não pode ser removida'))
+      if (inTombos || inLocaisColeta) {
+        return Either.left(new FaseSucessionalEmUsoError())
       }
 
-      await this.knex(tableName)
+      const deleted = await this.knex(tableName)
         .where({ id })
         .delete()
 
-      return Either.right(true)
+      return Either.right(deleted > 0)
     } catch (error) {
-      if (error instanceof Error && /in use|em uso|foreign key|violat/i.test(error.message)) {
-        return Either.left(new Error('Fase sucessional está em uso e não pode ser removida'))
+      if (isFaseSucessionalInUseError(error)) {
+        return Either.left(new FaseSucessionalEmUsoError({ cause: error }))
       }
 
       return Either.left(new CollectionError({ message: 'Failed to delete fase sucessional', cause: error }))

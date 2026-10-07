@@ -1,3 +1,5 @@
+import { FaseSucessionalEmUsoError } from '@/domain/faseSucessional/error/FaseSucessionalEmUsoError'
+import { FaseSucessionalNaoEncontradoError } from '@/domain/faseSucessional/error/FaseSucessionalNaoEncontradoError'
 import { RemoveFaseSucessionalUseCase } from '@/domain/faseSucessional/RemoveFaseSucessionalUseCase'
 import {
   HttpRequest, HttpResponse, StatusCode
@@ -36,14 +38,15 @@ export class RemoveFaseSucessionalController implements RequestHandler {
     const result = await this.removeFaseSucessionalUseCase.execute({ id: Number(faseSucessionalId) })
 
     if (result.left()) {
-      if (result.value.message === 'Fase sucessional está em uso e não pode ser removida') {
-        return new ConflictError({ message: 'Fase sucessional está em uso e não pode ser removida' })
+      if (result.value instanceof FaseSucessionalEmUsoError) {
+        return new ConflictError({ message: result.value.message })
       }
-      return new InternalServerError({ message: result.value.message })
-    }
 
-    if (!result.value) {
-      return new NotFoundError({ message: 'Fase sucessional não encontrada' })
+      if (result.value instanceof FaseSucessionalNaoEncontradoError) {
+        return new NotFoundError({ message: result.value.message })
+      }
+
+      return new InternalServerError({ message: result.value.message })
     }
 
     return { statusCode: StatusCode.NoContent, body: undefined }
