@@ -12,6 +12,7 @@
 	"scripts": {
 		"migration:create": "tsx --env-file=.env src/database/cli.ts migration:create",
 		"migration:apply": "tsx --env-file=.env src/database/cli.ts migration:apply",
+    "seed:expedicoes": "tsx --env-file=.env src/database/cli.ts seed:expedicoes",
 		"tsc:check": "tsc --noEmit",
 		"lint:eslint": "eslint --cache",
 		"lint": "run-p tsc:check lint:eslint",
