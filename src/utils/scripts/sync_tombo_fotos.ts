@@ -106,7 +106,7 @@ function printUsage(): void {
   `)
 }
 
-function getConnectionString(): string {
+function getClientConfig(): ConstructorParameters<typeof Client>[0] {
   const {
     PG_DATABASE,
     PG_USERNAME,
@@ -115,13 +115,22 @@ function getConnectionString(): string {
     PG_PORT,
     DATABASE_URL
   } = process.env
-  const connectionString = DATABASE_URL || `postgresql://${PG_USERNAME}:${PG_PASSWORD}@${PG_HOST}:${PG_PORT}/${PG_DATABASE}`
 
-  if (!connectionString || connectionString.includes('undefined')) {
+  if (DATABASE_URL) {
+    return { connectionString: DATABASE_URL }
+  }
+
+  if (!PG_DATABASE || !PG_USERNAME || !PG_HOST || !PG_PORT) {
     throw new Error('Configuracao de banco invalida. Informe DATABASE_URL ou PG_* no .env.')
   }
 
-  return connectionString
+  return {
+    host: PG_HOST,
+    port: Number(PG_PORT),
+    user: PG_USERNAME,
+    password: PG_PASSWORD ?? '',
+    database: PG_DATABASE
+  }
 }
 
 function buildImageFile(fileNameOrPath: string, fullPath: string): ImageFile {
@@ -418,7 +427,7 @@ async function main(): Promise<void> {
   const reportDir = path.resolve(reportDirArg || path.join(projectRoot, 'storage', 'reports'))
   const images = imageDir ? readImagesFromDirectory(imageDir) : readImagesFromFile(imageListFile as string)
   const groupedImages = groupImagesByCodigoBarra(images)
-  const client = new Client({ connectionString: getConnectionString() })
+  const client = new Client(getClientConfig())
 
   await client.connect()
 
