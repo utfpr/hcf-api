@@ -1,0 +1,138 @@
+import { CriarEventoUseCase } from '@/domain/evento/CriarEventoUseCase'
+import { EVENTO_TIPOS, EventoTipo } from '@/domain/evento/Evento'
+import { CheckViolationError } from '@/infrastructure/error/CheckViolationError'
+import { ForeignKeyViolationError } from '@/infrastructure/error/ForeignKeyViolationError'
+import { InfrastructureError } from '@/infrastructure/error/InfrastructureError'
+import {
+  HttpRequest, HttpResponse, StatusCode
+} from '@/library/http/common'
+import { BadRequestError } from '@/library/http/error/BadRequestError'
+import { HttpError } from '@/library/http/error/HttpError'
+import { InternalServerError } from '@/library/http/error/InternalServerError'
+import { NotFoundError } from '@/library/http/error/NotFoundError'
+import { UnprocessableEntityError } from '@/library/http/error/UnprocessableEntityError'
+import { NextHandler, RequestHandler } from '@/library/http/Server'
+
+import { parseColeta } from './coleta-parsing'
+
+interface Dependencies {
+  criarEventoUseCase: CriarEventoUseCase
+}
+
+interface Body {
+  tipo?: unknown
+  capturado_em?: unknown
+  latitude?: unknown
+  longitude?: unknown
+  altitude?: unknown
+  observacoes?: unknown
+  coleta?: unknown
+}
+
+export class CriarEventoController implements RequestHandler {
+  private readonly criarEventoUseCase: CriarEventoUseCase
+
+  constructor(dependencies: Dependencies) {
+    this.criarEventoUseCase = dependencies.criarEventoUseCase
+  }
+
+  async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
+    const { expedicaoId: rawExpedicaoId } = request.params as { expedicaoId?: string }
+    const expedicaoId = parseId(rawExpedicaoId, 'expedicaoId')
+    if (expedicaoId instanceof Error) return new BadRequestError({ message: expedicaoId.message })
+
+    const body = (request.body ?? {}) as Body
+
+    const tipo = parseTipo(body.tipo)
+    if (tipo instanceof Error) return new BadRequestError({ message: tipo.message })
+
+    const capturadoEm = parseDate(body.capturado_em, 'capturado_em')
+    if (capturadoEm instanceof Error) return new BadRequestError({ message: capturadoEm.message })
+
+    const latitude = parseOptionalNumber(body.latitude, 'latitude')
+    if (latitude instanceof Error) return new BadRequestError({ message: latitude.message })
+
+    const longitude = parseOptionalNumber(body.longitude, 'longitude')
+    if (longitude instanceof Error) return new BadRequestError({ message: longitude.message })
+
+    const altitude = parseOptionalNumber(body.altitude, 'altitude')
+    if (altitude instanceof Error) return new BadRequestError({ message: altitude.message })
+
+    const observacoes = parseOptionalString(body.observacoes, 'observacoes')
+    if (observacoes instanceof Error) return new BadRequestError({ message: observacoes.message })
+
+    const coleta = body.coleta === undefined ? null : parseColeta(body.coleta)
+    if (coleta instanceof Error) return new BadRequestError({ message: coleta.message })
+
+    // Substituir por request.usuario.id assim que a
+    // autenticação for integrada.
+    const usuarioId = null
+
+    const result = await this.criarEventoUseCase.execute({
+      altitude,
+      capturado_em: capturadoEm,
+      coleta,
+      created_by: usuarioId,
+      expedicao_id: expedicaoId,
+      latitude,
+      longitude,
+      observacoes,
+      tipo
+    })
+
+    if (result.left()) {
+      const error = result.value
+      if (error instanceof ForeignKeyViolationError) return new NotFoundError({ message: error.message })
+      if (error instanceof CheckViolationError) return new UnprocessableEntityError({ message: error.message })
+      if (!(error instanceof InfrastructureError)) return new BadRequestError({ message: error.message })
+      return new InternalServerError({ message: error.message })
+    }
+
+    return { body: result.value, statusCode: StatusCode.Created }
+  }
+}
+
+function parseId(raw: unknown, field: string): number | Error {
+  if (typeof raw !== 'string' || !/^\d+$/.test(raw)) {
+    return new Error(`${field} inválido`)
+  }
+  return Number(raw)
+}
+
+function parseTipo(raw: unknown): EventoTipo | Error {
+  if (typeof raw !== 'string' || !EVENTO_TIPOS.includes(raw as EventoTipo)) {
+    return new Error(`tipo inválido. Use um de: ${EVENTO_TIPOS.join(', ')}`)
+  }
+  return raw as EventoTipo
+}
+
+function parseDate(raw: unknown, field: string): Date | Error {
+  if (typeof raw !== 'string') {
+    return new Error(`${field} inválido. Use uma data no formato ISO 8601`)
+  }
+  const date = new Date(raw)
+  if (Number.isNaN(date.getTime())) {
+    return new Error(`${field} inválido. Use uma data no formato ISO 8601`)
+  }
+  return date
+}
+
+function parseOptionalNumber(raw: unknown, field: string): number | null | Error {
+  if (raw === undefined || raw === null) {
+    return null
+  }
+  if (typeof raw !== 'number' || Number.isNaN(raw)) {
+    return new Error(`${field} inválido`)
+  }
+  return raw
+}
+
+function parseOptionalString(raw: unknown, field: string): string | null | Error {
+  if (raw === undefined || raw === null) {
+    return null
+  }
+  if (typeof raw !== 'string') {
+    return new Error(`${field} inválido`)
+  }
+  return raw
+}
