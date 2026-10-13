@@ -18,11 +18,20 @@ export interface ParticipanteDetalhado {
   email: string
 }
 
+export interface RotaInput {
+  cidade_id: number
+  locais_coleta_ids: number[]
+}
+
 export interface RotaDetalhada {
   cidade_id: number
   ordem: number
   nome_cidade: string
   estado: string
+  locais_coleta: Array<{
+    id: number
+    descricao: string | null
+  }>
 }
 
 export interface ExpedicaoDetalhada extends Attributes {
@@ -34,8 +43,9 @@ export type CreateAttributes =
   Omit<Attributes, 'id' | 'created_at' | 'updated_at' | 'updated_by'>
   & {
     participantes: number[]
-    rotas: number[]
+    rotas: RotaInput[]
   }
+
 export interface UpdateAttributes {
   descricao: string | null
   data_inicio: string
@@ -43,6 +53,7 @@ export interface UpdateAttributes {
   cidade_id: number
   updated_by: number
 }
+
 export class Expedicao {
   readonly id: number
   readonly descricao: string | null

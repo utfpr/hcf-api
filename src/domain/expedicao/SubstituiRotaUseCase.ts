@@ -1,5 +1,6 @@
 import { Either } from '@/library/either/Either'
 
+import { RotaInput } from './Expedicao'
 import { ExpedicaoCollection } from './ExpedicaoCollection'
 
 interface Dependencies {
@@ -13,7 +14,7 @@ export class SubstituiRotasUseCase {
     this.expedicaoCollection = dependencies.expedicaoCollection
   }
 
-  execute(expedicaoId: number, rotas: number[]): Promise<Either<Error, void>> {
+  execute(expedicaoId: number, rotas: RotaInput[]): Promise<Either<Error, void>> {
     return this.expedicaoCollection.substituteRoute(expedicaoId, rotas)
   }
 }

@@ -3532,12 +3532,31 @@ ALTER TABLE ONLY public.expedicoes
     ADD CONSTRAINT expedicoes_updated_by_foreign FOREIGN KEY (updated_by) REFERENCES public.usuarios(id) ON UPDATE CASCADE;
 
 
+--
+-- Name: expedicoes_rotas_locais_coleta; Type: TABLE; Schema: public; Owner: -
+--
+CREATE TABLE public.expedicoes_rotas_locais_coleta (
+    id integer NOT NULL,
+    expedicao_rota_id integer NOT NULL,
+    local_coleta_id bigint NOT NULL,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+--
+-- Name: expedicoes_rotas_locais_coleta_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+CREATE SEQUENCE public.expedicoes_rotas_locais_coleta_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 --
 -- Modulo Expedicao: lembretes
 -- Migration 20261005120000
 --
-
 CREATE TABLE public.lembretes (
     id integer NOT NULL,
     data_coleta date NOT NULL,
@@ -3573,6 +3592,53 @@ CREATE SEQUENCE public.lembretes_id_seq
     NO MAXVALUE
     CACHE 1;
 
+--
+-- Name: expedicoes_rotas_locais_coleta_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+ALTER SEQUENCE public.expedicoes_rotas_locais_coleta_id_seq OWNED BY public.expedicoes_rotas_locais_coleta.id;
+
+--
+-- Name: expedicoes_rotas_locais_coleta id; Type: DEFAULT; Schema: public; Owner: -
+--
+ALTER TABLE ONLY public.expedicoes_rotas_locais_coleta ALTER COLUMN id SET DEFAULT nextval('public.expedicoes_rotas_locais_coleta_id_seq'::regclass);
+
+--
+-- Name: expedicoes_rotas_locais_coleta expedicoes_rotas_locais_coleta_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+ALTER TABLE ONLY public.expedicoes_rotas_locais_coleta
+    ADD CONSTRAINT expedicoes_rotas_locais_coleta_pkey PRIMARY KEY (id);
+
+--
+-- Name: expedicoes_rotas_locais_coleta expedicoes_rotas_locais_coleta_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+ALTER TABLE ONLY public.expedicoes_rotas_locais_coleta
+    ADD CONSTRAINT expedicoes_rotas_locais_coleta_unique UNIQUE (expedicao_rota_id, local_coleta_id);
+
+--
+-- Name: idx_rotas_locais_expedicao_rota; Type: INDEX; Schema: public; Owner: -
+--
+CREATE INDEX idx_rotas_locais_expedicao_rota ON public.expedicoes_rotas_locais_coleta USING btree (expedicao_rota_id);
+
+--
+-- Name: idx_rotas_locais_local_coleta; Type: INDEX; Schema: public; Owner: -
+--
+CREATE INDEX idx_rotas_locais_local_coleta ON public.expedicoes_rotas_locais_coleta USING btree (local_coleta_id);
+
+--
+-- Name: expedicoes_rotas_locais_coleta expedicoes_rotas_locais_coleta_expedicao_rota_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+ALTER TABLE ONLY public.expedicoes_rotas_locais_coleta
+    ADD CONSTRAINT expedicoes_rotas_locais_coleta_expedicao_rota_id_foreign FOREIGN KEY (expedicao_rota_id) REFERENCES public.expedicoes_rotas(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+--
+-- Name: expedicoes_rotas_locais_coleta expedicoes_rotas_locais_coleta_local_coleta_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+ALTER TABLE ONLY public.expedicoes_rotas_locais_coleta
+    ADD CONSTRAINT expedicoes_rotas_locais_coleta_local_coleta_id_foreign FOREIGN KEY (local_coleta_id) REFERENCES public.locais_coleta(id) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+--
+-- Lembretes constraints & indexes
+--
 ALTER SEQUENCE public.lembretes_id_seq OWNED BY public.lembretes.id;
 
 ALTER TABLE ONLY public.lembretes ALTER COLUMN id SET DEFAULT nextval('public.lembretes_id_seq'::regclass);
