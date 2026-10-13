@@ -1,11 +1,11 @@
 import { type Knex } from 'knex'
 
+import { authorize } from '@/application/AuthorizeMiddlewareFactory'
+import { rateLimit } from '@/application/RateLimitMiddlewareFactory'
 import { CriaUsuarioSessaoUseCase } from '@/domain/usuarioSessao/CriaUsuarioSessaoUseCase'
 import { EncerraUsuarioSessaoUseCase } from '@/domain/usuarioSessao/EncerraUsuarioSessaoUseCase'
-import { MostraUsuarioSessaoUseCase } from '@/domain/usuarioSessao/MostraUsuarioSessaoUseCase'
 import { RenovaUsuarioSessaoUseCase } from '@/domain/usuarioSessao/RenovaUsuarioSessaoUseCase'
 import { createAccessToken } from '@/factory/AccessTokenFactory'
-import { rateLimitMiddleware } from '@/factory/RateLimiterFactory'
 import { createRefreshToken } from '@/factory/RefreshTokenFactory'
 import { comparaSenha } from '@/helpers/senhas'
 import { UsuarioCollectionKnexAdapter } from '@/infrastructure/UsuarioCollectionKnexAdapter'
@@ -29,7 +29,7 @@ export function routes(knex: Knex): Route[] {
       method: Method.Post,
       path: '/auth/login',
       handlers: [
-        rateLimitMiddleware,
+        rateLimit,
         new CriaUsuarioSessaoController({
           criaUsuarioSessaoUseCase: new CriaUsuarioSessaoUseCase({
             usuarioCollection,
@@ -73,13 +73,8 @@ export function routes(knex: Knex): Route[] {
       method: Method.Get,
       path: '/auth/me',
       handlers: [
-        new MostraUsuarioSessaoController({
-          mostraUsuarioSessaoUseCase: new MostraUsuarioSessaoUseCase({
-            accessToken,
-            usuarioCollection,
-            usuarioSessaoCollection
-          })
-        })
+        authorize('read', 'UsuarioSessao'),
+        new MostraUsuarioSessaoController()
       ]
     }
   ]
