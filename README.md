@@ -62,6 +62,22 @@ PGPASSWORD=masterkey psql \
   -f caminho/para/dump.sql
 ```
 
+### Seed de expedições
+
+```shell
+yarn seed:expedicoes
+```
+
+O comando cria três expedições, identificadas pelo prefixo `[SEED]` na descrição:
+
+1. Expedição planejada, com rotas e participantes, sem eventos nem evidências.
+2. Expedição com eventos `COLETA` (com ficha de campo) e `DIARIO`, sem evidências.
+3. Expedição com eventos `COLETA` e `DIARIO` com evidências (imagens e áudio).
+
+Os arquivos das evidências são gravados em `uploads/evidencias/`, e ficam acessíveis em `/uploads/evidencias/<arquivo>`.
+
+O comando é idempotente: cada execução remove e recria apenas os dados do seed. É necessário ter importado o dump de desenvolvimento antes de rodar o comando.
+
 ## Execução
 
 ```shell
@@ -91,6 +107,7 @@ Confira com `GET http://localhost:3000/health` (`{ "status": "OK" }`).
 | `yarn test:integration` / `yarn test:integration:watch` | Testes de integração (Postgres de teste) |
 | `yarn test:coverage` | Cobertura dos testes unitários |
 | `yarn migration:create` / `yarn migration:apply` | Autores de mudança de schema |
+| `yarn seed:expedicoes` | Popula o banco local com expedições, eventos e evidências de teste |
 
 O `yarn install` configura o Husky. O hook `pre-push` roda os testes unitários.
 
