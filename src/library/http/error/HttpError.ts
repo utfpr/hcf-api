@@ -7,15 +7,12 @@ export class HttpError extends BaseError {
 
   constructor(params: {
     statusCode: number
-    type?: string
+    type: string
     message: string
     report?: unknown
     cause?: unknown
   }) {
-    super({
-      message: params.message,
-      cause: params.cause
-    })
+    super(params)
     this.statusCode = params.statusCode
     this.type = params.type
     this.report = params.report
