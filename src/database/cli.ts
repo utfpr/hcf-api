@@ -10,7 +10,6 @@ import { MigrationFileSystem } from './migration-file-system'
 import { MigrationRepository } from './migration-repository'
 import { runExpedicoesSeed } from './seeds/expedicoes-seed'
 
-
 const {
   PG_DATABASE,
   PG_HOST,

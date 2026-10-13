@@ -12,11 +12,11 @@ import { Logger } from '@/library/logger/Logger'
 /**
  * Seed de desenvolvimento para expedições, eventos e evidências.
  *
- * Idempotência: toda expedição criada tem a descrição iniciando com SEED_PREFIXO. 
- * A cada execução elas são removidas (eventos, fichas de coleta, evidências, 
- * participantes e rotas, via ON DELETE CASCADE) e recriadas na mesma transação. 
- * Cidades existentes são reutilizadas (ou criadas se o banco estiver vazio). 
- * Usuários não são criados: o seed usa os usuários jáexistentes 
+ * Idempotência: toda expedição criada tem a descrição iniciando com SEED_PREFIXO.
+ * A cada execução elas são removidas (eventos, fichas de coleta, evidências,
+ * participantes e rotas, via ON DELETE CASCADE) e recriadas na mesma transação.
+ * Cidades existentes são reutilizadas (ou criadas se o banco estiver vazio).
+ * Usuários não são criados: o seed usa os usuários jáexistentes
  * (ex.: do dump de desenvolvimento) e falha se não houver nenhum.
  *
  * Arquivos das evidências são gravados em EVIDENCIA_DIR (/uploads/evidencias), com prefixo SEED_ARQUIVO_PREFIXO.
@@ -39,7 +39,6 @@ export interface ResumoSeedExpedicoes {
   evidencias: number
 }
 
-
 // Utilitários
 function dataRelativa(dias: number): string {
   const data = new Date()
@@ -58,7 +57,6 @@ async function inserirRetornandoId(trx: Knex.Transaction, tabela: string, dados:
   const [row] = await trx(tabela).insert(dados).returning<IdRow[]>('id')
   return Number(row.id)
 }
-
 
 // Arquivos fictícios para os cenários
 const TABELA_CRC32 = Array.from({ length: 256 }, (_, n) => {
@@ -202,7 +200,6 @@ async function removerArquivosSeed(): Promise<void> {
   )
 }
 
-
 // Dependências: cidades e usuários
 async function obterOuCriarPorNome(
   trx: Knex.Transaction,
@@ -256,7 +253,6 @@ async function obterUsuarios(trx: Knex.Transaction): Promise<Id[]> {
 
   return existentes.map(usuario => Number(usuario.id))
 }
-
 
 // Builders de domínio
 interface Contexto {
@@ -363,7 +359,6 @@ async function criarEvidencia(
     updated_by: contexto.autor
   })
 }
-
 
 // Cenários
 async function cenarioSemEventos(contexto: Contexto): Promise<void> {
@@ -497,7 +492,6 @@ async function cenarioEventosComEvidencias(contexto: Contexto): Promise<{ evento
 
   return { eventos: 2, evidencias: 3 }
 }
-
 
 // Entrada
 export async function seedExpedicoes(knex: Knex): Promise<ResumoSeedExpedicoes> {
