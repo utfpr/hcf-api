@@ -90,7 +90,7 @@ Confira com `GET http://localhost:3000/health` (`{ "status": "OK" }`).
 | `yarn test:unit` / `yarn test:unit:watch` | Testes unitários |
 | `yarn test:integration` / `yarn test:integration:watch` | Testes de integração (Postgres de teste) |
 | `yarn test:coverage` | Cobertura dos testes unitários |
-| `yarn migration:create` / `yarn migration:apply` | Autores de mudança de schema |
+| `yarn migration:create` / `yarn migration:apply` | Autores de mudança de schema (local). Em produção o CapRover aplica com `node dist/database/cli.js migration:apply` no pre-deploy; ver `caprover/README.md`. |
 
 O `yarn install` configura o Husky. O hook `pre-push` roda os testes unitários.
 

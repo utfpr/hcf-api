@@ -45,8 +45,11 @@ async function applyMigrations() {
   const applyMigrationsService = new ApplyMigrationService({
     migrationFileSystem, migrationRepository: migrationDataSource, logger
   })
-  await applyMigrationsService.execute()
-  await migrationKnex.destroy()
+  try {
+    await applyMigrationsService.execute()
+  } finally {
+    await migrationKnex.destroy()
+  }
 }
 
 program
@@ -57,4 +60,7 @@ program
 program.command('migration:apply')
   .action(applyMigrations)
 
-program.parse(process.argv)
+program.parseAsync(process.argv).catch((error: unknown) => {
+  logger.error('Migration command failed', error)
+  process.exit(1)
+})
