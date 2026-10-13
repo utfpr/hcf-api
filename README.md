@@ -23,7 +23,7 @@ Os nomes e os valores padrão locais estão em `.env.example`. Ajuste o `.env` s
 | Grupo | Variáveis | Uso local |
 | --- | --- | --- |
 | Runtime | `TZ`, `PORT`, `NODE_ENV`, `STORAGE_PATH` | Os padrões do exemplo bastam. |
-| CORS | `CORS_ORIGINS`, `CORS_METHODS`, `CORS_ALLOWED_HEADERS` | `*` ou a origem do painel. |
+| CORS | `CORS_ORIGINS`, `CORS_METHODS`, `CORS_ALLOWED_HEADERS` | Origem explícita do painel (ex. `http://localhost:5173`). `*` não é aceito. |
 | Postgres | `PG_DATABASE`, `PG_HOST`, `PG_PORT`, `PG_USERNAME`, `PG_PASSWORD`, `PG_MIGRATION_USERNAME`, `PG_MIGRATION_PASSWORD` | O Compose usa `PG_DATABASE`, `PG_USERNAME`, `PG_PASSWORD` e `PG_PORT`. A API usa `PG_*`. |
 | Auth, e-mail, captcha | `JWT_SECRET`, `SMTP_*`, `RECAPTCHA_SECRET_KEY` | Login, troca de senha e reCAPTCHA. |
 | Painel | `PAINEL_BASE_URL` | Padrão local: `http://localhost:5173`. |

@@ -5,12 +5,11 @@ export interface AccessPayload {
   sub: number
   sid: string
   typ: 'access'
-  role: number
   iat: number
   exp: number
 }
 
 export interface AccessToken {
-  sign(params: { sub: number; sid: string; role: number }): Either<AccessTokenError, string>
+  sign(params: { sub: number; sid: string }): Either<AccessTokenError, string>
   verify(token: string): Either<AccessTokenError, AccessPayload>
 }

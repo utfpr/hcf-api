@@ -23,9 +23,20 @@ export function createTestApp() {
     knex: knexInstance,
     logger: new ConsoleLogger(),
     cors: {
-      origins: ['*'],
-      methods: ['GET'],
-      allowedHeaders: ['Content-Type']
+      origins: ['http://localhost:5173'],
+      methods: [
+        'HEAD',
+        'GET',
+        'POST',
+        'PUT',
+        'PATCH',
+        'DELETE'
+      ],
+      allowedHeaders: [
+        'Content-Type',
+        'Authorization',
+        'X-Requested-With'
+      ]
     }
   })
 

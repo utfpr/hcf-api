@@ -1,0 +1,44 @@
+---
+description: Use cases model a full user action, not a SQL verb, and do not import other use cases
+globs: "{src,test}/{domain,application}/**/*.{ts,js}"
+alwaysApply: false
+---
+
+# Use case boundaries
+
+A use case is one **user intention** end to end (login, renew a session, end a session, show the current user). It orchestrates ports (collections, token helpers, comparators) and entities. It is not a thin wrapper around one SQL method.
+
+## Do
+
+- Fold credential checks, entity creation, persistence, and token issuance into the **same** use case when they belong to one action.
+- Depend on collection ports, libraries, and other domain types — never on another `*UseCase`.
+- Keep controllers as HTTP adapters: parse body/headers/cookies, set `Set-Cookie`, map `Either` to status codes. No persist, hash, or `sign` in the controller.
+- Name the type after the intention and the resource (`CriaUsuarioSessaoUseCase`), same inflection as `type-and-file-names`.
+
+## Do not
+
+- Add a use case whose `execute` only calls `create`, `findById`, `updateRotation`, or `deleteById`. Those stay on the collection.
+- Split “create the row” and “do the action” into two use cases, then nest them.
+- Import or inject `FooUseCase` inside `BarUseCase`. If two flows share a persistence step, share the **port** (or a small entity helper), not a use case.
+
+```ts
+// ❌ BAD — SQL-only collaborator + nested use case
+class CriaUsuarioSessaoUseCase {
+  execute({ usuarioId }) { return this.collection.create(/* row */) }
+}
+class EntraSessaoUseCase {
+  execute({ email, senha }) {
+    /* check password */
+    return this.criaUsuarioSessaoUseCase.execute({ usuarioId })
+  }
+}
+
+// ✅ GOOD — one intention, ports only
+class CriaUsuarioSessaoUseCase {
+  execute({ email, senha }) {
+    /* find user, check password, persist session, generate refresh, sign access */
+  }
+}
+```
+
+`ApagaUsuarioSessoesUseCase` (wipe every session for a user from another flow) is still a user intention. `ApagaUsuarioSessaoUseCase` that only `deleteById` is not — inlined that delete in the flow that needs it.

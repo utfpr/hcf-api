@@ -6,8 +6,18 @@ import {
 
 import { createRules } from '@/library/auth/createRules'
 
+const publicReads = [
+  { action: 'read', resource: 'Pais' },
+  { action: 'read', resource: 'Estado' }
+]
+
 describe('createRules', () => {
-  test('returns no rules for curador, operador, identificador, and unknown tipo', () => {
+  test('grants Guest only public reads', () => {
+    expect(createRules()).toEqual(publicReads)
+    expect(createRules(undefined)).toEqual(publicReads)
+  })
+
+  test('grants authenticated users public reads and UsuarioSessao', () => {
     const users = [
       { id: 1, tipo_usuario_id: 1 },
       { id: 2, tipo_usuario_id: 2 },
@@ -16,7 +26,10 @@ describe('createRules', () => {
     ]
 
     for (const user of users) {
-      expect(createRules(user)).toEqual([])
+      expect(createRules(user)).toEqual([
+        ...publicReads,
+        { action: 'read', resource: 'UsuarioSessao' }
+      ])
     }
   })
 })

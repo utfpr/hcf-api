@@ -4,10 +4,11 @@ import http from 'node:http'
 
 import { Application } from '@/library/Application'
 import {
-  Headers, HttpRequest, HttpResponse, Method
+  Headers, HttpRequest, HttpResponse, Method, StatusCode
 } from '@/library/http/common'
 import { HttpError } from '@/library/http/error/HttpError'
 import { InternalServerError } from '@/library/http/error/InternalServerError'
+import { parseCookieHeader } from '@/library/http/parseCookieHeader'
 import { RequestHandler } from '@/library/http/Server'
 import { Logger } from '@/library/logger/Logger'
 
@@ -24,6 +25,7 @@ export class ExpressApplication implements Application {
   constructor({ logger }: Dependencies) {
     this.app = express()
     this.app.use(parser.json())
+    this.app.use(parser.urlencoded({ extended: false }))
     this.logger = logger
 
     this.server = http.createServer(this.app)
@@ -54,6 +56,7 @@ export class ExpressApplication implements Application {
           method,
           path: expressRequest.path,
           headers,
+          cookies: parseCookieHeader(expressRequest.headers.cookie),
           params,
           body: expressRequest.body
         }
@@ -132,12 +135,21 @@ export class ExpressApplication implements Application {
       if (response instanceof HttpError) {
         expressResponse.status(response.statusCode).json({
           error: {
-            statusCode: response.statusCode,
-            name: response.name,
+            type: response.type,
             message: response.message,
             report: response.report
           }
         })
+        return
+      }
+
+      const setCookie = response.headers?.['Set-Cookie']
+      if (typeof setCookie === 'string' && setCookie.length > 0) {
+        expressResponse.setHeader('Set-Cookie', setCookie)
+      }
+
+      if (response.statusCode === StatusCode.NoContent) {
+        expressResponse.status(StatusCode.NoContent).end()
         return
       }
 
@@ -146,7 +158,7 @@ export class ExpressApplication implements Application {
 
       if (body instanceof Error) {
         expressResponse.json({
-          error: { name: body.name, message: body.message }
+          error: { type: body.name, message: body.message }
         })
         return
       }
@@ -161,7 +173,7 @@ export class ExpressApplication implements Application {
       this.logger.error(error instanceof Error ? (error.stack ?? error.message) : String(error))
       expressResponse.status(500).json({
         error: {
-          statusCode: 500, name: 'InternalServerError', message: 'Unexpected error'
+          type: 'internal_server_error', message: 'Unexpected error'
         }
       })
     }
