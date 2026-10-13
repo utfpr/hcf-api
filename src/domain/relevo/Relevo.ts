@@ -1,12 +1,12 @@
 import { Either } from '@/library/either/Either'
 
 export interface Attributes {
-  id: number
+  id?: number
   nome: string
 }
 
 export class Relevo {
-  readonly id: number
+  readonly id?: number
   readonly nome: string
 
   private constructor(attributes: Attributes) {
@@ -14,7 +14,7 @@ export class Relevo {
     this.nome = attributes.nome
   }
 
-  static create(attributes: Attributes): Either<Error, Relevo> {
+  static create(attributes: Pick<Attributes, 'nome'>): Either<Error, Relevo> {
     if (!attributes.nome.trim()) {
       return Either.left(new Error('Nome do relevo não pode ser vazio'))
     }
