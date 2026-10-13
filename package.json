@@ -24,6 +24,7 @@
 		"test:integration": "vitest --run --project integration",
 		"test:integration:watch": "vitest --project integration",
 		"test:coverage": "vitest --run --project unit --coverage",
+		"test:caprover": "node --test caprover/caprover-pre-deploy.test.js",
 		"prepare": "husky",
 		"audit": "npm audit --audit-level=moderate",
 		"audit:fix": "npm audit fix"

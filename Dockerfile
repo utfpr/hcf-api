@@ -82,4 +82,4 @@ HEALTHCHECK \
   --start-period=40s --retries=3 \
   CMD wget -qO- http://127.0.0.1:$PORT/health || exit 1
 
-CMD node dist/application/index.js
+CMD ["node", "dist/application/index.js"]
