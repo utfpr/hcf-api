@@ -1,5 +1,6 @@
 import { type Knex } from 'knex'
 
+import { authorize } from '@/application/AuthorizeMiddlewareFactory'
 import { BuscaFaseSucessionalUseCase } from '@/domain/faseSucessional/BuscaFaseSucessionalUseCase'
 import { CadastraFaseSucessionalUseCase } from '@/domain/faseSucessional/CadastraFaseSucessionalUseCase'
 import { ListaFasesSucessionaisUseCase } from '@/domain/faseSucessional/ListaFasesSucessionaisUseCase'
@@ -11,14 +12,12 @@ import { Route } from '@/library/http/Router'
 
 import { BuscaFaseSucessionalController } from './BuscaFaseSucessionalController'
 import { CadastraFaseSucessionalController } from './CadastraFaseSucessionalController'
-import { ExigePermissaoEscritaFaseSucessional } from './ExigePermissaoEscritaFaseSucessional'
 import { ListaFasesSucessionaisController } from './ListaFasesSucessionaisController'
 import { RemoveFaseSucessionalController } from './RemoveFaseSucessionalController'
 import { RenomeiaFaseSucessionalController } from './RenomeiaFaseSucessionalController'
 
 export function routes(knex: Knex): Route[] {
   const faseSucessionalCollection = new FaseSucessionalCollectionKnexAdapter({ knex })
-  const exigePermissaoEscritaFaseSucessional = new ExigePermissaoEscritaFaseSucessional()
 
   return [
     {
@@ -41,7 +40,7 @@ export function routes(knex: Knex): Route[] {
     },
     {
       handlers: [
-        exigePermissaoEscritaFaseSucessional,
+        authorize('create', 'FaseSucessional'),
         new CadastraFaseSucessionalController({
           cadastraFaseSucessionalUseCase: new CadastraFaseSucessionalUseCase({ faseSucessionalCollection })
         })
@@ -51,7 +50,7 @@ export function routes(knex: Knex): Route[] {
     },
     {
       handlers: [
-        exigePermissaoEscritaFaseSucessional,
+        authorize('update', 'FaseSucessional'),
         new RenomeiaFaseSucessionalController({
           renomeiaFaseSucessionalUseCase: new RenomeiaFaseSucessionalUseCase({ faseSucessionalCollection })
         })
@@ -61,7 +60,7 @@ export function routes(knex: Knex): Route[] {
     },
     {
       handlers: [
-        exigePermissaoEscritaFaseSucessional,
+        authorize('delete', 'FaseSucessional'),
         new RemoveFaseSucessionalController({
           removeFaseSucessionalUseCase: new RemoveFaseSucessionalUseCase({ faseSucessionalCollection })
         })

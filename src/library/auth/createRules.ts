@@ -21,6 +21,7 @@ export const RESOURCES = [
   'Autor',
   'Pais',
   'Estado',
+  'FaseSucessional',
   'Cidade',
   'Usuario',
   'UsuarioSessao',
@@ -48,10 +49,22 @@ const publicReads: Rule<Resource, Action>[] = [
   { action: 'read', resource: 'Estado' }
 ]
 
+const FASE_SUCESSIONAL_WRITER_TIPOS = new Set([1, 2])
+
 export function createRules(user?: RulesUser): Rule<Resource, Action>[] {
   if (user === undefined) {
     return [...publicReads]
   }
 
-  return [...publicReads, { action: 'read', resource: 'UsuarioSessao' }]
+  const rules: Rule<Resource, Action>[] = [...publicReads, { action: 'read', resource: 'UsuarioSessao' }]
+
+  if (FASE_SUCESSIONAL_WRITER_TIPOS.has(user.tipo_usuario_id)) {
+    rules.push(
+      { action: 'create', resource: 'FaseSucessional' },
+      { action: 'update', resource: 'FaseSucessional' },
+      { action: 'delete', resource: 'FaseSucessional' }
+    )
+  }
+
+  return rules
 }

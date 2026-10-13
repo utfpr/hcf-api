@@ -1,24 +1,40 @@
 import jwt from 'jsonwebtoken'
 import {
   afterAll,
+  beforeAll,
   describe,
   expect,
   test
 } from 'vitest'
 
 import { createTestApp } from '../setup/app-factory'
+import { insertUsuarioComTipo } from '../setup/usuarios'
 
+let writerId = 0
 const buildAuthHeader = (
-  payload = { id: 1, tipo_usuario_id: 1 },
+  payload: { id: number } = { id: writerId },
   secret = process.env.JWT_SECRET as string
 ) => ({
   Authorization: `Bearer ${jwt.sign(payload, secret)}`
 })
 
-describe('DELETE /api/v2/fases-sucessionais/:faseSucessionalId', () => {
+describe('RemoveFaseSucessionalController', () => {
   const { agent, knex } = createTestApp()
+  const cleanups: (() => Promise<void>)[] = []
+  let outsiderId = 0
 
-  afterAll(() => knex.destroy())
+  beforeAll(async () => {
+    const writer = await insertUsuarioComTipo(knex, 1)
+    const outsider = await insertUsuarioComTipo(knex, 99)
+    writerId = writer.id
+    outsiderId = outsider.id
+    cleanups.push(writer.cleanup, outsider.cleanup)
+  })
+
+  afterAll(async () => {
+    for (const cleanup of cleanups) await cleanup()
+    await knex.destroy()
+  })
 
   test('remove uma fase sucessional com sucesso', async () => {
     const nome = `XFAS_REMOVE_${Date.now()}`
@@ -62,24 +78,23 @@ describe('DELETE /api/v2/fases-sucessionais/:faseSucessionalId', () => {
   })
 
   test('rejeita token ausente', async () => {
-    const response = await agent.delete('/api/v2/fases-sucessionais/1').expect(403)
+    const response = await agent.delete('/api/v2/fases-sucessionais/1').expect(401)
     const body = response.body as { error: { message: string } }
 
-    expect(body.error.message).toMatch(/Token de autenticação obrigatório|sem permissão/i)
+    expect(body.error.message).toMatch(/unauthorized/i)
   })
 
   test('rejeita usuário com papel fora do permitido', async () => {
-    const response = await agent.delete('/api/v2/fases-sucessionais/1').set(buildAuthHeader({ id: 1, tipo_usuario_id: 99 })).expect(403)
+    const response = await agent.delete('/api/v2/fases-sucessionais/1').set(buildAuthHeader({ id: outsiderId })).expect(403)
     const body = response.body as { error: { message: string } }
 
-    expect(body.error.message).toMatch(/sem permissão|permissão/i)
+    expect(body.error.message).toMatch(/forbidden/i)
   })
 
   test('rejeita token expirado', async () => {
     const token = jwt.sign(
       {
-        id: 1,
-        tipo_usuario_id: 1,
+        id: writerId,
         exp: Math.floor(Date.now() / 1000) - 60
       },
       process.env.JWT_SECRET as string
@@ -87,14 +102,14 @@ describe('DELETE /api/v2/fases-sucessionais/:faseSucessionalId', () => {
     const response = await agent.delete('/api/v2/fases-sucessionais/1').set({ Authorization: `Bearer ${token}` }).expect(401)
     const body = response.body as { error: { message: string } }
 
-    expect(body.error.message).toMatch(/token expirado|expirado/i)
+    expect(body.error.message).toMatch(/unauthorized|expired/i)
   })
 
   test('rejeita token inválido', async () => {
-    const token = jwt.sign({ id: 1, tipo_usuario_id: 1 }, 'segredo-diferente')
+    const token = jwt.sign({ id: writerId }, 'segredo-diferente')
     const response = await agent.delete('/api/v2/fases-sucessionais/1').set({ Authorization: `Bearer ${token}` }).expect(401)
     const body = response.body as { error: { message: string } }
 
-    expect(body.error.message).toMatch(/token de autenticação inválido|inválido/i)
+    expect(body.error.message).toMatch(/unauthorized/i)
   })
 })

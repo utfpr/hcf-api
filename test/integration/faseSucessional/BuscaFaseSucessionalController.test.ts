@@ -8,7 +8,7 @@ type FaseSucessional = { id: number; nome: string }
 
 const returning = ['id', 'nome'] as const
 
-describe('GET /api/v2/fases-sucessionais/:faseSucessionalId', () => {
+describe('BuscaFaseSucessionalController', () => {
   const { agent, knex } = createTestApp()
 
   afterAll(() => knex.destroy())

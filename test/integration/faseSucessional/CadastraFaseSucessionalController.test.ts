@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken'
 import {
   afterAll,
+  beforeAll,
   describe,
   expect,
   test
@@ -9,18 +10,33 @@ import {
 import { FaseSucessional } from '@/domain/faseSucessional/FaseSucessional'
 
 import { createTestApp } from '../setup/app-factory'
+import { insertUsuarioComTipo } from '../setup/usuarios'
 
+let writerId = 0
 const buildAuthHeader = (
-  payload = { id: 1, tipo_usuario_id: 1 },
+  payload: { id: number } = { id: writerId },
   secret = process.env.JWT_SECRET as string
 ) => ({
   Authorization: `Bearer ${jwt.sign(payload, secret)}`
 })
 
-describe('POST /api/v2/fases-sucessionais', () => {
+describe('CadastraFaseSucessionalController', () => {
   const { agent, knex } = createTestApp()
+  const cleanups: (() => Promise<void>)[] = []
+  let outsiderId = 0
 
-  afterAll(() => knex.destroy())
+  beforeAll(async () => {
+    const writer = await insertUsuarioComTipo(knex, 1)
+    const outsider = await insertUsuarioComTipo(knex, 99)
+    writerId = writer.id
+    outsiderId = outsider.id
+    cleanups.push(writer.cleanup, outsider.cleanup)
+  })
+
+  afterAll(async () => {
+    for (const cleanup of cleanups) await cleanup()
+    await knex.destroy()
+  })
 
   test('cadastra uma fase sucessional com sucesso', async () => {
     const prefix = `CADFASE-${Date.now()}`
@@ -41,31 +57,30 @@ describe('POST /api/v2/fases-sucessionais', () => {
   })
 
   test('rejeita token ausente', async () => {
-    const response = await agent.post('/api/v2/fases-sucessionais').send({ nome: 'Sem token' }).expect(403)
+    const response = await agent.post('/api/v2/fases-sucessionais').send({ nome: 'Sem token' }).expect(401)
     const body = response.body as { error: { message: string } }
 
-    expect(body.error.message).toMatch(/Token de autenticação obrigatório|sem permissão/i)
+    expect(body.error.message).toMatch(/unauthorized/i)
   })
 
   test('rejeita token vazio', async () => {
-    const response = await agent.post('/api/v2/fases-sucessionais').set({ Authorization: 'Bearer ' }).send({ nome: 'Token vazio' }).expect(403)
+    const response = await agent.post('/api/v2/fases-sucessionais').set({ Authorization: 'Bearer ' }).send({ nome: 'Token vazio' }).expect(401)
     const body = response.body as { error: { message: string } }
 
-    expect(body.error.message).toMatch(/Token de autenticação obrigatório|sem permissão/i)
+    expect(body.error.message).toMatch(/unauthorized/i)
   })
 
   test('rejeita usuário com papel fora do permitido', async () => {
-    const response = await agent.post('/api/v2/fases-sucessionais').set(buildAuthHeader({ id: 1, tipo_usuario_id: 99 })).send({ nome: 'Sem permissão' }).expect(403)
+    const response = await agent.post('/api/v2/fases-sucessionais').set(buildAuthHeader({ id: outsiderId })).send({ nome: 'Sem permissão' }).expect(403)
     const body = response.body as { error: { message: string } }
 
-    expect(body.error.message).toMatch(/sem permissão|permissão/i)
+    expect(body.error.message).toMatch(/forbidden/i)
   })
 
   test('rejeita token expirado', async () => {
     const token = jwt.sign(
       {
-        id: 1,
-        tipo_usuario_id: 1,
+        id: writerId,
         exp: Math.floor(Date.now() / 1000) - 60
       },
       process.env.JWT_SECRET as string
@@ -73,15 +88,15 @@ describe('POST /api/v2/fases-sucessionais', () => {
     const response = await agent.post('/api/v2/fases-sucessionais').set({ Authorization: `Bearer ${token}` }).send({ nome: 'Token expirado' }).expect(401)
     const body = response.body as { error: { message: string } }
 
-    expect(body.error.message).toMatch(/token expirado|expirado/i)
+    expect(body.error.message).toMatch(/unauthorized|expired/i)
   })
 
   test('rejeita token inválido', async () => {
-    const token = jwt.sign({ id: 1, tipo_usuario_id: 1 }, 'segredo-diferente')
+    const token = jwt.sign({ id: writerId }, 'segredo-diferente')
     const response = await agent.post('/api/v2/fases-sucessionais').set({ Authorization: `Bearer ${token}` }).send({ nome: 'Token inválido' }).expect(401)
     const body = response.body as { error: { message: string } }
 
-    expect(body.error.message).toMatch(/token de autenticação inválido|inválido/i)
+    expect(body.error.message).toMatch(/unauthorized/i)
   })
 
   test('rejeita nome vazio', async () => {
