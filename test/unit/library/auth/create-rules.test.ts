@@ -19,8 +19,6 @@ describe('createRules', () => {
 
   test('grants authenticated users public reads and UsuarioSessao', () => {
     const users = [
-      { id: 1, tipo_usuario_id: 1 },
-      { id: 2, tipo_usuario_id: 2 },
       { id: 3, tipo_usuario_id: 3 },
       { id: 99, tipo_usuario_id: 99 }
     ]
@@ -29,6 +27,23 @@ describe('createRules', () => {
       expect(createRules(user)).toEqual([
         ...publicReads,
         { action: 'read', resource: 'UsuarioSessao' }
+      ])
+    }
+  })
+
+  test('grants FaseSucessional writes only to tipo_usuario_id 1 and 2', () => {
+    const users = [
+      { id: 1, tipo_usuario_id: 1 },
+      { id: 2, tipo_usuario_id: 2 }
+    ]
+
+    for (const user of users) {
+      expect(createRules(user)).toEqual([
+        ...publicReads,
+        { action: 'read', resource: 'UsuarioSessao' },
+        { action: 'create', resource: 'FaseSucessional' },
+        { action: 'update', resource: 'FaseSucessional' },
+        { action: 'delete', resource: 'FaseSucessional' }
       ])
     }
   })
