@@ -7,7 +7,7 @@ interface Dependencies {
   vegetacaoCollection: VegetacaoCollection
 }
 
-export class BuscarVegetacaoPorIdUseCase {
+export class BuscaVegetacaoPorIdUseCase {
   private readonly vegetacaoCollection: VegetacaoCollection
 
   constructor(dependencies: Dependencies) {

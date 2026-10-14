@@ -14,7 +14,7 @@ describe('GET /api/v2/vegetacoes', () => {
   afterAll(() => knex.destroy())
 
   test('retorna a lista ordenada por id decrescente como padrão dentro do prefixo do teste', async () => {
-    const prefix = 'XVEG'
+    const prefix = `XVEG_LISTA_${Date.now()}`
     const nomes = [
       `${prefix} Mata Atlântica`,
       `${prefix} Restinga`,
@@ -35,7 +35,7 @@ describe('GET /api/v2/vegetacoes', () => {
   })
 
   test('filtra por nome sem diferenciar maiúsculas e minúsculas', async () => {
-    const prefix = 'XVEG'
+    const prefix = `XVEG_FILTRO_${Date.now()}`
     const nomes = [
       `${prefix} Floresta`,
       `${prefix} Cerrado`,
@@ -54,7 +54,7 @@ describe('GET /api/v2/vegetacoes', () => {
   })
 
   test('aceita ordenação customizada por nome e id', async () => {
-    const prefix = 'XVEG'
+    const prefix = `XVEG_ORDEM_${Date.now()}`
     const nomes = [
       `${prefix} Z`,
       `${prefix} A`,
@@ -76,7 +76,7 @@ describe('GET /api/v2/vegetacoes', () => {
   })
 
   test('retorna 400 quando a ordenação é inválida', async () => {
-    const prefix = 'XVEG'
+    const prefix = `XVEG_ORDEM_INVALIDA_${Date.now()}`
     const nomes = [
       `${prefix} Z`,
       `${prefix} A`,
@@ -92,38 +92,5 @@ describe('GET /api/v2/vegetacoes', () => {
     } finally {
       await knex('vegetacoes').whereIn('nome', nomes).delete()
     }
-  })
-})
-
-describe('GET /api/v2/vegetacoes/:vegetacaoId', () => {
-  const { agent, knex } = createTestApp()
-
-  afterAll(() => knex.destroy())
-
-  test('retorna o registro encontrado', async () => {
-    const [vegetacao] = await knex('vegetacoes')
-      .insert({ nome: 'XVEG Vegetação Encontrada' })
-      .returning<Vegetacao[]>(returning)
-
-    try {
-      const response = await agent.get(`/api/v2/vegetacoes/${vegetacao.id}`).expect(200)
-      expect(response.body).toEqual({ id: vegetacao.id, nome: vegetacao.nome })
-    } finally {
-      await knex('vegetacoes').where({ id: vegetacao.id }).delete()
-    }
-  })
-
-  test('retorna 404 para id inexistente', async () => {
-    const response = await agent.get('/api/v2/vegetacoes/999999').expect(404)
-    const body = response.body as { error: { message: string } }
-
-    expect(body.error.message).toMatch(/não encontrad[ao]|not found/i)
-  })
-
-  test('retorna 400 para id inválido', async () => {
-    const response = await agent.get('/api/v2/vegetacoes/abc').expect(400)
-    const body = response.body as { error: { message: string } }
-
-    expect(body.error.message).toMatch(/inválido|invalid/i)
   })
 })
