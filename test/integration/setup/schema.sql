@@ -999,6 +999,8 @@ CREATE TABLE public.solos (
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
+CREATE UNIQUE INDEX solos_nome_lower_uidx
+    ON public.solos USING btree (lower((nome)::text));
 
 --
 -- TOC entry 267 (class 1259 OID 31118)
