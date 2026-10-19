@@ -13,6 +13,7 @@
 		"migration:create": "tsx --env-file=.env src/database/cli.ts migration:create",
 		"migration:apply": "tsx --env-file=.env src/database/cli.ts migration:apply",
 		"seed:expedicoes": "tsx --env-file=.env src/database/cli.ts seed:expedicoes",
+		"fotos:sync": "tsx src/utils/scripts/sync_tombo_fotos.ts",
 		"tsc:check": "tsc --noEmit",
 		"lint:eslint": "eslint --cache",
 		"lint": "run-p tsc:check lint:eslint",
@@ -24,6 +25,7 @@
 		"test:integration": "vitest --run --project integration",
 		"test:integration:watch": "vitest --project integration",
 		"test:coverage": "vitest --run --project unit --coverage",
+		"test:caprover": "node --test caprover/caprover-pre-deploy.test.js",
 		"prepare": "husky",
 		"audit": "npm audit --audit-level=moderate",
 		"audit:fix": "npm audit fix"

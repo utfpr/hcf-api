@@ -23,3 +23,5 @@ reports/data/settings
 npm-debug.log
 
 NOTES.md
+
+.agents/skills/pr-review/

@@ -46,8 +46,11 @@ async function applyMigrations() {
   const applyMigrationsService = new ApplyMigrationService({
     migrationFileSystem, migrationRepository: migrationDataSource, logger
   })
-  await applyMigrationsService.execute()
-  await migrationKnex.destroy()
+  try {
+    await applyMigrationsService.execute()
+  } finally {
+    await migrationKnex.destroy()
+  }
 }
 
 program
@@ -67,4 +70,7 @@ program.command('seed:expedicoes')
   .description('Popula o banco com dados de teste para expedições, eventos e evidências')
   .action(seedExpedicoes)
 
-program.parse(process.argv)
+program.parseAsync(process.argv).catch((error: unknown) => {
+  logger.error('Migration command failed', error)
+  process.exit(1)
+})

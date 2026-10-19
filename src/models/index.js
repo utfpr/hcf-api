@@ -16,6 +16,9 @@ import FaseSucessionalDef from './FaseSucessional.js';
 import GeneroDef from './Genero.js';
 import HerbarioDef from './Herbario.js';
 import IdentificadorDef from './Identificador.js';
+import InventarioDef from './Inventario.js';
+import ListaConferenciaDef from './ListaConferencia.js';
+import ListaConferenciaRfidDef from './ListaConferenciaRfid.js';
 import LocalColetaDef from './LocalColeta.js';
 import PaisDef from './Pais.js';
 import RefloraDef from './Reflora.js';
@@ -57,6 +60,9 @@ const models = {
     Genero: GeneroDef(sequelize, Sequelize),
     Herbario: HerbarioDef(sequelize, Sequelize),
     Identificador: IdentificadorDef(sequelize, Sequelize),
+    Inventario: InventarioDef(sequelize, Sequelize),
+    ListaConferencia: ListaConferenciaDef(sequelize, Sequelize),
+    ListaConferenciaRfid: ListaConferenciaRfidDef(sequelize, Sequelize),
     LocalColeta: LocalColetaDef(sequelize, Sequelize),
     Pais: PaisDef(sequelize, Sequelize),
     Reflora: RefloraDef(sequelize, Sequelize),
