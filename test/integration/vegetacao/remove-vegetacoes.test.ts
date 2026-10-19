@@ -1,24 +1,31 @@
-import jwt from 'jsonwebtoken'
 import {
   afterAll,
+  beforeAll,
   describe,
   expect,
   test
 } from 'vitest'
 
 import { createTestApp } from '../setup/app-factory'
+import { createCuradorAuth } from '../setup/curador-auth'
 
-type Vegetacao = { id: number; nome: string }
+type Vegetacao = { id: string; nome: string }
 
-const buildAuthHeader = () => {
-  const token = jwt.sign({ id: 1, tipo_usuario_id: 1 }, process.env.JWT_SECRET as string)
-  return { Authorization: `Bearer ${token}` }
-}
-
-describe('DELETE /api/v2/vegetacoes/:vegetacaoId', () => {
+describe('DELETE /api/v1/vegetacoes/:vegetacaoId', () => {
   const { agent, knex } = createTestApp()
+  let authHeader: { Authorization: string }
+  let cleanupAuth: () => Promise<void>
 
-  afterAll(() => knex.destroy())
+  beforeAll(async () => {
+    const auth = await createCuradorAuth(knex)
+    authHeader = auth.header
+    cleanupAuth = auth.cleanup
+  })
+
+  afterAll(async () => {
+    await cleanupAuth()
+    await knex.destroy()
+  })
 
   test('remove uma vegetação sem dependências', async () => {
     const prefix = `DELVEG-${Date.now()}`
@@ -27,7 +34,7 @@ describe('DELETE /api/v2/vegetacoes/:vegetacaoId', () => {
       .returning(['id', 'nome']) as Vegetacao[]
 
     try {
-      await agent.delete(`/api/v2/vegetacoes/${vegetacao.id}`).set(buildAuthHeader()).expect(204)
+      await agent.delete(`/api/v1/vegetacoes/${vegetacao.id}`).set(authHeader).expect(204)
       const found = await knex('vegetacoes').where({ id: vegetacao.id }).first()
       expect(found).toBeUndefined()
     } finally {
@@ -36,14 +43,14 @@ describe('DELETE /api/v2/vegetacoes/:vegetacaoId', () => {
   })
 
   test('retorna 404 para id inexistente', async () => {
-    const response = await agent.delete('/api/v2/vegetacoes/999999').set(buildAuthHeader()).expect(404)
+    const response = await agent.delete('/api/v1/vegetacoes/999999').set(authHeader).expect(404)
     const body = response.body as { error: { message: string } }
 
     expect(body.error.message).toMatch(/não encontrad|not found/i)
   })
 
   test('retorna 400 para id inválido', async () => {
-    const response = await agent.delete('/api/v2/vegetacoes/abc').set(buildAuthHeader()).expect(400)
+    const response = await agent.delete('/api/v1/vegetacoes/abc').set(authHeader).expect(400)
     const body = response.body as { error: { message: string } }
 
     expect(body.error.message).toMatch(/inválido|invalid/i)
@@ -65,7 +72,7 @@ describe('DELETE /api/v2/vegetacoes/:vegetacaoId', () => {
         updated_at: new Date()
       })
 
-      const response = await agent.delete(`/api/v2/vegetacoes/${vegetacao.id}`).set(buildAuthHeader()).expect(409)
+      const response = await agent.delete(`/api/v1/vegetacoes/${vegetacao.id}`).set(authHeader).expect(409)
       const body = response.body as { error: { message: string } }
 
       expect(body.error.message).toMatch(/em uso|in use|uso/i)

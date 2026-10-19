@@ -14,7 +14,7 @@ export class BuscaVegetacaoPorIdUseCase {
     this.vegetacaoCollection = dependencies.vegetacaoCollection
   }
 
-  execute({ id }: { id: number }): Promise<Either<Error, Attributes | null>> {
+  execute({ id }: { id: string }): Promise<Either<Error, Attributes | null>> {
     return this.vegetacaoCollection.findById(id)
   }
 }

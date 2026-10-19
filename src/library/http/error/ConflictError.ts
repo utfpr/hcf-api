@@ -5,7 +5,7 @@ export class ConflictError extends HttpError {
     super({
       ...params,
       statusCode: 409,
-      type: 'CONFLICT_ERROR'
+      type: 'conflict'
     })
   }
 }

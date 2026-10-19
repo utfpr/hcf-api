@@ -1,39 +1,45 @@
-import jwt from 'jsonwebtoken'
 import {
   afterAll,
+  beforeAll,
   describe,
   expect,
   test
 } from 'vitest'
 
 import { createTestApp } from '../setup/app-factory'
+import { createCuradorAuth } from '../setup/curador-auth'
 
-type Vegetacao = { id: number; nome: string }
+type Vegetacao = { id: string; nome: string }
 
-const buildAuthHeader = (
-  payload = { id: 1, tipo_usuario_id: 1 },
-  secret = process.env.JWT_SECRET as string
-) => ({
-  Authorization: `Bearer ${jwt.sign(payload, secret)}`
-})
-
-describe('POST /api/v2/vegetacoes', () => {
+describe('POST /api/v1/vegetacoes', () => {
   const { agent, knex } = createTestApp()
+  let authHeader: { Authorization: string }
+  let cleanupAuth: () => Promise<void>
 
-  afterAll(() => knex.destroy())
+  beforeAll(async () => {
+    const auth = await createCuradorAuth(knex)
+    authHeader = auth.header
+    cleanupAuth = auth.cleanup
+  })
+
+  afterAll(async () => {
+    await cleanupAuth()
+    await knex.destroy()
+  })
 
   test('cadastra uma vegetação com sucesso', async () => {
     const prefix = `CADVEG-${Date.now()}`
     const nome = `${prefix} Mata Atlântica`
 
     try {
-      const response = await agent.post('/api/v2/vegetacoes').set(buildAuthHeader()).send({ nome }).expect(201)
+      const response = await agent.post('/api/v1/vegetacoes').set(authHeader).send({ nome }).expect(201)
       const body = response.body as Vegetacao
 
       expect(body).toMatchObject({ nome })
-      expect(Number(body.id)).toBeGreaterThan(0)
+      expect(body.id).toMatch(/^\d+$/)
+      expect(BigInt(body.id)).toBeGreaterThan(0n)
 
-      await knex('vegetacoes').where({ id: Number(body.id) }).delete()
+      await knex('vegetacoes').where({ id: body.id }).delete()
     } catch (error) {
       await knex('vegetacoes').where('nome', 'like', `${prefix}%`).delete()
       throw error
@@ -41,7 +47,7 @@ describe('POST /api/v2/vegetacoes', () => {
   })
 
   test('retorna 400 quando o nome está vazio', async () => {
-    const response = await agent.post('/api/v2/vegetacoes').set(buildAuthHeader()).send({ nome: '   ' }).expect(400)
+    const response = await agent.post('/api/v1/vegetacoes').set(authHeader).send({ nome: '   ' }).expect(400)
     const body = response.body as { error: { message: string } }
 
     expect(body.error.message).toMatch(/vazio|empty|obrigat/i)
@@ -54,7 +60,7 @@ describe('POST /api/v2/vegetacoes', () => {
     await knex('vegetacoes').insert({ nome })
 
     try {
-      const response = await agent.post('/api/v2/vegetacoes').set(buildAuthHeader()).send({ nome: nome.toUpperCase() }).expect(409)
+      const response = await agent.post('/api/v1/vegetacoes').set(authHeader).send({ nome: nome.toUpperCase() }).expect(409)
       const body = response.body as { error: { message: string } }
 
       expect(body.error.message).toMatch(/já existe|duplic/i)

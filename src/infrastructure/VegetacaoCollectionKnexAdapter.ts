@@ -1,13 +1,12 @@
 import { Knex } from 'knex'
 
-import { Attributes } from '@/domain/vegetacao/Vegetacao'
+import { VegetacaoEmUsoError } from '@/domain/vegetacao/error/VegetacaoEmUsoError'
+import { VegetacaoJaExisteError } from '@/domain/vegetacao/error/VegetacaoJaExisteError'
+import { Attributes, Vegetacao } from '@/domain/vegetacao/Vegetacao'
 import { VegetacaoCollection, VegetacaoFilters } from '@/domain/vegetacao/VegetacaoCollection'
 import { Either } from '@/library/either/Either'
 
 import { CollectionError } from './error/CollectionError'
-
-const DUPLICATE_VEGETACAO_MESSAGE = 'Já existe uma vegetação com esse nome'
-const VEGETACAO_IN_USE_MESSAGE = 'Vegetação está em uso e não pode ser removida'
 
 function normalizeErrorString(value: unknown): string {
   if (value === undefined || value === null) {
@@ -92,7 +91,7 @@ export class VegetacaoCollectionKnexAdapter implements VegetacaoCollection {
     this.knex = dependencies.knex
   }
 
-  private async findByNome(nome: string, excludeId?: number): Promise<Either<Error, Attributes | null>> {
+  private async findByNome(nome: string, excludeId?: string): Promise<Either<Error, Attributes | null>> {
     try {
       const query = this.knex<Attributes>('vegetacoes')
         .select(['id', 'nome'])
@@ -127,7 +126,7 @@ export class VegetacaoCollectionKnexAdapter implements VegetacaoCollection {
     }
   }
 
-  async findById(id: number): Promise<Either<Error, Attributes | null>> {
+  async findById(id: string): Promise<Either<Error, Attributes | null>> {
     try {
       const vegetacao = await this.knex<Attributes>('vegetacoes').select(['id', 'nome']).where({ id }).first()
       return Either.right(vegetacao ?? null)
@@ -136,7 +135,7 @@ export class VegetacaoCollectionKnexAdapter implements VegetacaoCollection {
     }
   }
 
-  async create(data: Pick<Attributes, 'nome'>): Promise<Either<Error, Attributes>> {
+  async create(data: Pick<Attributes, 'nome'>): Promise<Either<Error, Vegetacao>> {
     const nome = data.nome.trim()
 
     const existing = await this.findByNome(nome)
@@ -145,7 +144,7 @@ export class VegetacaoCollectionKnexAdapter implements VegetacaoCollection {
     }
 
     if (existing.value) {
-      return Either.left(new CollectionError({ message: DUPLICATE_VEGETACAO_MESSAGE }))
+      return Either.left(new VegetacaoJaExisteError())
     }
 
     try {
@@ -153,17 +152,17 @@ export class VegetacaoCollectionKnexAdapter implements VegetacaoCollection {
         .insert({ nome })
         .returning(['id', 'nome']) as Attributes[]
 
-      return Either.right(vegetacao)
+      return Vegetacao.create({ id: vegetacao.id, nome: vegetacao.nome })
     } catch (error) {
       if (isDuplicateVegetacaoError(error)) {
-        return Either.left(new CollectionError({ message: DUPLICATE_VEGETACAO_MESSAGE, cause: error }))
+        return Either.left(new VegetacaoJaExisteError({ cause: error }))
       }
 
       return Either.left(new CollectionError({ message: 'Erro ao criar vegetação', cause: error }))
     }
   }
 
-  async update(id: number, data: Pick<Attributes, 'nome'>): Promise<Either<Error, Attributes | null>> {
+  async update(id: string, data: Pick<Attributes, 'nome'>): Promise<Either<Error, Vegetacao | null>> {
     const nome = data.nome.trim()
 
     const existing = await this.findByNome(nome, id)
@@ -172,7 +171,7 @@ export class VegetacaoCollectionKnexAdapter implements VegetacaoCollection {
     }
 
     if (existing.value) {
-      return Either.left(new CollectionError({ message: DUPLICATE_VEGETACAO_MESSAGE }))
+      return Either.left(new VegetacaoJaExisteError())
     }
 
     try {
@@ -181,23 +180,27 @@ export class VegetacaoCollectionKnexAdapter implements VegetacaoCollection {
         .update({ nome })
         .returning(['id', 'nome']) as Attributes[]
 
-      return Either.right(vegetacao ?? null)
+      if (!vegetacao) {
+        return Either.right(null)
+      }
+
+      return Vegetacao.create({ id: vegetacao.id, nome: vegetacao.nome })
     } catch (error) {
       if (isDuplicateVegetacaoError(error)) {
-        return Either.left(new CollectionError({ message: DUPLICATE_VEGETACAO_MESSAGE, cause: error }))
+        return Either.left(new VegetacaoJaExisteError({ cause: error }))
       }
 
       return Either.left(new CollectionError({ message: 'Erro ao atualizar vegetação', cause: error }))
     }
   }
 
-  async delete(id: number): Promise<Either<Error, boolean>> {
+  async delete(id: string): Promise<Either<Error, boolean>> {
     try {
       const deleted = await this.knex<Attributes>('vegetacoes').where({ id }).delete()
       return Either.right(deleted > 0)
     } catch (error) {
       if (isVegetacaoInUseError(error)) {
-        return Either.left(new CollectionError({ message: VEGETACAO_IN_USE_MESSAGE, cause: error }))
+        return Either.left(new VegetacaoEmUsoError({ cause: error }))
       }
 
       return Either.left(new CollectionError({ message: 'Erro ao remover vegetação', cause: error }))

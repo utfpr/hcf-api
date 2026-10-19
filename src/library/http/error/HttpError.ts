@@ -7,7 +7,7 @@ export class HttpError extends BaseError {
 
   constructor(params: {
     statusCode: number
-    type?: string
+    type: string
     message: string
     report?: unknown
     cause?: unknown

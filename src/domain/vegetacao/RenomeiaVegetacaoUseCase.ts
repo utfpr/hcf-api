@@ -1,7 +1,6 @@
 import { Either } from '@/library/either/Either'
-import { NotFoundError } from '@/library/http/error/NotFoundError'
 
-import { Attributes, Vegetacao } from './Vegetacao'
+import { Vegetacao } from './Vegetacao'
 import { VegetacaoCollection } from './VegetacaoCollection'
 
 interface Dependencies {
@@ -15,21 +14,12 @@ export class RenomeiaVegetacaoUseCase {
     this.vegetacaoCollection = dependencies.vegetacaoCollection
   }
 
-  async execute({ id, nome }: { id: number; nome: string }): Promise<Either<Error, Attributes>> {
+  async execute({ id, nome }: { id: string; nome: string }): Promise<Either<Error, Vegetacao | null>> {
     const vegetacao = Vegetacao.create({ nome })
     if (vegetacao.left()) {
-      return Either.left(vegetacao.value)
+      return vegetacao
     }
 
-    const updated = await this.vegetacaoCollection.update(id, { nome: vegetacao.value.nome })
-    if (updated.left()) {
-      return Either.left(updated.value)
-    }
-
-    if (!updated.value) {
-      return Either.left(new NotFoundError({ message: 'Vegetação não encontrada' }))
-    }
-
-    return Either.right(updated.value)
+    return this.vegetacaoCollection.update(id, { nome: vegetacao.value.nome })
   }
 }

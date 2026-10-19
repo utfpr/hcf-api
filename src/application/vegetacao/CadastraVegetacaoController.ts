@@ -1,4 +1,6 @@
 import { CadastraVegetacaoUseCase } from '@/domain/vegetacao/CadastraVegetacaoUseCase'
+import { VegetacaoJaExisteError } from '@/domain/vegetacao/error/VegetacaoJaExisteError'
+import { Vegetacao } from '@/domain/vegetacao/Vegetacao'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
@@ -26,16 +28,28 @@ export class CadastraVegetacaoController implements RequestHandler {
       return new BadRequestError({ message: 'Nome da vegetação não pode ser vazio' })
     }
 
-    const normalized = nome.trim()
-    const result = await this.cadastraVegetacaoUseCase.execute({ nome: normalized })
+    const result = await this.cadastraVegetacaoUseCase.execute({ nome: nome.trim() })
 
     if (result.left()) {
-      if (result.value.message === 'Já existe uma vegetação com esse nome') {
-        return new ConflictError({ message: 'Já existe uma vegetação com esse nome' })
+      if (result.value instanceof VegetacaoJaExisteError) {
+        return new ConflictError({ message: result.value.message })
       }
-      return new InternalServerError({ message: result.value.message })
+      return new InternalServerError({ message: 'Erro ao criar vegetação' })
     }
 
-    return { statusCode: StatusCode.Created, body: result.value }
+    const body = vegetacaoBody(result.value)
+    if (!body) {
+      return new InternalServerError({ message: 'Erro ao criar vegetação' })
+    }
+
+    return { statusCode: StatusCode.Created, body }
   }
+}
+
+function vegetacaoBody(vegetacao: Vegetacao): { id: string; nome: string } | undefined {
+  if (vegetacao.id === undefined) {
+    return undefined
+  }
+
+  return { id: vegetacao.id, nome: vegetacao.nome }
 }

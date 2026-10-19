@@ -26,7 +26,7 @@ export class BuscaVegetacaoController implements RequestHandler {
       return new BadRequestError({ message: 'vegetacaoId inválido' })
     }
 
-    const result = await this.buscaVegetacaoPorIdUseCase.execute({ id: Number(vegetacaoId) })
+    const result = await this.buscaVegetacaoPorIdUseCase.execute({ id: vegetacaoId })
 
     if (result.left()) {
       return new InternalServerError({ message: result.value.message })

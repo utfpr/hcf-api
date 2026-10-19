@@ -46,13 +46,30 @@ export type RulesUser = { id: number; tipo_usuario_id: number }
 
 const publicReads: Rule<Resource, Action>[] = [
   { action: 'read', resource: 'Pais' },
-  { action: 'read', resource: 'Estado' }
+  { action: 'read', resource: 'Estado' },
+  { action: 'read', resource: 'Vegetacao' }
 ]
+
+const CURADOR = 1
+const OPERADOR = 2
 
 export function createRules(user?: RulesUser): Rule<Resource, Action>[] {
   if (user === undefined) {
     return [...publicReads]
   }
 
-  return [...publicReads, { action: 'read', resource: 'UsuarioSessao' }]
+  const rules: Rule<Resource, Action>[] = [
+    ...publicReads,
+    { action: 'read', resource: 'UsuarioSessao' }
+  ]
+
+  if (user.tipo_usuario_id === CURADOR || user.tipo_usuario_id === OPERADOR) {
+    rules.push(
+      { action: 'create', resource: 'Vegetacao' },
+      { action: 'update', resource: 'Vegetacao' },
+      { action: 'delete', resource: 'Vegetacao' }
+    )
+  }
+
+  return rules
 }
