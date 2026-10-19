@@ -14,13 +14,6 @@ interface Dependencies {
   cadastraExpedicaoUseCase: CadastraExpedicaoUseCase
 }
 
-interface CustomHttpRequest extends HttpRequest {
-  usuario?: {
-    id: number
-    tipo_usuario_id: number
-  }
-}
-
 export class CadastraExpedicaoController implements RequestHandler {
   private readonly cadastraExpedicaoUseCase: CadastraExpedicaoUseCase
 
@@ -28,16 +21,8 @@ export class CadastraExpedicaoController implements RequestHandler {
     this.cadastraExpedicaoUseCase = dependencies.cadastraExpedicaoUseCase
   }
 
-  async handle(request: CustomHttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
+  async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     try {
-      //  TODO: AUTENTICAÇÃO TEMPORARIAMENTE DESABILITADA
-      //  A infraestrutura de request HTTP autenticada está sendo desenvolvida.
-      //  Assim que integrada, descomentar a validação abaixo e remover o mock do 'created_by'.
-
-      // if (!request.usuario || ![TIPOS_USUARIOS.CURADOR, TIPOS_USUARIOS.OPERADOR].includes(request.usuario.tipo_usuario_id)) {
-      //   return new UnauthorizedError({ message: 'Não tem permissão para realizar esta ação' })
-      // }
-
       const {
         descricao, data_inicio, data_fim, cidade_id, participantes, rotas
       } = request.body as {
@@ -109,7 +94,7 @@ export class CadastraExpedicaoController implements RequestHandler {
         }
       }
 
-      const created_by = 9 // MOCK TEMPORÁRIO
+      const created_by = request.user?.id ?? null
 
       // EXECUÇÃO DO CASO DE USO
       const result = await this.cadastraExpedicaoUseCase.execute({

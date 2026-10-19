@@ -12,13 +12,6 @@ interface Dependencies {
   SubstituiRotasUseCase: SubstituiRotasUseCase
 }
 
-interface CustomHttpRequest extends HttpRequest {
-  usuario?: {
-    id: number
-    tipo_usuario_id: number
-  }
-}
-
 export class SubstituiRotasController implements RequestHandler {
   private readonly SubstituiRotasUseCase: SubstituiRotasUseCase
 
@@ -26,7 +19,7 @@ export class SubstituiRotasController implements RequestHandler {
     this.SubstituiRotasUseCase = dependencies.SubstituiRotasUseCase
   }
 
-  async handle(request: CustomHttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
+  async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     try {
       const { expedicaoId } = request.params
       const { rotas } = request.body as { rotas?: unknown }
@@ -64,7 +57,11 @@ export class SubstituiRotasController implements RequestHandler {
         rotasValidadas.push({ cidade_id: rotaObj.cidade_id, locais_coleta_ids: locaisIds })
       }
 
-      const result = await this.SubstituiRotasUseCase.execute(Number(expedicaoId), rotasValidadas)
+      const result = await this.SubstituiRotasUseCase.execute(
+        Number(expedicaoId),
+        rotasValidadas,
+        request.user?.id ?? null
+      )
 
       if (result.left()) {
         const error = result.value

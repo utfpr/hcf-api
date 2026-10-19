@@ -1,5 +1,6 @@
 import { type Knex } from 'knex'
 
+import { authorize } from '@/application/AuthorizeMiddlewareFactory'
 import { AdicionaParticipanteUseCase } from '@/domain/expedicao/AdcionaParticipanteUseCase'
 import { AtualizaExpedicaoUseCase } from '@/domain/expedicao/AtualizaExpedicaoUseCase'
 import { BuscaExpedicaoUseCase } from '@/domain/expedicao/BuscaExpedicaoUseCase'
@@ -29,6 +30,7 @@ export function routes(knex: Knex): Route[] {
       method: Method.Post,
       path: '/v2/expedicoes',
       handlers: [
+        authorize('create', 'Expedicao'),
         new CadastraExpedicaoController({
           cadastraExpedicaoUseCase: new CadastraExpedicaoUseCase({ expedicaoCollection })
         })
@@ -38,6 +40,7 @@ export function routes(knex: Knex): Route[] {
       method: Method.Get,
       path: '/v2/expedicoes',
       handlers: [
+        authorize('read', 'Expedicao'),
         new ListaExpedicoesController({
           listaExpedicoesUseCase: new ListaExpedicoesUseCase({ expedicaoCollection })
         })
@@ -47,6 +50,7 @@ export function routes(knex: Knex): Route[] {
       method: Method.Get,
       path: '/v2/expedicoes/:expedicaoId',
       handlers: [
+        authorize('read', 'Expedicao'),
         new BuscaExpedicaoController({
           buscaExpedicaoUseCase: new BuscaExpedicaoUseCase({ expedicaoCollection })
         })
@@ -56,6 +60,7 @@ export function routes(knex: Knex): Route[] {
       method: Method.Delete,
       path: '/v2/expedicoes/:expedicaoId',
       handlers: [
+        authorize('delete', 'Expedicao'),
         new DeletaExpedicaoController({
           deletaExpedicaoUseCase: new DeletaExpedicaoUseCase({ expedicaoCollection })
         })
@@ -65,6 +70,7 @@ export function routes(knex: Knex): Route[] {
       method: Method.Put,
       path: '/v2/expedicoes/:expedicaoId',
       handlers: [
+        authorize('update', 'Expedicao'),
         new AtualizaExpedicaoController({
           atualizaExpedicaoUseCase: new AtualizaExpedicaoUseCase({ expedicaoCollection })
         })
@@ -74,6 +80,7 @@ export function routes(knex: Knex): Route[] {
       method: Method.Post,
       path: '/v2/expedicoes/:expedicaoId/participantes',
       handlers: [
+        authorize('update', 'Expedicao'),
         new AdicionaParticipanteController({
           adicionaParticipanteUseCase: new AdicionaParticipanteUseCase({ expedicaoCollection })
         })
@@ -83,6 +90,7 @@ export function routes(knex: Knex): Route[] {
       method: Method.Delete,
       path: '/v2/expedicoes/:expedicaoId/participantes/:usuarioId',
       handlers: [
+        authorize('update', 'Expedicao'),
         new RemoveParticipanteController({
           removeParticipanteUseCase: new RemoveParticipanteUseCase({ expedicaoCollection })
         })
@@ -92,6 +100,7 @@ export function routes(knex: Knex): Route[] {
       method: Method.Put,
       path: '/v2/expedicoes/:expedicaoId/rotas',
       handlers: [
+        authorize('update', 'Expedicao'),
         new SubstituiRotasController({
           SubstituiRotasUseCase: new SubstituiRotasUseCase({ expedicaoCollection })
         })

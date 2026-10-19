@@ -12,13 +12,6 @@ interface Dependencies {
   atualizaExpedicaoUseCase: AtualizaExpedicaoUseCase
 }
 
-interface CustomHttpRequest extends HttpRequest {
-  usuario?: {
-    id: number
-    tipo_usuario_id: number
-  }
-}
-
 export class AtualizaExpedicaoController implements RequestHandler {
   private readonly atualizaExpedicaoUseCase: AtualizaExpedicaoUseCase
 
@@ -26,7 +19,7 @@ export class AtualizaExpedicaoController implements RequestHandler {
     this.atualizaExpedicaoUseCase = dependencies.atualizaExpedicaoUseCase
   }
 
-  async handle(request: CustomHttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
+  async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     try {
       const { expedicaoId } = request.params
       const id = Number(expedicaoId)
@@ -70,7 +63,7 @@ export class AtualizaExpedicaoController implements RequestHandler {
         return new BadRequestError({ message: 'A descricao, se informada, deve ser um texto.' })
       }
 
-      const updated_by = 10 // MOCK TEMPORÁRIO, trocar por request.usuario.id
+      const updated_by = request.user?.id ?? 0
 
       const result = await this.atualizaExpedicaoUseCase.execute(id, {
         descricao: descricao ?? null,

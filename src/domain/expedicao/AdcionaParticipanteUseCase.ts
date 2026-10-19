@@ -13,7 +13,7 @@ export class AdicionaParticipanteUseCase {
     this.expedicaoCollection = dependencies.expedicaoCollection
   }
 
-  execute(expedicaoId: number, usuarioId: number): Promise<Either<Error, void>> {
-    return this.expedicaoCollection.addParticipant(expedicaoId, usuarioId)
+  execute(expedicaoId: number, usuarioId: number, createdBy?: number | null): Promise<Either<Error, void>> {
+    return this.expedicaoCollection.addParticipant(expedicaoId, usuarioId, createdBy)
   }
 }

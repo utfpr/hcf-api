@@ -383,11 +383,13 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
     }
   }
 
-  async addParticipant(expedicaoId: number, usuarioId: number): Promise<Either<Error, void>> {
+  async addParticipant(expedicaoId: number, usuarioId: number, createdBy?: number | null): Promise<Either<Error, void>> {
     try {
       await this.knex('expedicoes_participantes').insert({
         expedicao_id: expedicaoId,
-        usuario_id: usuarioId
+        usuario_id: usuarioId,
+        created_by: createdBy ?? null,
+        updated_by: createdBy ?? null
       })
       return Either.right(undefined)
     } catch (error: unknown) {
@@ -414,7 +416,7 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
     }
   }
 
-  async substituteRoute(expedicaoId: number, rotas: RotaInput[]): Promise<Either<Error, void>> {
+  async substituteRoute(expedicaoId: number, rotas: RotaInput[], updatedBy?: number | null): Promise<Either<Error, void>> {
     try {
       await this.knex.transaction(async trx => {
         // Valida locais de coleta
@@ -436,7 +438,9 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
               .insert({
                 expedicao_id: expedicaoId,
                 cidade_id: rota.cidade_id,
-                ordem: i
+                ordem: i,
+                created_by: updatedBy ?? null,
+                updated_by: updatedBy ?? null
               })
               .returning<{ rota_id: number }[]>(['id as rota_id'])
 

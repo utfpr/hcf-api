@@ -14,7 +14,7 @@ export class SubstituiRotasUseCase {
     this.expedicaoCollection = dependencies.expedicaoCollection
   }
 
-  execute(expedicaoId: number, rotas: RotaInput[]): Promise<Either<Error, void>> {
-    return this.expedicaoCollection.substituteRoute(expedicaoId, rotas)
+  execute(expedicaoId: number, rotas: RotaInput[], updatedBy?: number | null): Promise<Either<Error, void>> {
+    return this.expedicaoCollection.substituteRoute(expedicaoId, rotas, updatedBy)
   }
 }

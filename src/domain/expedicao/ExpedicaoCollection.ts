@@ -44,10 +44,10 @@ export interface ExpedicaoCollection {
   findById(id: number): Promise<Either<Error, Attributes | null>>
   create(attributes: CreateAttributes): Promise<Either<Error, Attributes>>
 
-  addParticipant(expedicaoId: number, usuarioId: number): Promise<Either<Error, void>>
+  addParticipant(expedicaoId: number, usuarioId: number, createdBy?: number | null): Promise<Either<Error, void>>
   removeParticipant(expedicaoId: number, usuarioId: number): Promise<Either<Error, void>>
 
-  substituteRoute(expedicaoId: number, rotas: RotaInput[]): Promise<Either<Error, void>>
+  substituteRoute(expedicaoId: number, rotas: RotaInput[], updatedBy?: number | null): Promise<Either<Error, void>>
 
   delete(id: number): Promise<Either<Error, void>>
   update(id: number, attributes: UpdateAttributes): Promise<Either<Error, Attributes>>

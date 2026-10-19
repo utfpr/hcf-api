@@ -12,15 +12,6 @@ interface Dependencies {
   adicionaParticipanteUseCase: AdicionaParticipanteUseCase
 }
 
-interface CustomHttpRequest extends HttpRequest {
-  params: Record<string, string | undefined>
-  body: unknown
-  usuario?: {
-    id: number
-    tipo_usuario_id: number
-  }
-}
-
 export class AdicionaParticipanteController implements RequestHandler {
   private readonly adicionaParticipanteUseCase: AdicionaParticipanteUseCase
 
@@ -28,13 +19,11 @@ export class AdicionaParticipanteController implements RequestHandler {
     this.adicionaParticipanteUseCase = dependencies.adicionaParticipanteUseCase
   }
 
-  async handle(request: CustomHttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
+  async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     try {
-      // TODO: AUTENTICAÇÃO TEMPORARIAMENTE DESABILITADA
-
-      const { expedicaoId } = request.params
-      const { usuarioId } = request.body as { usuarioId?: number }
-      if (expedicaoId === undefined || expedicaoId === null || expedicaoId === '' || !/^\d+$/.test(expedicaoId)) {
+      const { expedicaoId } = request.params as { expedicaoId?: string }
+      const { usuarioId } = (request.body ?? {}) as { usuarioId?: number }
+      if (!expedicaoId || typeof expedicaoId !== 'string' || !/^\d+$/.test(expedicaoId)) {
         return new BadRequestError({ message: 'expedicaoId inválido' })
       }
 
@@ -42,7 +31,11 @@ export class AdicionaParticipanteController implements RequestHandler {
         return new BadRequestError({ message: 'usuarioId inválido' })
       }
 
-      const result = await this.adicionaParticipanteUseCase.execute(Number(expedicaoId), usuarioId)
+      const result = await this.adicionaParticipanteUseCase.execute(
+        Number(expedicaoId),
+        usuarioId,
+        request.user?.id ?? null
+      )
 
       if (result.left()) {
         const error = result.value
