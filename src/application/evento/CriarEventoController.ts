@@ -64,9 +64,7 @@ export class CriarEventoController implements RequestHandler {
     const coleta = body.coleta === undefined ? null : parseColeta(body.coleta)
     if (coleta instanceof Error) return new BadRequestError({ message: coleta.message })
 
-    // Substituir por request.usuario.id assim que a
-    // autenticação for integrada.
-    const usuarioId = null
+    const usuarioId = request.user?.id ?? null
 
     const result = await this.criarEventoUseCase.execute({
       altitude,

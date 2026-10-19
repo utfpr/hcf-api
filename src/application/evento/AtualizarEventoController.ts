@@ -43,9 +43,7 @@ export class AtualizarEventoController implements RequestHandler {
 
     const body = (request.body ?? {}) as Body
 
-    // Substituir por request.usuario.id assim que a
-    // autenticação for integrada.
-    const input: AtualizarEventoInput = { id: eventoId, updated_by: null }
+    const input: AtualizarEventoInput = { id: eventoId, updated_by: request.user?.id ?? null }
 
     if (body.tipo !== undefined) {
       const tipo = parseTipo(body.tipo)

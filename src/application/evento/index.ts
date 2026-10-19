@@ -1,5 +1,6 @@
 import { type Knex } from 'knex'
 
+import { authorize } from '@/application/AuthorizeMiddlewareFactory'
 import { AtualizarEventoUseCase } from '@/domain/evento/AtualizarEventoUseCase'
 import { BuscarEventoPorIdUseCase } from '@/domain/evento/BuscarEventoPorIdUseCase'
 import { CriarEventoUseCase } from '@/domain/evento/CriarEventoUseCase'
@@ -20,11 +21,10 @@ export function routes(knex: Knex): Route[] {
   const eventoCollection = new EventoCollectionKnexAdapter({ knex })
   const evidenciaCollection = new EvidenciaCollectionKnexAdapter({ knex })
 
-  // TODO: adicionar autenticação quando a camada HTTP de autenticação estiver disponível.
-
   return [
     {
       handlers: [
+        authorize('read', 'Evento'),
         new ListaEventosController({
           listaEventosUseCase: new ListaEventosUseCase({ eventoCollection })
         })
@@ -34,6 +34,7 @@ export function routes(knex: Knex): Route[] {
     },
     {
       handlers: [
+        authorize('create', 'Evento'),
         new CriarEventoController({
           criarEventoUseCase: new CriarEventoUseCase({ eventoCollection })
         })
@@ -43,6 +44,7 @@ export function routes(knex: Knex): Route[] {
     },
     {
       handlers: [
+        authorize('read', 'Evento'),
         new BuscarEventoController({
           buscarEventoPorIdUseCase: new BuscarEventoPorIdUseCase({ eventoCollection })
         })
@@ -52,6 +54,7 @@ export function routes(knex: Knex): Route[] {
     },
     {
       handlers: [
+        authorize('update', 'Evento'),
         new AtualizarEventoController({
           atualizarEventoUseCase: new AtualizarEventoUseCase({ eventoCollection })
         })
@@ -61,6 +64,7 @@ export function routes(knex: Knex): Route[] {
     },
     {
       handlers: [
+        authorize('delete', 'Evento'),
         new RemoverEventoController({
           removerEventoUseCase: new RemoverEventoUseCase({ eventoCollection, evidenciaCollection })
         })

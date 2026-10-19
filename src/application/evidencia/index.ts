@@ -1,5 +1,6 @@
 import { type Knex } from 'knex'
 
+import { authorize } from '@/application/AuthorizeMiddlewareFactory'
 import { CriarEvidenciaUseCase } from '@/domain/evidencia/CriarEvidenciaUseCase'
 import { RemoverEvidenciaUseCase } from '@/domain/evidencia/RemoverEvidenciaUseCase'
 import { EventoCollectionKnexAdapter } from '@/infrastructure/EventoCollectionKnexAdapter'
@@ -20,6 +21,7 @@ export function routes(knex: Knex): Route[] {
   return [
     {
       handlers: [
+        authorize('create', 'Evidencia'),
         new CriarEvidenciaController({
           criarEvidenciaUseCase: new CriarEvidenciaUseCase({ evidenciaCollection })
         })
@@ -29,12 +31,16 @@ export function routes(knex: Knex): Route[] {
       path: '/v2/eventos/:eventoId/evidencias'
     },
     {
-      handlers: [new ListarEvidenciasController({ evidenciaCollection })],
+      handlers: [
+        authorize('read', 'Evidencia'),
+        new ListarEvidenciasController({ evidenciaCollection })
+      ],
       method: Method.Get,
       path: '/v2/eventos/:eventoId/evidencias'
     },
     {
       handlers: [
+        authorize('delete', 'Evidencia'),
         new RemoverEvidenciaController({
           removerEvidenciaUseCase: new RemoverEvidenciaUseCase({ evidenciaCollection })
         })

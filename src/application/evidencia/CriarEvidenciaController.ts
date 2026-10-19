@@ -51,9 +51,7 @@ export class CriarEvidenciaController implements RequestHandler {
     const capturadoEm = parseDate(body.capturado_em, 'capturado_em')
     if (capturadoEm instanceof Error) return await cleanupAndReturn(file.path, capturadoEm)
 
-    // Substituir por request.usuario.id assim que a
-    // autenticação for integrada.
-    const usuarioId = null
+    const usuarioId = request.user?.id ?? null
 
     const result = await this.criarEvidenciaUseCase.execute({
       evento_id: eventoId,
