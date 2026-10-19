@@ -91,7 +91,7 @@ export class VegetacaoCollectionKnexAdapter implements VegetacaoCollection {
     this.knex = dependencies.knex
   }
 
-  private async findByNome(nome: string, excludeId?: string): Promise<Either<Error, Attributes | null>> {
+  private async findByNome(nome: string, excludeId?: string): Promise<Either<Error, Attributes | undefined>> {
     try {
       const query = this.knex<Attributes>('vegetacoes')
         .select(['id', 'nome'])
@@ -101,8 +101,7 @@ export class VegetacaoCollectionKnexAdapter implements VegetacaoCollection {
         query.andWhereNot({ id: excludeId })
       }
 
-      const vegetacao = await query.first()
-      return Either.right(vegetacao ?? null)
+      return Either.right(await query.first())
     } catch (error) {
       return Either.left(new CollectionError({ message: 'Erro ao buscar vegetação por nome', cause: error }))
     }
@@ -126,10 +125,10 @@ export class VegetacaoCollectionKnexAdapter implements VegetacaoCollection {
     }
   }
 
-  async findById(id: string): Promise<Either<Error, Attributes | null>> {
+  async findById(id: string): Promise<Either<Error, Attributes | undefined>> {
     try {
       const vegetacao = await this.knex<Attributes>('vegetacoes').select(['id', 'nome']).where({ id }).first()
-      return Either.right(vegetacao ?? null)
+      return Either.right(vegetacao)
     } catch (error) {
       return Either.left(new CollectionError({ message: 'Failed to find vegetação', cause: error }))
     }
@@ -162,7 +161,7 @@ export class VegetacaoCollectionKnexAdapter implements VegetacaoCollection {
     }
   }
 
-  async update(id: string, data: Pick<Attributes, 'nome'>): Promise<Either<Error, Vegetacao | null>> {
+  async update(id: string, data: Pick<Attributes, 'nome'>): Promise<Either<Error, Vegetacao | undefined>> {
     const nome = data.nome.trim()
 
     const existing = await this.findByNome(nome, id)
@@ -181,7 +180,7 @@ export class VegetacaoCollectionKnexAdapter implements VegetacaoCollection {
         .returning(['id', 'nome']) as Attributes[]
 
       if (!vegetacao) {
-        return Either.right(null)
+        return Either.right(undefined)
       }
 
       return Vegetacao.create({ id: vegetacao.id, nome: vegetacao.nome })

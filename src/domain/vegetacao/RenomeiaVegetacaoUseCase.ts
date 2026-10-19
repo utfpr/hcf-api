@@ -14,7 +14,7 @@ export class RenomeiaVegetacaoUseCase {
     this.vegetacaoCollection = dependencies.vegetacaoCollection
   }
 
-  async execute({ id, nome }: { id: string; nome: string }): Promise<Either<Error, Vegetacao | null>> {
+  async execute({ id, nome }: { id: string; nome: string }): Promise<Either<Error, Vegetacao | undefined>> {
     const vegetacao = Vegetacao.create({ nome })
     if (vegetacao.left()) {
       return vegetacao
