@@ -34,10 +34,8 @@ export class AtualizaLembreteController implements RequestHandler {
     const ficha = parseFicha(body, { preencherAusentes: false })
     if (ficha instanceof Error) return new BadRequestError({ message: ficha.message })
 
-    // Substituir por request.usuario.id assim que a
-    // autenticação for integrada.
     const input: AtualizaLembreteInput = {
-      ...ficha, id: lembreteId, updated_by: null
+      ...ficha, id: lembreteId, updated_by: request.user?.id ?? null
     }
 
     if (body.data_coleta !== undefined) {

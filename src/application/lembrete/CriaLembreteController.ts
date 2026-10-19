@@ -34,9 +34,7 @@ export class CriaLembreteController implements RequestHandler {
     const ficha = parseFicha(body, { preencherAusentes: true })
     if (ficha instanceof Error) return new BadRequestError({ message: ficha.message })
 
-    // Substituir por request.usuario.id assim que a
-    // autenticação for integrada.
-    const usuarioId = null
+    const usuarioId = request.user?.id ?? null
 
     const result = await this.criaLembreteUseCase.execute({
       ...ficha as FichaAttributes,
