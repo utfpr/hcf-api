@@ -1,7 +1,6 @@
 import { type Knex } from 'knex'
 
 import { authorize } from '@/application/AuthorizeMiddlewareFactory'
-import { BuscaVegetacaoPorIdUseCase } from '@/domain/vegetacao/BuscaVegetacaoPorIdUseCase'
 import { CadastraVegetacaoUseCase } from '@/domain/vegetacao/CadastraVegetacaoUseCase'
 import { ListaVegetacoesUseCase } from '@/domain/vegetacao/ListaVegetacoesUseCase'
 import { RenomeiaVegetacaoUseCase } from '@/domain/vegetacao/RenomeiaVegetacaoUseCase'
@@ -42,9 +41,7 @@ export function routes(knex: Knex): Route[] {
     {
       handlers: [
         authorize('read', 'Vegetacao'),
-        new BuscaVegetacaoController({
-          buscaVegetacaoPorIdUseCase: new BuscaVegetacaoPorIdUseCase({ vegetacaoCollection })
-        })
+        new BuscaVegetacaoController({ vegetacaoCollection })
       ],
       method: Method.Get,
       path: '/v1/vegetacoes/:vegetacaoId'

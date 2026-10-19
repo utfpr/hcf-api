@@ -27,6 +27,10 @@ describe('POST /api/v1/vegetacoes', () => {
     await knex.destroy()
   })
 
+  test('retorna 401 sem Authorization', async () => {
+    await agent.post('/api/v1/vegetacoes').send({ nome: 'Mata' }).expect(401)
+  })
+
   test('cadastra uma vegetação com sucesso', async () => {
     const prefix = `CADVEG-${Date.now()}`
     const nome = `${prefix} Mata Atlântica`

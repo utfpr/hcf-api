@@ -1,4 +1,4 @@
-import { BuscaVegetacaoPorIdUseCase } from '@/domain/vegetacao/BuscaVegetacaoPorIdUseCase'
+import { VegetacaoCollection } from '@/domain/vegetacao/VegetacaoCollection'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
@@ -9,14 +9,14 @@ import { NotFoundError } from '@/library/http/error/NotFoundError'
 import { NextHandler, RequestHandler } from '@/library/http/Server'
 
 interface Dependencies {
-  buscaVegetacaoPorIdUseCase: BuscaVegetacaoPorIdUseCase
+  vegetacaoCollection: VegetacaoCollection
 }
 
 export class BuscaVegetacaoController implements RequestHandler {
-  private readonly buscaVegetacaoPorIdUseCase: BuscaVegetacaoPorIdUseCase
+  private readonly vegetacaoCollection: VegetacaoCollection
 
   constructor(dependencies: Dependencies) {
-    this.buscaVegetacaoPorIdUseCase = dependencies.buscaVegetacaoPorIdUseCase
+    this.vegetacaoCollection = dependencies.vegetacaoCollection
   }
 
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
@@ -26,7 +26,7 @@ export class BuscaVegetacaoController implements RequestHandler {
       return new BadRequestError({ message: 'vegetacaoId inválido' })
     }
 
-    const result = await this.buscaVegetacaoPorIdUseCase.execute({ id: vegetacaoId })
+    const result = await this.vegetacaoCollection.findById(vegetacaoId)
 
     if (result.left()) {
       return new InternalServerError({ message: result.value.message })
