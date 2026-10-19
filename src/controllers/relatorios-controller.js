@@ -504,6 +504,19 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
     const { limite, pagina, offset } = paginacao;
     const { local, dataInicio, dataFim, showCoord } = req.query;
 
+    if (req.method === 'GET' && !local && !dataInicio) {
+        res.json({
+            metadados: {
+                total: 0,
+                pagina,
+                limite,
+            },
+            resultado: agruparPorLocal([]),
+            filtro: formataTextFilter(local, dataInicio, dataFim || new Date()),
+        });
+        return;
+    }
+
     let whereLocal = {};
     let whereData = {};
     if (local) {
