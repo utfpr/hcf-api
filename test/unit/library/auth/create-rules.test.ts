@@ -18,6 +18,27 @@ const vegetacaoWrites = [
   { action: 'delete', resource: 'Vegetacao' }
 ]
 
+const expedicaoReads = [
+  { action: 'read', resource: 'Expedicao' },
+  { action: 'read', resource: 'Evento' },
+  { action: 'read', resource: 'Evidencia' },
+  { action: 'read', resource: 'Lembrete' }
+]
+
+const expedicaoWrites = [
+  { action: 'create', resource: 'Expedicao' },
+  { action: 'update', resource: 'Expedicao' },
+  { action: 'delete', resource: 'Expedicao' },
+  { action: 'create', resource: 'Evento' },
+  { action: 'update', resource: 'Evento' },
+  { action: 'delete', resource: 'Evento' },
+  { action: 'create', resource: 'Evidencia' },
+  { action: 'delete', resource: 'Evidencia' },
+  { action: 'create', resource: 'Lembrete' },
+  { action: 'update', resource: 'Lembrete' },
+  { action: 'delete', resource: 'Lembrete' }
+]
+
 describe('createRules', () => {
   test('grants Guest only public reads', () => {
     expect(createRules()).toEqual(publicReads)
@@ -32,7 +53,9 @@ describe('createRules', () => {
       expect(createRules(user)).toEqual([
         ...publicReads,
         { action: 'read', resource: 'UsuarioSessao' },
-        ...vegetacaoWrites
+        ...expedicaoReads,
+        ...vegetacaoWrites,
+        ...expedicaoWrites
       ])
     }
   })
@@ -44,7 +67,8 @@ describe('createRules', () => {
     ]) {
       expect(createRules(user)).toEqual([
         ...publicReads,
-        { action: 'read', resource: 'UsuarioSessao' }
+        { action: 'read', resource: 'UsuarioSessao' },
+        ...expedicaoReads
       ])
     }
   })
