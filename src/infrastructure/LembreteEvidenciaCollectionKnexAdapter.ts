@@ -78,7 +78,7 @@ export class LembreteEvidenciaCollectionKnexAdapter implements LembreteEvidencia
     try {
       const query = this.knex('lembretes_evidencias').select(COLUMNS)
 
-      if (filters.lembrete_id) {
+      if (filters.lembrete_id !== undefined) {
         query.where({ lembrete_id: filters.lembrete_id })
       }
 
