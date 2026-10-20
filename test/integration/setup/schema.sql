@@ -3668,7 +3668,7 @@ CREATE TABLE public.lembretes_evidencias (
     arquivo character varying(255) NOT NULL,
     mime_type character varying(100) NOT NULL,
     tamanho bigint NOT NULL,
-    capturado_em timestamp with time zone NOT NULL,
+    data_captura timestamp with time zone NOT NULL,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     created_by bigint,

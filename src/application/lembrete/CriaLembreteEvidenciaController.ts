@@ -22,7 +22,7 @@ interface Dependencies {
 
 interface Body {
   nome?: unknown
-  capturado_em?: unknown
+  data_captura?: unknown
 }
 
 interface UploadedFile {
@@ -53,8 +53,8 @@ export class CriaLembreteEvidenciaController implements RequestHandler {
     const nome = parseNonEmptyString(body.nome, 'nome')
     if (nome instanceof Error) return await cleanupAndReturn(file.path, nome)
 
-    const capturadoEm = parseDate(body.capturado_em, 'capturado_em')
-    if (capturadoEm instanceof Error) return await cleanupAndReturn(file.path, capturadoEm)
+    const dataCaptura = parseDate(body.data_captura, 'data_captura')
+    if (dataCaptura instanceof Error) return await cleanupAndReturn(file.path, dataCaptura)
 
     const result = await this.criaLembreteEvidenciaUseCase.execute({
       lembrete_id: lembreteId,
@@ -62,7 +62,7 @@ export class CriaLembreteEvidenciaController implements RequestHandler {
       arquivo: file.filename,
       mime_type: file.mimetype,
       tamanho: file.size,
-      capturado_em: capturadoEm,
+      data_captura: dataCaptura,
       created_by: request.user?.id ?? null
     })
 

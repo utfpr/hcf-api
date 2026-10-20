@@ -20,7 +20,7 @@ interface Row {
   arquivo: string
   mime_type: string
   tamanho: number
-  capturado_em: Date
+  data_captura: Date
   created_at: Date
   updated_at: Date
   created_by: string | null
@@ -34,7 +34,7 @@ const COLUMNS = [
   'arquivo',
   'mime_type',
   'tamanho',
-  'capturado_em',
+  'data_captura',
   'created_at',
   'updated_at',
   'created_by',
@@ -49,7 +49,7 @@ function toAttributes(row: Row): Attributes {
     arquivo: row.arquivo,
     mime_type: row.mime_type,
     tamanho: Number(row.tamanho),
-    capturado_em: row.capturado_em,
+    data_captura: row.data_captura,
     created_at: row.created_at,
     updated_at: row.updated_at,
     created_by: toNullableNumber(row.created_by),
@@ -109,7 +109,7 @@ export class LembreteEvidenciaCollectionKnexAdapter implements LembreteEvidencia
           arquivo: attributes.arquivo,
           mime_type: attributes.mime_type,
           tamanho: attributes.tamanho,
-          capturado_em: attributes.capturado_em,
+          data_captura: attributes.data_captura,
           created_by: attributes.created_by,
           updated_by: attributes.created_by
         })

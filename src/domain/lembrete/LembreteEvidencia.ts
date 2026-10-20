@@ -7,7 +7,7 @@ export interface Attributes {
   arquivo: string
   mime_type: string
   tamanho: number
-  capturado_em: Date
+  data_captura: Date
   created_at: Date
   updated_at: Date
   created_by: number | null
@@ -26,7 +26,7 @@ export class LembreteEvidencia {
   readonly arquivo: string
   readonly mime_type: string
   readonly tamanho: number
-  readonly capturado_em: Date
+  readonly data_captura: Date
   readonly created_at: Date
   readonly updated_at: Date
   readonly created_by: number | null
@@ -39,7 +39,7 @@ export class LembreteEvidencia {
     this.arquivo = attributes.arquivo
     this.mime_type = attributes.mime_type
     this.tamanho = attributes.tamanho
-    this.capturado_em = attributes.capturado_em
+    this.data_captura = attributes.data_captura
     this.created_at = attributes.created_at
     this.updated_at = attributes.updated_at
     this.created_by = attributes.created_by
@@ -67,7 +67,7 @@ export class LembreteEvidencia {
       return Either.left(new Error('Tamanho do arquivo da evidência é inválido'))
     }
 
-    if (Number.isNaN(attributes.capturado_em.getTime())) {
+    if (Number.isNaN(attributes.data_captura.getTime())) {
       return Either.left(new Error('Instante de captura da evidência é inválido'))
     }
 
