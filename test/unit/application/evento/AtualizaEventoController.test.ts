@@ -34,7 +34,7 @@ const attributes: Attributes = {
 
 function makeRequest(params: Record<string, unknown>, body: unknown): HttpRequest {
   return {
-    body, headers, method: Method.Put, params, path: '/v2/eventos/10'
+    body, headers, method: Method.Put, params, path: '/v1/eventos/10'
   } satisfies HttpRequest
 }
 

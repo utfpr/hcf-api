@@ -19,7 +19,7 @@ function makeRequest(params: Record<string, unknown>): HttpRequest {
     headers,
     method: Method.Delete,
     params,
-    path: '/v2/eventos/10'
+    path: '/v1/eventos/10'
   } satisfies HttpRequest
 }
 

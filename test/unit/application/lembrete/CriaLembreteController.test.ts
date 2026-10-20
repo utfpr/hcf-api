@@ -22,7 +22,7 @@ const validBody = {
 
 function makeRequest(body: unknown): HttpRequest {
   return {
-    body, headers, method: Method.Post, params: {}, path: '/v2/lembretes'
+    body, headers, method: Method.Post, params: {}, path: '/v1/lembretes'
   } satisfies HttpRequest
 }
 

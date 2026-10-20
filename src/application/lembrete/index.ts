@@ -28,7 +28,7 @@ export function routes(knex: Knex): Route[] {
         })
       ],
       method: Method.Get,
-      path: '/v2/lembretes'
+      path: '/v1/lembretes'
     },
     {
       handlers: [
@@ -38,7 +38,7 @@ export function routes(knex: Knex): Route[] {
         })
       ],
       method: Method.Post,
-      path: '/v2/lembretes'
+      path: '/v1/lembretes'
     },
     {
       handlers: [
@@ -48,7 +48,7 @@ export function routes(knex: Knex): Route[] {
         })
       ],
       method: Method.Get,
-      path: '/v2/lembretes/:lembreteId'
+      path: '/v1/lembretes/:lembreteId'
     },
     {
       handlers: [
@@ -58,7 +58,7 @@ export function routes(knex: Knex): Route[] {
         })
       ],
       method: Method.Put,
-      path: '/v2/lembretes/:lembreteId'
+      path: '/v1/lembretes/:lembreteId'
     },
     {
       handlers: [
@@ -68,7 +68,7 @@ export function routes(knex: Knex): Route[] {
         })
       ],
       method: Method.Delete,
-      path: '/v2/lembretes/:lembreteId'
+      path: '/v1/lembretes/:lembreteId'
     }
   ]
 }

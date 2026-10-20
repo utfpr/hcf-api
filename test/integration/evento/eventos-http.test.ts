@@ -66,7 +66,7 @@ describe('Eventos (escrita, HTTP)', () => {
 
   test('POST cria um evento DIARIO', async () => {
     const response = await agent
-      .post(`/api/v2/expedicoes/${expedicaoId}/eventos`)
+      .post(`/api/v1/expedicoes/${expedicaoId}/eventos`)
       .send({
         capturado_em: '2026-02-15T14:32:00Z',
         latitude: -20.2508,
@@ -87,7 +87,7 @@ describe('Eventos (escrita, HTTP)', () => {
 
   test('POST cria um evento COLETA com a ficha', async () => {
     const response = await agent
-      .post(`/api/v2/expedicoes/${expedicaoId}/eventos`)
+      .post(`/api/v1/expedicoes/${expedicaoId}/eventos`)
       .send({
         capturado_em: '2026-02-15T14:32:00Z', coleta: ficha, latitude: -20.2508, longitude: -46.4167, tipo: 'COLETA'
       })
@@ -104,7 +104,7 @@ describe('Eventos (escrita, HTTP)', () => {
 
   test('POST retorna 400 quando COLETA não envia ficha', async () => {
     await agent
-      .post(`/api/v2/expedicoes/${expedicaoId}/eventos`)
+      .post(`/api/v1/expedicoes/${expedicaoId}/eventos`)
       .send({
         capturado_em: '2026-02-15T14:32:00Z', latitude: -20.25, longitude: -46.41, tipo: 'COLETA'
       })
@@ -113,7 +113,7 @@ describe('Eventos (escrita, HTTP)', () => {
 
   test('POST retorna 404 quando a expedição não existe', async () => {
     await agent
-      .post('/api/v2/expedicoes/999999999/eventos')
+      .post('/api/v1/expedicoes/999999999/eventos')
       .send({
         capturado_em: '2026-02-15T14:32:00Z', latitude: -20.25, longitude: -46.41, observacoes: 'x', tipo: 'DIARIO'
       })
@@ -122,7 +122,7 @@ describe('Eventos (escrita, HTTP)', () => {
 
   test('PUT atualiza campos comuns', async () => {
     const created = await agent
-      .post(`/api/v2/expedicoes/${expedicaoId}/eventos`)
+      .post(`/api/v1/expedicoes/${expedicaoId}/eventos`)
       .send({
         capturado_em: '2026-02-15T14:32:00Z', latitude: -20.25, longitude: -46.41, observacoes: 'original', tipo: 'DIARIO'
       })
@@ -132,7 +132,7 @@ describe('Eventos (escrita, HTTP)', () => {
 
     try {
       const response = await agent
-        .put(`/api/v2/eventos/${eventoId}`)
+        .put(`/api/v1/eventos/${eventoId}`)
         .send({ observacoes: 'atualizado' })
         .expect(200)
 
@@ -144,7 +144,7 @@ describe('Eventos (escrita, HTTP)', () => {
 
   test('PUT troca DIARIO para COLETA criando a ficha', async () => {
     const created = await agent
-      .post(`/api/v2/expedicoes/${expedicaoId}/eventos`)
+      .post(`/api/v1/expedicoes/${expedicaoId}/eventos`)
       .send({
         capturado_em: '2026-02-15T14:32:00Z', latitude: -20.25, longitude: -46.41, observacoes: 'original', tipo: 'DIARIO'
       })
@@ -154,7 +154,7 @@ describe('Eventos (escrita, HTTP)', () => {
 
     try {
       const response = await agent
-        .put(`/api/v2/eventos/${eventoId}`)
+        .put(`/api/v1/eventos/${eventoId}`)
         .send({ coleta: ficha, tipo: 'COLETA' })
         .expect(200)
 
@@ -166,7 +166,7 @@ describe('Eventos (escrita, HTTP)', () => {
 
   test('PUT troca COLETA para DIARIO apagando a ficha', async () => {
     const created = await agent
-      .post(`/api/v2/expedicoes/${expedicaoId}/eventos`)
+      .post(`/api/v1/expedicoes/${expedicaoId}/eventos`)
       .send({
         capturado_em: '2026-02-15T14:32:00Z', coleta: ficha, latitude: -20.25, longitude: -46.41, tipo: 'COLETA'
       })
@@ -176,7 +176,7 @@ describe('Eventos (escrita, HTTP)', () => {
 
     try {
       const response = await agent
-        .put(`/api/v2/eventos/${eventoId}`)
+        .put(`/api/v1/eventos/${eventoId}`)
         .send({ observacoes: 'virou diário', tipo: 'DIARIO' })
         .expect(200)
 
@@ -190,12 +190,12 @@ describe('Eventos (escrita, HTTP)', () => {
   })
 
   test('PUT retorna 404 quando o evento não existe', async () => {
-    await agent.put('/api/v2/eventos/999999999').send({ observacoes: 'x' }).expect(404)
+    await agent.put('/api/v1/eventos/999999999').send({ observacoes: 'x' }).expect(404)
   })
 
   test('DELETE remove o evento e a ficha (cascade)', async () => {
     const created = await agent
-      .post(`/api/v2/expedicoes/${expedicaoId}/eventos`)
+      .post(`/api/v1/expedicoes/${expedicaoId}/eventos`)
       .send({
         capturado_em: '2026-02-15T14:32:00Z', coleta: ficha, latitude: -20.25, longitude: -46.41, tipo: 'COLETA'
       })
@@ -203,7 +203,7 @@ describe('Eventos (escrita, HTTP)', () => {
 
     const eventoId = asEvento(created.body).id
 
-    await agent.delete(`/api/v2/eventos/${eventoId}`).expect(204)
+    await agent.delete(`/api/v1/eventos/${eventoId}`).expect(204)
 
     const eventoRow = await knex('eventos').where({ id: eventoId }).first()
     const coletaRow = await knex('eventos_coletas').where({ evento_id: eventoId }).first()
@@ -212,6 +212,6 @@ describe('Eventos (escrita, HTTP)', () => {
   })
 
   test('DELETE retorna 404 quando o evento não existe', async () => {
-    await agent.delete('/api/v2/eventos/999999999').expect(404)
+    await agent.delete('/api/v1/eventos/999999999').expect(404)
   })
 })

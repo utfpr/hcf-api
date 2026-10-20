@@ -60,7 +60,7 @@ describe('Eventos routes', () => {
 
     try {
       const response = await agent
-        .get(`/api/v2/expedicoes/${expedicaoId}/eventos`)
+        .get(`/api/v1/expedicoes/${expedicaoId}/eventos`)
         .expect(200)
 
       const body = response.body as ListaEventosResponse
@@ -86,7 +86,7 @@ describe('Eventos routes', () => {
 
     try {
       const response = await agent
-        .get(`/api/v2/eventos/${evento.id}`)
+        .get(`/api/v1/eventos/${evento.id}`)
         .expect(200)
 
       const body = response.body as EventoResponse

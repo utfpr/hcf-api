@@ -125,7 +125,7 @@ describe('ExpedicaoCollectionKnexAdapter', () => {
     expect(created.value.message).toContain('não existe')
   })
 
-  test('substitui as rotas e locais de coleta (PUT /v2/expedicoes/:id/rotas)', async () => {
+  test('substitui as rotas e locais de coleta (PUT /v1/expedicoes/:id/rotas)', async () => {
     const created = await collection.create(novaExpedicao())
     if (!created.right()) return
 

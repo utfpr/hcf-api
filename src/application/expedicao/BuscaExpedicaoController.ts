@@ -24,7 +24,7 @@ export class BuscaExpedicaoController implements RequestHandler {
   }
 
   // Busca expedição por ID
-  // GET /v2/expedicoes/:expedicaoId
+  // GET /v1/expedicoes/:expedicaoId
   async handle(request: CustomHttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     try {
       const { expedicaoId } = request.params

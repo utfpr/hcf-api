@@ -63,7 +63,7 @@ describe('Evidências (upload, HTTP)', () => {
 
   test('POST grava o arquivo em disco e a evidência no banco', async () => {
     const response = await agent
-      .post(`/api/v2/eventos/${eventoId}/evidencias`)
+      .post(`/api/v1/eventos/${eventoId}/evidencias`)
       .field('nome', 'IMG_0042.jpg')
       .field('capturado_em', '2026-02-15T14:32:00Z')
       .attach('arquivo', Buffer.from('conteúdo de teste'), { contentType: 'image/jpeg', filename: 'foto.jpg' })
@@ -85,7 +85,7 @@ describe('Evidências (upload, HTTP)', () => {
 
   test('POST rejeita tipo de arquivo não suportado', async () => {
     await agent
-      .post(`/api/v2/eventos/${eventoId}/evidencias`)
+      .post(`/api/v1/eventos/${eventoId}/evidencias`)
       .field('nome', 'anotacoes.txt')
       .field('capturado_em', '2026-02-15T14:32:00Z')
       .attach('arquivo', Buffer.from('texto qualquer'), { contentType: 'text/plain', filename: 'anotacoes.txt' })
@@ -94,7 +94,7 @@ describe('Evidências (upload, HTTP)', () => {
 
   test('POST retorna 404 quando o evento não existe', async () => {
     await agent
-      .post('/api/v2/eventos/999999999/evidencias')
+      .post('/api/v1/eventos/999999999/evidencias')
       .field('nome', 'IMG_0042.jpg')
       .field('capturado_em', '2026-02-15T14:32:00Z')
       .attach('arquivo', Buffer.from('conteúdo de teste'), { contentType: 'image/jpeg', filename: 'foto.jpg' })
@@ -103,7 +103,7 @@ describe('Evidências (upload, HTTP)', () => {
 
   test('GET lista as evidências do evento com a url computada', async () => {
     const created = await agent
-      .post(`/api/v2/eventos/${eventoId}/evidencias`)
+      .post(`/api/v1/eventos/${eventoId}/evidencias`)
       .field('nome', 'audio.mp3')
       .field('capturado_em', '2026-02-15T14:32:00Z')
       .attach('arquivo', Buffer.from('audio de teste'), { contentType: 'audio/mpeg', filename: 'audio.mp3' })
@@ -112,7 +112,7 @@ describe('Evidências (upload, HTTP)', () => {
     const createdBody = asEvidencia(created.body)
 
     try {
-      const response = await agent.get(`/api/v2/eventos/${eventoId}/evidencias`).expect(200)
+      const response = await agent.get(`/api/v1/eventos/${eventoId}/evidencias`).expect(200)
       const [evidencia] = response.body as EvidenciaBody[]
 
       expect(evidencia).toMatchObject({ id: createdBody.id, url: createdBody.url })

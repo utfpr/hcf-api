@@ -60,7 +60,7 @@ describe('ListaExpedicoesController', () => {
         data_fim_de: '2026-10-04',
         order: 'data_inicio:asc'
       },
-      path: '/v2/expedicoes'
+      path: '/v1/expedicoes'
     }
 
     const response = await controller.handle(request, vi.fn())
@@ -114,7 +114,7 @@ describe('ListaExpedicoesController', () => {
         data_fim_ate: '2026-10-03',
         order: 'data_fim:desc'
       },
-      path: '/v2/expedicoes'
+      path: '/v1/expedicoes'
     }
 
     const response = await controller.handle(request, vi.fn())
@@ -158,7 +158,7 @@ describe('ListaExpedicoesController', () => {
         limite: '10',
         pagina: '2'
       },
-      path: '/v2/expedicoes'
+      path: '/v1/expedicoes'
     }
 
     const response = await controller.handle(request, vi.fn())
@@ -192,7 +192,7 @@ describe('ListaExpedicoesController', () => {
       headers,
       method: Method.Get,
       params: { order: 'invalido' },
-      path: '/v2/expedicoes'
+      path: '/v1/expedicoes'
     }
 
     const response = await controller.handle(request, vi.fn())
@@ -213,7 +213,7 @@ describe('ListaExpedicoesController', () => {
       headers,
       method: Method.Get,
       params: {},
-      path: '/v2/expedicoes'
+      path: '/v1/expedicoes'
     }
 
     const response = await controller.handle(request, vi.fn())
@@ -234,7 +234,7 @@ describe('ListaExpedicoesController', () => {
       headers,
       method: Method.Get,
       params: {},
-      path: '/v2/expedicoes'
+      path: '/v1/expedicoes'
     }
 
     const response = await controller.handle(request, vi.fn())

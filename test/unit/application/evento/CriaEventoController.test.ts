@@ -44,7 +44,7 @@ const validBody = {
 
 function makeRequest(params: Record<string, unknown>, body: unknown): HttpRequest {
   return {
-    body, headers, method: Method.Post, params, path: '/v2/expedicoes/1/eventos'
+    body, headers, method: Method.Post, params, path: '/v1/expedicoes/1/eventos'
   } satisfies HttpRequest
 }
 

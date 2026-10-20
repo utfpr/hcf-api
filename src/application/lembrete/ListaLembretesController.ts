@@ -24,10 +24,10 @@ export class ListaLembretesController implements RequestHandler {
   }
 
   // Próximos lembretes (a partir de hoje, o mais próximo primeiro):
-  // GET /api/v2/lembretes?data_coleta_de=2026-10-05
+  // GET /api/v1/lembretes?data_coleta_de=2026-10-05
 
   // Lembretes de um intervalo:
-  // GET /api/v2/lembretes?data_coleta_de=2026-11-01&data_coleta_ate=2026-11-30
+  // GET /api/v1/lembretes?data_coleta_de=2026-11-01&data_coleta_ate=2026-11-30
 
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const {

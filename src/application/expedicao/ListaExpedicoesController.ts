@@ -25,22 +25,22 @@ export class ListaExpedicoesController implements RequestHandler {
   }
 
   // Listar todas (com ordenação padrão DESC):
-  // GET /api/v2/expedicoes
+  // GET /api/v1/expedicoes
 
   // Filtrar por uma cidade específica:
-  // GET /api/v2/expedicoes?cidade_id=1100049
+  // GET /api/v1/expedicoes?cidade_id=1100049
 
   // Filtrar por intervalo de datas:
-  // GET /api/v2/expedicoes?data_inicio_de=2026-01-01&data_fim_ate=2026-12-31
+  // GET /api/v1/expedicoes?data_inicio_de=2026-01-01&data_fim_ate=2026-12-31
 
   // Filtrar próximas expedições (ainda não terminaram, com a que começa primeiro antes):
-  // GET /api/v2/expedicoes?data_fim_de=2026-10-04&order=data_inicio:asc
+  // GET /api/v1/expedicoes?data_fim_de=2026-10-04&order=data_inicio:asc
 
   // Filtrar expedições realizadas (já terminaram, com a mais recente antes):
-  // GET /api/v2/expedicoes?data_fim_ate=2026-10-03&order=data_fim:desc
+  // GET /api/v1/expedicoes?data_fim_ate=2026-10-03&order=data_fim:desc
 
   // Filtrar com ordenação segura:
-  // GET /api/v2/expedicoes?order=data_inicio:desc
+  // GET /api/v1/expedicoes?order=data_inicio:desc
 
   async handle(request: CustomHttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     try {

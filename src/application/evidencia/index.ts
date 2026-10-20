@@ -28,7 +28,7 @@ export function routes(knex: Knex): Route[] {
       ],
       method: Method.Post,
       middlewares: [validaEventoExisteMiddleware(eventoCollection), evidenciaUpload],
-      path: '/v2/eventos/:eventoId/evidencias'
+      path: '/v1/eventos/:eventoId/evidencias'
     },
     {
       handlers: [
@@ -36,7 +36,7 @@ export function routes(knex: Knex): Route[] {
         new ListaEvidenciasController({ evidenciaCollection })
       ],
       method: Method.Get,
-      path: '/v2/eventos/:eventoId/evidencias'
+      path: '/v1/eventos/:eventoId/evidencias'
     },
     {
       handlers: [
@@ -46,7 +46,7 @@ export function routes(knex: Knex): Route[] {
         })
       ],
       method: Method.Delete,
-      path: '/v2/evidencias/:evidenciaId'
+      path: '/v1/evidencias/:evidenciaId'
     }
   ]
 }

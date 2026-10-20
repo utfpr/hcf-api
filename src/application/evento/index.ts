@@ -30,7 +30,7 @@ export function routes(knex: Knex): Route[] {
         })
       ],
       method: Method.Get,
-      path: '/v2/expedicoes/:expedicaoId/eventos'
+      path: '/v1/expedicoes/:expedicaoId/eventos'
     },
     {
       handlers: [
@@ -40,7 +40,7 @@ export function routes(knex: Knex): Route[] {
         })
       ],
       method: Method.Post,
-      path: '/v2/expedicoes/:expedicaoId/eventos'
+      path: '/v1/expedicoes/:expedicaoId/eventos'
     },
     {
       handlers: [
@@ -50,7 +50,7 @@ export function routes(knex: Knex): Route[] {
         })
       ],
       method: Method.Get,
-      path: '/v2/eventos/:eventoId'
+      path: '/v1/eventos/:eventoId'
     },
     {
       handlers: [
@@ -60,7 +60,7 @@ export function routes(knex: Knex): Route[] {
         })
       ],
       method: Method.Put,
-      path: '/v2/eventos/:eventoId'
+      path: '/v1/eventos/:eventoId'
     },
     {
       handlers: [
@@ -70,7 +70,7 @@ export function routes(knex: Knex): Route[] {
         })
       ],
       method: Method.Delete,
-      path: '/v2/eventos/:eventoId'
+      path: '/v1/eventos/:eventoId'
     }
   ]
 }

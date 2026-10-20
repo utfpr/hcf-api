@@ -28,7 +28,7 @@ export function routes(knex: Knex): Route[] {
   return [
     {
       method: Method.Post,
-      path: '/v2/expedicoes',
+      path: '/v1/expedicoes',
       handlers: [
         authorize('create', 'Expedicao'),
         new CadastraExpedicaoController({
@@ -38,7 +38,7 @@ export function routes(knex: Knex): Route[] {
     },
     {
       method: Method.Get,
-      path: '/v2/expedicoes',
+      path: '/v1/expedicoes',
       handlers: [
         authorize('read', 'Expedicao'),
         new ListaExpedicoesController({
@@ -48,7 +48,7 @@ export function routes(knex: Knex): Route[] {
     },
     {
       method: Method.Get,
-      path: '/v2/expedicoes/:expedicaoId',
+      path: '/v1/expedicoes/:expedicaoId',
       handlers: [
         authorize('read', 'Expedicao'),
         new BuscaExpedicaoController({
@@ -58,7 +58,7 @@ export function routes(knex: Knex): Route[] {
     },
     {
       method: Method.Delete,
-      path: '/v2/expedicoes/:expedicaoId',
+      path: '/v1/expedicoes/:expedicaoId',
       handlers: [
         authorize('delete', 'Expedicao'),
         new DeletaExpedicaoController({
@@ -68,7 +68,7 @@ export function routes(knex: Knex): Route[] {
     },
     {
       method: Method.Put,
-      path: '/v2/expedicoes/:expedicaoId',
+      path: '/v1/expedicoes/:expedicaoId',
       handlers: [
         authorize('update', 'Expedicao'),
         new AtualizaExpedicaoController({
@@ -78,7 +78,7 @@ export function routes(knex: Knex): Route[] {
     },
     {
       method: Method.Post,
-      path: '/v2/expedicoes/:expedicaoId/participantes',
+      path: '/v1/expedicoes/:expedicaoId/participantes',
       handlers: [
         authorize('update', 'Expedicao'),
         new AdicionaParticipanteController({
@@ -88,7 +88,7 @@ export function routes(knex: Knex): Route[] {
     },
     {
       method: Method.Delete,
-      path: '/v2/expedicoes/:expedicaoId/participantes/:usuarioId',
+      path: '/v1/expedicoes/:expedicaoId/participantes/:usuarioId',
       handlers: [
         authorize('update', 'Expedicao'),
         new RemoveParticipanteController({
@@ -98,7 +98,7 @@ export function routes(knex: Knex): Route[] {
     },
     {
       method: Method.Put,
-      path: '/v2/expedicoes/:expedicaoId/rotas',
+      path: '/v1/expedicoes/:expedicaoId/rotas',
       handlers: [
         authorize('update', 'Expedicao'),
         new SubstituiRotasController({

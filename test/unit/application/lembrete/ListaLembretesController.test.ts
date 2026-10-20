@@ -15,7 +15,7 @@ const headers = {} as Headers
 
 function makeRequest(params: Record<string, unknown>): HttpRequest {
   return {
-    body: undefined, headers, method: Method.Get, params, path: '/v2/lembretes'
+    body: undefined, headers, method: Method.Get, params, path: '/v1/lembretes'
   } satisfies HttpRequest
 }
 
