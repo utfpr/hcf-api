@@ -2,8 +2,8 @@ import {
   describe, expect, test, vi
 } from 'vitest'
 
-import { SubstituiRotasController } from '@/application/expedicao/SubstituiRotaController'
-import { SubstituiRotasUseCase } from '@/domain/expedicao/SubstituiRotaUseCase'
+import { SubstituiRotasController } from '@/application/expedicao/SubstituiRotasController'
+import { SubstituiRotasUseCase } from '@/domain/expedicao/SubstituiRotasUseCase'
 import { Either } from '@/library/either/Either'
 import {
   Headers, HttpRequest, Method, StatusCode

@@ -1,4 +1,4 @@
-import { AdicionaParticipanteUseCase } from '@/domain/expedicao/AdcionaParticipanteUseCase'
+import { AdicionaParticipanteUseCase } from '@/domain/expedicao/AdicionaParticipanteUseCase'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'

@@ -1,5 +1,5 @@
 import { RotaInput } from '@/domain/expedicao/Expedicao'
-import { SubstituiRotasUseCase } from '@/domain/expedicao/SubstituiRotaUseCase'
+import { SubstituiRotasUseCase } from '@/domain/expedicao/SubstituiRotasUseCase'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'

@@ -3,7 +3,7 @@ import {
 } from 'vitest'
 
 import { AdicionaParticipanteController } from '@/application/expedicao/AdicionaParticipanteController'
-import { AdicionaParticipanteUseCase } from '@/domain/expedicao/AdcionaParticipanteUseCase'
+import { AdicionaParticipanteUseCase } from '@/domain/expedicao/AdicionaParticipanteUseCase'
 import { Either } from '@/library/either/Either'
 import {
   Headers, HttpRequest, Method, StatusCode
