@@ -3,7 +3,7 @@ import {
 } from 'vitest'
 
 import { SubstituiRotasController } from '@/application/expedicao/SubstituiRotasController'
-import { SubstituiRotasUseCase } from '@/domain/expedicao/SubstituiRotasUseCase'
+import { ExpedicaoCollection } from '@/domain/expedicao/ExpedicaoCollection'
 import { Either } from '@/library/either/Either'
 import {
   Headers, HttpRequest, Method, StatusCode
@@ -32,28 +32,28 @@ function makeRequest(params: Record<string, unknown>, body: unknown, user?: { id
 }
 
 describe('SubstituiRotasController', () => {
-  test('retorna 204 e repassa request.user.id para a UseCase', async () => {
-    const SubstituiRotasUseCase = {
-      execute: vi.fn().mockResolvedValue(Either.right(undefined))
-    } as unknown as SubstituiRotasUseCase
+  test('retorna 204 e repassa request.user.id para a collection', async () => {
+    const expedicaoCollection = {
+      substituteRoute: vi.fn().mockResolvedValue(Either.right(undefined))
+    } as unknown as ExpedicaoCollection
 
-    const controller = new SubstituiRotasController({ SubstituiRotasUseCase })
+    const controller = new SubstituiRotasController({ expedicaoCollection })
     const response = await controller.handle(
       makeRequest({ expedicaoId: '1' }, { rotas }, { id: 42, tipo_usuario_id: 1 }),
       vi.fn()
     )
 
-    expect(SubstituiRotasUseCase.execute).toHaveBeenCalledWith(1, rotas, 42)
+    expect(expedicaoCollection.substituteRoute).toHaveBeenCalledWith(1, rotas, 42)
     expect('statusCode' in response ? response.statusCode : undefined).toBe(StatusCode.NoContent)
   })
 
   test('retorna 400 quando expedicaoId é inválido', async () => {
-    const SubstituiRotasUseCase = { execute: vi.fn() } as unknown as SubstituiRotasUseCase
-    const controller = new SubstituiRotasController({ SubstituiRotasUseCase })
+    const expedicaoCollection = { substituteRoute: vi.fn() } as unknown as ExpedicaoCollection
+    const controller = new SubstituiRotasController({ expedicaoCollection })
 
     const response = await controller.handle(makeRequest({ expedicaoId: 'invalido' }, { rotas }), vi.fn())
 
-    expect(SubstituiRotasUseCase.execute).not.toHaveBeenCalled()
+    expect(expedicaoCollection.substituteRoute).not.toHaveBeenCalled()
     expect(response).toBeInstanceOf(BadRequestError)
   })
 })

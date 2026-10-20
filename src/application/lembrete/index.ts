@@ -2,10 +2,7 @@ import { type Knex } from 'knex'
 
 import { authorize } from '@/application/AuthorizeMiddlewareFactory'
 import { AtualizaLembreteUseCase } from '@/domain/lembrete/AtualizaLembreteUseCase'
-import { BuscaLembreteUseCase } from '@/domain/lembrete/BuscaLembreteUseCase'
 import { CriaLembreteUseCase } from '@/domain/lembrete/CriaLembreteUseCase'
-import { ListaLembretesUseCase } from '@/domain/lembrete/ListaLembretesUseCase'
-import { RemoveLembreteUseCase } from '@/domain/lembrete/RemoveLembreteUseCase'
 import { LembreteCollectionKnexAdapter } from '@/infrastructure/LembreteCollectionKnexAdapter'
 import { Method } from '@/library/http/common'
 import { Route } from '@/library/http/Router'
@@ -23,9 +20,7 @@ export function routes(knex: Knex): Route[] {
     {
       handlers: [
         authorize('read', 'Lembrete'),
-        new ListaLembretesController({
-          listaLembretesUseCase: new ListaLembretesUseCase({ lembreteCollection })
-        })
+        new ListaLembretesController({ lembreteCollection })
       ],
       method: Method.Get,
       path: '/v1/lembretes'
@@ -43,9 +38,7 @@ export function routes(knex: Knex): Route[] {
     {
       handlers: [
         authorize('read', 'Lembrete'),
-        new BuscaLembreteController({
-          buscaLembreteUseCase: new BuscaLembreteUseCase({ lembreteCollection })
-        })
+        new BuscaLembreteController({ lembreteCollection })
       ],
       method: Method.Get,
       path: '/v1/lembretes/:lembreteId'
@@ -63,9 +56,7 @@ export function routes(knex: Knex): Route[] {
     {
       handlers: [
         authorize('delete', 'Lembrete'),
-        new RemoveLembreteController({
-          removeLembreteUseCase: new RemoveLembreteUseCase({ lembreteCollection })
-        })
+        new RemoveLembreteController({ lembreteCollection })
       ],
       method: Method.Delete,
       path: '/v1/lembretes/:lembreteId'

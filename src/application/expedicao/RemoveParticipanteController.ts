@@ -1,4 +1,4 @@
-import { RemoveParticipanteUseCase } from '@/domain/expedicao/RemoveParticipanteUseCase'
+import { ExpedicaoCollection } from '@/domain/expedicao/ExpedicaoCollection'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
@@ -8,7 +8,7 @@ import { InternalServerError } from '@/library/http/error/InternalServerError'
 import { NextHandler, RequestHandler } from '@/library/http/Server'
 
 interface Dependencies {
-  removeParticipanteUseCase: RemoveParticipanteUseCase
+  expedicaoCollection: ExpedicaoCollection
 }
 
 interface CustomHttpRequest extends HttpRequest {
@@ -19,10 +19,10 @@ interface CustomHttpRequest extends HttpRequest {
 }
 
 export class RemoveParticipanteController implements RequestHandler {
-  private readonly removeParticipanteUseCase: RemoveParticipanteUseCase
+  private readonly expedicaoCollection: ExpedicaoCollection
 
   constructor(dependencies: Dependencies) {
-    this.removeParticipanteUseCase = dependencies.removeParticipanteUseCase
+    this.expedicaoCollection = dependencies.expedicaoCollection
   }
 
   async handle(request: CustomHttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
@@ -37,7 +37,7 @@ export class RemoveParticipanteController implements RequestHandler {
         return new BadRequestError({ message: 'usuarioId inválido' })
       }
 
-      const result = await this.removeParticipanteUseCase.execute(Number(expedicaoId), Number(usuarioId))
+      const result = await this.expedicaoCollection.removeParticipant(Number(expedicaoId), Number(usuarioId))
 
       if (result.left()) {
         if (result.value.name === 'CollectionError' || result.value.message.includes('Falha')) {

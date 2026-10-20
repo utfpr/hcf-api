@@ -1,5 +1,5 @@
 import { EventoTipo } from '@/domain/evento/Evento'
-import { ListaEventosUseCase } from '@/domain/evento/ListaEventosUseCase'
+import { EventoCollection } from '@/domain/evento/EventoCollection'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
@@ -9,14 +9,14 @@ import { InternalServerError } from '@/library/http/error/InternalServerError'
 import { NextHandler, RequestHandler } from '@/library/http/Server'
 
 interface Dependencies {
-  listaEventosUseCase: ListaEventosUseCase
+  eventoCollection: EventoCollection
 }
 
 export class ListaEventosController implements RequestHandler {
-  private readonly listaEventosUseCase: ListaEventosUseCase
+  private readonly eventoCollection: EventoCollection
 
   constructor(dependencies: Dependencies) {
-    this.listaEventosUseCase = dependencies.listaEventosUseCase
+    this.eventoCollection = dependencies.eventoCollection
   }
 
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
@@ -58,7 +58,7 @@ export class ListaEventosController implements RequestHandler {
       ...(data_captura_ate ? { data_captura_ate: new Date(data_captura_ate) } : {})
     }
 
-    const result = await this.listaEventosUseCase.execute(filters)
+    const result = await this.eventoCollection.findAll(filters)
 
     if (result.left()) {
       return new InternalServerError({ message: result.value.message })

@@ -7,11 +7,11 @@ import {
   ListaExpedicoesController
 } from '@/application/expedicao/ListaExpedicoesController'
 import {
+  ExpedicaoCollection,
   ExpedicaoFilters,
   ExpedicaoListItem,
   Paginated
 } from '@/domain/expedicao/ExpedicaoCollection'
-import { ListaExpedicoesUseCase } from '@/domain/expedicao/ListaExpedicoesUseCase'
 import { Either } from '@/library/either/Either'
 import {
   Headers, Method, StatusCode
@@ -46,11 +46,11 @@ describe('ListaExpedicoesController', () => {
       pagina: 1
     }
 
-    const listaExpedicoesUseCase = {
-      execute: vi.fn().mockResolvedValue(Either.right(paginatedResult))
-    } as unknown as ListaExpedicoesUseCase
+    const expedicaoCollection = {
+      findAll: vi.fn().mockResolvedValue(Either.right(paginatedResult))
+    } as unknown as ExpedicaoCollection
 
-    const controller = new ListaExpedicoesController({ listaExpedicoesUseCase })
+    const controller = new ListaExpedicoesController({ expedicaoCollection })
 
     const request: CustomHttpRequest = {
       body: {},
@@ -65,7 +65,7 @@ describe('ListaExpedicoesController', () => {
 
     const response = await controller.handle(request, vi.fn())
 
-    expect(listaExpedicoesUseCase.execute).toHaveBeenCalledWith<[ExpedicaoFilters]>({
+    expect(expedicaoCollection.findAll).toHaveBeenCalledWith<[ExpedicaoFilters]>({
       data_fim_de: '2026-10-04',
       order: {
         column: 'data_inicio',
@@ -100,11 +100,11 @@ describe('ListaExpedicoesController', () => {
       pagina: 1
     }
 
-    const listaExpedicoesUseCase = {
-      execute: vi.fn().mockResolvedValue(Either.right(paginatedResult))
-    } as unknown as ListaExpedicoesUseCase
+    const expedicaoCollection = {
+      findAll: vi.fn().mockResolvedValue(Either.right(paginatedResult))
+    } as unknown as ExpedicaoCollection
 
-    const controller = new ListaExpedicoesController({ listaExpedicoesUseCase })
+    const controller = new ListaExpedicoesController({ expedicaoCollection })
 
     const request: CustomHttpRequest = {
       body: {},
@@ -119,7 +119,7 @@ describe('ListaExpedicoesController', () => {
 
     const response = await controller.handle(request, vi.fn())
 
-    expect(listaExpedicoesUseCase.execute).toHaveBeenCalledWith<[ExpedicaoFilters]>({
+    expect(expedicaoCollection.findAll).toHaveBeenCalledWith<[ExpedicaoFilters]>({
       data_fim_ate: '2026-10-03',
       order: {
         column: 'data_fim',
@@ -137,11 +137,11 @@ describe('ListaExpedicoesController', () => {
       limite: 10,
       pagina: 2
     }
-    const listaExpedicoesUseCase = {
-      execute: vi.fn().mockResolvedValue(Either.right(emptyResult))
-    } as unknown as ListaExpedicoesUseCase
+    const expedicaoCollection = {
+      findAll: vi.fn().mockResolvedValue(Either.right(emptyResult))
+    } as unknown as ExpedicaoCollection
 
-    const controller = new ListaExpedicoesController({ listaExpedicoesUseCase })
+    const controller = new ListaExpedicoesController({ expedicaoCollection })
 
     const request: CustomHttpRequest = {
       body: {},
@@ -163,7 +163,7 @@ describe('ListaExpedicoesController', () => {
 
     const response = await controller.handle(request, vi.fn())
 
-    expect(listaExpedicoesUseCase.execute).toHaveBeenCalledWith<[ExpedicaoFilters]>({
+    expect(expedicaoCollection.findAll).toHaveBeenCalledWith<[ExpedicaoFilters]>({
       cidade_id: 123,
       usuario_id: 456,
       data_inicio_de: '2026-01-01',
@@ -181,11 +181,11 @@ describe('ListaExpedicoesController', () => {
   })
 
   test('returns BadRequestError when order format or column is invalid', async () => {
-    const listaExpedicoesUseCase = {
-      execute: vi.fn()
-    } as unknown as ListaExpedicoesUseCase
+    const expedicaoCollection = {
+      findAll: vi.fn()
+    } as unknown as ExpedicaoCollection
 
-    const controller = new ListaExpedicoesController({ listaExpedicoesUseCase })
+    const controller = new ListaExpedicoesController({ expedicaoCollection })
 
     const request: CustomHttpRequest = {
       body: {},
@@ -197,16 +197,16 @@ describe('ListaExpedicoesController', () => {
 
     const response = await controller.handle(request, vi.fn())
 
-    expect(listaExpedicoesUseCase.execute).not.toHaveBeenCalled()
+    expect(expedicaoCollection.findAll).not.toHaveBeenCalled()
     expect(response).toBeInstanceOf(BadRequestError)
   })
 
   test('returns InternalServerError when use case returns Either.left', async () => {
-    const listaExpedicoesUseCase = {
-      execute: vi.fn().mockResolvedValue(Either.left(new Error('DB failure')))
-    } as unknown as ListaExpedicoesUseCase
+    const expedicaoCollection = {
+      findAll: vi.fn().mockResolvedValue(Either.left(new Error('DB failure')))
+    } as unknown as ExpedicaoCollection
 
-    const controller = new ListaExpedicoesController({ listaExpedicoesUseCase })
+    const controller = new ListaExpedicoesController({ expedicaoCollection })
 
     const request: CustomHttpRequest = {
       body: {},
@@ -223,11 +223,11 @@ describe('ListaExpedicoesController', () => {
   })
 
   test('returns InternalServerError when unexpected exception occurs', async () => {
-    const listaExpedicoesUseCase = {
-      execute: vi.fn().mockRejectedValue(new Error('Crash'))
-    } as unknown as ListaExpedicoesUseCase
+    const expedicaoCollection = {
+      findAll: vi.fn().mockRejectedValue(new Error('Crash'))
+    } as unknown as ExpedicaoCollection
 
-    const controller = new ListaExpedicoesController({ listaExpedicoesUseCase })
+    const controller = new ListaExpedicoesController({ expedicaoCollection })
 
     const request: CustomHttpRequest = {
       body: {},

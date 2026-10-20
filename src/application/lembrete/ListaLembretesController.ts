@@ -1,6 +1,7 @@
 import { isDataValida } from '@/domain/lembrete/Lembrete'
-import { LembreteFilters, LembreteOrder } from '@/domain/lembrete/LembreteCollection'
-import { ListaLembretesUseCase } from '@/domain/lembrete/ListaLembretesUseCase'
+import {
+  LembreteCollection, LembreteFilters, LembreteOrder
+} from '@/domain/lembrete/LembreteCollection'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
@@ -10,17 +11,17 @@ import { InternalServerError } from '@/library/http/error/InternalServerError'
 import { NextHandler, RequestHandler } from '@/library/http/Server'
 
 interface Dependencies {
-  listaLembretesUseCase: ListaLembretesUseCase
+  lembreteCollection: LembreteCollection
 }
 
 const COLUNAS_ORDENAVEIS: ReadonlyArray<LembreteOrder['column']> = ['id', 'data_coleta']
 const DIRECOES: ReadonlyArray<LembreteOrder['direction']> = ['asc', 'desc']
 
 export class ListaLembretesController implements RequestHandler {
-  private readonly listaLembretesUseCase: ListaLembretesUseCase
+  private readonly lembreteCollection: LembreteCollection
 
   constructor(dependencies: Dependencies) {
-    this.listaLembretesUseCase = dependencies.listaLembretesUseCase
+    this.lembreteCollection = dependencies.lembreteCollection
   }
 
   // Próximos lembretes (a partir de hoje, o mais próximo primeiro):
@@ -72,7 +73,7 @@ export class ListaLembretesController implements RequestHandler {
       filters.pagina = Number(pagina)
     }
 
-    const result = await this.listaLembretesUseCase.execute(filters)
+    const result = await this.lembreteCollection.findAll(filters)
 
     if (result.left()) {
       return new InternalServerError({ message: result.value.message })

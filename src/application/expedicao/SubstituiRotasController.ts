@@ -1,5 +1,5 @@
 import { RotaInput } from '@/domain/expedicao/Expedicao'
-import { SubstituiRotasUseCase } from '@/domain/expedicao/SubstituiRotasUseCase'
+import { ExpedicaoCollection } from '@/domain/expedicao/ExpedicaoCollection'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
@@ -9,14 +9,14 @@ import { InternalServerError } from '@/library/http/error/InternalServerError'
 import { NextHandler, RequestHandler } from '@/library/http/Server'
 
 interface Dependencies {
-  SubstituiRotasUseCase: SubstituiRotasUseCase
+  expedicaoCollection: ExpedicaoCollection
 }
 
 export class SubstituiRotasController implements RequestHandler {
-  private readonly SubstituiRotasUseCase: SubstituiRotasUseCase
+  private readonly expedicaoCollection: ExpedicaoCollection
 
   constructor(dependencies: Dependencies) {
-    this.SubstituiRotasUseCase = dependencies.SubstituiRotasUseCase
+    this.expedicaoCollection = dependencies.expedicaoCollection
   }
 
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
@@ -57,7 +57,7 @@ export class SubstituiRotasController implements RequestHandler {
         rotasValidadas.push({ cidade_id: rotaObj.cidade_id, locais_coleta_ids: locaisIds })
       }
 
-      const result = await this.SubstituiRotasUseCase.execute(
+      const result = await this.expedicaoCollection.substituteRoute(
         Number(expedicaoId),
         rotasValidadas,
         request.user?.id ?? null

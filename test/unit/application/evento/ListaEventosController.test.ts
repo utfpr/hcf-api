@@ -6,7 +6,7 @@ import {
 } from 'vitest'
 
 import { ListaEventosController } from '@/application/evento/ListaEventosController'
-import { ListaEventosUseCase } from '@/domain/evento/ListaEventosUseCase'
+import { EventoCollection } from '@/domain/evento/EventoCollection'
 import { Either } from '@/library/either/Either'
 import {
   Headers,
@@ -40,11 +40,11 @@ describe('ListaEventosController', () => {
       pagina: 1
     }
 
-    const listaEventosUseCase = {
-      execute: vi.fn().mockResolvedValue(Either.right(resultado))
-    } as unknown as ListaEventosUseCase
+    const eventoCollection = {
+      findAll: vi.fn().mockResolvedValue(Either.right(resultado))
+    } as unknown as EventoCollection
 
-    const controller = new ListaEventosController({ listaEventosUseCase })
+    const controller = new ListaEventosController({ eventoCollection })
 
     const request = {
       body: {},
@@ -65,11 +65,11 @@ describe('ListaEventosController', () => {
   })
 
   test('returns BadRequest when expedicaoId is invalid', async () => {
-    const listaEventosUseCase = {
-      execute: vi.fn()
-    } as unknown as ListaEventosUseCase
+    const eventoCollection = {
+      findAll: vi.fn()
+    } as unknown as EventoCollection
 
-    const controller = new ListaEventosController({ listaEventosUseCase })
+    const controller = new ListaEventosController({ eventoCollection })
 
     const request = {
       body: {},
@@ -84,17 +84,17 @@ describe('ListaEventosController', () => {
     const response = await controller.handle(request, vi.fn())
 
     expect(response).toBeInstanceOf(BadRequestError)
-    expect(listaEventosUseCase.execute).not.toHaveBeenCalled()
+    expect(eventoCollection.findAll).not.toHaveBeenCalled()
   })
 
   test('returns InternalServerError when use case fails', async () => {
-    const listaEventosUseCase = {
-      execute: vi.fn().mockResolvedValue(
+    const eventoCollection = {
+      findAll: vi.fn().mockResolvedValue(
         Either.left(new Error('erro ao listar eventos'))
       )
-    } as unknown as ListaEventosUseCase
+    } as unknown as EventoCollection
 
-    const controller = new ListaEventosController({ listaEventosUseCase })
+    const controller = new ListaEventosController({ eventoCollection })
 
     const request = {
       body: {},
@@ -119,11 +119,11 @@ describe('ListaEventosController', () => {
       pagina: 2
     }
 
-    const listaEventosUseCase = {
-      execute: vi.fn().mockResolvedValue(Either.right(resultado))
-    } as unknown as ListaEventosUseCase
+    const eventoCollection = {
+      findAll: vi.fn().mockResolvedValue(Either.right(resultado))
+    } as unknown as EventoCollection
 
-    const controller = new ListaEventosController({ listaEventosUseCase })
+    const controller = new ListaEventosController({ eventoCollection })
 
     const request = {
       body: {},
@@ -142,7 +142,7 @@ describe('ListaEventosController', () => {
 
     await controller.handle(request, vi.fn())
 
-    expect(listaEventosUseCase.execute).toHaveBeenCalledWith({
+    expect(eventoCollection.findAll).toHaveBeenCalledWith({
       expedicao_id: 10,
       tipo: 'COLETA',
       data_captura_de: new Date('2026-09-01T00:00:00.000Z'),

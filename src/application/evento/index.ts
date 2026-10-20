@@ -2,9 +2,7 @@ import { type Knex } from 'knex'
 
 import { authorize } from '@/application/AuthorizeMiddlewareFactory'
 import { AtualizaEventoUseCase } from '@/domain/evento/AtualizaEventoUseCase'
-import { BuscaEventoPorIdUseCase } from '@/domain/evento/BuscaEventoPorIdUseCase'
 import { CriaEventoUseCase } from '@/domain/evento/CriaEventoUseCase'
-import { ListaEventosUseCase } from '@/domain/evento/ListaEventosUseCase'
 import { RemoveEventoUseCase } from '@/domain/evento/RemoveEventoUseCase'
 import { EventoCollectionKnexAdapter } from '@/infrastructure/EventoCollectionKnexAdapter'
 import { EvidenciaCollectionKnexAdapter } from '@/infrastructure/EvidenciaCollectionKnexAdapter'
@@ -25,9 +23,7 @@ export function routes(knex: Knex): Route[] {
     {
       handlers: [
         authorize('read', 'Evento'),
-        new ListaEventosController({
-          listaEventosUseCase: new ListaEventosUseCase({ eventoCollection })
-        })
+        new ListaEventosController({ eventoCollection })
       ],
       method: Method.Get,
       path: '/v1/expedicoes/:expedicaoId/eventos'
@@ -45,9 +41,7 @@ export function routes(knex: Knex): Route[] {
     {
       handlers: [
         authorize('read', 'Evento'),
-        new BuscaEventoController({
-          buscaEventoPorIdUseCase: new BuscaEventoPorIdUseCase({ eventoCollection })
-        })
+        new BuscaEventoController({ eventoCollection })
       ],
       method: Method.Get,
       path: '/v1/eventos/:eventoId'

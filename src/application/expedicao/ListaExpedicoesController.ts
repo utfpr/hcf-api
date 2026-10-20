@@ -1,5 +1,4 @@
-import { ExpedicaoFilters } from '@/domain/expedicao/ExpedicaoCollection'
-import { ListaExpedicoesUseCase } from '@/domain/expedicao/ListaExpedicoesUseCase'
+import { ExpedicaoCollection, ExpedicaoFilters } from '@/domain/expedicao/ExpedicaoCollection'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
@@ -9,7 +8,7 @@ import { InternalServerError } from '@/library/http/error/InternalServerError'
 import { NextHandler, RequestHandler } from '@/library/http/Server'
 
 interface Dependencies {
-  listaExpedicoesUseCase: ListaExpedicoesUseCase
+  expedicaoCollection: ExpedicaoCollection
 }
 
 // interface do formato da nossa query
@@ -18,10 +17,10 @@ export interface CustomHttpRequest extends HttpRequest {
 }
 
 export class ListaExpedicoesController implements RequestHandler {
-  private readonly listaExpedicoesUseCase: ListaExpedicoesUseCase
+  private readonly expedicaoCollection: ExpedicaoCollection
 
   constructor(dependencies: Dependencies) {
-    this.listaExpedicoesUseCase = dependencies.listaExpedicoesUseCase
+    this.expedicaoCollection = dependencies.expedicaoCollection
   }
 
   // Listar todas (com ordenação padrão DESC):
@@ -100,7 +99,7 @@ export class ListaExpedicoesController implements RequestHandler {
         filters.pagina = Number(pagina)
       }
 
-      const result = await this.listaExpedicoesUseCase.execute(filters)
+      const result = await this.expedicaoCollection.findAll(filters)
 
       // erro de infra
       if (result.left()) {

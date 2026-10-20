@@ -1,14 +1,8 @@
 import { type Knex } from 'knex'
 
 import { authorize } from '@/application/AuthorizeMiddlewareFactory'
-import { AdicionaParticipanteUseCase } from '@/domain/expedicao/AdicionaParticipanteUseCase'
 import { AtualizaExpedicaoUseCase } from '@/domain/expedicao/AtualizaExpedicaoUseCase'
-import { BuscaExpedicaoUseCase } from '@/domain/expedicao/BuscaExpedicaoUseCase'
 import { CadastraExpedicaoUseCase } from '@/domain/expedicao/CadastraExpedicaoUseCase'
-import { DeletaExpedicaoUseCase } from '@/domain/expedicao/DeletaExpedicaoUseCase'
-import { ListaExpedicoesUseCase } from '@/domain/expedicao/ListaExpedicoesUseCase'
-import { RemoveParticipanteUseCase } from '@/domain/expedicao/RemoveParticipanteUseCase'
-import { SubstituiRotasUseCase } from '@/domain/expedicao/SubstituiRotasUseCase'
 import { createExpedicaoCollection } from '@/factory/ExpedicaoCollectionFactory'
 import { Method } from '@/library/http/common'
 import { Route } from '@/library/http/Router'
@@ -41,9 +35,7 @@ export function routes(knex: Knex): Route[] {
       path: '/v1/expedicoes',
       handlers: [
         authorize('read', 'Expedicao'),
-        new ListaExpedicoesController({
-          listaExpedicoesUseCase: new ListaExpedicoesUseCase({ expedicaoCollection })
-        })
+        new ListaExpedicoesController({ expedicaoCollection })
       ]
     },
     {
@@ -51,9 +43,7 @@ export function routes(knex: Knex): Route[] {
       path: '/v1/expedicoes/:expedicaoId',
       handlers: [
         authorize('read', 'Expedicao'),
-        new BuscaExpedicaoController({
-          buscaExpedicaoUseCase: new BuscaExpedicaoUseCase({ expedicaoCollection })
-        })
+        new BuscaExpedicaoController({ expedicaoCollection })
       ]
     },
     {
@@ -61,9 +51,7 @@ export function routes(knex: Knex): Route[] {
       path: '/v1/expedicoes/:expedicaoId',
       handlers: [
         authorize('delete', 'Expedicao'),
-        new DeletaExpedicaoController({
-          deletaExpedicaoUseCase: new DeletaExpedicaoUseCase({ expedicaoCollection })
-        })
+        new DeletaExpedicaoController({ expedicaoCollection })
       ]
     },
     {
@@ -81,9 +69,7 @@ export function routes(knex: Knex): Route[] {
       path: '/v1/expedicoes/:expedicaoId/participantes',
       handlers: [
         authorize('update', 'Expedicao'),
-        new AdicionaParticipanteController({
-          adicionaParticipanteUseCase: new AdicionaParticipanteUseCase({ expedicaoCollection })
-        })
+        new AdicionaParticipanteController({ expedicaoCollection })
       ]
     },
     {
@@ -91,9 +77,7 @@ export function routes(knex: Knex): Route[] {
       path: '/v1/expedicoes/:expedicaoId/participantes/:usuarioId',
       handlers: [
         authorize('update', 'Expedicao'),
-        new RemoveParticipanteController({
-          removeParticipanteUseCase: new RemoveParticipanteUseCase({ expedicaoCollection })
-        })
+        new RemoveParticipanteController({ expedicaoCollection })
       ]
     },
     {
@@ -101,9 +85,7 @@ export function routes(knex: Knex): Route[] {
       path: '/v1/expedicoes/:expedicaoId/rotas',
       handlers: [
         authorize('update', 'Expedicao'),
-        new SubstituiRotasController({
-          SubstituiRotasUseCase: new SubstituiRotasUseCase({ expedicaoCollection })
-        })
+        new SubstituiRotasController({ expedicaoCollection })
       ]
     }
   ]
