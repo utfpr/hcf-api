@@ -14,22 +14,30 @@ export interface Attributes {
   updated_by: number | null
 }
 
-export type CreateAttributes = Omit<Attributes, 'id' | 'created_at' | 'updated_at' | 'updated_by'>
+type PersistedField = 'id' | 'created_at' | 'updated_at' | 'updated_by'
+
+export type CreateAttributes = Omit<Attributes, PersistedField>
+
+/**
+ * Shape aceito pela entidade: uma linha nova ainda não tem id nem datas de
+ * auditoria; o adapter devolve o registro completo depois do insert.
+ */
+export type EntityAttributes = CreateAttributes & Partial<Pick<Attributes, PersistedField>>
 
 export class Evidencia {
-  readonly id: number
+  readonly id?: number
   readonly evento_id: number
   readonly nome: string
   readonly arquivo: string
   readonly mime_type: string
   readonly tamanho: number
   readonly data_captura: Date
-  readonly created_at: Date
-  readonly updated_at: Date
+  readonly created_at?: Date
+  readonly updated_at?: Date
   readonly created_by: number | null
-  readonly updated_by: number | null
+  readonly updated_by?: number | null
 
-  private constructor(attributes: Attributes) {
+  private constructor(attributes: EntityAttributes) {
     this.id = attributes.id
     this.evento_id = attributes.evento_id
     this.nome = attributes.nome
@@ -43,7 +51,7 @@ export class Evidencia {
     this.updated_by = attributes.updated_by
   }
 
-  static create(attributes: Attributes): Either<Error, Evidencia> {
+  static create(attributes: EntityAttributes): Either<Error, Evidencia> {
     if (!Number.isInteger(attributes.evento_id) || attributes.evento_id <= 0) {
       return Either.left(new Error('Evento da evidência é obrigatório'))
     }

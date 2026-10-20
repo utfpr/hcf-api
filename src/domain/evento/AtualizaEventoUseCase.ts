@@ -49,7 +49,7 @@ export class AtualizaEventoUseCase {
       longitude: mesclado.longitude,
       observacoes: mesclado.observacoes,
       tipo: mesclado.tipo,
-      updated_by: mesclado.updated_by
+      updated_by: input.updated_by
     }
 
     return this.eventoCollection.update(input.id, patch)

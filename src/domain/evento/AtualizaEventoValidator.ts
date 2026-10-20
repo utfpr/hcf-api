@@ -27,7 +27,7 @@ export interface AtualizaEventoInput {
  */
 
 export class AtualizaEventoValidator {
-  validar(atual: Attributes, input: AtualizaEventoInput): Either<Error, Attributes> {
+  validar(atual: Attributes, input: AtualizaEventoInput): Either<Error, Evento> {
     const mesclado = this.mesclar(atual, input)
     return Evento.create(mesclado)
   }

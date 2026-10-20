@@ -63,10 +63,18 @@ export interface Attributes {
   updated_by: number | null
 }
 
-export type CreateAttributes = Omit<Attributes, 'id' | 'created_at' | 'updated_at' | 'updated_by'>
+type PersistedField = 'id' | 'created_at' | 'updated_at' | 'updated_by'
+
+export type CreateAttributes = Omit<Attributes, PersistedField>
+
+/**
+ * Shape aceito pela entidade: uma linha nova ainda não tem id nem datas de
+ * auditoria; o adapter devolve o registro completo depois do insert.
+ */
+export type EntityAttributes = CreateAttributes & Partial<Pick<Attributes, PersistedField>>
 
 export class Evento {
-  readonly id: number
+  readonly id?: number
   readonly expedicao_id: number
   readonly tipo: EventoTipo
   readonly data_captura: Date
@@ -75,12 +83,12 @@ export class Evento {
   readonly altitude: number | null
   readonly observacoes: string | null
   readonly coleta: ColetaAttributes | null
-  readonly created_at: Date
-  readonly updated_at: Date
+  readonly created_at?: Date
+  readonly updated_at?: Date
   readonly created_by: number | null
-  readonly updated_by: number | null
+  readonly updated_by?: number | null
 
-  private constructor(attributes: Attributes) {
+  private constructor(attributes: EntityAttributes) {
     this.id = attributes.id
     this.expedicao_id = attributes.expedicao_id
     this.tipo = attributes.tipo
@@ -96,7 +104,7 @@ export class Evento {
     this.updated_by = attributes.updated_by
   }
 
-  static create(attributes: Attributes): Either<Error, Evento> {
+  static create(attributes: EntityAttributes): Either<Error, Evento> {
     if (!Number.isInteger(attributes.expedicao_id) || attributes.expedicao_id <= 0) {
       return Either.left(new Error('Expedição do evento é obrigatória'))
     }

@@ -19,6 +19,18 @@ const base: Attributes = {
 }
 
 describe('Evidencia.create', () => {
+  test('aceita uma linha nova, ainda sem id e datas de auditoria', () => {
+    const {
+      id, created_at, updated_at, updated_by, ...novaLinha
+    } = base
+
+    const result = Evidencia.create(novaLinha)
+
+    expect(result.right()).toBe(true)
+    expect(result.value).toMatchObject({ created_by: base.created_by })
+    expect((result.value as Evidencia).id).toBeUndefined()
+  })
+
   test('cria a evidência quando nome e instante de captura são válidos', () => {
     const result = Evidencia.create(base)
 

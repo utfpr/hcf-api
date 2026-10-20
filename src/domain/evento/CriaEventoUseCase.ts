@@ -17,15 +17,7 @@ export class CriaEventoUseCase {
   }
 
   async execute(input: CreateAttributes): Promise<Either<Error, Attributes>> {
-    // Evento.create() exige um Attributes completo, usado para validar
-    // a coerência de negócio (tipo/ficha, coordenadas,data_captura).
-    const validated = Evento.create({
-      ...input,
-      created_at: new Date(),
-      id: 0,
-      updated_at: new Date(),
-      updated_by: input.created_by
-    })
+    const validated = Evento.create(input)
 
     if (validated.left()) {
       return Either.left(validated.value)

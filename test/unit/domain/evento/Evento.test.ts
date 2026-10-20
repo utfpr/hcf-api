@@ -47,6 +47,18 @@ const coleta: Attributes = {
 }
 
 describe('Evento.create', () => {
+  test('aceita uma linha nova, ainda sem id e datas de auditoria', () => {
+    const {
+      id, created_at, updated_at, updated_by, ...novaLinha
+    } = diario
+
+    const result = Evento.create(novaLinha)
+
+    expect(result.right()).toBe(true)
+    expect(result.value).toMatchObject({ created_by: diario.created_by })
+    expect((result.value as Evento).id).toBeUndefined()
+  })
+
   test('cria um evento de diário sem ficha', () => {
     const result = Evento.create(diario)
 
