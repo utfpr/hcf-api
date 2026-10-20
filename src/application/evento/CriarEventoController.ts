@@ -1,3 +1,4 @@
+import { parseClientUuid } from '@/application/parseClientUuid'
 import { CriarEventoUseCase } from '@/domain/evento/CriarEventoUseCase'
 import { EVENTO_TIPOS, EventoTipo } from '@/domain/evento/Evento'
 import { CheckViolationError } from '@/infrastructure/error/CheckViolationError'
@@ -27,6 +28,7 @@ interface Body {
   altitude?: unknown
   observacoes?: unknown
   coleta?: unknown
+  client_uuid?: unknown
 }
 
 export class CriarEventoController implements RequestHandler {
@@ -64,6 +66,9 @@ export class CriarEventoController implements RequestHandler {
     const coleta = body.coleta === undefined ? null : parseColeta(body.coleta)
     if (coleta instanceof Error) return new BadRequestError({ message: coleta.message })
 
+    const clientUuid = parseClientUuid(body.client_uuid)
+    if (clientUuid instanceof Error) return new BadRequestError({ message: clientUuid.message })
+
     const usuarioId = request.user?.id ?? null
 
     const result = await this.criarEventoUseCase.execute({
@@ -75,7 +80,8 @@ export class CriarEventoController implements RequestHandler {
       latitude,
       longitude,
       observacoes,
-      tipo
+      tipo,
+      ...(clientUuid ? { client_uuid: clientUuid } : {})
     })
 
     if (result.left()) {

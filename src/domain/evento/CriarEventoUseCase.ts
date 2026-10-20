@@ -31,6 +31,13 @@ export class CriarEventoUseCase {
       return Either.left(validated.value)
     }
 
+    // Reenvio do app depois de uma falha de rede: devolve o que já foi criado
+    if (input.client_uuid) {
+      const existente = await this.eventoCollection.findByClientUuid(input.client_uuid)
+      if (existente.left()) return Either.left(existente.value)
+      if (existente.value) return Either.right(existente.value)
+    }
+
     return this.eventoCollection.create(input)
   }
 }

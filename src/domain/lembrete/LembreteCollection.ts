@@ -27,6 +27,7 @@ export interface Paginated<T> {
 export interface LembreteCollection {
   findAll(filters: LembreteFilters): Promise<Either<Error, Paginated<Attributes>>>
   findById(id: number): Promise<Either<Error, Attributes | null>>
+  findByClientUuid(clientUuid: string): Promise<Either<Error, Attributes | null>>
   create(attributes: CreateAttributes): Promise<Either<Error, Attributes>>
   update(id: number, attributes: UpdateAttributes): Promise<Either<Error, Attributes | null>>
   delete(id: number): Promise<Either<Error, boolean>>

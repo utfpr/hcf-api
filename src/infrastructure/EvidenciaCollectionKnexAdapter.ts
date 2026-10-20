@@ -21,6 +21,7 @@ interface Row {
   mime_type: string
   tamanho: number
   capturado_em: Date
+  client_uuid: string | null
   created_at: Date
   updated_at: Date
   created_by: string | null
@@ -35,6 +36,7 @@ const COLUMNS = [
   'mime_type',
   'tamanho',
   'capturado_em',
+  'client_uuid',
   'created_at',
   'updated_at',
   'created_by',
@@ -50,6 +52,7 @@ function toAttributes(row: Row): Attributes {
     mime_type: row.mime_type,
     tamanho: Number(row.tamanho),
     capturado_em: row.capturado_em,
+    client_uuid: row.client_uuid,
     created_at: row.created_at,
     updated_at: row.updated_at,
     created_by: toNullableNumber(row.created_by),
@@ -105,6 +108,18 @@ export class EvidenciaCollectionKnexAdapter implements EvidenciaCollection {
     }
   }
 
+  async findByClientUuid(clientUuid: string): Promise<Either<Error, Attributes | null>> {
+    try {
+      const row = await this.knex('evidencias')
+        .select(COLUMNS)
+        .where({ client_uuid: clientUuid })
+        .first() as Row | undefined
+      return Either.right(row ? toAttributes(row) : null)
+    } catch (error) {
+      return Either.left(new CollectionError({ message: 'Failed to find evidencias by client_uuid', cause: error }))
+    }
+  }
+
   async create(attributes: CreateAttributes): Promise<Either<Error, Attributes>> {
     try {
       const [row] = await this.knex('evidencias')
@@ -115,6 +130,7 @@ export class EvidenciaCollectionKnexAdapter implements EvidenciaCollection {
           mime_type: attributes.mime_type,
           tamanho: attributes.tamanho,
           capturado_em: attributes.capturado_em,
+          client_uuid: attributes.client_uuid ?? null,
           created_by: attributes.created_by,
           updated_by: attributes.created_by
         })

@@ -1,3 +1,4 @@
+import { parseClientUuid } from '@/application/parseClientUuid'
 import { CriaLembreteUseCase } from '@/domain/lembrete/CriaLembreteUseCase'
 import { FichaAttributes } from '@/domain/lembrete/Lembrete'
 import { InfrastructureError } from '@/infrastructure/error/InfrastructureError'
@@ -34,13 +35,17 @@ export class CriaLembreteController implements RequestHandler {
     const ficha = parseFicha(body, { preencherAusentes: true })
     if (ficha instanceof Error) return new BadRequestError({ message: ficha.message })
 
+    const clientUuid = parseClientUuid(body.client_uuid)
+    if (clientUuid instanceof Error) return new BadRequestError({ message: clientUuid.message })
+
     const usuarioId = request.user?.id ?? null
 
     const result = await this.criaLembreteUseCase.execute({
       ...ficha as FichaAttributes,
       created_by: usuarioId,
       data_coleta: dataColeta,
-      local_coleta: localColeta
+      local_coleta: localColeta,
+      ...(clientUuid ? { client_uuid: clientUuid } : {})
     })
 
     if (result.left()) {

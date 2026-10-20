@@ -19,6 +19,7 @@ interface Row extends FichaAttributes {
   id: number
   data_coleta: string
   local_coleta: string
+  client_uuid: string | null
   created_at: Date
   updated_at: Date
   created_by: string | null
@@ -31,6 +32,7 @@ function toAttributes(row: Row): Attributes {
     data_coleta: row.data_coleta,
     local_coleta: row.local_coleta,
     ...Object.fromEntries(FICHA_FIELDS.map(campo => [campo, row[campo] ?? null])) as unknown as FichaAttributes,
+    client_uuid: row.client_uuid,
     created_at: row.created_at,
     updated_at: row.updated_at,
     created_by: toNullableNumber(row.created_by),
@@ -55,6 +57,7 @@ export class LembreteCollectionKnexAdapter implements LembreteCollection {
         knex.raw('to_char(lembretes.data_coleta, \'YYYY-MM-DD\') as data_coleta'),
         'lembretes.local_coleta',
         ...FICHA_FIELDS.map(campo => `lembretes.${campo}`),
+        'lembretes.client_uuid',
         'lembretes.created_at',
         'lembretes.updated_at',
         'lembretes.created_by',
@@ -110,6 +113,18 @@ export class LembreteCollectionKnexAdapter implements LembreteCollection {
       return Either.right(row ? toAttributes(row) : null)
     } catch (error) {
       return Either.left(new CollectionError({ message: 'Failed to find lembrete by id', cause: error }))
+    }
+  }
+
+  async findByClientUuid(clientUuid: string): Promise<Either<Error, Attributes | null>> {
+    try {
+      const row = await this.select()
+        .where('lembretes.client_uuid', clientUuid)
+        .first() as Row | undefined
+
+      return Either.right(row ? toAttributes(row) : null)
+    } catch (error) {
+      return Either.left(new CollectionError({ message: 'Failed to find lembrete by client_uuid', cause: error }))
     }
   }
 

@@ -29,6 +29,13 @@ export class CriaLembreteEvidenciaUseCase {
       return Either.left(validated.value)
     }
 
+    // Reenvio do app depois de uma falha de rede: devolve o que já foi criado
+    if (input.client_uuid) {
+      const existente = await this.lembreteEvidenciaCollection.findByClientUuid(input.client_uuid)
+      if (existente.left()) return Either.left(existente.value)
+      if (existente.value) return Either.right(existente.value)
+    }
+
     return this.lembreteEvidenciaCollection.create(input)
   }
 }

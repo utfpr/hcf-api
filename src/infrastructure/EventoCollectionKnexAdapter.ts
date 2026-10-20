@@ -29,6 +29,7 @@ interface Row {
   longitude: number | null
   altitude: number | null
   observacoes: string | null
+  client_uuid: string | null
   created_at: Date
   updated_at: Date
   created_by: string | null
@@ -55,6 +56,7 @@ function toAttributes(row: Row & Record<string, unknown>): Attributes {
     altitude: row.altitude,
     observacoes: row.observacoes,
     coleta,
+    client_uuid: row.client_uuid,
     created_at: row.created_at,
     updated_at: row.updated_at,
     created_by: toNullableNumber(row.created_by),
@@ -97,6 +99,7 @@ export class EventoCollectionKnexAdapter implements EventoCollection {
         'eventos.longitude',
         'eventos.altitude',
         'eventos.observacoes',
+        'eventos.client_uuid',
         'eventos.created_at',
         'eventos.updated_at',
         'eventos.created_by',
@@ -165,6 +168,18 @@ export class EventoCollectionKnexAdapter implements EventoCollection {
     }
   }
 
+  async findByClientUuid(clientUuid: string): Promise<Either<Error, Attributes | null>> {
+    try {
+      const row = await this.select()
+        .where('eventos.client_uuid', clientUuid)
+        .first() as (Row & Record<string, unknown>) | undefined
+
+      return Either.right(row ? toAttributes(row) : null)
+    } catch (error) {
+      return Either.left(new CollectionError({ message: 'Failed to find evento by client_uuid', cause: error }))
+    }
+  }
+
   /**
    * O evento e sua ficha nascem juntos ou não nascem: é a transação que garante
    * que todo tipo='COLETA' tem linha em `eventos_coletas`.
@@ -181,6 +196,7 @@ export class EventoCollectionKnexAdapter implements EventoCollection {
             longitude: attributes.longitude,
             altitude: attributes.altitude,
             observacoes: attributes.observacoes,
+            client_uuid: attributes.client_uuid ?? null,
             created_by: attributes.created_by,
             updated_by: attributes.created_by
           })

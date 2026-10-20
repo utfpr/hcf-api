@@ -47,6 +47,8 @@ export interface Attributes extends FichaAttributes {
   id: number
   data_coleta: string
   local_coleta: string
+  // Chave de idempotência do app (offline); null para o que veio do web
+  client_uuid?: string | null
   created_at: Date
   updated_at: Date
   created_by: number | null
@@ -55,7 +57,7 @@ export interface Attributes extends FichaAttributes {
 
 export type CreateAttributes = Omit<Attributes, 'id' | 'created_at' | 'updated_at' | 'updated_by'>
 
-export type UpdateAttributes = Omit<Attributes, 'id' | 'created_at' | 'updated_at' | 'created_by'>
+export type UpdateAttributes = Omit<Attributes, 'id' | 'created_at' | 'updated_at' | 'created_by' | 'client_uuid'>
 
 const DATA_ISO = /^\d{4}-\d{2}-\d{2}$/
 

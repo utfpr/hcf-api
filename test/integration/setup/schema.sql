@@ -3700,3 +3700,27 @@ ALTER TABLE ONLY public.lembretes_evidencias
 
 ALTER TABLE ONLY public.lembretes_evidencias
     ADD CONSTRAINT lembretes_evidencias_updated_by_foreign FOREIGN KEY (updated_by) REFERENCES public.usuarios(id) ON UPDATE CASCADE;
+
+--
+-- Chave de idempotência do app (offline)
+-- Migration 20261020120000
+--
+ALTER TABLE ONLY public.eventos ADD COLUMN client_uuid uuid;
+
+ALTER TABLE ONLY public.eventos
+    ADD CONSTRAINT eventos_client_uuid_unique UNIQUE (client_uuid);
+
+ALTER TABLE ONLY public.evidencias ADD COLUMN client_uuid uuid;
+
+ALTER TABLE ONLY public.evidencias
+    ADD CONSTRAINT evidencias_client_uuid_unique UNIQUE (client_uuid);
+
+ALTER TABLE ONLY public.lembretes ADD COLUMN client_uuid uuid;
+
+ALTER TABLE ONLY public.lembretes
+    ADD CONSTRAINT lembretes_client_uuid_unique UNIQUE (client_uuid);
+
+ALTER TABLE ONLY public.lembretes_evidencias ADD COLUMN client_uuid uuid;
+
+ALTER TABLE ONLY public.lembretes_evidencias
+    ADD CONSTRAINT lembretes_evidencias_client_uuid_unique UNIQUE (client_uuid);

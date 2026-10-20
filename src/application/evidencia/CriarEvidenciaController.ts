@@ -1,5 +1,6 @@
 import { unlink } from 'node:fs/promises'
 
+import { parseClientUuid } from '@/application/parseClientUuid'
 import { CriarEvidenciaUseCase } from '@/domain/evidencia/CriarEvidenciaUseCase'
 import { ForeignKeyViolationError } from '@/infrastructure/error/ForeignKeyViolationError'
 import { InfrastructureError } from '@/infrastructure/error/InfrastructureError'
@@ -19,6 +20,7 @@ interface Dependencies {
 interface Body {
   nome?: unknown
   capturado_em?: unknown
+  client_uuid?: unknown
 }
 
 interface UploadedFile {
@@ -51,6 +53,9 @@ export class CriarEvidenciaController implements RequestHandler {
     const capturadoEm = parseDate(body.capturado_em, 'capturado_em')
     if (capturadoEm instanceof Error) return await cleanupAndReturn(file.path, capturadoEm)
 
+    const clientUuid = parseClientUuid(body.client_uuid)
+    if (clientUuid instanceof Error) return await cleanupAndReturn(file.path, clientUuid)
+
     const usuarioId = request.user?.id ?? null
 
     const result = await this.criarEvidenciaUseCase.execute({
@@ -60,7 +65,8 @@ export class CriarEvidenciaController implements RequestHandler {
       mime_type: file.mimetype,
       tamanho: file.size,
       capturado_em: capturadoEm,
-      created_by: usuarioId
+      created_by: usuarioId,
+      ...(clientUuid ? { client_uuid: clientUuid } : {})
     })
 
     if (result.left()) {
@@ -70,6 +76,11 @@ export class CriarEvidenciaController implements RequestHandler {
       if (error instanceof ForeignKeyViolationError) return new NotFoundError({ message: error.message })
       if (!(error instanceof InfrastructureError)) return new BadRequestError({ message: error.message })
       return new InternalServerError({ message: error.message })
+    }
+
+    // Reenvio (mesmo client_uuid): a evidência já tinha arquivo; o que acabou de chegar sobra
+    if (result.value.arquivo !== file.filename) {
+      await unlink(file.path).catch(() => {})
     }
 
     return {
