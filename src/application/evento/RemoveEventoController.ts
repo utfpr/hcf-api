@@ -1,4 +1,4 @@
-import { RemoverEventoUseCase } from '@/domain/evento/RemoverEventoUseCase'
+import { RemoveEventoUseCase } from '@/domain/evento/RemoveEventoUseCase'
 import { CheckViolationError } from '@/infrastructure/error/CheckViolationError'
 import { ForeignKeyViolationError } from '@/infrastructure/error/ForeignKeyViolationError'
 import {
@@ -12,14 +12,14 @@ import { UnprocessableEntityError } from '@/library/http/error/UnprocessableEnti
 import { NextHandler, RequestHandler } from '@/library/http/Server'
 
 interface Dependencies {
-  removerEventoUseCase: RemoverEventoUseCase
+  removeEventoUseCase: RemoveEventoUseCase
 }
 
-export class RemoverEventoController implements RequestHandler {
-  private readonly removerEventoUseCase: RemoverEventoUseCase
+export class RemoveEventoController implements RequestHandler {
+  private readonly removeEventoUseCase: RemoveEventoUseCase
 
   constructor(dependencies: Dependencies) {
-    this.removerEventoUseCase = dependencies.removerEventoUseCase
+    this.removeEventoUseCase = dependencies.removeEventoUseCase
   }
 
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
@@ -27,7 +27,7 @@ export class RemoverEventoController implements RequestHandler {
     const eventoId = parseId(rawEventoId, 'eventoId')
     if (eventoId instanceof Error) return new BadRequestError({ message: eventoId.message })
 
-    const result = await this.removerEventoUseCase.execute({ id: eventoId })
+    const result = await this.removeEventoUseCase.execute({ id: eventoId })
 
     if (result.left()) {
       const error = result.value

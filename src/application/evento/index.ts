@@ -1,21 +1,21 @@
 import { type Knex } from 'knex'
 
 import { authorize } from '@/application/AuthorizeMiddlewareFactory'
-import { AtualizarEventoUseCase } from '@/domain/evento/AtualizarEventoUseCase'
-import { BuscarEventoPorIdUseCase } from '@/domain/evento/BuscarEventoPorIdUseCase'
-import { CriarEventoUseCase } from '@/domain/evento/CriarEventoUseCase'
+import { AtualizaEventoUseCase } from '@/domain/evento/AtualizaEventoUseCase'
+import { BuscaEventoPorIdUseCase } from '@/domain/evento/BuscaEventoPorIdUseCase'
+import { CriaEventoUseCase } from '@/domain/evento/CriaEventoUseCase'
 import { ListaEventosUseCase } from '@/domain/evento/ListaEventosUseCase'
-import { RemoverEventoUseCase } from '@/domain/evento/RemoverEventoUseCase'
+import { RemoveEventoUseCase } from '@/domain/evento/RemoveEventoUseCase'
 import { EventoCollectionKnexAdapter } from '@/infrastructure/EventoCollectionKnexAdapter'
 import { EvidenciaCollectionKnexAdapter } from '@/infrastructure/EvidenciaCollectionKnexAdapter'
 import { Method } from '@/library/http/common'
 import { Route } from '@/library/http/Router'
 
-import { AtualizarEventoController } from './AtualizarEventoController'
-import { BuscarEventoController } from './BuscarEventoController'
-import { CriarEventoController } from './CriarEventoController'
+import { AtualizaEventoController } from './AtualizaEventoController'
+import { BuscaEventoController } from './BuscaEventoController'
+import { CriaEventoController } from './CriaEventoController'
 import { ListaEventosController } from './ListaEventosController'
-import { RemoverEventoController } from './RemoverEventoController'
+import { RemoveEventoController } from './RemoveEventoController'
 
 export function routes(knex: Knex): Route[] {
   const eventoCollection = new EventoCollectionKnexAdapter({ knex })
@@ -35,8 +35,8 @@ export function routes(knex: Knex): Route[] {
     {
       handlers: [
         authorize('create', 'Evento'),
-        new CriarEventoController({
-          criarEventoUseCase: new CriarEventoUseCase({ eventoCollection })
+        new CriaEventoController({
+          criaEventoUseCase: new CriaEventoUseCase({ eventoCollection })
         })
       ],
       method: Method.Post,
@@ -45,8 +45,8 @@ export function routes(knex: Knex): Route[] {
     {
       handlers: [
         authorize('read', 'Evento'),
-        new BuscarEventoController({
-          buscarEventoPorIdUseCase: new BuscarEventoPorIdUseCase({ eventoCollection })
+        new BuscaEventoController({
+          buscaEventoPorIdUseCase: new BuscaEventoPorIdUseCase({ eventoCollection })
         })
       ],
       method: Method.Get,
@@ -55,8 +55,8 @@ export function routes(knex: Knex): Route[] {
     {
       handlers: [
         authorize('update', 'Evento'),
-        new AtualizarEventoController({
-          atualizarEventoUseCase: new AtualizarEventoUseCase({ eventoCollection })
+        new AtualizaEventoController({
+          atualizaEventoUseCase: new AtualizaEventoUseCase({ eventoCollection })
         })
       ],
       method: Method.Put,
@@ -65,8 +65,8 @@ export function routes(knex: Knex): Route[] {
     {
       handlers: [
         authorize('delete', 'Evento'),
-        new RemoverEventoController({
-          removerEventoUseCase: new RemoverEventoUseCase({ eventoCollection, evidenciaCollection })
+        new RemoveEventoController({
+          removeEventoUseCase: new RemoveEventoUseCase({ eventoCollection, evidenciaCollection })
         })
       ],
       method: Method.Delete,

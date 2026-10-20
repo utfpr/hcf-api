@@ -2,8 +2,8 @@ import {
   describe, expect, test, vi
 } from 'vitest'
 
-import { RemoverEventoController } from '@/application/evento/RemoverEventoController'
-import { RemoverEventoUseCase } from '@/domain/evento/RemoverEventoUseCase'
+import { RemoveEventoController } from '@/application/evento/RemoveEventoController'
+import { RemoveEventoUseCase } from '@/domain/evento/RemoveEventoUseCase'
 import { Either } from '@/library/either/Either'
 import {
   Headers, HttpRequest, Method, StatusCode
@@ -23,46 +23,46 @@ function makeRequest(params: Record<string, unknown>): HttpRequest {
   } satisfies HttpRequest
 }
 
-describe('RemoverEventoController', () => {
+describe('RemoveEventoController', () => {
   test('retorna 204 quando o evento é removido', async () => {
-    const removerEventoUseCase = {
+    const removeEventoUseCase = {
       execute: vi.fn().mockResolvedValue(Either.right(true))
-    } as unknown as RemoverEventoUseCase
+    } as unknown as RemoveEventoUseCase
 
-    const controller = new RemoverEventoController({ removerEventoUseCase })
+    const controller = new RemoveEventoController({ removeEventoUseCase })
     const response = await controller.handle(makeRequest({ eventoId: '10' }), vi.fn())
 
-    expect(removerEventoUseCase.execute).toHaveBeenCalledWith({ id: 10 })
+    expect(removeEventoUseCase.execute).toHaveBeenCalledWith({ id: 10 })
     expect('statusCode' in response ? response.statusCode : undefined).toBe(StatusCode.NoContent)
   })
 
   test('retorna 404 quando o evento não existe', async () => {
-    const removerEventoUseCase = {
+    const removeEventoUseCase = {
       execute: vi.fn().mockResolvedValue(Either.right(false))
-    } as unknown as RemoverEventoUseCase
+    } as unknown as RemoveEventoUseCase
 
-    const controller = new RemoverEventoController({ removerEventoUseCase })
+    const controller = new RemoveEventoController({ removeEventoUseCase })
     const response = await controller.handle(makeRequest({ eventoId: '999' }), vi.fn())
 
     expect(response).toBeInstanceOf(NotFoundError)
   })
 
   test('retorna 400 quando eventoId é inválido', async () => {
-    const removerEventoUseCase = { execute: vi.fn() } as unknown as RemoverEventoUseCase
-    const controller = new RemoverEventoController({ removerEventoUseCase })
+    const removeEventoUseCase = { execute: vi.fn() } as unknown as RemoveEventoUseCase
+    const controller = new RemoveEventoController({ removeEventoUseCase })
 
     const response = await controller.handle(makeRequest({ eventoId: 'abc' }), vi.fn())
 
-    expect(removerEventoUseCase.execute).not.toHaveBeenCalled()
+    expect(removeEventoUseCase.execute).not.toHaveBeenCalled()
     expect(response).toBeInstanceOf(BadRequestError)
   })
 
   test('retorna 500 quando ocorre erro de infraestrutura', async () => {
-    const removerEventoUseCase = {
+    const removeEventoUseCase = {
       execute: vi.fn().mockResolvedValue(Either.left(new Error('DB down')))
-    } as unknown as RemoverEventoUseCase
+    } as unknown as RemoveEventoUseCase
 
-    const controller = new RemoverEventoController({ removerEventoUseCase })
+    const controller = new RemoveEventoController({ removeEventoUseCase })
     const response = await controller.handle(makeRequest({ eventoId: '10' }), vi.fn())
 
     expect((response as Error).name).toBe('InternalServerError')

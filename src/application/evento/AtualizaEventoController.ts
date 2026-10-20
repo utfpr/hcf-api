@@ -1,4 +1,4 @@
-import { AtualizarEventoUseCase, Input as AtualizarEventoInput } from '@/domain/evento/AtualizarEventoUseCase'
+import { AtualizaEventoUseCase, Input as AtualizaEventoInput } from '@/domain/evento/AtualizaEventoUseCase'
 import { EVENTO_TIPOS, EventoTipo } from '@/domain/evento/Evento'
 import { CheckViolationError } from '@/infrastructure/error/CheckViolationError'
 import { ForeignKeyViolationError } from '@/infrastructure/error/ForeignKeyViolationError'
@@ -16,7 +16,7 @@ import { NextHandler, RequestHandler } from '@/library/http/Server'
 import { parseColeta } from './coleta-parsing'
 
 interface Dependencies {
-  atualizarEventoUseCase: AtualizarEventoUseCase
+  atualizaEventoUseCase: AtualizaEventoUseCase
 }
 
 interface Body {
@@ -29,11 +29,11 @@ interface Body {
   coleta?: unknown
 }
 
-export class AtualizarEventoController implements RequestHandler {
-  private readonly atualizarEventoUseCase: AtualizarEventoUseCase
+export class AtualizaEventoController implements RequestHandler {
+  private readonly atualizaEventoUseCase: AtualizaEventoUseCase
 
   constructor(dependencies: Dependencies) {
-    this.atualizarEventoUseCase = dependencies.atualizarEventoUseCase
+    this.atualizaEventoUseCase = dependencies.atualizaEventoUseCase
   }
 
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
@@ -43,7 +43,7 @@ export class AtualizarEventoController implements RequestHandler {
 
     const body = (request.body ?? {}) as Body
 
-    const input: AtualizarEventoInput = { id: eventoId, updated_by: request.user?.id ?? null }
+    const input: AtualizaEventoInput = { id: eventoId, updated_by: request.user?.id ?? null }
 
     if (body.tipo !== undefined) {
       const tipo = parseTipo(body.tipo)
@@ -87,7 +87,7 @@ export class AtualizarEventoController implements RequestHandler {
       input.coleta = coleta
     }
 
-    const result = await this.atualizarEventoUseCase.execute(input)
+    const result = await this.atualizaEventoUseCase.execute(input)
 
     if (result.left()) {
       const error = result.value

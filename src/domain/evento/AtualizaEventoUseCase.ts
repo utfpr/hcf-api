@@ -1,27 +1,27 @@
 import { Either } from '@/library/either/Either'
 
-import { AtualizarEventoInput, AtualizarEventoValidator } from './AtualizarEventoValidator'
+import { AtualizaEventoInput, AtualizaEventoValidator } from './AtualizaEventoValidator'
 import { Attributes } from './Evento'
-import { AtualizarEventoAttributes, EventoCollection } from './EventoCollection'
+import { AtualizaEventoAttributes, EventoCollection } from './EventoCollection'
 
 interface Dependencies {
   eventoCollection: EventoCollection
-  atualizarEventoValidator?: AtualizarEventoValidator
+  atualizaEventoValidator?: AtualizaEventoValidator
 }
 
-export type Input = AtualizarEventoInput & { id: number }
+export type Input = AtualizaEventoInput & { id: number }
 
 /**
  * O PUT do agregado evento+ficha. A regra de coerência própria do update
- * (quando `tipo` da ficha muda), agora está em AtualizarEventoValidator.
+ * (quando `tipo` da ficha muda), agora está em AtualizaEventoValidator.
  */
-export class AtualizarEventoUseCase {
+export class AtualizaEventoUseCase {
   private readonly eventoCollection: EventoCollection
-  private readonly atualizarEventoValidator: AtualizarEventoValidator
+  private readonly atualizaEventoValidator: AtualizaEventoValidator
 
   constructor(dependencies: Dependencies) {
     this.eventoCollection = dependencies.eventoCollection
-    this.atualizarEventoValidator = dependencies.atualizarEventoValidator ?? new AtualizarEventoValidator()
+    this.atualizaEventoValidator = dependencies.atualizaEventoValidator ?? new AtualizaEventoValidator()
   }
 
   async execute(input: Input): Promise<Either<Error, Attributes | null>> {
@@ -34,14 +34,14 @@ export class AtualizarEventoUseCase {
       return Either.right(null)
     }
 
-    const validado = this.atualizarEventoValidator.validar(existente.value, input)
+    const validado = this.atualizaEventoValidator.validar(existente.value, input)
     if (validado.left()) {
       return Either.left(validado.value)
     }
 
     const mesclado = validado.value
 
-    const patch: AtualizarEventoAttributes = {
+    const patch: AtualizaEventoAttributes = {
       altitude: mesclado.altitude,
       capturado_em: mesclado.capturado_em,
       coleta: mesclado.coleta,

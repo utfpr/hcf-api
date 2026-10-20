@@ -2,7 +2,7 @@ import {
   describe, expect, test, vi
 } from 'vitest'
 
-import { CriarEventoUseCase } from '@/domain/evento/CriarEventoUseCase'
+import { CriaEventoUseCase } from '@/domain/evento/CriaEventoUseCase'
 import { Attributes, CreateAttributes } from '@/domain/evento/Evento'
 import { EventoCollection } from '@/domain/evento/EventoCollection'
 import { Either } from '@/library/either/Either'
@@ -44,10 +44,10 @@ const makeMockCollection = (overrides?: Partial<EventoCollection>): EventoCollec
   ...overrides
 })
 
-describe('CriarEventoUseCase', () => {
+describe('CriaEventoUseCase', () => {
   test('cria o evento quando os dados são válidos', async () => {
     const collection = makeMockCollection()
-    const useCase = new CriarEventoUseCase({ eventoCollection: collection })
+    const useCase = new CriaEventoUseCase({ eventoCollection: collection })
 
     const result = await useCase.execute(validInput)
 
@@ -58,7 +58,7 @@ describe('CriarEventoUseCase', () => {
 
   test('não chama a collection quando a validação de domínio falha (COLETA sem ficha)', async () => {
     const collection = makeMockCollection()
-    const useCase = new CriarEventoUseCase({ eventoCollection: collection })
+    const useCase = new CriaEventoUseCase({ eventoCollection: collection })
 
     const result = await useCase.execute({ ...validInput, tipo: 'COLETA' })
 
@@ -71,7 +71,7 @@ describe('CriarEventoUseCase', () => {
     const collection = makeMockCollection({
       create: vi.fn().mockResolvedValue(Either.left(error))
     })
-    const useCase = new CriarEventoUseCase({ eventoCollection: collection })
+    const useCase = new CriaEventoUseCase({ eventoCollection: collection })
 
     const result = await useCase.execute(validInput)
 

@@ -1,4 +1,4 @@
-import { RemoverEvidenciaUseCase } from '@/domain/evidencia/RemoverEvidenciaUseCase'
+import { RemoveEvidenciaUseCase } from '@/domain/evidencia/RemoveEvidenciaUseCase'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
@@ -9,14 +9,14 @@ import { NotFoundError } from '@/library/http/error/NotFoundError'
 import { NextHandler, RequestHandler } from '@/library/http/Server'
 
 interface Dependencies {
-  removerEvidenciaUseCase: RemoverEvidenciaUseCase
+  removeEvidenciaUseCase: RemoveEvidenciaUseCase
 }
 
-export class RemoverEvidenciaController implements RequestHandler {
-  private readonly removerEvidenciaUseCase: RemoverEvidenciaUseCase
+export class RemoveEvidenciaController implements RequestHandler {
+  private readonly removeEvidenciaUseCase: RemoveEvidenciaUseCase
 
   constructor(dependencies: Dependencies) {
-    this.removerEvidenciaUseCase = dependencies.removerEvidenciaUseCase
+    this.removeEvidenciaUseCase = dependencies.removeEvidenciaUseCase
   }
 
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
@@ -24,7 +24,7 @@ export class RemoverEvidenciaController implements RequestHandler {
     const evidenciaId = parseId(rawEvidenciaId, 'evidenciaId')
     if (evidenciaId instanceof Error) return new BadRequestError({ message: evidenciaId.message })
 
-    const result = await this.removerEvidenciaUseCase.execute({ id: evidenciaId })
+    const result = await this.removeEvidenciaUseCase.execute({ id: evidenciaId })
 
     if (result.left()) {
       return new InternalServerError({ message: result.value.message })

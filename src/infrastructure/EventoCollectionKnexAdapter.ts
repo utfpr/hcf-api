@@ -4,7 +4,7 @@ import {
   Attributes, COLETA_FIELDS, ColetaAttributes, CreateAttributes, EventoTipo
 } from '@/domain/evento/Evento'
 import {
-  AtualizarEventoAttributes, EventoCollection, EventoFilters, Paginated
+  AtualizaEventoAttributes, EventoCollection, EventoFilters, Paginated
 } from '@/domain/evento/EventoCollection'
 import { Either } from '@/library/either/Either'
 
@@ -206,7 +206,7 @@ export class EventoCollectionKnexAdapter implements EventoCollection {
    * caminho inverso cria a ficha; manter o tipo e mandar `coleta` faz upsert
    * (evento_id é PK de eventos_coletas).
    */
-  async update(id: number, attributes: AtualizarEventoAttributes): Promise<Either<Error, Attributes | null>> {
+  async update(id: number, attributes: AtualizaEventoAttributes): Promise<Either<Error, Attributes | null>> {
     try {
       const updated = await this.knex.transaction(async trx => {
         const updatedRows = await trx('eventos')

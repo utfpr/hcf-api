@@ -11,7 +11,7 @@ interface Dependencies {
   evidenciaCollection: EvidenciaCollection
 }
 
-export class ListarEvidenciasController implements RequestHandler {
+export class ListaEvidenciasController implements RequestHandler {
   private readonly evidenciaCollection: EvidenciaCollection
 
   constructor(dependencies: Dependencies) {

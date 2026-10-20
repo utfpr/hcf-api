@@ -2,8 +2,8 @@ import {
   describe, expect, test, vi
 } from 'vitest'
 
-import { CriarEventoController } from '@/application/evento/CriarEventoController'
-import { CriarEventoUseCase } from '@/domain/evento/CriarEventoUseCase'
+import { CriaEventoController } from '@/application/evento/CriaEventoController'
+import { CriaEventoUseCase } from '@/domain/evento/CriaEventoUseCase'
 import { Attributes } from '@/domain/evento/Evento'
 import { CheckViolationError } from '@/infrastructure/error/CheckViolationError'
 import { CollectionError } from '@/infrastructure/error/CollectionError'
@@ -48,16 +48,16 @@ function makeRequest(params: Record<string, unknown>, body: unknown): HttpReques
   } satisfies HttpRequest
 }
 
-describe('CriarEventoController', () => {
+describe('CriaEventoController', () => {
   test('retorna 201 com o evento criado', async () => {
-    const criarEventoUseCase = {
+    const criaEventoUseCase = {
       execute: vi.fn().mockResolvedValue(Either.right(attributes))
-    } as unknown as CriarEventoUseCase
+    } as unknown as CriaEventoUseCase
 
-    const controller = new CriarEventoController({ criarEventoUseCase })
+    const controller = new CriaEventoController({ criaEventoUseCase })
     const response = await controller.handle(makeRequest({ expedicaoId: '1' }, validBody), vi.fn())
 
-    expect(criarEventoUseCase.execute).toHaveBeenCalledWith(expect.objectContaining({
+    expect(criaEventoUseCase.execute).toHaveBeenCalledWith(expect.objectContaining({
       expedicao_id: 1, tipo: 'DIARIO'
     }))
     expect('statusCode' in response ? response.statusCode : undefined).toBe(StatusCode.Created)
@@ -65,67 +65,67 @@ describe('CriarEventoController', () => {
   })
 
   test('retorna 400 quando expedicaoId é inválido', async () => {
-    const criarEventoUseCase = { execute: vi.fn() } as unknown as CriarEventoUseCase
-    const controller = new CriarEventoController({ criarEventoUseCase })
+    const criaEventoUseCase = { execute: vi.fn() } as unknown as CriaEventoUseCase
+    const controller = new CriaEventoController({ criaEventoUseCase })
 
     const response = await controller.handle(makeRequest({ expedicaoId: 'abc' }, validBody), vi.fn())
 
-    expect(criarEventoUseCase.execute).not.toHaveBeenCalled()
+    expect(criaEventoUseCase.execute).not.toHaveBeenCalled()
     expect(response).toBeInstanceOf(BadRequestError)
   })
 
   test('retorna 400 quando tipo é inválido', async () => {
-    const criarEventoUseCase = { execute: vi.fn() } as unknown as CriarEventoUseCase
-    const controller = new CriarEventoController({ criarEventoUseCase })
+    const criaEventoUseCase = { execute: vi.fn() } as unknown as CriaEventoUseCase
+    const controller = new CriaEventoController({ criaEventoUseCase })
 
     const response = await controller.handle(
       makeRequest({ expedicaoId: '1' }, { ...validBody, tipo: 'FOTO' }),
       vi.fn()
     )
 
-    expect(criarEventoUseCase.execute).not.toHaveBeenCalled()
+    expect(criaEventoUseCase.execute).not.toHaveBeenCalled()
     expect(response).toBeInstanceOf(BadRequestError)
   })
 
   test('retorna 400 quando a validação de domínio falha (Either.left com Error simples)', async () => {
-    const criarEventoUseCase = {
+    const criaEventoUseCase = {
       execute: vi.fn().mockResolvedValue(Either.left(new Error('Evento de coleta exige a ficha de coleta')))
-    } as unknown as CriarEventoUseCase
+    } as unknown as CriaEventoUseCase
 
-    const controller = new CriarEventoController({ criarEventoUseCase })
+    const controller = new CriaEventoController({ criaEventoUseCase })
     const response = await controller.handle(makeRequest({ expedicaoId: '1' }, validBody), vi.fn())
 
     expect(response).toBeInstanceOf(BadRequestError)
   })
 
   test('retorna 404 quando a expedição não existe (ForeignKeyViolationError)', async () => {
-    const criarEventoUseCase = {
+    const criaEventoUseCase = {
       execute: vi.fn().mockResolvedValue(Either.left(new ForeignKeyViolationError({ message: 'Expedição não encontrada' })))
-    } as unknown as CriarEventoUseCase
+    } as unknown as CriaEventoUseCase
 
-    const controller = new CriarEventoController({ criarEventoUseCase })
+    const controller = new CriaEventoController({ criaEventoUseCase })
     const response = await controller.handle(makeRequest({ expedicaoId: '999' }, validBody), vi.fn())
 
     expect(response).toBeInstanceOf(NotFoundError)
   })
 
   test('retorna 422 quando o banco rejeita o tipo (CheckViolationError)', async () => {
-    const criarEventoUseCase = {
+    const criaEventoUseCase = {
       execute: vi.fn().mockResolvedValue(Either.left(new CheckViolationError({ message: 'tipo inválido' })))
-    } as unknown as CriarEventoUseCase
+    } as unknown as CriaEventoUseCase
 
-    const controller = new CriarEventoController({ criarEventoUseCase })
+    const controller = new CriaEventoController({ criaEventoUseCase })
     const response = await controller.handle(makeRequest({ expedicaoId: '1' }, validBody), vi.fn())
 
     expect(response).toBeInstanceOf(UnprocessableEntityError)
   })
 
   test('retorna 500 quando ocorre erro de infraestrutura genérico', async () => {
-    const criarEventoUseCase = {
+    const criaEventoUseCase = {
       execute: vi.fn().mockResolvedValue(Either.left(new CollectionError({ message: 'DB down' })))
-    } as unknown as CriarEventoUseCase
+    } as unknown as CriaEventoUseCase
 
-    const controller = new CriarEventoController({ criarEventoUseCase })
+    const controller = new CriaEventoController({ criaEventoUseCase })
     const response = await controller.handle(makeRequest({ expedicaoId: '1' }, validBody), vi.fn())
 
     expect((response as Error).name).toBe('InternalServerError')

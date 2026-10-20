@@ -7,7 +7,7 @@ interface Dependencies {
   eventoCollection: EventoCollection
 }
 
-export class BuscarEventoPorIdUseCase {
+export class BuscaEventoPorIdUseCase {
   private readonly eventoCollection: EventoCollection
 
   constructor(dependencies: Dependencies) {

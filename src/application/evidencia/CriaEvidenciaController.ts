@@ -1,6 +1,6 @@
 import { unlink } from 'node:fs/promises'
 
-import { CriarEvidenciaUseCase } from '@/domain/evidencia/CriarEvidenciaUseCase'
+import { CriaEvidenciaUseCase } from '@/domain/evidencia/CriaEvidenciaUseCase'
 import { ForeignKeyViolationError } from '@/infrastructure/error/ForeignKeyViolationError'
 import { InfrastructureError } from '@/infrastructure/error/InfrastructureError'
 import {
@@ -13,7 +13,7 @@ import { NotFoundError } from '@/library/http/error/NotFoundError'
 import { NextHandler, RequestHandler } from '@/library/http/Server'
 
 interface Dependencies {
-  criarEvidenciaUseCase: CriarEvidenciaUseCase
+  criaEvidenciaUseCase: CriaEvidenciaUseCase
 }
 
 interface Body {
@@ -28,11 +28,11 @@ interface UploadedFile {
   path: string
 }
 
-export class CriarEvidenciaController implements RequestHandler {
-  private readonly criarEvidenciaUseCase: CriarEvidenciaUseCase
+export class CriaEvidenciaController implements RequestHandler {
+  private readonly criaEvidenciaUseCase: CriaEvidenciaUseCase
 
   constructor(dependencies: Dependencies) {
-    this.criarEvidenciaUseCase = dependencies.criarEvidenciaUseCase
+    this.criaEvidenciaUseCase = dependencies.criaEvidenciaUseCase
   }
 
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
@@ -53,7 +53,7 @@ export class CriarEvidenciaController implements RequestHandler {
 
     const usuarioId = request.user?.id ?? null
 
-    const result = await this.criarEvidenciaUseCase.execute({
+    const result = await this.criaEvidenciaUseCase.execute({
       evento_id: eventoId,
       nome,
       arquivo: file.filename,

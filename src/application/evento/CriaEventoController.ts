@@ -1,4 +1,4 @@
-import { CriarEventoUseCase } from '@/domain/evento/CriarEventoUseCase'
+import { CriaEventoUseCase } from '@/domain/evento/CriaEventoUseCase'
 import { EVENTO_TIPOS, EventoTipo } from '@/domain/evento/Evento'
 import { CheckViolationError } from '@/infrastructure/error/CheckViolationError'
 import { ForeignKeyViolationError } from '@/infrastructure/error/ForeignKeyViolationError'
@@ -16,7 +16,7 @@ import { NextHandler, RequestHandler } from '@/library/http/Server'
 import { parseColeta } from './coleta-parsing'
 
 interface Dependencies {
-  criarEventoUseCase: CriarEventoUseCase
+  criaEventoUseCase: CriaEventoUseCase
 }
 
 interface Body {
@@ -29,11 +29,11 @@ interface Body {
   coleta?: unknown
 }
 
-export class CriarEventoController implements RequestHandler {
-  private readonly criarEventoUseCase: CriarEventoUseCase
+export class CriaEventoController implements RequestHandler {
+  private readonly criaEventoUseCase: CriaEventoUseCase
 
   constructor(dependencies: Dependencies) {
-    this.criarEventoUseCase = dependencies.criarEventoUseCase
+    this.criaEventoUseCase = dependencies.criaEventoUseCase
   }
 
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
@@ -66,7 +66,7 @@ export class CriarEventoController implements RequestHandler {
 
     const usuarioId = request.user?.id ?? null
 
-    const result = await this.criarEventoUseCase.execute({
+    const result = await this.criaEventoUseCase.execute({
       altitude,
       capturado_em: capturadoEm,
       coleta,

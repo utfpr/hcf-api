@@ -2,8 +2,8 @@ import {
   describe, expect, test, vi
 } from 'vitest'
 
-import { BuscarEventoController } from '@/application/evento/BuscarEventoController'
-import { BuscarEventoPorIdUseCase } from '@/domain/evento/BuscarEventoPorIdUseCase'
+import { BuscaEventoController } from '@/application/evento/BuscaEventoController'
+import { BuscaEventoPorIdUseCase } from '@/domain/evento/BuscaEventoPorIdUseCase'
 import { Either } from '@/library/either/Either'
 import {
   Headers, HttpRequest, Method, StatusCode
@@ -11,7 +11,7 @@ import {
 import { BadRequestError } from '@/library/http/error/BadRequestError'
 import { NotFoundError } from '@/library/http/error/NotFoundError'
 
-describe('BuscarEventoController', () => {
+describe('BuscaEventoController', () => {
   const headers = {} as Headers
 
   test('returns 200 with body when use case finds event', async () => {
@@ -31,12 +31,12 @@ describe('BuscarEventoController', () => {
       updated_by: null
     }
 
-    const buscarEventoPorIdUseCase = {
+    const buscaEventoPorIdUseCase = {
       execute: vi.fn().mockResolvedValue(Either.right(evento))
-    } as unknown as BuscarEventoPorIdUseCase
+    } as unknown as BuscaEventoPorIdUseCase
 
-    const controller = new BuscarEventoController({
-      buscarEventoPorIdUseCase
+    const controller = new BuscaEventoController({
+      buscaEventoPorIdUseCase
     })
 
     const request = {
@@ -49,7 +49,7 @@ describe('BuscarEventoController', () => {
 
     const response = await controller.handle(request, vi.fn())
 
-    expect(buscarEventoPorIdUseCase.execute).toHaveBeenCalledWith({
+    expect(buscaEventoPorIdUseCase.execute).toHaveBeenCalledWith({
       id: 1
     })
     expect('statusCode' in response ? response.statusCode : undefined).toBe(StatusCode.Ok)
@@ -57,12 +57,12 @@ describe('BuscarEventoController', () => {
   })
 
   test('returns BadRequest when eventoId is invalid', async () => {
-    const buscarEventoPorIdUseCase = {
+    const buscaEventoPorIdUseCase = {
       execute: vi.fn()
-    } as unknown as BuscarEventoPorIdUseCase
+    } as unknown as BuscaEventoPorIdUseCase
 
-    const controller = new BuscarEventoController({
-      buscarEventoPorIdUseCase
+    const controller = new BuscaEventoController({
+      buscaEventoPorIdUseCase
     })
 
     const request = {
@@ -75,17 +75,17 @@ describe('BuscarEventoController', () => {
 
     const response = await controller.handle(request, vi.fn())
 
-    expect(buscarEventoPorIdUseCase.execute).not.toHaveBeenCalled()
+    expect(buscaEventoPorIdUseCase.execute).not.toHaveBeenCalled()
     expect(response).toBeInstanceOf(BadRequestError)
   })
 
   test('returns NotFound when event does not exist', async () => {
-    const buscarEventoPorIdUseCase = {
+    const buscaEventoPorIdUseCase = {
       execute: vi.fn().mockResolvedValue(Either.right(null))
-    } as unknown as BuscarEventoPorIdUseCase
+    } as unknown as BuscaEventoPorIdUseCase
 
-    const controller = new BuscarEventoController({
-      buscarEventoPorIdUseCase
+    const controller = new BuscaEventoController({
+      buscaEventoPorIdUseCase
     })
 
     const request = {
@@ -102,12 +102,12 @@ describe('BuscarEventoController', () => {
   })
 
   test('returns InternalServerError when use case fails', async () => {
-    const buscarEventoPorIdUseCase = {
+    const buscaEventoPorIdUseCase = {
       execute: vi.fn().mockResolvedValue(Either.left(new Error('boom')))
-    } as unknown as BuscarEventoPorIdUseCase
+    } as unknown as BuscaEventoPorIdUseCase
 
-    const controller = new BuscarEventoController({
-      buscarEventoPorIdUseCase
+    const controller = new BuscaEventoController({
+      buscaEventoPorIdUseCase
     })
 
     const request = {

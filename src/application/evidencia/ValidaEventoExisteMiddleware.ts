@@ -11,7 +11,7 @@ declare global {
   }
 }
 
-export function validarEventoExisteMiddleware(eventoCollection: EventoCollection): express.RequestHandler {
+export function validaEventoExisteMiddleware(eventoCollection: EventoCollection): express.RequestHandler {
   return (request, response, next) => {
     const eventoId = Number(request.params.eventoId)
 

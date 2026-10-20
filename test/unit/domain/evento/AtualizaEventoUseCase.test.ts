@@ -2,7 +2,7 @@ import {
   describe, expect, test, vi
 } from 'vitest'
 
-import { AtualizarEventoUseCase } from '@/domain/evento/AtualizarEventoUseCase'
+import { AtualizaEventoUseCase } from '@/domain/evento/AtualizaEventoUseCase'
 import { Attributes, ColetaAttributes } from '@/domain/evento/Evento'
 import { EventoCollection } from '@/domain/evento/EventoCollection'
 import { Either } from '@/library/either/Either'
@@ -63,10 +63,10 @@ const makeMockCollection = (overrides?: Partial<EventoCollection>): EventoCollec
   ...overrides
 })
 
-describe('AtualizarEventoUseCase', () => {
+describe('AtualizaEventoUseCase', () => {
   test('atualiza campos comuns sem tocar no tipo', async () => {
     const collection = makeMockCollection()
-    const useCase = new AtualizarEventoUseCase({ eventoCollection: collection })
+    const useCase = new AtualizaEventoUseCase({ eventoCollection: collection })
 
     const result = await useCase.execute({
       id: 10, latitude: -21, updated_by: 5
@@ -89,7 +89,7 @@ describe('AtualizarEventoUseCase', () => {
     const collection = makeMockCollection({
       findById: vi.fn().mockResolvedValue(Either.right(null))
     })
-    const useCase = new AtualizarEventoUseCase({ eventoCollection: collection })
+    const useCase = new AtualizaEventoUseCase({ eventoCollection: collection })
 
     const result = await useCase.execute({ id: 999, updated_by: null })
 
@@ -100,7 +100,7 @@ describe('AtualizarEventoUseCase', () => {
 
   test('rejeita coordenadas fora de faixa sem chamar update', async () => {
     const collection = makeMockCollection()
-    const useCase = new AtualizarEventoUseCase({ eventoCollection: collection })
+    const useCase = new AtualizaEventoUseCase({ eventoCollection: collection })
 
     const result = await useCase.execute({
       id: 10, latitude: 200, updated_by: null
@@ -117,7 +117,7 @@ describe('AtualizarEventoUseCase', () => {
         ...coletaAttributes, coleta: null, tipo: 'DIARIO'
       }))
     })
-    const useCase = new AtualizarEventoUseCase({ eventoCollection: collection })
+    const useCase = new AtualizaEventoUseCase({ eventoCollection: collection })
 
     const result = await useCase.execute({
       id: 11, observacoes: 'virou diário', tipo: 'DIARIO', updated_by: null
@@ -132,7 +132,7 @@ describe('AtualizarEventoUseCase', () => {
 
   test('DIARIO -> COLETA exige a ficha no corpo da requisição', async () => {
     const collection = makeMockCollection()
-    const useCase = new AtualizarEventoUseCase({ eventoCollection: collection })
+    const useCase = new AtualizaEventoUseCase({ eventoCollection: collection })
 
     const result = await useCase.execute({
       id: 10, tipo: 'COLETA', updated_by: null
@@ -144,7 +144,7 @@ describe('AtualizarEventoUseCase', () => {
 
   test('DIARIO -> COLETA com ficha no corpo é aceito', async () => {
     const collection = makeMockCollection()
-    const useCase = new AtualizarEventoUseCase({ eventoCollection: collection })
+    const useCase = new AtualizaEventoUseCase({ eventoCollection: collection })
 
     const ficha = fichaCompleta({ habito: 'Herbácea' })
     const result = await useCase.execute({
@@ -163,7 +163,7 @@ describe('AtualizarEventoUseCase', () => {
       findById: vi.fn().mockResolvedValue(Either.right(coletaAttributes)),
       update: vi.fn().mockResolvedValue(Either.right(coletaAttributes))
     })
-    const useCase = new AtualizarEventoUseCase({ eventoCollection: collection })
+    const useCase = new AtualizaEventoUseCase({ eventoCollection: collection })
 
     const result = await useCase.execute({
       id: 11, latitude: -22, updated_by: null
@@ -180,7 +180,7 @@ describe('AtualizarEventoUseCase', () => {
     const collection = makeMockCollection({
       findById: vi.fn().mockResolvedValue(Either.right(coletaAttributes))
     })
-    const useCase = new AtualizarEventoUseCase({ eventoCollection: collection })
+    const useCase = new AtualizaEventoUseCase({ eventoCollection: collection })
 
     const novaFicha = fichaCompleta({ habito: 'Arbustiva', nome_cientifico: 'Outra espécie' })
     await useCase.execute({

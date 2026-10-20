@@ -2,7 +2,7 @@ import {
   describe, expect, test
 } from 'vitest'
 
-import { AtualizarEventoValidator } from '@/domain/evento/AtualizarEventoValidator'
+import { AtualizaEventoValidator } from '@/domain/evento/AtualizaEventoValidator'
 import { Attributes, ColetaAttributes } from '@/domain/evento/Evento'
 
 function fichaCompleta(overrides: Partial<ColetaAttributes> = {}): ColetaAttributes {
@@ -52,8 +52,8 @@ const coletaAttributes: Attributes = {
   tipo: 'COLETA'
 }
 
-describe('AtualizarEventoValidator', () => {
-  const validator = new AtualizarEventoValidator()
+describe('AtualizaEventoValidator', () => {
+  const validator = new AtualizaEventoValidator()
 
   test('mescla campos comuns sem tocar no tipo nem na ficha', () => {
     const result = validator.validar(diarioAttributes, { latitude: -21, updated_by: 5 })

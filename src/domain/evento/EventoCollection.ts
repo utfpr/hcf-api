@@ -26,7 +26,7 @@ export interface Paginated<T> {
   pagina: number
 }
 
-export interface AtualizarEventoAttributes {
+export interface AtualizaEventoAttributes {
   tipo: EventoTipo
   capturado_em: Date
   latitude: number | null
@@ -41,6 +41,6 @@ export interface EventoCollection {
   findAll(filters: EventoFilters): Promise<Either<Error, Paginated<Attributes>>>
   findById(id: number): Promise<Either<Error, Attributes | null>>
   create(attributes: CreateAttributes): Promise<Either<Error, Attributes>>
-  update(id: number, attributes: AtualizarEventoAttributes): Promise<Either<Error, Attributes | null>>
+  update(id: number, attributes: AtualizaEventoAttributes): Promise<Either<Error, Attributes | null>>
   delete(id: number): Promise<Either<Error, boolean>>
 }

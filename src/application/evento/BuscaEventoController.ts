@@ -1,4 +1,4 @@
-import { BuscarEventoPorIdUseCase } from '@/domain/evento/BuscarEventoPorIdUseCase'
+import { BuscaEventoPorIdUseCase } from '@/domain/evento/BuscaEventoPorIdUseCase'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
@@ -9,14 +9,14 @@ import { NotFoundError } from '@/library/http/error/NotFoundError'
 import { NextHandler, RequestHandler } from '@/library/http/Server'
 
 interface Dependencies {
-  buscarEventoPorIdUseCase: BuscarEventoPorIdUseCase
+  buscaEventoPorIdUseCase: BuscaEventoPorIdUseCase
 }
 
-export class BuscarEventoController implements RequestHandler {
-  private readonly buscarEventoPorIdUseCase: BuscarEventoPorIdUseCase
+export class BuscaEventoController implements RequestHandler {
+  private readonly buscaEventoPorIdUseCase: BuscaEventoPorIdUseCase
 
   constructor(dependencies: Dependencies) {
-    this.buscarEventoPorIdUseCase = dependencies.buscarEventoPorIdUseCase
+    this.buscaEventoPorIdUseCase = dependencies.buscaEventoPorIdUseCase
   }
 
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
@@ -31,7 +31,7 @@ export class BuscarEventoController implements RequestHandler {
       return new BadRequestError({ message: 'eventoId inválido' })
     }
 
-    const result = await this.buscarEventoPorIdUseCase.execute({
+    const result = await this.buscaEventoPorIdUseCase.execute({
       id: Number(eventoId)
     })
 

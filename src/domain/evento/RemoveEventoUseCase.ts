@@ -12,7 +12,7 @@ interface Dependencies {
   evidenciaCollection: EvidenciaCollection
 }
 
-export class RemoverEventoUseCase {
+export class RemoveEventoUseCase {
   private readonly eventoCollection: EventoCollection
   private readonly evidenciaCollection: EvidenciaCollection
 

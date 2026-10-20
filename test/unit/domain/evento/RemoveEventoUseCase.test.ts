@@ -4,7 +4,7 @@ import {
 } from 'vitest'
 
 import { EventoCollection } from '@/domain/evento/EventoCollection'
-import { RemoverEventoUseCase } from '@/domain/evento/RemoverEventoUseCase'
+import { RemoveEventoUseCase } from '@/domain/evento/RemoveEventoUseCase'
 import { Attributes as EvidenciaAttributes } from '@/domain/evidencia/Evidencia'
 import { EvidenciaCollection } from '@/domain/evidencia/EvidenciaCollection'
 import { Either } from '@/library/either/Either'
@@ -51,7 +51,7 @@ const makeEvidencia = (overrides?: Partial<EvidenciaAttributes>): EvidenciaAttri
   ...overrides
 })
 
-describe('RemoverEventoUseCase', () => {
+describe('RemoveEventoUseCase', () => {
   beforeEach(() => {
     unlinkMock.mockReset()
     unlinkMock.mockResolvedValue(undefined)
@@ -60,7 +60,7 @@ describe('RemoverEventoUseCase', () => {
   test('retorna true quando o evento é removido', async () => {
     const eventoCollection = makeMockEventoCollection()
     const evidenciaCollection = makeMockEvidenciaCollection()
-    const useCase = new RemoverEventoUseCase({ eventoCollection, evidenciaCollection })
+    const useCase = new RemoveEventoUseCase({ eventoCollection, evidenciaCollection })
 
     const result = await useCase.execute({ id: 10 })
 
@@ -75,7 +75,7 @@ describe('RemoverEventoUseCase', () => {
       delete: vi.fn().mockResolvedValue(Either.right(false))
     })
     const evidenciaCollection = makeMockEvidenciaCollection()
-    const useCase = new RemoverEventoUseCase({ eventoCollection, evidenciaCollection })
+    const useCase = new RemoveEventoUseCase({ eventoCollection, evidenciaCollection })
 
     const result = await useCase.execute({ id: 999 })
 
@@ -89,7 +89,7 @@ describe('RemoverEventoUseCase', () => {
       delete: vi.fn().mockResolvedValue(Either.left(error))
     })
     const evidenciaCollection = makeMockEvidenciaCollection()
-    const useCase = new RemoverEventoUseCase({ eventoCollection, evidenciaCollection })
+    const useCase = new RemoveEventoUseCase({ eventoCollection, evidenciaCollection })
 
     const result = await useCase.execute({ id: 10 })
 
@@ -103,7 +103,7 @@ describe('RemoverEventoUseCase', () => {
     const evidenciaCollection = makeMockEvidenciaCollection({
       findAll: vi.fn().mockResolvedValue(Either.left(error))
     })
-    const useCase = new RemoverEventoUseCase({ eventoCollection, evidenciaCollection })
+    const useCase = new RemoveEventoUseCase({ eventoCollection, evidenciaCollection })
 
     const result = await useCase.execute({ id: 10 })
 
@@ -121,7 +121,7 @@ describe('RemoverEventoUseCase', () => {
     const evidenciaCollection = makeMockEvidenciaCollection({
       findAll: vi.fn().mockResolvedValue(Either.right(evidencias))
     })
-    const useCase = new RemoverEventoUseCase({ eventoCollection, evidenciaCollection })
+    const useCase = new RemoveEventoUseCase({ eventoCollection, evidenciaCollection })
 
     const result = await useCase.execute({ id: 10 })
 
@@ -139,7 +139,7 @@ describe('RemoverEventoUseCase', () => {
     const evidenciaCollection = makeMockEvidenciaCollection({
       findAll: vi.fn().mockResolvedValue(Either.right(evidencias))
     })
-    const useCase = new RemoverEventoUseCase({ eventoCollection, evidenciaCollection })
+    const useCase = new RemoveEventoUseCase({ eventoCollection, evidenciaCollection })
 
     await useCase.execute({ id: 10 })
 

@@ -4,7 +4,7 @@ import {
   Attributes, ColetaAttributes, Evento, EventoTipo
 } from './Evento'
 
-export interface AtualizarEventoInput {
+export interface AtualizaEventoInput {
   tipo?: EventoTipo
   capturado_em?: Date
   latitude?: number | null
@@ -26,13 +26,13 @@ export interface AtualizarEventoInput {
  * essa regra em dois lugares.
  */
 
-export class AtualizarEventoValidator {
-  validar(atual: Attributes, input: AtualizarEventoInput): Either<Error, Attributes> {
+export class AtualizaEventoValidator {
+  validar(atual: Attributes, input: AtualizaEventoInput): Either<Error, Attributes> {
     const mesclado = this.mesclar(atual, input)
     return Evento.create(mesclado)
   }
 
-  private mesclar(atual: Attributes, input: AtualizarEventoInput): Attributes {
+  private mesclar(atual: Attributes, input: AtualizaEventoInput): Attributes {
     const tipo = input.tipo ?? atual.tipo
 
     const coleta = tipo === 'DIARIO'

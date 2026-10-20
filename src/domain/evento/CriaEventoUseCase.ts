@@ -9,7 +9,7 @@ interface Dependencies {
   eventoCollection: EventoCollection
 }
 
-export class CriarEventoUseCase {
+export class CriaEventoUseCase {
   private readonly eventoCollection: EventoCollection
 
   constructor(dependencies: Dependencies) {

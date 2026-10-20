@@ -9,7 +9,7 @@ interface Dependencies {
   evidenciaCollection: EvidenciaCollection
 }
 
-export class CriarEvidenciaUseCase {
+export class CriaEvidenciaUseCase {
   private readonly evidenciaCollection: EvidenciaCollection
 
   constructor(dependencies: Dependencies) {

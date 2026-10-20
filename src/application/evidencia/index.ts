@@ -1,18 +1,18 @@
 import { type Knex } from 'knex'
 
 import { authorize } from '@/application/AuthorizeMiddlewareFactory'
-import { CriarEvidenciaUseCase } from '@/domain/evidencia/CriarEvidenciaUseCase'
-import { RemoverEvidenciaUseCase } from '@/domain/evidencia/RemoverEvidenciaUseCase'
+import { CriaEvidenciaUseCase } from '@/domain/evidencia/CriaEvidenciaUseCase'
+import { RemoveEvidenciaUseCase } from '@/domain/evidencia/RemoveEvidenciaUseCase'
 import { EventoCollectionKnexAdapter } from '@/infrastructure/EventoCollectionKnexAdapter'
 import { EvidenciaCollectionKnexAdapter } from '@/infrastructure/EvidenciaCollectionKnexAdapter'
 import { evidenciaUpload } from '@/infrastructure/EvidenciaUploadMiddleware'
 import { Method } from '@/library/http/common'
 import { Route } from '@/library/http/Router'
 
-import { CriarEvidenciaController } from './CriarEvidenciaController'
-import { ListarEvidenciasController } from './ListarEvidenciasController'
-import { RemoverEvidenciaController } from './RemoverEvidenciaController'
-import { validarEventoExisteMiddleware } from './ValidarEventoExisteMiddleware'
+import { CriaEvidenciaController } from './CriaEvidenciaController'
+import { ListaEvidenciasController } from './ListaEvidenciasController'
+import { RemoveEvidenciaController } from './RemoveEvidenciaController'
+import { validaEventoExisteMiddleware } from './ValidaEventoExisteMiddleware'
 
 export function routes(knex: Knex): Route[] {
   const evidenciaCollection = new EvidenciaCollectionKnexAdapter({ knex })
@@ -22,18 +22,18 @@ export function routes(knex: Knex): Route[] {
     {
       handlers: [
         authorize('create', 'Evidencia'),
-        new CriarEvidenciaController({
-          criarEvidenciaUseCase: new CriarEvidenciaUseCase({ evidenciaCollection })
+        new CriaEvidenciaController({
+          criaEvidenciaUseCase: new CriaEvidenciaUseCase({ evidenciaCollection })
         })
       ],
       method: Method.Post,
-      middlewares: [validarEventoExisteMiddleware(eventoCollection), evidenciaUpload],
+      middlewares: [validaEventoExisteMiddleware(eventoCollection), evidenciaUpload],
       path: '/v2/eventos/:eventoId/evidencias'
     },
     {
       handlers: [
         authorize('read', 'Evidencia'),
-        new ListarEvidenciasController({ evidenciaCollection })
+        new ListaEvidenciasController({ evidenciaCollection })
       ],
       method: Method.Get,
       path: '/v2/eventos/:eventoId/evidencias'
@@ -41,8 +41,8 @@ export function routes(knex: Knex): Route[] {
     {
       handlers: [
         authorize('delete', 'Evidencia'),
-        new RemoverEvidenciaController({
-          removerEvidenciaUseCase: new RemoverEvidenciaUseCase({ evidenciaCollection })
+        new RemoveEvidenciaController({
+          removeEvidenciaUseCase: new RemoveEvidenciaUseCase({ evidenciaCollection })
         })
       ],
       method: Method.Delete,
