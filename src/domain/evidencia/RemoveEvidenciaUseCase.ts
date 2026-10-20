@@ -1,20 +1,24 @@
-import { unlink } from 'node:fs/promises'
-import path from 'node:path'
-
-import { EVIDENCIA_DIR } from '@/config/evidencia'
 import { Either } from '@/library/either/Either'
+import { Logger } from '@/library/logger/Logger'
 
+import { EvidenciaArquivo } from './EvidenciaArquivo'
 import { EvidenciaCollection } from './EvidenciaCollection'
 
 interface Dependencies {
   evidenciaCollection: EvidenciaCollection
+  evidenciaArquivo: EvidenciaArquivo
+  logger: Logger
 }
 
 export class RemoveEvidenciaUseCase {
   private readonly evidenciaCollection: EvidenciaCollection
+  private readonly evidenciaArquivo: EvidenciaArquivo
+  private readonly logger: Logger
 
   constructor(dependencies: Dependencies) {
     this.evidenciaCollection = dependencies.evidenciaCollection
+    this.evidenciaArquivo = dependencies.evidenciaArquivo
+    this.logger = dependencies.logger
   }
 
   async execute({ id }: { id: number }): Promise<Either<Error, boolean>> {
@@ -27,14 +31,14 @@ export class RemoveEvidenciaUseCase {
 
     if (deleted.value) {
       const { arquivo } = evidencia.value
+      const removido = await this.evidenciaArquivo.remove(arquivo)
 
-      await unlink(path.join(EVIDENCIA_DIR, arquivo)).catch((error: unknown) => {
-        // eslint-disable-next-line no-console -- evidência já apagada do banco; sem log aqui, o arquivo órfão nunca seria detectável depois
-        console.error(
-          `Falha ao remover arquivo órfão de evidência (evidencia_id=${id}, arquivo=${arquivo})`,
-          error
-        )
-      })
+      // evidência já apagada do banco; sem log aqui, o arquivo órfão nunca seria detectável depois
+      if (removido.left()) {
+        this.logger.error('Falha ao remover arquivo órfão de evidência', {
+          evidencia_id: id, arquivo, error: removido.value.message
+        })
+      }
     }
 
     return deleted

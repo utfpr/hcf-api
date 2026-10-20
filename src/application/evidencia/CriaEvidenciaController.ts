@@ -1,5 +1,4 @@
-import { unlink } from 'node:fs/promises'
-
+import { EventoNaoEncontradoError } from '@/domain/evento/error/EventoNaoEncontradoError'
 import { CriaEvidenciaUseCase } from '@/domain/evidencia/CriaEvidenciaUseCase'
 import { ForeignKeyViolationError } from '@/infrastructure/error/ForeignKeyViolationError'
 import { InfrastructureError } from '@/infrastructure/error/InfrastructureError'
@@ -22,10 +21,8 @@ interface Body {
 }
 
 interface UploadedFile {
-  filename: string
   mimetype: string
-  size: number
-  path: string
+  buffer: Buffer
 }
 
 export class CriaEvidenciaController implements RequestHandler {
@@ -46,28 +43,27 @@ export class CriaEvidenciaController implements RequestHandler {
     const body = (request.body ?? {}) as Body
 
     const nome = parseString(body.nome, 'nome')
-    if (nome instanceof Error) return await cleanupAndReturn(file.path, nome)
+    if (nome instanceof Error) return new BadRequestError({ message: nome.message })
 
     const dataCaptura = parseDate(body.data_captura, 'data_captura')
-    if (dataCaptura instanceof Error) return await cleanupAndReturn(file.path, dataCaptura)
+    if (dataCaptura instanceof Error) return new BadRequestError({ message: dataCaptura.message })
 
     const usuarioId = request.user?.id ?? null
 
     const result = await this.criaEvidenciaUseCase.execute({
       evento_id: eventoId,
       nome,
-      arquivo: file.filename,
-      mime_type: file.mimetype,
-      tamanho: file.size,
       data_captura: dataCaptura,
+      mime_type: file.mimetype,
+      contents: file.buffer,
       created_by: usuarioId
     })
 
     if (result.left()) {
-      await unlink(file.path).catch(() => {})
-
       const error = result.value
-      if (error instanceof ForeignKeyViolationError) return new NotFoundError({ message: error.message })
+      if (error instanceof EventoNaoEncontradoError || error instanceof ForeignKeyViolationError) {
+        return new NotFoundError({ message: error.message })
+      }
       if (!(error instanceof InfrastructureError)) return new BadRequestError({ message: error.message })
       return new InternalServerError({ message: error.message })
     }
@@ -77,11 +73,6 @@ export class CriaEvidenciaController implements RequestHandler {
       statusCode: StatusCode.Created
     }
   }
-}
-
-async function cleanupAndReturn(filePath: string, error: Error): Promise<HttpError> {
-  await unlink(filePath).catch(() => {})
-  return new BadRequestError({ message: error.message })
 }
 
 function parseId(raw: unknown, field: string): number | Error {

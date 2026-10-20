@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs'
+import { existsSync, readdirSync } from 'node:fs'
 import { unlink } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import {
@@ -67,6 +67,30 @@ describe('Evidências (upload, HTTP)', () => {
     await cleanupExpedicaoFixtures(knex, fixtures)
     await cleanupAuth()
     await knex.destroy()
+  })
+
+  test('POST retorna 401 sem Authorization e não grava nada em disco', async () => {
+    const diretorio = resolve('uploads', 'evidencias')
+    const antes = existsSync(diretorio) ? readdirSync(diretorio).length : 0
+
+    await agent
+      .post(`/api/v1/eventos/${eventoId}/evidencias`)
+      .field('nome', 'IMG_0042.jpg')
+      .field('data_captura', '2026-02-15T14:32:00Z')
+      .attach('arquivo', Buffer.from('conteúdo de teste'), { contentType: 'image/jpeg', filename: 'foto.jpg' })
+      .expect(401)
+
+    const depois = existsSync(diretorio) ? readdirSync(diretorio).length : 0
+    expect(depois).toBe(antes)
+  })
+
+  test('POST retorna 401 sem Authorization mesmo quando o evento não existe', async () => {
+    await agent
+      .post('/api/v1/eventos/999999999/evidencias')
+      .field('nome', 'IMG_0042.jpg')
+      .field('data_captura', '2026-02-15T14:32:00Z')
+      .attach('arquivo', Buffer.from('conteúdo de teste'), { contentType: 'image/jpeg', filename: 'foto.jpg' })
+      .expect(401)
   })
 
   test('POST grava o arquivo em disco e a evidência no banco', async () => {

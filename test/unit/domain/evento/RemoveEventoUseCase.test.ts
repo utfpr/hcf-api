@@ -1,23 +1,14 @@
-import path from 'node:path'
 import {
-  beforeEach, describe, expect, test, vi
+  describe, expect, test, vi
 } from 'vitest'
 
 import { EventoCollection } from '@/domain/evento/EventoCollection'
 import { RemoveEventoUseCase } from '@/domain/evento/RemoveEventoUseCase'
 import { Attributes as EvidenciaAttributes } from '@/domain/evidencia/Evidencia'
+import { EvidenciaArquivo } from '@/domain/evidencia/EvidenciaArquivo'
 import { EvidenciaCollection } from '@/domain/evidencia/EvidenciaCollection'
 import { Either } from '@/library/either/Either'
-
-const { unlinkMock } = vi.hoisted(() => ({
-  unlinkMock: vi.fn().mockResolvedValue(undefined)
-}))
-
-vi.mock('node:fs/promises', () => ({
-  unlink: unlinkMock
-}))
-
-const UPLOADS_DIR = path.join(process.cwd(), 'uploads', 'evidencias')
+import { Logger } from '@/library/logger/Logger'
 
 const makeMockEventoCollection = (overrides?: Partial<EventoCollection>): EventoCollection => ({
   create: vi.fn(),
@@ -36,6 +27,19 @@ const makeMockEvidenciaCollection = (overrides?: Partial<EvidenciaCollection>): 
   ...overrides
 })
 
+const makeMockEvidenciaArquivo = (overrides?: Partial<EvidenciaArquivo>): EvidenciaArquivo => ({
+  remove: vi.fn().mockResolvedValue(Either.right(undefined)),
+  save: vi.fn(),
+  ...overrides
+})
+
+const makeMockLogger = (): Logger => ({
+  debug: vi.fn(),
+  error: vi.fn(),
+  info: vi.fn(),
+  warn: vi.fn()
+})
+
 const makeEvidencia = (overrides?: Partial<EvidenciaAttributes>): EvidenciaAttributes => ({
   arquivo: 'foto.jpg',
   data_captura: new Date(),
@@ -52,15 +56,13 @@ const makeEvidencia = (overrides?: Partial<EvidenciaAttributes>): EvidenciaAttri
 })
 
 describe('RemoveEventoUseCase', () => {
-  beforeEach(() => {
-    unlinkMock.mockReset()
-    unlinkMock.mockResolvedValue(undefined)
-  })
-
   test('retorna true quando o evento é removido', async () => {
     const eventoCollection = makeMockEventoCollection()
     const evidenciaCollection = makeMockEvidenciaCollection()
-    const useCase = new RemoveEventoUseCase({ eventoCollection, evidenciaCollection })
+    const evidenciaArquivo = makeMockEvidenciaArquivo()
+    const useCase = new RemoveEventoUseCase({
+      eventoCollection, evidenciaArquivo, evidenciaCollection, logger: makeMockLogger()
+    })
 
     const result = await useCase.execute({ id: 10 })
 
@@ -75,7 +77,10 @@ describe('RemoveEventoUseCase', () => {
       delete: vi.fn().mockResolvedValue(Either.right(false))
     })
     const evidenciaCollection = makeMockEvidenciaCollection()
-    const useCase = new RemoveEventoUseCase({ eventoCollection, evidenciaCollection })
+    const evidenciaArquivo = makeMockEvidenciaArquivo()
+    const useCase = new RemoveEventoUseCase({
+      eventoCollection, evidenciaArquivo, evidenciaCollection, logger: makeMockLogger()
+    })
 
     const result = await useCase.execute({ id: 999 })
 
@@ -89,7 +94,10 @@ describe('RemoveEventoUseCase', () => {
       delete: vi.fn().mockResolvedValue(Either.left(error))
     })
     const evidenciaCollection = makeMockEvidenciaCollection()
-    const useCase = new RemoveEventoUseCase({ eventoCollection, evidenciaCollection })
+    const evidenciaArquivo = makeMockEvidenciaArquivo()
+    const useCase = new RemoveEventoUseCase({
+      eventoCollection, evidenciaArquivo, evidenciaCollection, logger: makeMockLogger()
+    })
 
     const result = await useCase.execute({ id: 10 })
 
@@ -103,7 +111,10 @@ describe('RemoveEventoUseCase', () => {
     const evidenciaCollection = makeMockEvidenciaCollection({
       findAll: vi.fn().mockResolvedValue(Either.left(error))
     })
-    const useCase = new RemoveEventoUseCase({ eventoCollection, evidenciaCollection })
+    const evidenciaArquivo = makeMockEvidenciaArquivo()
+    const useCase = new RemoveEventoUseCase({
+      eventoCollection, evidenciaArquivo, evidenciaCollection, logger: makeMockLogger()
+    })
 
     const result = await useCase.execute({ id: 10 })
 
@@ -121,14 +132,17 @@ describe('RemoveEventoUseCase', () => {
     const evidenciaCollection = makeMockEvidenciaCollection({
       findAll: vi.fn().mockResolvedValue(Either.right(evidencias))
     })
-    const useCase = new RemoveEventoUseCase({ eventoCollection, evidenciaCollection })
+    const evidenciaArquivo = makeMockEvidenciaArquivo()
+    const useCase = new RemoveEventoUseCase({
+      eventoCollection, evidenciaArquivo, evidenciaCollection, logger: makeMockLogger()
+    })
 
     const result = await useCase.execute({ id: 10 })
 
     expect(result.value).toBe(true)
-    expect(unlinkMock).toHaveBeenCalledTimes(2)
-    expect(unlinkMock).toHaveBeenCalledWith(path.join(UPLOADS_DIR, 'foto1.jpg'))
-    expect(unlinkMock).toHaveBeenCalledWith(path.join(UPLOADS_DIR, 'foto2.jpg'))
+    expect(evidenciaArquivo.remove).toHaveBeenCalledTimes(2)
+    expect(evidenciaArquivo.remove).toHaveBeenCalledWith('foto1.jpg')
+    expect(evidenciaArquivo.remove).toHaveBeenCalledWith('foto2.jpg')
   })
 
   test('não apaga arquivos quando o evento não é removido', async () => {
@@ -139,10 +153,36 @@ describe('RemoveEventoUseCase', () => {
     const evidenciaCollection = makeMockEvidenciaCollection({
       findAll: vi.fn().mockResolvedValue(Either.right(evidencias))
     })
-    const useCase = new RemoveEventoUseCase({ eventoCollection, evidenciaCollection })
+    const evidenciaArquivo = makeMockEvidenciaArquivo()
+    const useCase = new RemoveEventoUseCase({
+      eventoCollection, evidenciaArquivo, evidenciaCollection, logger: makeMockLogger()
+    })
 
     await useCase.execute({ id: 10 })
 
-    expect(unlinkMock).not.toHaveBeenCalled()
+    expect(evidenciaArquivo.remove).not.toHaveBeenCalled()
+  })
+
+  test('registra no log quando o arquivo de uma evidência não pode ser removido', async () => {
+    const evidencias = [makeEvidencia({ arquivo: 'foto1.jpg' })]
+    const eventoCollection = makeMockEventoCollection()
+    const evidenciaCollection = makeMockEvidenciaCollection({
+      findAll: vi.fn().mockResolvedValue(Either.right(evidencias))
+    })
+    const evidenciaArquivo = makeMockEvidenciaArquivo({
+      remove: vi.fn().mockResolvedValue(Either.left(new Error('EACCES')))
+    })
+    const logger = makeMockLogger()
+    const useCase = new RemoveEventoUseCase({
+      eventoCollection, evidenciaArquivo, evidenciaCollection, logger
+    })
+
+    const result = await useCase.execute({ id: 10 })
+
+    expect(result.value).toBe(true)
+    expect(logger.error).toHaveBeenCalledWith(
+      'Falha ao remover arquivo órfão de evidência',
+      expect.objectContaining({ arquivo: 'foto1.jpg', evento_id: 10 })
+    )
   })
 })

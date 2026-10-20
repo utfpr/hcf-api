@@ -4,7 +4,9 @@ import { authorize } from '@/application/AuthorizeMiddlewareFactory'
 import { AtualizaEventoUseCase } from '@/domain/evento/AtualizaEventoUseCase'
 import { CriaEventoUseCase } from '@/domain/evento/CriaEventoUseCase'
 import { RemoveEventoUseCase } from '@/domain/evento/RemoveEventoUseCase'
+import { ConsoleLogger } from '@/infrastructure/ConsoleLogger'
 import { EventoCollectionKnexAdapter } from '@/infrastructure/EventoCollectionKnexAdapter'
+import { EvidenciaArquivoDiskAdapter } from '@/infrastructure/EvidenciaArquivoDiskAdapter'
 import { EvidenciaCollectionKnexAdapter } from '@/infrastructure/EvidenciaCollectionKnexAdapter'
 import { Method } from '@/library/http/common'
 import { Route } from '@/library/http/Router'
@@ -18,6 +20,8 @@ import { RemoveEventoController } from './RemoveEventoController'
 export function routes(knex: Knex): Route[] {
   const eventoCollection = new EventoCollectionKnexAdapter({ knex })
   const evidenciaCollection = new EvidenciaCollectionKnexAdapter({ knex })
+  const evidenciaArquivo = new EvidenciaArquivoDiskAdapter()
+  const logger = new ConsoleLogger()
 
   return [
     {
@@ -60,7 +64,9 @@ export function routes(knex: Knex): Route[] {
       handlers: [
         authorize('delete', 'Evento'),
         new RemoveEventoController({
-          removeEventoUseCase: new RemoveEventoUseCase({ eventoCollection, evidenciaCollection })
+          removeEventoUseCase: new RemoveEventoUseCase({
+            eventoCollection, evidenciaArquivo, evidenciaCollection, logger
+          })
         })
       ],
       method: Method.Delete,

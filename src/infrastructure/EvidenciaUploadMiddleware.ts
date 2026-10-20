@@ -1,27 +1,13 @@
 import express from 'express'
 import multer from 'multer'
-import { randomBytes } from 'node:crypto'
-import { mkdirSync } from 'node:fs'
 
 import {
-  EVIDENCIA_DIR, EVIDENCIA_MAX_FILE_SIZE_BYTES, MIME_TYPE_EXTENSAO, MIME_TYPES_ACEITOS
+  EVIDENCIA_MAX_FILE_SIZE_BYTES, MIME_TYPES_ACEITOS
 } from '@/config/evidencia'
 
-mkdirSync(EVIDENCIA_DIR, { recursive: true })
-
-const storage = multer.diskStorage({
-  destination: (_request, _file, callback) => {
-    callback(null, EVIDENCIA_DIR)
-  },
-  filename: (request, file, callback) => {
-    const eventoId = String(request.params.eventoId)
-    const expedicaoId = request.evidenciaEvento?.expedicaoId
-    const timestamp = Date.now()
-    const sufixo = randomBytes(2).toString('hex')
-    const extensao = MIME_TYPE_EXTENSAO[file.mimetype]
-    callback(null, `${expedicaoId}_${eventoId}_${timestamp}-${sufixo}${extensao}`)
-  }
-})
+// O arquivo fica em memória até o use case confirmar o evento; quem grava em
+// disco é o EvidenciaArquivo, depois do authorize e da validação.
+const storage = multer.memoryStorage()
 
 const singleUpload = multer({
   storage,
