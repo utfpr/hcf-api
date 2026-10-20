@@ -67,7 +67,7 @@ export class CriaLembreteEvidenciaController implements RequestHandler {
     })
 
     if (result.left()) {
-      await unlink(file.path).catch(() => {})
+      await cleanupFileWithLog(file.path, 'persistência de evidência de lembrete')
 
       const error = result.value
       if (error instanceof ForeignKeyViolationError) return new NotFoundError({ message: error.message })
@@ -83,6 +83,13 @@ export class CriaLembreteEvidenciaController implements RequestHandler {
 }
 
 async function cleanupAndReturn(filePath: string | undefined, error: Error): Promise<HttpError> {
-  if (filePath) await unlink(filePath).catch(() => {})
+  if (filePath) await cleanupFileWithLog(filePath, 'validação de requisição de evidência de lembrete')
   return new BadRequestError({ message: error.message })
+}
+
+async function cleanupFileWithLog(filePath: string, context: string): Promise<void> {
+  await unlink(filePath).catch((unlinkError: unknown) => {
+    // eslint-disable-next-line no-console -- sem log, falhas de limpeza de arquivo ficam silenciosas e deixam órfãos sem rastreabilidade
+    console.error(`Falha ao remover arquivo de evidência após erro de ${context} (path=${filePath})`, unlinkError)
+  })
 }
