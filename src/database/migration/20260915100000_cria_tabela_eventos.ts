@@ -18,7 +18,7 @@ export async function run(knex: Knex): Promise<void> {
         .onUpdate('CASCADE')
 
       table.text('tipo').notNullable()
-      table.timestamp('capturado_em').notNullable()
+      table.timestamp('data_captura').notNullable()
 
       table.double('latitude').nullable()
       table.double('longitude').nullable()
@@ -50,7 +50,7 @@ export async function run(knex: Knex): Promise<void> {
       ], 'eventos_tipo_check')
 
       table.index('expedicao_id', 'eventos_expedicao_id_index')
-      table.index('capturado_em', 'eventos_capturado_em_index')
+      table.index('data_captura', 'eventos_data_captura_index')
     })
   })
 }

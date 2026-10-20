@@ -3,7 +3,7 @@ import {
 } from 'vitest'
 
 import { AdicionaParticipanteController } from '@/application/expedicao/AdicionaParticipanteController'
-import { AdicionaParticipanteUseCase } from '@/domain/expedicao/AdcionaParticipanteUseCase'
+import { ExpedicaoCollection } from '@/domain/expedicao/ExpedicaoCollection'
 import { Either } from '@/library/either/Either'
 import {
   Headers, HttpRequest, Method, StatusCode
@@ -18,7 +18,7 @@ function makeRequest(params: Record<string, unknown>, body: unknown, user?: { id
     headers,
     method: Method.Post,
     params,
-    path: '/v2/expedicoes/1/participantes',
+    path: '/v1/expedicoes/1/participantes',
     user: user
       ? {
           ...user,
@@ -30,28 +30,28 @@ function makeRequest(params: Record<string, unknown>, body: unknown, user?: { id
 }
 
 describe('AdicionaParticipanteController', () => {
-  test('retorna 201 e repassa request.user.id para a UseCase', async () => {
-    const adicionaParticipanteUseCase = {
-      execute: vi.fn().mockResolvedValue(Either.right(undefined))
-    } as unknown as AdicionaParticipanteUseCase
+  test('retorna 201 e repassa request.user.id para a collection', async () => {
+    const expedicaoCollection = {
+      addParticipant: vi.fn().mockResolvedValue(Either.right(undefined))
+    } as unknown as ExpedicaoCollection
 
-    const controller = new AdicionaParticipanteController({ adicionaParticipanteUseCase })
+    const controller = new AdicionaParticipanteController({ expedicaoCollection })
     const response = await controller.handle(
       makeRequest({ expedicaoId: '1' }, { usuarioId: 15 }, { id: 42, tipo_usuario_id: 1 }),
       vi.fn()
     )
 
-    expect(adicionaParticipanteUseCase.execute).toHaveBeenCalledWith(1, 15, 42)
+    expect(expedicaoCollection.addParticipant).toHaveBeenCalledWith(1, 15, 42)
     expect('statusCode' in response ? response.statusCode : undefined).toBe(StatusCode.Created)
   })
 
   test('retorna 400 quando usuarioId é inválido', async () => {
-    const adicionaParticipanteUseCase = { execute: vi.fn() } as unknown as AdicionaParticipanteUseCase
-    const controller = new AdicionaParticipanteController({ adicionaParticipanteUseCase })
+    const expedicaoCollection = { addParticipant: vi.fn() } as unknown as ExpedicaoCollection
+    const controller = new AdicionaParticipanteController({ expedicaoCollection })
 
     const response = await controller.handle(makeRequest({ expedicaoId: '1' }, { usuarioId: -1 }), vi.fn())
 
-    expect(adicionaParticipanteUseCase.execute).not.toHaveBeenCalled()
+    expect(expedicaoCollection.addParticipant).not.toHaveBeenCalled()
     expect(response).toBeInstanceOf(BadRequestError)
   })
 })

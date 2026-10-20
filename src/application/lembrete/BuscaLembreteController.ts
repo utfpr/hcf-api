@@ -1,4 +1,4 @@
-import { BuscaLembreteUseCase } from '@/domain/lembrete/BuscaLembreteUseCase'
+import { LembreteCollection } from '@/domain/lembrete/LembreteCollection'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
@@ -11,14 +11,14 @@ import { NextHandler, RequestHandler } from '@/library/http/Server'
 import { parseId } from './lembrete-parsing'
 
 interface Dependencies {
-  buscaLembreteUseCase: BuscaLembreteUseCase
+  lembreteCollection: LembreteCollection
 }
 
 export class BuscaLembreteController implements RequestHandler {
-  private readonly buscaLembreteUseCase: BuscaLembreteUseCase
+  private readonly lembreteCollection: LembreteCollection
 
   constructor(dependencies: Dependencies) {
-    this.buscaLembreteUseCase = dependencies.buscaLembreteUseCase
+    this.lembreteCollection = dependencies.lembreteCollection
   }
 
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
@@ -26,7 +26,7 @@ export class BuscaLembreteController implements RequestHandler {
     const lembreteId = parseId(rawLembreteId, 'lembreteId')
     if (lembreteId instanceof Error) return new BadRequestError({ message: lembreteId.message })
 
-    const result = await this.buscaLembreteUseCase.execute({ id: lembreteId })
+    const result = await this.lembreteCollection.findById(lembreteId)
 
     if (result.left()) {
       return new InternalServerError({ message: result.value.message })

@@ -3051,7 +3051,7 @@ CREATE TABLE public.eventos (
     id integer NOT NULL,
     expedicao_id integer NOT NULL,
     tipo text NOT NULL,
-    capturado_em timestamp with time zone NOT NULL,
+    data_captura timestamp with time zone NOT NULL,
     latitude double precision,
     longitude double precision,
     altitude double precision,
@@ -3118,7 +3118,7 @@ CREATE TABLE public.evidencias (
     id integer NOT NULL,
     evento_id integer NOT NULL,
     nome character varying(255) NOT NULL,
-    capturado_em timestamp with time zone NOT NULL,
+    data_captura timestamp with time zone NOT NULL,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     created_by bigint,
@@ -3357,10 +3357,10 @@ ALTER TABLE ONLY public.expedicoes_rotas
 
 
 --
--- Name: eventos_capturado_em_index; Type: INDEX; Schema: public; Owner: -
+-- Name: eventos_data_captura_index; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX eventos_capturado_em_index ON public.eventos USING btree (capturado_em);
+CREATE INDEX eventos_data_captura_index ON public.eventos USING btree (data_captura);
 
 
 --

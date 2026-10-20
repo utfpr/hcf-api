@@ -2,10 +2,8 @@ import { type Knex } from 'knex'
 
 import { authorize } from '@/application/AuthorizeMiddlewareFactory'
 import { AtualizaLembreteUseCase } from '@/domain/lembrete/AtualizaLembreteUseCase'
-import { BuscaLembreteUseCase } from '@/domain/lembrete/BuscaLembreteUseCase'
 import { CriaLembreteEvidenciaUseCase } from '@/domain/lembrete/CriaLembreteEvidenciaUseCase'
 import { CriaLembreteUseCase } from '@/domain/lembrete/CriaLembreteUseCase'
-import { ListaLembretesUseCase } from '@/domain/lembrete/ListaLembretesUseCase'
 import { RemoveLembreteEvidenciaUseCase } from '@/domain/lembrete/RemoveLembreteEvidenciaUseCase'
 import { RemoveLembreteUseCase } from '@/domain/lembrete/RemoveLembreteUseCase'
 import { lembreteEvidenciaUpload } from '@/infrastructure/EvidenciaUploadMiddleware'
@@ -32,12 +30,10 @@ export function routes(knex: Knex): Route[] {
     {
       handlers: [
         authorize('read', 'Lembrete'),
-        new ListaLembretesController({
-          listaLembretesUseCase: new ListaLembretesUseCase({ lembreteCollection })
-        })
+        new ListaLembretesController({ lembreteCollection })
       ],
       method: Method.Get,
-      path: '/v2/lembretes'
+      path: '/v1/lembretes'
     },
     {
       handlers: [
@@ -47,17 +43,15 @@ export function routes(knex: Knex): Route[] {
         })
       ],
       method: Method.Post,
-      path: '/v2/lembretes'
+      path: '/v1/lembretes'
     },
     {
       handlers: [
         authorize('read', 'Lembrete'),
-        new BuscaLembreteController({
-          buscaLembreteUseCase: new BuscaLembreteUseCase({ lembreteCollection })
-        })
+        new BuscaLembreteController({ lembreteCollection })
       ],
       method: Method.Get,
-      path: '/v2/lembretes/:lembreteId'
+      path: '/v1/lembretes/:lembreteId'
     },
     {
       handlers: [
@@ -67,7 +61,7 @@ export function routes(knex: Knex): Route[] {
         })
       ],
       method: Method.Put,
-      path: '/v2/lembretes/:lembreteId'
+      path: '/v1/lembretes/:lembreteId'
     },
     {
       handlers: [
@@ -77,7 +71,7 @@ export function routes(knex: Knex): Route[] {
         })
       ],
       method: Method.Delete,
-      path: '/v2/lembretes/:lembreteId'
+      path: '/v1/lembretes/:lembreteId'
     },
     {
       handlers: [
@@ -88,7 +82,7 @@ export function routes(knex: Knex): Route[] {
       ],
       method: Method.Post,
       middlewares: [validarLembreteExisteMiddleware(lembreteCollection), lembreteEvidenciaUpload],
-      path: '/v2/lembretes/:lembreteId/evidencias'
+      path: '/v1/lembretes/:lembreteId/evidencias'
     },
     {
       handlers: [
@@ -96,7 +90,7 @@ export function routes(knex: Knex): Route[] {
         new ListaLembreteEvidenciasController({ lembreteEvidenciaCollection })
       ],
       method: Method.Get,
-      path: '/v2/lembretes/:lembreteId/evidencias'
+      path: '/v1/lembretes/:lembreteId/evidencias'
     },
     {
       handlers: [
@@ -106,7 +100,7 @@ export function routes(knex: Knex): Route[] {
         })
       ],
       method: Method.Delete,
-      path: '/v2/lembretes/:lembreteId/evidencias/:evidenciaId'
+      path: '/v1/lembretes/:lembreteId/evidencias/:evidenciaId'
     }
   ]
 }

@@ -1,4 +1,5 @@
 import { AtualizaExpedicaoUseCase } from '@/domain/expedicao/AtualizaExpedicaoUseCase'
+import { ExpedicaoNaoEncontradaError } from '@/domain/expedicao/error/ExpedicaoNaoEncontradaError'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
@@ -77,7 +78,7 @@ export class AtualizaExpedicaoController implements RequestHandler {
         const error = result.value
 
         // Não encontrado (404)
-        if (error.message === 'Expedição não encontrada') {
+        if (error instanceof ExpedicaoNaoEncontradaError) {
           return new NotFoundError({ message: error.message })
         }
 

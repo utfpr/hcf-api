@@ -304,7 +304,7 @@ async function criarExpedicao(contexto: Contexto, dados: NovaExpedicao): Promise
 
 interface NovoEvento {
   tipo: EventoTipo
-  capturadoEm: Date
+  dataCaptura: Date
   latitude: number
   longitude: number
   altitude: number
@@ -315,7 +315,7 @@ async function criarEvento(contexto: Contexto, expedicaoId: Id, dados: NovoEvent
   return inserirRetornandoId(contexto.trx, 'eventos', {
     expedicao_id: expedicaoId,
     tipo: dados.tipo,
-    capturado_em: dados.capturadoEm,
+    data_captura: dados.dataCaptura,
     latitude: dados.latitude,
     longitude: dados.longitude,
     altitude: dados.altitude,
@@ -336,7 +336,7 @@ interface NovaEvidencia {
   sufixoArquivo: string
   conteudo: Buffer
   mimeType: string
-  capturadoEm: Date
+  dataCaptura: Date
 }
 
 async function criarEvidencia(
@@ -354,7 +354,7 @@ async function criarEvidencia(
     arquivo,
     mime_type: dados.mimeType,
     tamanho: dados.conteudo.length,
-    capturado_em: dados.capturadoEm,
+    data_captura: dados.dataCaptura,
     created_by: contexto.autor,
     updated_by: contexto.autor
   })
@@ -380,7 +380,7 @@ async function cenarioEventosSemEvidencias(contexto: Contexto): Promise<number> 
 
   const coletaAraucaria = await criarEvento(contexto, expedicaoId, {
     tipo: 'COLETA',
-    capturadoEm: momentoRelativo(-2, 9, 30),
+    dataCaptura: momentoRelativo(-2, 9, 30),
     latitude: -24.0463,
     longitude: -52.3780,
     altitude: 630,
@@ -402,7 +402,7 @@ async function cenarioEventosSemEvidencias(contexto: Contexto): Promise<number> 
 
   const coletaErvaMate = await criarEvento(contexto, expedicaoId, {
     tipo: 'COLETA',
-    capturadoEm: momentoRelativo(-2, 11, 0),
+    dataCaptura: momentoRelativo(-2, 11, 0),
     latitude: -24.0478,
     longitude: -52.3795,
     altitude: 622,
@@ -422,7 +422,7 @@ async function cenarioEventosSemEvidencias(contexto: Contexto): Promise<number> 
 
   await criarEvento(contexto, expedicaoId, {
     tipo: 'DIARIO',
-    capturadoEm: momentoRelativo(-2, 16, 45),
+    dataCaptura: momentoRelativo(-2, 16, 45),
     latitude: -24.0490,
     longitude: -52.3810,
     altitude: 615,
@@ -442,7 +442,7 @@ async function cenarioEventosComEvidencias(contexto: Contexto): Promise<{ evento
 
   const coletaJucara = await criarEvento(contexto, expedicaoId, {
     tipo: 'COLETA',
-    capturadoEm: momentoRelativo(-29, 10, 15),
+    dataCaptura: momentoRelativo(-29, 10, 15),
     latitude: -25.4284,
     longitude: -49.2733,
     altitude: 920,
@@ -464,19 +464,19 @@ async function cenarioEventosComEvidencias(contexto: Contexto): Promise<{ evento
     sufixoArquivo: 'folha.png',
     conteudo: pngGradiente('#2e7d32', '#aed581'),
     mimeType: 'image/png',
-    capturadoEm: momentoRelativo(-29, 10, 20)
+    dataCaptura: momentoRelativo(-29, 10, 20)
   })
   await criarEvidencia(contexto, expedicaoId, coletaJucara, {
     nome: 'Estipe e base',
     sufixoArquivo: 'estipe.png',
     conteudo: pngGradiente('#5d4037', '#bcaaa4'),
     mimeType: 'image/png',
-    capturadoEm: momentoRelativo(-29, 10, 22)
+    dataCaptura: momentoRelativo(-29, 10, 22)
   })
 
   const diario = await criarEvento(contexto, expedicaoId, {
     tipo: 'DIARIO',
-    capturadoEm: momentoRelativo(-29, 17, 30),
+    dataCaptura: momentoRelativo(-29, 17, 30),
     latitude: -25.4301,
     longitude: -49.2750,
     altitude: 905,
@@ -487,7 +487,7 @@ async function cenarioEventosComEvidencias(contexto: Contexto): Promise<{ evento
     sufixoArquivo: 'diario.wav',
     conteudo: wavBipes(),
     mimeType: 'audio/wav',
-    capturadoEm: momentoRelativo(-29, 17, 32)
+    dataCaptura: momentoRelativo(-29, 17, 32)
   })
 
   return { eventos: 2, evidencias: 3 }

@@ -1,4 +1,4 @@
-import { BuscaExpedicaoUseCase } from '@/domain/expedicao/BuscaExpedicaoUseCase'
+import { ExpedicaoCollection } from '@/domain/expedicao/ExpedicaoCollection'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
@@ -9,7 +9,7 @@ import { NotFoundError } from '@/library/http/error/NotFoundError'
 import { NextHandler, RequestHandler } from '@/library/http/Server'
 
 interface Dependencies {
-  buscaExpedicaoUseCase: BuscaExpedicaoUseCase
+  expedicaoCollection: ExpedicaoCollection
 }
 
 interface CustomHttpRequest extends HttpRequest {
@@ -17,14 +17,14 @@ interface CustomHttpRequest extends HttpRequest {
 }
 
 export class BuscaExpedicaoController implements RequestHandler {
-  private readonly buscaExpedicaoUseCase: BuscaExpedicaoUseCase
+  private readonly expedicaoCollection: ExpedicaoCollection
 
   constructor(dependencies: Dependencies) {
-    this.buscaExpedicaoUseCase = dependencies.buscaExpedicaoUseCase
+    this.expedicaoCollection = dependencies.expedicaoCollection
   }
 
   // Busca expedição por ID
-  // GET /v2/expedicoes/:expedicaoId
+  // GET /v1/expedicoes/:expedicaoId
   async handle(request: CustomHttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     try {
       const { expedicaoId } = request.params
@@ -34,7 +34,7 @@ export class BuscaExpedicaoController implements RequestHandler {
         return new BadRequestError({ message: 'expedicaoId inválido' })
       }
 
-      const result = await this.buscaExpedicaoUseCase.execute({ id: Number(expedicaoId) })
+      const result = await this.expedicaoCollection.findById(Number(expedicaoId))
 
       // Falha na infra ou exceção de regra de negócio
       if (result.left()) {

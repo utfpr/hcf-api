@@ -62,7 +62,7 @@ describe('EventoCollectionKnexAdapter', () => {
     return {
       expedicao_id: expedicaoId,
       tipo: 'DIARIO',
-      capturado_em: new Date('2026-02-15T13:15:00.000Z'),
+      data_captura: new Date('2026-02-15T13:15:00.000Z'),
       latitude: -20.2510,
       longitude: -46.4170,
       altitude: 1200,
@@ -76,7 +76,7 @@ describe('EventoCollectionKnexAdapter', () => {
     return {
       ...novoDiario(),
       tipo: 'COLETA',
-      capturado_em: new Date('2026-02-15T14:32:00.000Z'),
+      data_captura: new Date('2026-02-15T14:32:00.000Z'),
       observacoes: null,
       coleta: ficha
     }
@@ -145,8 +145,8 @@ describe('EventoCollectionKnexAdapter', () => {
     if (!created.right()) return
 
     try {
-      expect(created.value.capturado_em.toISOString()).toBe('2026-02-15T14:32:00.000Z')
-      expect(created.value.created_at.getTime()).toBeGreaterThan(created.value.capturado_em.getTime())
+      expect(created.value.data_captura.toISOString()).toBe('2026-02-15T14:32:00.000Z')
+      expect(created.value.created_at.getTime()).toBeGreaterThan(created.value.data_captura.getTime())
     } finally {
       await knex('eventos').where({ id: created.value.id }).delete()
     }
@@ -154,10 +154,10 @@ describe('EventoCollectionKnexAdapter', () => {
 
   test('ordena o feed pelo instante de captura, do mais recente para o mais antigo', async () => {
     const cedo = await collection.create({
-      ...novoDiario(), capturado_em: new Date('2026-02-15T08:00:00.000Z')
+      ...novoDiario(), data_captura: new Date('2026-02-15T08:00:00.000Z')
     })
     const tarde = await collection.create({
-      ...novaColeta(), capturado_em: new Date('2026-02-15T18:00:00.000Z')
+      ...novaColeta(), data_captura: new Date('2026-02-15T18:00:00.000Z')
     })
 
     expect(cedo.right() && tarde.right()).toBe(true)
@@ -195,16 +195,16 @@ describe('EventoCollectionKnexAdapter', () => {
 
   test('filtra por intervalo de captura e pagina os resultados', async () => {
     const antes = await collection.create({
-      ...novoDiario(), capturado_em: new Date('2026-02-14T10:00:00.000Z')
+      ...novoDiario(), data_captura: new Date('2026-02-14T10:00:00.000Z')
     })
     const dentro1 = await collection.create({
-      ...novoDiario(), capturado_em: new Date('2026-02-15T10:00:00.000Z')
+      ...novoDiario(), data_captura: new Date('2026-02-15T10:00:00.000Z')
     })
     const dentro2 = await collection.create({
-      ...novaColeta(), capturado_em: new Date('2026-02-15T14:00:00.000Z')
+      ...novaColeta(), data_captura: new Date('2026-02-15T14:00:00.000Z')
     })
     const depois = await collection.create({
-      ...novoDiario(), capturado_em: new Date('2026-02-16T10:00:00.000Z')
+      ...novoDiario(), data_captura: new Date('2026-02-16T10:00:00.000Z')
     })
 
     expect(antes.right() && dentro1.right() && dentro2.right() && depois.right()).toBe(true)
@@ -213,8 +213,8 @@ describe('EventoCollectionKnexAdapter', () => {
     try {
       const found = await collection.findAll({
         expedicao_id: expedicaoId,
-        capturado_de: new Date('2026-02-15T00:00:00.000Z'),
-        capturado_ate: new Date('2026-02-15T23:59:59.999Z'),
+        data_captura_de: new Date('2026-02-15T00:00:00.000Z'),
+        data_captura_ate: new Date('2026-02-15T23:59:59.999Z'),
         limite: 1,
         pagina: 2
       })

@@ -1,4 +1,5 @@
-import { DeletaExpedicaoUseCase } from '@/domain/expedicao/DeletaExpedicaoUseCase'
+import { ExpedicaoNaoEncontradaError } from '@/domain/expedicao/error/ExpedicaoNaoEncontradaError'
+import { ExpedicaoCollection } from '@/domain/expedicao/ExpedicaoCollection'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
@@ -9,7 +10,7 @@ import { NotFoundError } from '@/library/http/error/NotFoundError'
 import { NextHandler, RequestHandler } from '@/library/http/Server'
 
 interface Dependencies {
-  deletaExpedicaoUseCase: DeletaExpedicaoUseCase
+  expedicaoCollection: ExpedicaoCollection
 }
 
 interface CustomHttpRequest extends HttpRequest {
@@ -17,10 +18,10 @@ interface CustomHttpRequest extends HttpRequest {
 }
 
 export class DeletaExpedicaoController implements RequestHandler {
-  private readonly deletaExpedicaoUseCase: DeletaExpedicaoUseCase
+  private readonly expedicaoCollection: ExpedicaoCollection
 
   constructor(dependencies: Dependencies) {
-    this.deletaExpedicaoUseCase = dependencies.deletaExpedicaoUseCase
+    this.expedicaoCollection = dependencies.expedicaoCollection
   }
 
   async handle(request: CustomHttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
@@ -31,11 +32,11 @@ export class DeletaExpedicaoController implements RequestHandler {
         return new BadRequestError({ message: 'O ID da expedição é inválido.' })
       }
 
-      const result = await this.deletaExpedicaoUseCase.execute({ id: Number(expedicaoId) })
+      const result = await this.expedicaoCollection.delete(Number(expedicaoId))
 
       if (result.left()) {
         // Distingue não encontrado (404) de erro no banco (500)
-        if (result.value.message === 'Expedição não encontrada') {
+        if (result.value instanceof ExpedicaoNaoEncontradaError) {
           return new NotFoundError({ message: result.value.message })
         }
         return new InternalServerError({ message: result.value.message })
