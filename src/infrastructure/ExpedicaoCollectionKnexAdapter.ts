@@ -1,5 +1,6 @@
 import { Knex } from 'knex'
 
+import { ExpedicaoNaoEncontradaError } from '@/domain/expedicao/error/ExpedicaoNaoEncontradaError'
 import {
   Attributes, CreateAttributes, RotaInput, UpdateAttributes
 } from '@/domain/expedicao/Expedicao'
@@ -358,7 +359,7 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
 
       // Se apagou 0 linhas, é porque o ID não existia
       if (affectedRows === 0) {
-        return Either.left(new Error('Expedição não encontrada'))
+        return Either.left(new ExpedicaoNaoEncontradaError())
       }
 
       return Either.right(undefined)
@@ -375,7 +376,7 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
 
       const row = await this.select().where('expedicoes.id', id).first() as Row | undefined
 
-      if (!row) return Either.left(new Error('Expedição não encontrada'))
+      if (!row) return Either.left(new ExpedicaoNaoEncontradaError())
 
       return Either.right(toAttributes(row))
     } catch (error) {
@@ -419,6 +420,9 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
   async substituteRoute(expedicaoId: number, rotas: RotaInput[], updatedBy?: number | null): Promise<Either<Error, void>> {
     try {
       await this.knex.transaction(async trx => {
+        const expedicao = await trx('expedicoes').where('id', expedicaoId).first<{ id: number } | undefined>('id')
+        if (!expedicao) throw new ExpedicaoNaoEncontradaError()
+
         // Valida locais de coleta
         await this.validaLocaisColeta(trx, rotas)
 
@@ -457,6 +461,10 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
       })
       return Either.right(undefined)
     } catch (error) {
+      if (error instanceof ExpedicaoNaoEncontradaError) {
+        return Either.left(error)
+      }
+
       if (error instanceof Error) {
         const isValidationError = error.message.includes('pertence a outra cidade') || error.message.includes('não existe')
 

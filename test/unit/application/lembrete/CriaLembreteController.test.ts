@@ -24,7 +24,7 @@ const validBody = {
 
 function makeRequest(body: unknown): HttpRequest {
   return {
-    body, headers, method: Method.Post, params: {}, path: '/v2/lembretes'
+    body, headers, method: Method.Post, params: {}, path: '/v1/lembretes'
   } satisfies HttpRequest
 }
 
@@ -107,7 +107,13 @@ describe('CriaLembreteController', () => {
     const criaLembreteUseCase = { execute: vi.fn() } as unknown as CriaLembreteUseCase
     const controller = new CriaLembreteController({ criaLembreteUseCase })
 
-    for (const expedicaoId of ['abc', 0, -1, 1.5, {}]) {
+    for (const expedicaoId of [
+      'abc',
+      0,
+      -1,
+      1.5,
+      {}
+    ]) {
       const response = await controller.handle(makeRequest({ ...validBody, expedicao_id: expedicaoId }), vi.fn())
       expect(response).toBeInstanceOf(BadRequestError)
     }

@@ -30,7 +30,7 @@ const diario: Attributes = {
   id: 1,
   expedicao_id: 10,
   tipo: 'DIARIO',
-  capturado_em: new Date('2026-02-15T13:15:00.000Z'),
+  data_captura: new Date('2026-02-15T13:15:00.000Z'),
   latitude: -20.2510,
   longitude: -46.4170,
   altitude: 1200,
@@ -47,6 +47,18 @@ const coleta: Attributes = {
 }
 
 describe('Evento.create', () => {
+  test('aceita uma linha nova, ainda sem id e datas de auditoria', () => {
+    const {
+      id, created_at, updated_at, updated_by, ...novaLinha
+    } = diario
+
+    const result = Evento.create(novaLinha)
+
+    expect(result.right()).toBe(true)
+    expect(result.value).toMatchObject({ created_by: diario.created_by })
+    expect((result.value as Evento).id).toBeUndefined()
+  })
+
   test('cria um evento de diário sem ficha', () => {
     const result = Evento.create(diario)
 
@@ -92,7 +104,7 @@ describe('Evento.create', () => {
   })
 
   test('rejeita instante de captura inválido', () => {
-    expect(Evento.create({ ...diario, capturado_em: new Date('não é data') }).left()).toBe(true)
+    expect(Evento.create({ ...diario, data_captura: new Date('não é data') }).left()).toBe(true)
   })
 
   test('rejeita evento sem expedição', () => {

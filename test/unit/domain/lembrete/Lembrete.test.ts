@@ -34,6 +34,18 @@ const lembrete: Attributes = {
 }
 
 describe('Lembrete.create', () => {
+  test('aceita uma linha nova, ainda sem id e datas de auditoria', () => {
+    const {
+      id, created_at, updated_at, updated_by, ...novaLinha
+    } = lembrete
+
+    const result = Lembrete.create(novaLinha)
+
+    expect(result.right()).toBe(true)
+    expect(result.value).toMatchObject({ created_by: lembrete.created_by })
+    expect((result.value as Lembrete).id).toBeUndefined()
+  })
+
   test('cria um lembrete com data e local de coleta', () => {
     const result = Lembrete.create(lembrete)
 

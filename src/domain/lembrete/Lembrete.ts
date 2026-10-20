@@ -57,7 +57,15 @@ export interface Attributes extends FichaAttributes {
   updated_by: number | null
 }
 
-export type CreateAttributes = Omit<Attributes, 'id' | 'created_at' | 'updated_at' | 'updated_by'>
+type PersistedField = 'id' | 'created_at' | 'updated_at' | 'updated_by'
+
+export type CreateAttributes = Omit<Attributes, PersistedField>
+
+/**
+ * Shape aceito pela entidade: uma linha nova ainda não tem id nem datas de
+ * auditoria; o adapter devolve o registro completo depois do insert.
+ */
+export type EntityAttributes = CreateAttributes & Partial<Pick<Attributes, PersistedField>>
 
 // A expedição de origem não muda depois de criado
 export type UpdateAttributes = Omit<
@@ -80,16 +88,16 @@ export function isDataValida(value: string): boolean {
 }
 
 export class Lembrete {
-  readonly id: number
+  readonly id?: number
   readonly data_coleta: string
   readonly local_coleta: string
   readonly ficha: FichaAttributes
-  readonly created_at: Date
-  readonly updated_at: Date
+  readonly created_at?: Date
+  readonly updated_at?: Date
   readonly created_by: number | null
-  readonly updated_by: number | null
+  readonly updated_by?: number | null
 
-  private constructor(attributes: Attributes) {
+  private constructor(attributes: EntityAttributes) {
     this.id = attributes.id
     this.data_coleta = attributes.data_coleta
     this.local_coleta = attributes.local_coleta
@@ -102,7 +110,7 @@ export class Lembrete {
     this.updated_by = attributes.updated_by
   }
 
-  static create(attributes: Attributes): Either<Error, Lembrete> {
+  static create(attributes: EntityAttributes): Either<Error, Lembrete> {
     if (typeof attributes.data_coleta !== 'string' || !isDataValida(attributes.data_coleta)) {
       return Either.left(new Error('Data de coleta do lembrete é obrigatória e deve estar no formato YYYY-MM-DD'))
     }

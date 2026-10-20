@@ -1,5 +1,5 @@
 import { EventoTipo } from '@/domain/evento/Evento'
-import { ListaEventosUseCase } from '@/domain/evento/ListaEventosUseCase'
+import { EventoCollection } from '@/domain/evento/EventoCollection'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
@@ -9,29 +9,29 @@ import { InternalServerError } from '@/library/http/error/InternalServerError'
 import { NextHandler, RequestHandler } from '@/library/http/Server'
 
 interface Dependencies {
-  listaEventosUseCase: ListaEventosUseCase
+  eventoCollection: EventoCollection
 }
 
 export class ListaEventosController implements RequestHandler {
-  private readonly listaEventosUseCase: ListaEventosUseCase
+  private readonly eventoCollection: EventoCollection
 
   constructor(dependencies: Dependencies) {
-    this.listaEventosUseCase = dependencies.listaEventosUseCase
+    this.eventoCollection = dependencies.eventoCollection
   }
 
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const {
       expedicaoId,
       tipo,
-      capturado_de,
-      capturado_ate,
+      data_captura_de,
+      data_captura_ate,
       limite,
       pagina
     } = request.params as {
       expedicaoId?: string
       tipo?: string
-      capturado_de?: string
-      capturado_ate?: string
+      data_captura_de?: string
+      data_captura_ate?: string
       limite?: string
       pagina?: string
     }
@@ -54,11 +54,11 @@ export class ListaEventosController implements RequestHandler {
         ? { pagina: Number(pagina) }
         : {}),
       ...(tipo ? { tipo: tipo as EventoTipo } : {}),
-      ...(capturado_de ? { capturado_de: new Date(capturado_de) } : {}),
-      ...(capturado_ate ? { capturado_ate: new Date(capturado_ate) } : {})
+      ...(data_captura_de ? { data_captura_de: new Date(data_captura_de) } : {}),
+      ...(data_captura_ate ? { data_captura_ate: new Date(data_captura_ate) } : {})
     }
 
-    const result = await this.listaEventosUseCase.execute(filters)
+    const result = await this.eventoCollection.findAll(filters)
 
     if (result.left()) {
       return new InternalServerError({ message: result.value.message })

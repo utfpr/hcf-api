@@ -17,21 +17,12 @@ export class CadastraExpedicaoUseCase {
   }
 
   async execute(dados: CreateAttributes): Promise<Either<Error, Attributes>> {
-    // Valida as regras de negócio passando pela Entidade.
-    // Entidade exige id e datas de auditoria na interface, mockado para a validação passar.
-    const validacao = Expedicao.create({
-      ...dados,
-      id: 0,
-      created_at: new Date(),
-      updated_at: new Date(),
-      updated_by: null
-    } as Attributes)
+    const validacao = Expedicao.create(dados)
 
     if (validacao.left()) {
       return Either.left(validacao.value)
     }
 
-    // Adapter para persistir no banco
     return await this.expedicaoCollection.create(dados)
   }
 }

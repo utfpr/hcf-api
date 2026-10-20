@@ -25,7 +25,7 @@ export async function run(knex: Knex): Promise<void> {
       table.string('arquivo', 255).notNullable()
       table.string('mime_type', 100).notNullable()
       table.bigInteger('tamanho').notNullable()
-      table.timestamp('capturado_em').notNullable()
+      table.timestamp('data_captura').notNullable()
 
       table.timestamp('created_at').notNullable().defaultTo(trx.fn.now())
       table.timestamp('updated_at').notNullable().defaultTo(trx.fn.now())

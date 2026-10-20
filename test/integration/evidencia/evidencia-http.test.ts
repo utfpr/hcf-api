@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs'
+import { existsSync, readdirSync } from 'node:fs'
 import { unlink } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import {
@@ -40,11 +40,11 @@ describe('Evidências (upload, HTTP)', () => {
   let eventoId: number
 
   beforeAll(async () => {
-    fixtures = await seedExpedicaoFixtures(knex)
-
     const auth = await createCuradorAuth(knex)
     authHeader = auth.header
     cleanupAuth = auth.cleanup
+
+    fixtures = await seedExpedicaoFixtures(knex)
 
     const [expedicao] = await knex('expedicoes')
       .insert({
@@ -55,7 +55,7 @@ describe('Evidências (upload, HTTP)', () => {
 
     const [evento] = await knex('eventos')
       .insert({
-        expedicao_id: expedicaoId, tipo: 'DIARIO', capturado_em: new Date('2026-02-15T13:15:00.000Z')
+        expedicao_id: expedicaoId, tipo: 'DIARIO', data_captura: new Date('2026-02-15T13:15:00.000Z')
       })
       .returning<Array<{ id: number }>>(['id'])
     eventoId = evento.id
@@ -64,17 +64,41 @@ describe('Evidências (upload, HTTP)', () => {
   afterAll(async () => {
     await knex('eventos').where({ id: eventoId }).delete()
     await knex('expedicoes').where({ id: expedicaoId }).delete()
-    await cleanupAuth()
     await cleanupExpedicaoFixtures(knex, fixtures)
+    await cleanupAuth()
     await knex.destroy()
+  })
+
+  test('POST retorna 401 sem Authorization e não grava nada em disco', async () => {
+    const diretorio = resolve('uploads', 'evidencias')
+    const antes = existsSync(diretorio) ? readdirSync(diretorio).length : 0
+
+    await agent
+      .post(`/api/v1/eventos/${eventoId}/evidencias`)
+      .field('nome', 'IMG_0042.jpg')
+      .field('data_captura', '2026-02-15T14:32:00Z')
+      .attach('arquivo', Buffer.from('conteúdo de teste'), { contentType: 'image/jpeg', filename: 'foto.jpg' })
+      .expect(401)
+
+    const depois = existsSync(diretorio) ? readdirSync(diretorio).length : 0
+    expect(depois).toBe(antes)
+  })
+
+  test('POST retorna 401 sem Authorization mesmo quando o evento não existe', async () => {
+    await agent
+      .post('/api/v1/eventos/999999999/evidencias')
+      .field('nome', 'IMG_0042.jpg')
+      .field('data_captura', '2026-02-15T14:32:00Z')
+      .attach('arquivo', Buffer.from('conteúdo de teste'), { contentType: 'image/jpeg', filename: 'foto.jpg' })
+      .expect(401)
   })
 
   test('POST grava o arquivo em disco e a evidência no banco', async () => {
     const response = await agent
-      .post(`/api/v2/eventos/${eventoId}/evidencias`)
+      .post(`/api/v1/eventos/${eventoId}/evidencias`)
       .set(authHeader)
       .field('nome', 'IMG_0042.jpg')
-      .field('capturado_em', '2026-02-15T14:32:00Z')
+      .field('data_captura', '2026-02-15T14:32:00Z')
       .attach('arquivo', Buffer.from('conteúdo de teste'), { contentType: 'image/jpeg', filename: 'foto.jpg' })
       .expect(201)
 
@@ -94,37 +118,37 @@ describe('Evidências (upload, HTTP)', () => {
 
   test('POST rejeita tipo de arquivo não suportado', async () => {
     await agent
-      .post(`/api/v2/eventos/${eventoId}/evidencias`)
+      .post(`/api/v1/eventos/${eventoId}/evidencias`)
       .set(authHeader)
       .field('nome', 'anotacoes.txt')
-      .field('capturado_em', '2026-02-15T14:32:00Z')
+      .field('data_captura', '2026-02-15T14:32:00Z')
       .attach('arquivo', Buffer.from('texto qualquer'), { contentType: 'text/plain', filename: 'anotacoes.txt' })
       .expect(400)
   })
 
   test('POST retorna 404 quando o evento não existe', async () => {
     await agent
-      .post('/api/v2/eventos/999999999/evidencias')
+      .post('/api/v1/eventos/999999999/evidencias')
       .set(authHeader)
       .field('nome', 'IMG_0042.jpg')
-      .field('capturado_em', '2026-02-15T14:32:00Z')
+      .field('data_captura', '2026-02-15T14:32:00Z')
       .attach('arquivo', Buffer.from('conteúdo de teste'), { contentType: 'image/jpeg', filename: 'foto.jpg' })
       .expect(404)
   })
 
   test('GET lista as evidências do evento com a url computada', async () => {
     const created = await agent
-      .post(`/api/v2/eventos/${eventoId}/evidencias`)
+      .post(`/api/v1/eventos/${eventoId}/evidencias`)
       .set(authHeader)
       .field('nome', 'audio.mp3')
-      .field('capturado_em', '2026-02-15T14:32:00Z')
+      .field('data_captura', '2026-02-15T14:32:00Z')
       .attach('arquivo', Buffer.from('audio de teste'), { contentType: 'audio/mpeg', filename: 'audio.mp3' })
       .expect(201)
 
     const createdBody = asEvidencia(created.body)
 
     try {
-      const response = await agent.get(`/api/v2/eventos/${eventoId}/evidencias`).set(authHeader).expect(200)
+      const response = await agent.get(`/api/v1/eventos/${eventoId}/evidencias`).set(authHeader).expect(200)
       const [evidencia] = response.body as EvidenciaBody[]
 
       expect(evidencia).toMatchObject({ id: createdBody.id, url: createdBody.url })

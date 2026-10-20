@@ -38,7 +38,7 @@ function makeRequest(params: Record<string, unknown>, body: unknown, user?: { id
     headers,
     method: Method.Put,
     params,
-    path: '/v2/expedicoes/1',
+    path: '/v1/expedicoes/1',
     user: user
       ? {
           ...user,

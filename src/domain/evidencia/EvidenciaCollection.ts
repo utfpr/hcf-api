@@ -3,7 +3,7 @@ import { Either } from '@/library/either/Either'
 import { Attributes, CreateAttributes } from './Evidencia'
 
 export interface EvidenciaOrder {
-  column: 'id' | 'nome' | 'capturado_em'
+  column: 'id' | 'nome' | 'data_captura'
   direction: 'asc' | 'desc'
 }
 

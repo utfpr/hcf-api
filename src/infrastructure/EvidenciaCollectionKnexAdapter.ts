@@ -20,7 +20,7 @@ interface Row {
   arquivo: string
   mime_type: string
   tamanho: number
-  capturado_em: Date
+  data_captura: Date
   client_uuid: string | null
   created_at: Date
   updated_at: Date
@@ -35,7 +35,7 @@ const COLUMNS = [
   'arquivo',
   'mime_type',
   'tamanho',
-  'capturado_em',
+  'data_captura',
   'client_uuid',
   'created_at',
   'updated_at',
@@ -51,7 +51,7 @@ function toAttributes(row: Row): Attributes {
     arquivo: row.arquivo,
     mime_type: row.mime_type,
     tamanho: Number(row.tamanho),
-    capturado_em: row.capturado_em,
+    data_captura: row.data_captura,
     client_uuid: row.client_uuid,
     created_at: row.created_at,
     updated_at: row.updated_at,
@@ -90,7 +90,7 @@ export class EvidenciaCollectionKnexAdapter implements EvidenciaCollection {
       }
 
       // Padrão: na ordem em que foram capturadas (numa coleta juntada, vêm de vários celulares)
-      const order = filters.order ?? { column: 'capturado_em' as const, direction: 'asc' as const }
+      const order = filters.order ?? { column: 'data_captura' as const, direction: 'asc' as const }
       query.orderBy(order.column, order.direction)
       query.orderBy('id', order.direction)
 
@@ -131,7 +131,7 @@ export class EvidenciaCollectionKnexAdapter implements EvidenciaCollection {
           arquivo: attributes.arquivo,
           mime_type: attributes.mime_type,
           tamanho: attributes.tamanho,
-          capturado_em: attributes.capturado_em,
+          data_captura: attributes.data_captura,
           client_uuid: attributes.client_uuid ?? null,
           created_by: attributes.created_by,
           updated_by: attributes.created_by

@@ -1,6 +1,7 @@
 import { isDataValida } from '@/domain/lembrete/Lembrete'
-import { LembreteFilters, LembreteOrder } from '@/domain/lembrete/LembreteCollection'
-import { ListaLembretesUseCase } from '@/domain/lembrete/ListaLembretesUseCase'
+import {
+  LembreteCollection, LembreteFilters, LembreteOrder
+} from '@/domain/lembrete/LembreteCollection'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
@@ -12,27 +13,27 @@ import { NextHandler, RequestHandler } from '@/library/http/Server'
 import { parseExpedicaoId } from './lembrete-parsing'
 
 interface Dependencies {
-  listaLembretesUseCase: ListaLembretesUseCase
+  lembreteCollection: LembreteCollection
 }
 
 const COLUNAS_ORDENAVEIS: ReadonlyArray<LembreteOrder['column']> = ['id', 'data_coleta']
 const DIRECOES: ReadonlyArray<LembreteOrder['direction']> = ['asc', 'desc']
 
 export class ListaLembretesController implements RequestHandler {
-  private readonly listaLembretesUseCase: ListaLembretesUseCase
+  private readonly lembreteCollection: LembreteCollection
 
   constructor(dependencies: Dependencies) {
-    this.listaLembretesUseCase = dependencies.listaLembretesUseCase
+    this.lembreteCollection = dependencies.lembreteCollection
   }
 
   // Próximos lembretes (a partir de hoje, o mais próximo primeiro):
-  // GET /api/v2/lembretes?data_coleta_de=2026-10-05
+  // GET /api/v1/lembretes?data_coleta_de=2026-10-05
 
   // Lembretes de um intervalo:
-  // GET /api/v2/lembretes?data_coleta_de=2026-11-01&data_coleta_ate=2026-11-30
+  // GET /api/v1/lembretes?data_coleta_de=2026-11-01&data_coleta_ate=2026-11-30
 
   // Lembretes criados numa expedição:
-  // GET /api/v2/lembretes?expedicao_id=3
+  // GET /api/v1/lembretes?expedicao_id=3
 
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const {
@@ -84,7 +85,7 @@ export class ListaLembretesController implements RequestHandler {
       filters.pagina = Number(pagina)
     }
 
-    const result = await this.listaLembretesUseCase.execute(filters)
+    const result = await this.lembreteCollection.findAll(filters)
 
     if (result.left()) {
       return new InternalServerError({ message: result.value.message })

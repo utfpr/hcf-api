@@ -1,4 +1,4 @@
-import { AdicionaParticipanteUseCase } from '@/domain/expedicao/AdcionaParticipanteUseCase'
+import { ExpedicaoCollection } from '@/domain/expedicao/ExpedicaoCollection'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
@@ -9,14 +9,14 @@ import { InternalServerError } from '@/library/http/error/InternalServerError'
 import { NextHandler, RequestHandler } from '@/library/http/Server'
 
 interface Dependencies {
-  adicionaParticipanteUseCase: AdicionaParticipanteUseCase
+  expedicaoCollection: ExpedicaoCollection
 }
 
 export class AdicionaParticipanteController implements RequestHandler {
-  private readonly adicionaParticipanteUseCase: AdicionaParticipanteUseCase
+  private readonly expedicaoCollection: ExpedicaoCollection
 
   constructor(dependencies: Dependencies) {
-    this.adicionaParticipanteUseCase = dependencies.adicionaParticipanteUseCase
+    this.expedicaoCollection = dependencies.expedicaoCollection
   }
 
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
@@ -31,7 +31,7 @@ export class AdicionaParticipanteController implements RequestHandler {
         return new BadRequestError({ message: 'usuarioId inválido' })
       }
 
-      const result = await this.adicionaParticipanteUseCase.execute(
+      const result = await this.expedicaoCollection.addParticipant(
         Number(expedicaoId),
         usuarioId,
         request.user?.id ?? null

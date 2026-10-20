@@ -11,7 +11,7 @@ const base: Attributes = {
   arquivo: '10_20260215143200-a1b2.jpg',
   mime_type: 'image/jpeg',
   tamanho: 204800,
-  capturado_em: new Date('2026-02-15T14:32:00.000Z'),
+  data_captura: new Date('2026-02-15T14:32:00.000Z'),
   created_at: new Date('2026-02-16T00:00:00.000Z'),
   updated_at: new Date('2026-02-16T00:00:00.000Z'),
   created_by: null,
@@ -19,6 +19,18 @@ const base: Attributes = {
 }
 
 describe('Evidencia.create', () => {
+  test('aceita uma linha nova, ainda sem id e datas de auditoria', () => {
+    const {
+      id, created_at, updated_at, updated_by, ...novaLinha
+    } = base
+
+    const result = Evidencia.create(novaLinha)
+
+    expect(result.right()).toBe(true)
+    expect(result.value).toMatchObject({ created_by: base.created_by })
+    expect((result.value as Evidencia).id).toBeUndefined()
+  })
+
   test('cria a evidência quando nome e instante de captura são válidos', () => {
     const result = Evidencia.create(base)
 
@@ -36,7 +48,7 @@ describe('Evidencia.create', () => {
   })
 
   test('rejeita instante de captura inválido', () => {
-    expect(Evidencia.create({ ...base, capturado_em: new Date('não é data') }).left()).toBe(true)
+    expect(Evidencia.create({ ...base, data_captura: new Date('não é data') }).left()).toBe(true)
   })
 
   test('rejeita arquivo ou mime_type vazios', () => {

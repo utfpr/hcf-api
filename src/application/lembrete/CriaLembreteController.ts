@@ -12,7 +12,9 @@ import { InternalServerError } from '@/library/http/error/InternalServerError'
 import { NotFoundError } from '@/library/http/error/NotFoundError'
 import { NextHandler, RequestHandler } from '@/library/http/Server'
 
-import { parseExpedicaoId, parseFicha, parseRequiredString } from './lembrete-parsing'
+import {
+  parseExpedicaoId, parseFicha, parseRequiredString
+} from './lembrete-parsing'
 
 interface Dependencies {
   criaLembreteUseCase: CriaLembreteUseCase

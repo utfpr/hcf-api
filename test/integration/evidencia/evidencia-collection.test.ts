@@ -32,7 +32,7 @@ describe('EvidenciaCollectionKnexAdapter', () => {
 
     const [evento] = await knex('eventos')
       .insert({
-        expedicao_id: expedicaoId, tipo: 'DIARIO', capturado_em: new Date('2026-02-15T13:15:00.000Z')
+        expedicao_id: expedicaoId, tipo: 'DIARIO', data_captura: new Date('2026-02-15T13:15:00.000Z')
       })
       .returning<Array<{ id: number }>>(['id'])
     eventoId = evento.id
@@ -45,7 +45,7 @@ describe('EvidenciaCollectionKnexAdapter', () => {
   })
 
   test('preserva o instante de captura, distinto de created_at', async () => {
-    const capturadoEm = new Date('2026-02-15T14:30:00.000Z')
+    const dataCaptura = new Date('2026-02-15T14:30:00.000Z')
 
     const created = await collection.create({
       evento_id: eventoId,
@@ -53,7 +53,7 @@ describe('EvidenciaCollectionKnexAdapter', () => {
       arquivo: '1_20260215143000-a1b2.jpg',
       mime_type: 'image/jpeg',
       tamanho: 204800,
-      capturado_em: capturadoEm,
+      data_captura: dataCaptura,
       created_by: fixtures.usuarios[0]
     })
 
@@ -61,8 +61,8 @@ describe('EvidenciaCollectionKnexAdapter', () => {
     if (!created.right()) return
 
     try {
-      expect(created.value.capturado_em.toISOString()).toBe(capturadoEm.toISOString())
-      expect(created.value.created_at.getTime()).toBeGreaterThan(capturadoEm.getTime())
+      expect(created.value.data_captura.toISOString()).toBe(dataCaptura.toISOString())
+      expect(created.value.created_at.getTime()).toBeGreaterThan(dataCaptura.getTime())
       expect(created.value.updated_by).toBe(fixtures.usuarios[0])
     } finally {
       await knex('evidencias').where({ id: created.value.id }).delete()
@@ -76,7 +76,7 @@ describe('EvidenciaCollectionKnexAdapter', () => {
       arquivo: '1_20260215180000-c3d4.jpg',
       mime_type: 'image/jpeg',
       tamanho: 1024,
-      capturado_em: new Date('2026-02-15T18:00:00.000Z'),
+      data_captura: new Date('2026-02-15T18:00:00.000Z'),
       created_by: null
     })
     const cedo = await collection.create({
@@ -85,7 +85,7 @@ describe('EvidenciaCollectionKnexAdapter', () => {
       arquivo: '1_20260215080000-e5f6.jpg',
       mime_type: 'image/jpeg',
       tamanho: 1024,
-      capturado_em: new Date('2026-02-15T08:00:00.000Z'),
+      data_captura: new Date('2026-02-15T08:00:00.000Z'),
       created_by: null
     })
 
@@ -95,7 +95,7 @@ describe('EvidenciaCollectionKnexAdapter', () => {
     try {
       const found = await collection.findAll({
         evento_id: eventoId,
-        order: { column: 'capturado_em', direction: 'asc' }
+        order: { column: 'data_captura', direction: 'asc' }
       })
 
       expect(found.right()).toBe(true)
@@ -114,7 +114,7 @@ describe('EvidenciaCollectionKnexAdapter', () => {
       arquivo: '-1_1700000000000-0000.jpg',
       mime_type: 'image/jpeg',
       tamanho: 1024,
-      capturado_em: new Date(),
+      data_captura: new Date(),
       created_by: null
     })
 
@@ -124,7 +124,7 @@ describe('EvidenciaCollectionKnexAdapter', () => {
   test('apaga as evidências junto com o evento', async () => {
     const [evento] = await knex('eventos')
       .insert({
-        expedicao_id: expedicaoId, tipo: 'COLETA', capturado_em: new Date('2026-02-16T10:00:00.000Z')
+        expedicao_id: expedicaoId, tipo: 'COLETA', data_captura: new Date('2026-02-16T10:00:00.000Z')
       })
       .returning<Array<{ id: number }>>(['id'])
 
@@ -134,7 +134,7 @@ describe('EvidenciaCollectionKnexAdapter', () => {
       arquivo: `${evento.id}_1700000000000-0000.jpg`,
       mime_type: 'image/jpeg',
       tamanho: 1024,
-      capturado_em: new Date(),
+      data_captura: new Date(),
       created_by: null
     })
     expect(created.right()).toBe(true)

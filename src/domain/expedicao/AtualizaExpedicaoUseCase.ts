@@ -1,5 +1,6 @@
 import { Either } from '@/library/either/Either'
 
+import { ExpedicaoNaoEncontradaError } from './error/ExpedicaoNaoEncontradaError'
 import {
   Attributes, Expedicao, UpdateAttributes
 } from './Expedicao'
@@ -19,7 +20,7 @@ export class AtualizaExpedicaoUseCase {
   async execute(id: number, changes: UpdateAttributes): Promise<Either<Error, Attributes>> {
     const found = await this.expedicaoCollection.findById(id)
     if (found.left()) return Either.left(found.value)
-    if (!found.value) return Either.left(new Error('Expedição não encontrada'))
+    if (!found.value) return Either.left(new ExpedicaoNaoEncontradaError())
 
     const current = Expedicao.create(found.value)
     if (current.left()) return Either.left(current.value)
