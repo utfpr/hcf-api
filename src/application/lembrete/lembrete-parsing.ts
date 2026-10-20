@@ -11,6 +11,21 @@ export function parseId(raw: unknown, field: string): number | Error {
   return id
 }
 
+/**
+ * Expedição de onde o lembrete foi criado: opcional. Ausente ou null vira null;
+ * aceita o id como número inteiro positivo (ou texto só com dígitos).
+ */
+export function parseExpedicaoId(raw: unknown): number | null | Error {
+  if (raw === undefined || raw === null || raw === '') {
+    return null
+  }
+  const id = typeof raw === 'string' && /^\d+$/.test(raw) ? Number(raw) : raw
+  if (typeof id !== 'number' || !Number.isInteger(id) || id <= 0) {
+    return new Error('expedicao_id inválido. Use o id numérico da expedição')
+  }
+  return id
+}
+
 export function parseRequiredString(raw: unknown, field: string): string | Error {
   if (typeof raw !== 'string') {
     return new Error(`${field} inválido`)

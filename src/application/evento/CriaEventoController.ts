@@ -1,3 +1,4 @@
+import { parseClientUuid } from '@/application/parseClientUuid'
 import { CriaEventoUseCase } from '@/domain/evento/CriaEventoUseCase'
 import { EVENTO_TIPOS, EventoTipo } from '@/domain/evento/Evento'
 import { CheckViolationError } from '@/infrastructure/error/CheckViolationError'
@@ -27,6 +28,8 @@ interface Body {
   altitude?: unknown
   observacoes?: unknown
   coleta?: unknown
+  client_uuid?: unknown
+  numero_coleta?: unknown
 }
 
 export class CriaEventoController implements RequestHandler {
@@ -64,6 +67,15 @@ export class CriaEventoController implements RequestHandler {
     const coleta = body.coleta === undefined ? null : parseColeta(body.coleta)
     if (coleta instanceof Error) return new BadRequestError({ message: coleta.message })
 
+    const numeroColeta = parseNumeroColeta(body.numero_coleta)
+    if (numeroColeta instanceof Error) return new BadRequestError({ message: numeroColeta.message })
+    if (numeroColeta && tipo !== 'COLETA') {
+      return new BadRequestError({ message: 'numero_coleta só vale para eventos do tipo COLETA' })
+    }
+
+    const clientUuid = parseClientUuid(body.client_uuid)
+    if (clientUuid instanceof Error) return new BadRequestError({ message: clientUuid.message })
+
     const usuarioId = request.user?.id ?? null
 
     const result = await this.criaEventoUseCase.execute({
@@ -75,7 +87,9 @@ export class CriaEventoController implements RequestHandler {
       latitude,
       longitude,
       observacoes,
-      tipo
+      tipo,
+      ...(clientUuid ? { client_uuid: clientUuid } : {}),
+      ...(numeroColeta ? { numero_coleta: numeroColeta } : {})
     })
 
     if (result.left()) {
@@ -123,6 +137,21 @@ function parseOptionalNumber(raw: unknown, field: string): number | null | Error
     return new Error(`${field} inválido`)
   }
   return raw
+}
+
+// Mesmo número na mesma expedição = mesma coleta (registrada por várias pessoas)
+function parseNumeroColeta(raw: unknown): string | null | Error {
+  if (raw === undefined || raw === null || raw === '') {
+    return null
+  }
+  if (typeof raw !== 'string' && typeof raw !== 'number') {
+    return new Error('numero_coleta inválido')
+  }
+  const numero = String(raw).trim()
+  if (numero.length > 50) {
+    return new Error('numero_coleta deve ter no máximo 50 caracteres')
+  }
+  return numero || null
 }
 
 function parseOptionalString(raw: unknown, field: string): string | null | Error {

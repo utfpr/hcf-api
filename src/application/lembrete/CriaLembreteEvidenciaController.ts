@@ -1,5 +1,6 @@
 import { unlink } from 'node:fs/promises'
 
+import { parseClientUuid } from '@/application/parseClientUuid'
 import { CriaLembreteEvidenciaUseCase } from '@/domain/lembrete/CriaLembreteEvidenciaUseCase'
 import { ForeignKeyViolationError } from '@/infrastructure/error/ForeignKeyViolationError'
 import { InfrastructureError } from '@/infrastructure/error/InfrastructureError'
@@ -23,6 +24,7 @@ interface Dependencies {
 interface Body {
   nome?: unknown
   data_captura?: unknown
+  client_uuid?: unknown
 }
 
 interface UploadedFile {
@@ -56,6 +58,9 @@ export class CriaLembreteEvidenciaController implements RequestHandler {
     const dataCaptura = parseDate(body.data_captura, 'data_captura')
     if (dataCaptura instanceof Error) return await cleanupAndReturn(file.path, dataCaptura)
 
+    const clientUuid = parseClientUuid(body.client_uuid)
+    if (clientUuid instanceof Error) return await cleanupAndReturn(file.path, clientUuid)
+
     const result = await this.criaLembreteEvidenciaUseCase.execute({
       lembrete_id: lembreteId,
       nome,
@@ -63,7 +68,8 @@ export class CriaLembreteEvidenciaController implements RequestHandler {
       mime_type: file.mimetype,
       tamanho: file.size,
       data_captura: dataCaptura,
-      created_by: request.user?.id ?? null
+      created_by: request.user?.id ?? null,
+      ...(clientUuid ? { client_uuid: clientUuid } : {})
     })
 
     if (result.left()) {
@@ -73,6 +79,11 @@ export class CriaLembreteEvidenciaController implements RequestHandler {
       if (error instanceof ForeignKeyViolationError) return new NotFoundError({ message: error.message })
       if (!(error instanceof InfrastructureError)) return new BadRequestError({ message: error.message })
       return new InternalServerError({ message: error.message })
+    }
+
+    // Reenvio (mesmo client_uuid): a evidência já tinha arquivo; o que acabou de chegar sobra
+    if (result.value.arquivo !== file.filename) {
+      await unlink(file.path).catch(() => {})
     }
 
     return {

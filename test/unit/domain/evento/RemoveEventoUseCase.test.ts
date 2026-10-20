@@ -15,6 +15,7 @@ const makeMockEventoCollection = (overrides?: Partial<EventoCollection>): Evento
   delete: vi.fn().mockResolvedValue(Either.right(true)),
   findAll: vi.fn(),
   findById: vi.fn(),
+  findByClientUuid: vi.fn().mockResolvedValue(Either.right(null)),
   update: vi.fn(),
   ...overrides
 })
@@ -24,6 +25,7 @@ const makeMockEvidenciaCollection = (overrides?: Partial<EvidenciaCollection>): 
   delete: vi.fn(),
   findAll: vi.fn().mockResolvedValue(Either.right([])),
   findById: vi.fn(),
+  findByClientUuid: vi.fn().mockResolvedValue(Either.right(null)),
   ...overrides
 })
 

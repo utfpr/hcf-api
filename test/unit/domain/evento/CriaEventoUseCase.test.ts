@@ -40,6 +40,7 @@ const makeMockCollection = (overrides?: Partial<EventoCollection>): EventoCollec
   delete: vi.fn(),
   findAll: vi.fn(),
   findById: vi.fn(),
+  findByClientUuid: vi.fn().mockResolvedValue(Either.right(null)),
   update: vi.fn(),
   ...overrides
 })

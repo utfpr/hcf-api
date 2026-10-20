@@ -6,6 +6,7 @@ import {
 import { geraTokenUsuario } from '@/helpers/tokens'
 
 import { createTestApp } from '../setup/app-factory'
+import { createCuradorAuth } from '../setup/curador-auth'
 
 type Pais = { id: number; nome: string; sigla: string }
 
@@ -55,27 +56,23 @@ describe('GET /api/v1/paises', () => {
   })
 
   test('aceita um JWT de 2 dias no /v1 quando o usuário existe', async () => {
-    const usuario = await knex('usuarios').orderBy('id', 'asc').first<{
-      id: number
-      nome: string
-      email: string
-      tipo_usuario_id: number
-    }>()
-    if (!usuario) {
-      return
-    }
+    // Usuário próprio: os outros arquivos criam e apagam usuários em paralelo
+    const auth = await createCuradorAuth(knex)
 
-    const token = String(geraTokenUsuario({
-      id: Number(usuario.id),
-      nome: usuario.nome,
-      email: usuario.email,
-      tipo_usuario_id: Number(usuario.tipo_usuario_id)
-    }))
-    const response = await agent
-      .get('/api/v1/paises')
-      .set('Authorization', `Bearer ${token}`)
-      .expect(200)
-    expect(Array.isArray(response.body)).toBe(true)
+    try {
+      const token = String(geraTokenUsuario({
+        id: auth.usuarioId,
+        nome: 'Vegetacao Curador',
+        tipo_usuario_id: 1
+      }))
+      const response = await agent
+        .get('/api/v1/paises')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200)
+      expect(Array.isArray(response.body)).toBe(true)
+    } finally {
+      await auth.cleanup()
+    }
   })
 
   test('access JWT expirado retorna access_expired', async () => {

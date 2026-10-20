@@ -9,7 +9,9 @@ import {
 import { Either } from '@/library/either/Either'
 
 import { CollectionError } from './error/CollectionError'
+import { ForeignKeyViolationError } from './error/ForeignKeyViolationError'
 import { toNullableNumber } from './pg-column'
+import { PG_FOREIGN_KEY_VIOLATION, pgErrorCode } from './pg-error'
 
 interface Dependencies {
   knex: Knex
@@ -19,6 +21,8 @@ interface Row extends FichaAttributes {
   id: number
   data_coleta: string
   local_coleta: string
+  expedicao_id: number | null
+  client_uuid: string | null
   created_at: Date
   updated_at: Date
   created_by: string | null
@@ -31,11 +35,21 @@ function toAttributes(row: Row): Attributes {
     data_coleta: row.data_coleta,
     local_coleta: row.local_coleta,
     ...Object.fromEntries(FICHA_FIELDS.map(campo => [campo, row[campo] ?? null])) as unknown as FichaAttributes,
+    expedicao_id: row.expedicao_id,
+    client_uuid: row.client_uuid,
     created_at: row.created_at,
     updated_at: row.updated_at,
     created_by: toNullableNumber(row.created_by),
     updated_by: toNullableNumber(row.updated_by)
   }
+}
+
+// Nome que o Knex dá à FK criada na migração 20261021120000
+const FK_EXPEDICAO = 'lembretes_expedicao_id_foreign'
+
+function violouExpedicao(error: unknown): boolean {
+  return pgErrorCode(error) === PG_FOREIGN_KEY_VIOLATION
+    && (error as { constraint?: unknown }).constraint === FK_EXPEDICAO
 }
 
 export class LembreteCollectionKnexAdapter implements LembreteCollection {
@@ -55,6 +69,8 @@ export class LembreteCollectionKnexAdapter implements LembreteCollection {
         knex.raw('to_char(lembretes.data_coleta, \'YYYY-MM-DD\') as data_coleta'),
         'lembretes.local_coleta',
         ...FICHA_FIELDS.map(campo => `lembretes.${campo}`),
+        'lembretes.expedicao_id',
+        'lembretes.client_uuid',
         'lembretes.created_at',
         'lembretes.updated_at',
         'lembretes.created_by',
@@ -65,6 +81,10 @@ export class LembreteCollectionKnexAdapter implements LembreteCollection {
   async findAll(filters: LembreteFilters): Promise<Either<Error, Paginated<Attributes>>> {
     try {
       const query = this.select()
+
+      if (filters.expedicao_id) {
+        query.where('lembretes.expedicao_id', filters.expedicao_id)
+      }
 
       if (filters.data_coleta_de) {
         query.where('lembretes.data_coleta', '>=', filters.data_coleta_de)
@@ -113,6 +133,18 @@ export class LembreteCollectionKnexAdapter implements LembreteCollection {
     }
   }
 
+  async findByClientUuid(clientUuid: string): Promise<Either<Error, Attributes | null>> {
+    try {
+      const row = await this.select()
+        .where('lembretes.client_uuid', clientUuid)
+        .first() as Row | undefined
+
+      return Either.right(row ? toAttributes(row) : null)
+    } catch (error) {
+      return Either.left(new CollectionError({ message: 'Failed to find lembrete by client_uuid', cause: error }))
+    }
+  }
+
   async create(attributes: CreateAttributes): Promise<Either<Error, Attributes>> {
     try {
       const created = await this.knex.transaction(async trx => {
@@ -130,6 +162,9 @@ export class LembreteCollectionKnexAdapter implements LembreteCollection {
 
       return Either.right(toAttributes(created))
     } catch (error) {
+      if (violouExpedicao(error)) {
+        return Either.left(new ForeignKeyViolationError({ message: 'Expedição não encontrada', cause: error }))
+      }
       return Either.left(new CollectionError({ message: 'Failed to create lembrete', cause: error }))
     }
   }

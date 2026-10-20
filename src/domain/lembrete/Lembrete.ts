@@ -47,6 +47,10 @@ export interface Attributes extends FichaAttributes {
   id: number
   data_coleta: string
   local_coleta: string
+  // Expedição de onde o lembrete foi criado; null quando não veio de uma
+  expedicao_id?: number | null
+  // Chave de idempotência do app (offline); null para o que veio do web
+  client_uuid?: string | null
   created_at: Date
   updated_at: Date
   created_by: number | null
@@ -63,7 +67,11 @@ export type CreateAttributes = Omit<Attributes, PersistedField>
  */
 export type EntityAttributes = CreateAttributes & Partial<Pick<Attributes, PersistedField>>
 
-export type UpdateAttributes = Omit<Attributes, 'id' | 'created_at' | 'updated_at' | 'created_by'>
+// A expedição de origem não muda depois de criado
+export type UpdateAttributes = Omit<
+  Attributes,
+  'id' | 'created_at' | 'updated_at' | 'created_by' | 'client_uuid' | 'expedicao_id'
+>
 
 const DATA_ISO = /^\d{4}-\d{2}-\d{2}$/
 

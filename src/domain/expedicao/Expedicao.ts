@@ -27,7 +27,11 @@ export interface RotaDetalhada {
   cidade_id: number
   ordem: number
   nome_cidade: string
+  // id do estado da cidade da rota (mantido por compatibilidade)
   estado: string
+  estado_nome: string | null
+  estado_sigla: string | null
+  // A criação garante que os locais são da cidade da rota
   locais_coleta: Array<{
     id: number
     descricao: string | null

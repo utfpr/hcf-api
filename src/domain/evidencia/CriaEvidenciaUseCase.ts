@@ -23,6 +23,7 @@ export interface Input {
   mime_type: string
   contents: Buffer
   created_by: number | null
+  client_uuid?: string
 }
 
 export class CriaEvidenciaUseCase {
@@ -43,6 +44,13 @@ export class CriaEvidenciaUseCase {
     if (evento.left()) return Either.left(evento.value)
     if (!evento.value) return Either.left(new EventoNaoEncontradoError())
 
+    // Reenvio do app depois de uma falha de rede: devolve o que já foi criado, sem gravar o arquivo de novo
+    if (input.client_uuid) {
+      const existente = await this.evidenciaCollection.findByClientUuid(input.client_uuid)
+      if (existente.left()) return Either.left(existente.value)
+      if (existente.value) return Either.right(existente.value)
+    }
+
     const salvo = await this.evidenciaArquivo.save({
       expedicaoId: evento.value.expedicao_id,
       eventoId: input.evento_id,
@@ -58,7 +66,8 @@ export class CriaEvidenciaUseCase {
       mime_type: input.mime_type,
       tamanho: salvo.value.tamanho,
       data_captura: input.data_captura,
-      created_by: input.created_by
+      created_by: input.created_by,
+      ...(input.client_uuid ? { client_uuid: input.client_uuid } : {})
     }
 
     const validated = Evidencia.create(attributes)

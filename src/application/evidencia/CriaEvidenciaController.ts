@@ -1,3 +1,4 @@
+import { parseClientUuid } from '@/application/parseClientUuid'
 import { EventoNaoEncontradoError } from '@/domain/evento/error/EventoNaoEncontradoError'
 import { CriaEvidenciaUseCase } from '@/domain/evidencia/CriaEvidenciaUseCase'
 import { ForeignKeyViolationError } from '@/infrastructure/error/ForeignKeyViolationError'
@@ -18,6 +19,7 @@ interface Dependencies {
 interface Body {
   nome?: unknown
   data_captura?: unknown
+  client_uuid?: unknown
 }
 
 interface UploadedFile {
@@ -48,6 +50,9 @@ export class CriaEvidenciaController implements RequestHandler {
     const dataCaptura = parseDate(body.data_captura, 'data_captura')
     if (dataCaptura instanceof Error) return new BadRequestError({ message: dataCaptura.message })
 
+    const clientUuid = parseClientUuid(body.client_uuid)
+    if (clientUuid instanceof Error) return new BadRequestError({ message: clientUuid.message })
+
     const usuarioId = request.user?.id ?? null
 
     const result = await this.criaEvidenciaUseCase.execute({
@@ -56,7 +61,8 @@ export class CriaEvidenciaController implements RequestHandler {
       data_captura: dataCaptura,
       mime_type: file.mimetype,
       contents: file.buffer,
-      created_by: usuarioId
+      created_by: usuarioId,
+      ...(clientUuid ? { client_uuid: clientUuid } : {})
     })
 
     if (result.left()) {

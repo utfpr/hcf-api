@@ -59,6 +59,7 @@ const makeMockCollection = (overrides?: Partial<EventoCollection>): EventoCollec
   delete: vi.fn(),
   findAll: vi.fn(),
   findById: vi.fn().mockResolvedValue(Either.right(diarioAttributes)),
+  findByClientUuid: vi.fn().mockResolvedValue(Either.right(null)),
   update: vi.fn().mockResolvedValue(Either.right(diarioAttributes)),
   ...overrides
 })

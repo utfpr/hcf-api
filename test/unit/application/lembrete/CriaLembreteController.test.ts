@@ -5,12 +5,14 @@ import {
 import { CriaLembreteController } from '@/application/lembrete/CriaLembreteController'
 import { CriaLembreteUseCase } from '@/domain/lembrete/CriaLembreteUseCase'
 import { CollectionError } from '@/infrastructure/error/CollectionError'
+import { ForeignKeyViolationError } from '@/infrastructure/error/ForeignKeyViolationError'
 import { Either } from '@/library/either/Either'
 import {
   Headers, HttpRequest, Method, StatusCode
 } from '@/library/http/common'
 import { BadRequestError } from '@/library/http/error/BadRequestError'
 import { InternalServerError } from '@/library/http/error/InternalServerError'
+import { NotFoundError } from '@/library/http/error/NotFoundError'
 
 const headers = {} as Headers
 
@@ -86,5 +88,46 @@ describe('CriaLembreteController', () => {
     const response = await controller.handle(makeRequest(validBody), vi.fn())
 
     expect(response).toBeInstanceOf(InternalServerError)
+  })
+
+  test('repassa a expedição de origem e usa null quando ela não vem', async () => {
+    const criaLembreteUseCase = {
+      execute: vi.fn().mockResolvedValue(Either.right({ id: 1, ...validBody }))
+    } as unknown as CriaLembreteUseCase
+    const controller = new CriaLembreteController({ criaLembreteUseCase })
+
+    await controller.handle(makeRequest({ ...validBody, expedicao_id: 3 }), vi.fn())
+    await controller.handle(makeRequest(validBody), vi.fn())
+
+    expect(criaLembreteUseCase.execute).toHaveBeenNthCalledWith(1, expect.objectContaining({ expedicao_id: 3 }))
+    expect(criaLembreteUseCase.execute).toHaveBeenNthCalledWith(2, expect.objectContaining({ expedicao_id: null }))
+  })
+
+  test('retorna 400 quando expedicao_id não é um id válido', async () => {
+    const criaLembreteUseCase = { execute: vi.fn() } as unknown as CriaLembreteUseCase
+    const controller = new CriaLembreteController({ criaLembreteUseCase })
+
+    for (const expedicaoId of [
+      'abc',
+      0,
+      -1,
+      1.5,
+      {}
+    ]) {
+      const response = await controller.handle(makeRequest({ ...validBody, expedicao_id: expedicaoId }), vi.fn())
+      expect(response).toBeInstanceOf(BadRequestError)
+    }
+    expect(criaLembreteUseCase.execute).not.toHaveBeenCalled()
+  })
+
+  test('retorna 404 quando a expedição não existe', async () => {
+    const criaLembreteUseCase = {
+      execute: vi.fn().mockResolvedValue(Either.left(new ForeignKeyViolationError({ message: 'Expedição não encontrada' })))
+    } as unknown as CriaLembreteUseCase
+
+    const controller = new CriaLembreteController({ criaLembreteUseCase })
+    const response = await controller.handle(makeRequest({ ...validBody, expedicao_id: 999 }), vi.fn())
+
+    expect(response).toBeInstanceOf(NotFoundError)
   })
 })

@@ -3700,3 +3700,66 @@ ALTER TABLE ONLY public.lembretes_evidencias
 
 ALTER TABLE ONLY public.lembretes_evidencias
     ADD CONSTRAINT lembretes_evidencias_updated_by_foreign FOREIGN KEY (updated_by) REFERENCES public.usuarios(id) ON UPDATE CASCADE;
+
+--
+-- Chave de idempotência do app (offline)
+-- Migration 20261020120000
+--
+ALTER TABLE ONLY public.eventos ADD COLUMN client_uuid uuid;
+
+ALTER TABLE ONLY public.eventos
+    ADD CONSTRAINT eventos_client_uuid_unique UNIQUE (client_uuid);
+
+ALTER TABLE ONLY public.evidencias ADD COLUMN client_uuid uuid;
+
+ALTER TABLE ONLY public.evidencias
+    ADD CONSTRAINT evidencias_client_uuid_unique UNIQUE (client_uuid);
+
+ALTER TABLE ONLY public.lembretes ADD COLUMN client_uuid uuid;
+
+ALTER TABLE ONLY public.lembretes
+    ADD CONSTRAINT lembretes_client_uuid_unique UNIQUE (client_uuid);
+
+ALTER TABLE ONLY public.lembretes_evidencias ADD COLUMN client_uuid uuid;
+
+ALTER TABLE ONLY public.lembretes_evidencias
+    ADD CONSTRAINT lembretes_evidencias_client_uuid_unique UNIQUE (client_uuid);
+
+--
+-- Número da coleta (várias pessoas registrando a mesma coleta)
+-- Migration 20261020150000
+--
+ALTER TABLE ONLY public.eventos ADD COLUMN numero_coleta character varying(50);
+
+CREATE UNIQUE INDEX eventos_expedicao_numero_coleta_unique
+    ON public.eventos USING btree (expedicao_id, numero_coleta)
+    WHERE (numero_coleta IS NOT NULL);
+
+CREATE TABLE public.eventos_envios (
+    client_uuid uuid NOT NULL,
+    evento_id integer NOT NULL,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    created_by bigint
+);
+
+ALTER TABLE ONLY public.eventos_envios
+    ADD CONSTRAINT eventos_envios_pkey PRIMARY KEY (client_uuid);
+
+CREATE INDEX eventos_envios_evento_id_index ON public.eventos_envios USING btree (evento_id);
+
+ALTER TABLE ONLY public.eventos_envios
+    ADD CONSTRAINT eventos_envios_evento_id_foreign FOREIGN KEY (evento_id) REFERENCES public.eventos(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+ALTER TABLE ONLY public.eventos_envios
+    ADD CONSTRAINT eventos_envios_created_by_foreign FOREIGN KEY (created_by) REFERENCES public.usuarios(id) ON UPDATE CASCADE;
+
+--
+-- Modulo Expedicao: expedição de origem dos lembretes
+-- Migration 20261021120000
+--
+ALTER TABLE ONLY public.lembretes ADD COLUMN expedicao_id integer;
+
+CREATE INDEX lembretes_expedicao_id_index ON public.lembretes USING btree (expedicao_id);
+
+ALTER TABLE ONLY public.lembretes
+    ADD CONSTRAINT lembretes_expedicao_id_foreign FOREIGN KEY (expedicao_id) REFERENCES public.expedicoes(id) ON UPDATE CASCADE ON DELETE SET NULL;

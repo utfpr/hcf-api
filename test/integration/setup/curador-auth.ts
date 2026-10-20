@@ -7,6 +7,7 @@ type Header = { Authorization: string }
 
 export async function createCuradorAuth(knex: Knex): Promise<{
   header: Header
+  usuarioId: number
   cleanup: () => Promise<void>
 }> {
   const tipoId = 1
@@ -40,6 +41,7 @@ export async function createCuradorAuth(knex: Knex): Promise<{
 
   return {
     header: { Authorization: `Bearer ${token}` },
+    usuarioId: Number(usuario.id),
     cleanup: async () => {
       await knex('usuarios_sessoes').where({ usuario_id: usuario.id }).delete()
       await knex('usuarios').where({ id: usuario.id }).delete()

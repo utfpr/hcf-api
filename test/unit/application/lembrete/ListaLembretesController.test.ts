@@ -78,4 +78,25 @@ describe('ListaLembretesController', () => {
 
     expect(response).toBeInstanceOf(InternalServerError)
   })
+
+  test('filtra pela expedição de origem', async () => {
+    const lembreteCollection = {
+      findAll: vi.fn().mockResolvedValue(Either.right(pagina))
+    } as unknown as LembreteCollection
+
+    const controller = new ListaLembretesController({ lembreteCollection })
+    await controller.handle(makeRequest({ expedicao_id: '3', data_coleta_de: '2026-10-21' }), vi.fn())
+
+    expect(lembreteCollection.findAll).toHaveBeenCalledWith({ expedicao_id: 3, data_coleta_de: '2026-10-21' })
+  })
+
+  test('retorna 400 quando expedicao_id é inválido', async () => {
+    const lembreteCollection = { findAll: vi.fn() } as unknown as LembreteCollection
+
+    const controller = new ListaLembretesController({ lembreteCollection })
+    const response = await controller.handle(makeRequest({ expedicao_id: 'abc' }), vi.fn())
+
+    expect(lembreteCollection.findAll).not.toHaveBeenCalled()
+    expect(response).toBeInstanceOf(BadRequestError)
+  })
 })
