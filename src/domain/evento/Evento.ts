@@ -51,7 +51,7 @@ export interface Attributes {
   id: number
   expedicao_id: number
   tipo: EventoTipo
-  capturado_em: Date
+  data_captura: Date
   latitude: number | null
   longitude: number | null
   altitude: number | null
@@ -69,7 +69,7 @@ export class Evento {
   readonly id: number
   readonly expedicao_id: number
   readonly tipo: EventoTipo
-  readonly capturado_em: Date
+  readonly data_captura: Date
   readonly latitude: number | null
   readonly longitude: number | null
   readonly altitude: number | null
@@ -84,7 +84,7 @@ export class Evento {
     this.id = attributes.id
     this.expedicao_id = attributes.expedicao_id
     this.tipo = attributes.tipo
-    this.capturado_em = attributes.capturado_em
+    this.data_captura = attributes.data_captura
     this.latitude = attributes.latitude
     this.longitude = attributes.longitude
     this.altitude = attributes.altitude
@@ -105,7 +105,7 @@ export class Evento {
       return Either.left(new Error(`Tipo do evento deve ser um de: ${EVENTO_TIPOS.join(', ')}`))
     }
 
-    if (Number.isNaN(attributes.capturado_em.getTime())) {
+    if (Number.isNaN(attributes.data_captura.getTime())) {
       return Either.left(new Error('Instante de captura do evento é inválido'))
     }
 

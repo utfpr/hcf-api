@@ -18,7 +18,7 @@ export class CriaEventoUseCase {
 
   async execute(input: CreateAttributes): Promise<Either<Error, Attributes>> {
     // Evento.create() exige um Attributes completo, usado para validar
-    // a coerência de negócio (tipo/ficha, coordenadas,capturado_em).
+    // a coerência de negócio (tipo/ficha, coordenadas,data_captura).
     const validated = Evento.create({
       ...input,
       created_at: new Date(),

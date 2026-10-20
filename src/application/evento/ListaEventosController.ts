@@ -23,15 +23,15 @@ export class ListaEventosController implements RequestHandler {
     const {
       expedicaoId,
       tipo,
-      capturado_de,
-      capturado_ate,
+      data_captura_de,
+      data_captura_ate,
       limite,
       pagina
     } = request.params as {
       expedicaoId?: string
       tipo?: string
-      capturado_de?: string
-      capturado_ate?: string
+      data_captura_de?: string
+      data_captura_ate?: string
       limite?: string
       pagina?: string
     }
@@ -54,8 +54,8 @@ export class ListaEventosController implements RequestHandler {
         ? { pagina: Number(pagina) }
         : {}),
       ...(tipo ? { tipo: tipo as EventoTipo } : {}),
-      ...(capturado_de ? { capturado_de: new Date(capturado_de) } : {}),
-      ...(capturado_ate ? { capturado_ate: new Date(capturado_ate) } : {})
+      ...(data_captura_de ? { data_captura_de: new Date(data_captura_de) } : {}),
+      ...(data_captura_ate ? { data_captura_ate: new Date(data_captura_ate) } : {})
     }
 
     const result = await this.listaEventosUseCase.execute(filters)

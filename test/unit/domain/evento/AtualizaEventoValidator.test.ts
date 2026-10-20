@@ -30,7 +30,7 @@ function fichaCompleta(overrides: Partial<ColetaAttributes> = {}): ColetaAttribu
 
 const diarioAttributes: Attributes = {
   altitude: null,
-  capturado_em: new Date('2026-02-15T14:32:00Z'),
+  data_captura: new Date('2026-02-15T14:32:00Z'),
   coleta: null,
   created_at: new Date(),
   created_by: null,

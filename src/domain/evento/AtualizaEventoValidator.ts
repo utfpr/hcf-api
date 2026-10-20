@@ -6,7 +6,7 @@ import {
 
 export interface AtualizaEventoInput {
   tipo?: EventoTipo
-  capturado_em?: Date
+  data_captura?: Date
   latitude?: number | null
   longitude?: number | null
   altitude?: number | null
@@ -22,7 +22,7 @@ export interface AtualizaEventoInput {
  * - vira COLETA com `coleta` no corpo -> substitui a ficha
  *
  * Reaproveita de Evento.create() para checagem final de coerência (tipo/ficha,
- * coordenadas, capturado_em) sobre o estado já mesclado, afim não duplicar
+ * coordenadas, data_captura) sobre o estado já mesclado, afim não duplicar
  * essa regra em dois lugares.
  */
 
@@ -42,7 +42,7 @@ export class AtualizaEventoValidator {
     return {
       ...atual,
       altitude: input.altitude !== undefined ? input.altitude : atual.altitude,
-      capturado_em: input.capturado_em ?? atual.capturado_em,
+      data_captura: input.data_captura ?? atual.data_captura,
       coleta,
       latitude: input.latitude !== undefined ? input.latitude : atual.latitude,
       longitude: input.longitude !== undefined ? input.longitude : atual.longitude,

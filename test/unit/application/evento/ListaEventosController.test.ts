@@ -29,7 +29,7 @@ describe('ListaEventosController', () => {
         id: 1,
         expedicao_id: 10,
         tipo: 'DIARIO' as const,
-        capturado_em: new Date('2026-09-01T10:00:00.000Z')
+        data_captura: new Date('2026-09-01T10:00:00.000Z')
       }
     ]
 
@@ -132,8 +132,8 @@ describe('ListaEventosController', () => {
       params: {
         expedicaoId: '10',
         tipo: 'COLETA',
-        capturado_de: '2026-09-01T00:00:00.000Z',
-        capturado_ate: '2026-09-15T23:59:59.999Z',
+        data_captura_de: '2026-09-01T00:00:00.000Z',
+        data_captura_ate: '2026-09-15T23:59:59.999Z',
         limite: '10',
         pagina: '2'
       },
@@ -145,8 +145,8 @@ describe('ListaEventosController', () => {
     expect(listaEventosUseCase.execute).toHaveBeenCalledWith({
       expedicao_id: 10,
       tipo: 'COLETA',
-      capturado_de: new Date('2026-09-01T00:00:00.000Z'),
-      capturado_ate: new Date('2026-09-15T23:59:59.999Z'),
+      data_captura_de: new Date('2026-09-01T00:00:00.000Z'),
+      data_captura_ate: new Date('2026-09-15T23:59:59.999Z'),
       limite: 10,
       pagina: 2
     })

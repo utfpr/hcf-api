@@ -48,7 +48,7 @@ describe('Evidências (upload, HTTP)', () => {
 
     const [evento] = await knex('eventos')
       .insert({
-        expedicao_id: expedicaoId, tipo: 'DIARIO', capturado_em: new Date('2026-02-15T13:15:00.000Z')
+        expedicao_id: expedicaoId, tipo: 'DIARIO', data_captura: new Date('2026-02-15T13:15:00.000Z')
       })
       .returning<Array<{ id: number }>>(['id'])
     eventoId = evento.id
@@ -65,7 +65,7 @@ describe('Evidências (upload, HTTP)', () => {
     const response = await agent
       .post(`/api/v1/eventos/${eventoId}/evidencias`)
       .field('nome', 'IMG_0042.jpg')
-      .field('capturado_em', '2026-02-15T14:32:00Z')
+      .field('data_captura', '2026-02-15T14:32:00Z')
       .attach('arquivo', Buffer.from('conteúdo de teste'), { contentType: 'image/jpeg', filename: 'foto.jpg' })
       .expect(201)
 
@@ -87,7 +87,7 @@ describe('Evidências (upload, HTTP)', () => {
     await agent
       .post(`/api/v1/eventos/${eventoId}/evidencias`)
       .field('nome', 'anotacoes.txt')
-      .field('capturado_em', '2026-02-15T14:32:00Z')
+      .field('data_captura', '2026-02-15T14:32:00Z')
       .attach('arquivo', Buffer.from('texto qualquer'), { contentType: 'text/plain', filename: 'anotacoes.txt' })
       .expect(400)
   })
@@ -96,7 +96,7 @@ describe('Evidências (upload, HTTP)', () => {
     await agent
       .post('/api/v1/eventos/999999999/evidencias')
       .field('nome', 'IMG_0042.jpg')
-      .field('capturado_em', '2026-02-15T14:32:00Z')
+      .field('data_captura', '2026-02-15T14:32:00Z')
       .attach('arquivo', Buffer.from('conteúdo de teste'), { contentType: 'image/jpeg', filename: 'foto.jpg' })
       .expect(404)
   })
@@ -105,7 +105,7 @@ describe('Evidências (upload, HTTP)', () => {
     const created = await agent
       .post(`/api/v1/eventos/${eventoId}/evidencias`)
       .field('nome', 'audio.mp3')
-      .field('capturado_em', '2026-02-15T14:32:00Z')
+      .field('data_captura', '2026-02-15T14:32:00Z')
       .attach('arquivo', Buffer.from('audio de teste'), { contentType: 'audio/mpeg', filename: 'audio.mp3' })
       .expect(201)
 

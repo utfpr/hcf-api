@@ -38,7 +38,7 @@ const makeMockEvidenciaCollection = (overrides?: Partial<EvidenciaCollection>): 
 
 const makeEvidencia = (overrides?: Partial<EvidenciaAttributes>): EvidenciaAttributes => ({
   arquivo: 'foto.jpg',
-  capturado_em: new Date(),
+  data_captura: new Date(),
   created_at: new Date(),
   created_by: null,
   evento_id: 10,

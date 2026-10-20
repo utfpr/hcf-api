@@ -18,7 +18,7 @@ export async function run(knex: Knex): Promise<void> {
         .onUpdate('CASCADE')
 
       table.string('nome', 255).notNullable()
-      table.timestamp('capturado_em').notNullable()
+      table.timestamp('data_captura').notNullable()
 
       table.timestamp('created_at').notNullable().defaultTo(trx.fn.now())
       table.timestamp('updated_at').notNullable().defaultTo(trx.fn.now())

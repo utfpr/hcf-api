@@ -41,19 +41,19 @@ describe('Eventos routes', () => {
   })
 
   test('lista os eventos da expedição com paginação e ordenação estável', async () => {
-    const capturadoEm = '2026-02-15T14:32:00.000Z'
+    const dataCaptura = '2026-02-15T14:32:00.000Z'
 
     const inserted = await knex('eventos')
       .insert([
         {
           expedicao_id: expedicaoId,
           tipo: 'DIARIO',
-          capturado_em: capturadoEm
+          data_captura: dataCaptura
         },
         {
           expedicao_id: expedicaoId,
           tipo: 'COLETA',
-          capturado_em: capturadoEm
+          data_captura: dataCaptura
         }
       ])
       .returning<Array<{ id: number }>>(['id'])
@@ -80,7 +80,7 @@ describe('Eventos routes', () => {
       .insert({
         expedicao_id: expedicaoId,
         tipo: 'DIARIO',
-        capturado_em: '2026-02-16T10:00:00.000Z'
+        data_captura: '2026-02-16T10:00:00.000Z'
       })
       .returning<Array<{ id: number }>>(['id'])
 

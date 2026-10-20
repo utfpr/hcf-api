@@ -21,7 +21,7 @@ interface Dependencies {
 
 interface Body {
   tipo?: unknown
-  capturado_em?: unknown
+  data_captura?: unknown
   latitude?: unknown
   longitude?: unknown
   altitude?: unknown
@@ -46,8 +46,8 @@ export class CriaEventoController implements RequestHandler {
     const tipo = parseTipo(body.tipo)
     if (tipo instanceof Error) return new BadRequestError({ message: tipo.message })
 
-    const capturadoEm = parseDate(body.capturado_em, 'capturado_em')
-    if (capturadoEm instanceof Error) return new BadRequestError({ message: capturadoEm.message })
+    const dataCaptura = parseDate(body.data_captura, 'data_captura')
+    if (dataCaptura instanceof Error) return new BadRequestError({ message: dataCaptura.message })
 
     const latitude = parseOptionalNumber(body.latitude, 'latitude')
     if (latitude instanceof Error) return new BadRequestError({ message: latitude.message })
@@ -68,7 +68,7 @@ export class CriaEventoController implements RequestHandler {
 
     const result = await this.criaEventoUseCase.execute({
       altitude,
-      capturado_em: capturadoEm,
+      data_captura: dataCaptura,
       coleta,
       created_by: usuarioId,
       expedicao_id: expedicaoId,

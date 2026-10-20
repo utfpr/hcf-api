@@ -30,7 +30,7 @@ const diario: Attributes = {
   id: 1,
   expedicao_id: 10,
   tipo: 'DIARIO',
-  capturado_em: new Date('2026-02-15T13:15:00.000Z'),
+  data_captura: new Date('2026-02-15T13:15:00.000Z'),
   latitude: -20.2510,
   longitude: -46.4170,
   altitude: 1200,
@@ -92,7 +92,7 @@ describe('Evento.create', () => {
   })
 
   test('rejeita instante de captura inválido', () => {
-    expect(Evento.create({ ...diario, capturado_em: new Date('não é data') }).left()).toBe(true)
+    expect(Evento.create({ ...diario, data_captura: new Date('não é data') }).left()).toBe(true)
   })
 
   test('rejeita evento sem expedição', () => {

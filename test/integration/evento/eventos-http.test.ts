@@ -68,7 +68,7 @@ describe('Eventos (escrita, HTTP)', () => {
     const response = await agent
       .post(`/api/v1/expedicoes/${expedicaoId}/eventos`)
       .send({
-        capturado_em: '2026-02-15T14:32:00Z',
+        data_captura: '2026-02-15T14:32:00Z',
         latitude: -20.2508,
         longitude: -46.4167,
         observacoes: 'Área de transição entre cerrado e campo rupestre.',
@@ -89,7 +89,7 @@ describe('Eventos (escrita, HTTP)', () => {
     const response = await agent
       .post(`/api/v1/expedicoes/${expedicaoId}/eventos`)
       .send({
-        capturado_em: '2026-02-15T14:32:00Z', coleta: ficha, latitude: -20.2508, longitude: -46.4167, tipo: 'COLETA'
+        data_captura: '2026-02-15T14:32:00Z', coleta: ficha, latitude: -20.2508, longitude: -46.4167, tipo: 'COLETA'
       })
       .expect(201)
 
@@ -106,7 +106,7 @@ describe('Eventos (escrita, HTTP)', () => {
     await agent
       .post(`/api/v1/expedicoes/${expedicaoId}/eventos`)
       .send({
-        capturado_em: '2026-02-15T14:32:00Z', latitude: -20.25, longitude: -46.41, tipo: 'COLETA'
+        data_captura: '2026-02-15T14:32:00Z', latitude: -20.25, longitude: -46.41, tipo: 'COLETA'
       })
       .expect(400)
   })
@@ -115,7 +115,7 @@ describe('Eventos (escrita, HTTP)', () => {
     await agent
       .post('/api/v1/expedicoes/999999999/eventos')
       .send({
-        capturado_em: '2026-02-15T14:32:00Z', latitude: -20.25, longitude: -46.41, observacoes: 'x', tipo: 'DIARIO'
+        data_captura: '2026-02-15T14:32:00Z', latitude: -20.25, longitude: -46.41, observacoes: 'x', tipo: 'DIARIO'
       })
       .expect(404)
   })
@@ -124,7 +124,7 @@ describe('Eventos (escrita, HTTP)', () => {
     const created = await agent
       .post(`/api/v1/expedicoes/${expedicaoId}/eventos`)
       .send({
-        capturado_em: '2026-02-15T14:32:00Z', latitude: -20.25, longitude: -46.41, observacoes: 'original', tipo: 'DIARIO'
+        data_captura: '2026-02-15T14:32:00Z', latitude: -20.25, longitude: -46.41, observacoes: 'original', tipo: 'DIARIO'
       })
       .expect(201)
 
@@ -146,7 +146,7 @@ describe('Eventos (escrita, HTTP)', () => {
     const created = await agent
       .post(`/api/v1/expedicoes/${expedicaoId}/eventos`)
       .send({
-        capturado_em: '2026-02-15T14:32:00Z', latitude: -20.25, longitude: -46.41, observacoes: 'original', tipo: 'DIARIO'
+        data_captura: '2026-02-15T14:32:00Z', latitude: -20.25, longitude: -46.41, observacoes: 'original', tipo: 'DIARIO'
       })
       .expect(201)
 
@@ -168,7 +168,7 @@ describe('Eventos (escrita, HTTP)', () => {
     const created = await agent
       .post(`/api/v1/expedicoes/${expedicaoId}/eventos`)
       .send({
-        capturado_em: '2026-02-15T14:32:00Z', coleta: ficha, latitude: -20.25, longitude: -46.41, tipo: 'COLETA'
+        data_captura: '2026-02-15T14:32:00Z', coleta: ficha, latitude: -20.25, longitude: -46.41, tipo: 'COLETA'
       })
       .expect(201)
 
@@ -197,7 +197,7 @@ describe('Eventos (escrita, HTTP)', () => {
     const created = await agent
       .post(`/api/v1/expedicoes/${expedicaoId}/eventos`)
       .send({
-        capturado_em: '2026-02-15T14:32:00Z', coleta: ficha, latitude: -20.25, longitude: -46.41, tipo: 'COLETA'
+        data_captura: '2026-02-15T14:32:00Z', coleta: ficha, latitude: -20.25, longitude: -46.41, tipo: 'COLETA'
       })
       .expect(201)
 

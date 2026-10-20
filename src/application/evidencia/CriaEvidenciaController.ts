@@ -18,7 +18,7 @@ interface Dependencies {
 
 interface Body {
   nome?: unknown
-  capturado_em?: unknown
+  data_captura?: unknown
 }
 
 interface UploadedFile {
@@ -48,8 +48,8 @@ export class CriaEvidenciaController implements RequestHandler {
     const nome = parseString(body.nome, 'nome')
     if (nome instanceof Error) return await cleanupAndReturn(file.path, nome)
 
-    const capturadoEm = parseDate(body.capturado_em, 'capturado_em')
-    if (capturadoEm instanceof Error) return await cleanupAndReturn(file.path, capturadoEm)
+    const dataCaptura = parseDate(body.data_captura, 'data_captura')
+    if (dataCaptura instanceof Error) return await cleanupAndReturn(file.path, dataCaptura)
 
     const usuarioId = request.user?.id ?? null
 
@@ -59,7 +59,7 @@ export class CriaEvidenciaController implements RequestHandler {
       arquivo: file.filename,
       mime_type: file.mimetype,
       tamanho: file.size,
-      capturado_em: capturadoEm,
+      data_captura: dataCaptura,
       created_by: usuarioId
     })
 

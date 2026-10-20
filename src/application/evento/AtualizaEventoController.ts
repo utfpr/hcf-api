@@ -21,7 +21,7 @@ interface Dependencies {
 
 interface Body {
   tipo?: unknown
-  capturado_em?: unknown
+  data_captura?: unknown
   latitude?: unknown
   longitude?: unknown
   altitude?: unknown
@@ -51,10 +51,10 @@ export class AtualizaEventoController implements RequestHandler {
       input.tipo = tipo
     }
 
-    if (body.capturado_em !== undefined) {
-      const capturadoEm = parseDate(body.capturado_em, 'capturado_em')
-      if (capturadoEm instanceof Error) return new BadRequestError({ message: capturadoEm.message })
-      input.capturado_em = capturadoEm
+    if (body.data_captura !== undefined) {
+      const dataCaptura = parseDate(body.data_captura, 'data_captura')
+      if (dataCaptura instanceof Error) return new BadRequestError({ message: dataCaptura.message })
+      input.data_captura = dataCaptura
     }
 
     if (body.latitude !== undefined) {

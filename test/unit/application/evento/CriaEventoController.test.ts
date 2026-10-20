@@ -20,7 +20,7 @@ const headers = {} as Headers
 
 const attributes: Attributes = {
   altitude: null,
-  capturado_em: new Date('2026-02-15T14:32:00Z'),
+  data_captura: new Date('2026-02-15T14:32:00Z'),
   coleta: null,
   created_at: new Date(),
   created_by: null,
@@ -35,7 +35,7 @@ const attributes: Attributes = {
 }
 
 const validBody = {
-  capturado_em: '2026-02-15T14:32:00Z',
+  data_captura: '2026-02-15T14:32:00Z',
   latitude: -20.2508,
   longitude: -46.4167,
   observacoes: 'Solo arenoso',

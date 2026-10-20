@@ -5,15 +5,15 @@ import {
 } from './Evento'
 
 export interface EventoOrder {
-  column: 'id' | 'capturado_em'
+  column: 'id' | 'data_captura'
   direction: 'asc' | 'desc'
 }
 
 export interface EventoFilters {
   expedicao_id?: number
   tipo?: EventoTipo
-  capturado_de?: Date
-  capturado_ate?: Date
+  data_captura_de?: Date
+  data_captura_ate?: Date
   order?: EventoOrder
   limite?: number
   pagina?: number
@@ -28,7 +28,7 @@ export interface Paginated<T> {
 
 export interface AtualizaEventoAttributes {
   tipo: EventoTipo
-  capturado_em: Date
+  data_captura: Date
   latitude: number | null
   longitude: number | null
   altitude: number | null

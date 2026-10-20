@@ -19,7 +19,7 @@ describe('BuscaEventoController', () => {
       id: 1,
       expedicao_id: 10,
       tipo: 'DIARIO' as const,
-      capturado_em: new Date('2026-09-15T10:00:00.000Z'),
+      data_captura: new Date('2026-09-15T10:00:00.000Z'),
       latitude: null,
       longitude: null,
       altitude: null,

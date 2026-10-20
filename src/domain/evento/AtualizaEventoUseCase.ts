@@ -43,7 +43,7 @@ export class AtualizaEventoUseCase {
 
     const patch: AtualizaEventoAttributes = {
       altitude: mesclado.altitude,
-      capturado_em: mesclado.capturado_em,
+      data_captura: mesclado.data_captura,
       coleta: mesclado.coleta,
       latitude: mesclado.latitude,
       longitude: mesclado.longitude,
