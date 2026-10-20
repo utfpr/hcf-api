@@ -10,6 +10,7 @@ export interface LembreteOrder {
 }
 
 export interface LembreteFilters {
+  expedicao_id?: number
   data_coleta_de?: string
   data_coleta_ate?: string
   order?: LembreteOrder
