@@ -14,6 +14,28 @@ export function parseRequiredString(raw: unknown, field: string): string | Error
   return raw
 }
 
+export function parseNonEmptyString(raw: unknown, field: string): string | Error {
+  if (typeof raw !== 'string' || !raw.trim()) {
+    return new Error(`${field} é obrigatório`)
+  }
+  return raw
+}
+
+export function parseDate(raw: unknown, field: string): Date | Error {
+  if (typeof raw !== 'string') {
+    return new Error(`${field} inválido. Use uma data no formato ISO 8601`)
+  }
+  const date = new Date(raw)
+  if (Number.isNaN(date.getTime())) {
+    return new Error(`${field} inválido. Use uma data no formato ISO 8601`)
+  }
+  return date
+}
+
+export function lembreteEvidenciaUrl(arquivo: string): string {
+  return `/uploads/lembretes/${arquivo}`
+}
+
 /**
  * Lê só os campos da ficha que vieram no corpo. Com `preencherAusentes`, os
  * que faltam viram null (criação); sem, ficam de fora (atualização parcial).
