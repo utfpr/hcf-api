@@ -39,6 +39,7 @@ const makeMockCollection = (overrides?: Partial<LembreteCollection>): LembreteCo
   delete: vi.fn(),
   findAll: vi.fn(),
   findById: vi.fn().mockResolvedValue(Either.right(existente)),
+  findByClientUuid: vi.fn().mockResolvedValue(Either.right(null)),
   update: vi.fn().mockImplementation((_id, patch) => Promise.resolve(Either.right({ ...existente, ...patch }))),
   ...overrides
 })

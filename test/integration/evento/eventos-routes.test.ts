@@ -29,11 +29,11 @@ describe('Eventos routes', () => {
   let expedicaoId: number
 
   beforeAll(async () => {
-    fixtures = await seedExpedicaoFixtures(knex)
-
     const auth = await createCuradorAuth(knex)
     authHeader = auth.header
     cleanupAuth = auth.cleanup
+
+    fixtures = await seedExpedicaoFixtures(knex)
 
     const [expedicao] = await knex('expedicoes')
       .insert({
@@ -47,27 +47,31 @@ describe('Eventos routes', () => {
     expedicaoId = expedicao.id
   })
 
+  test('retorna 401 sem Authorization', async () => {
+    await agent.get(`/api/v1/expedicoes/${expedicaoId}/eventos`).expect(401)
+  })
+
   test('lista os eventos da expedição com paginação e ordenação estável', async () => {
-    const capturadoEm = '2026-02-15T14:32:00.000Z'
+    const dataCaptura = '2026-02-15T14:32:00.000Z'
 
     const inserted = await knex('eventos')
       .insert([
         {
           expedicao_id: expedicaoId,
           tipo: 'DIARIO',
-          capturado_em: capturadoEm
+          data_captura: dataCaptura
         },
         {
           expedicao_id: expedicaoId,
           tipo: 'COLETA',
-          capturado_em: capturadoEm
+          data_captura: dataCaptura
         }
       ])
       .returning<Array<{ id: number }>>(['id'])
 
     try {
       const response = await agent
-        .get(`/api/v2/expedicoes/${expedicaoId}/eventos`)
+        .get(`/api/v1/expedicoes/${expedicaoId}/eventos`)
         .set(authHeader)
         .expect(200)
 
@@ -88,13 +92,13 @@ describe('Eventos routes', () => {
       .insert({
         expedicao_id: expedicaoId,
         tipo: 'DIARIO',
-        capturado_em: '2026-02-16T10:00:00.000Z'
+        data_captura: '2026-02-16T10:00:00.000Z'
       })
       .returning<Array<{ id: number }>>(['id'])
 
     try {
       const response = await agent
-        .get(`/api/v2/eventos/${evento.id}`)
+        .get(`/api/v1/eventos/${evento.id}`)
         .set(authHeader)
         .expect(200)
 
@@ -109,8 +113,8 @@ describe('Eventos routes', () => {
 
   afterAll(async () => {
     await knex('expedicoes').where({ id: expedicaoId }).delete()
-    await cleanupAuth()
     await cleanupExpedicaoFixtures(knex, fixtures)
+    await cleanupAuth()
     await knex.destroy()
   })
 })

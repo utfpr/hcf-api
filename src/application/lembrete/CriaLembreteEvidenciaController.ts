@@ -23,7 +23,7 @@ interface Dependencies {
 
 interface Body {
   nome?: unknown
-  capturado_em?: unknown
+  data_captura?: unknown
   client_uuid?: unknown
 }
 
@@ -55,8 +55,8 @@ export class CriaLembreteEvidenciaController implements RequestHandler {
     const nome = parseNonEmptyString(body.nome, 'nome')
     if (nome instanceof Error) return await cleanupAndReturn(file.path, nome)
 
-    const capturadoEm = parseDate(body.capturado_em, 'capturado_em')
-    if (capturadoEm instanceof Error) return await cleanupAndReturn(file.path, capturadoEm)
+    const dataCaptura = parseDate(body.data_captura, 'data_captura')
+    if (dataCaptura instanceof Error) return await cleanupAndReturn(file.path, dataCaptura)
 
     const clientUuid = parseClientUuid(body.client_uuid)
     if (clientUuid instanceof Error) return await cleanupAndReturn(file.path, clientUuid)
@@ -67,13 +67,13 @@ export class CriaLembreteEvidenciaController implements RequestHandler {
       arquivo: file.filename,
       mime_type: file.mimetype,
       tamanho: file.size,
-      capturado_em: capturadoEm,
+      data_captura: dataCaptura,
       created_by: request.user?.id ?? null,
       ...(clientUuid ? { client_uuid: clientUuid } : {})
     })
 
     if (result.left()) {
-      await unlink(file.path).catch(() => {})
+      await cleanupFileWithLog(file.path, 'persistência de evidência de lembrete')
 
       const error = result.value
       if (error instanceof ForeignKeyViolationError) return new NotFoundError({ message: error.message })
@@ -94,6 +94,13 @@ export class CriaLembreteEvidenciaController implements RequestHandler {
 }
 
 async function cleanupAndReturn(filePath: string | undefined, error: Error): Promise<HttpError> {
-  if (filePath) await unlink(filePath).catch(() => {})
+  if (filePath) await cleanupFileWithLog(filePath, 'validação de requisição de evidência de lembrete')
   return new BadRequestError({ message: error.message })
+}
+
+async function cleanupFileWithLog(filePath: string, context: string): Promise<void> {
+  await unlink(filePath).catch((unlinkError: unknown) => {
+    // eslint-disable-next-line no-console -- sem log, falhas de limpeza de arquivo ficam silenciosas e deixam órfãos sem rastreabilidade
+    console.error(`Falha ao remover arquivo de evidência após erro de ${context} (path=${filePath})`, unlinkError)
+  })
 }

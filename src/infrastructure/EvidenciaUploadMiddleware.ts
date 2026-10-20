@@ -4,30 +4,10 @@ import { randomBytes } from 'node:crypto'
 import { mkdirSync } from 'node:fs'
 
 import {
-  EVIDENCIA_DIR, EVIDENCIA_MAX_FILE_SIZE_BYTES, LEMBRETE_EVIDENCIA_DIR, MIME_TYPE_EXTENSAO, MIME_TYPES_ACEITOS
+  EVIDENCIA_MAX_FILE_SIZE_BYTES, LEMBRETE_EVIDENCIA_DIR, MIME_TYPE_EXTENSAO, MIME_TYPES_ACEITOS
 } from '@/config/evidencia'
 
-interface Options {
-  directory: string
-  // Prefixo do nome do arquivo em disco; o sufixo `_<timestamp>-<hex><extensao>` é comum a todos
-  prefixo: (request: express.Request) => string
-}
-
-function createUpload({ directory, prefixo }: Options): express.RequestHandler {
-  mkdirSync(directory, { recursive: true })
-
-  const storage = multer.diskStorage({
-    destination: (_request, _file, callback) => {
-      callback(null, directory)
-    },
-    filename: (request, file, callback) => {
-      const timestamp = Date.now()
-      const sufixo = randomBytes(2).toString('hex')
-      const extensao = MIME_TYPE_EXTENSAO[file.mimetype]
-      callback(null, `${prefixo(request)}_${timestamp}-${sufixo}${extensao}`)
-    }
-  })
-
+function createUpload(storage: multer.StorageEngine): express.RequestHandler {
   const singleUpload = multer({
     storage,
     limits: { fileSize: EVIDENCIA_MAX_FILE_SIZE_BYTES },
@@ -55,12 +35,20 @@ function createUpload({ directory, prefixo }: Options): express.RequestHandler {
   }
 }
 
-export const evidenciaUpload = createUpload({
-  directory: EVIDENCIA_DIR,
-  prefixo: request => `${request.evidenciaEvento?.expedicaoId}_${String(request.params.eventoId)}`
-})
+// O arquivo fica em memória até o use case confirmar o evento; quem grava em
+// disco é o EvidenciaArquivo, depois do authorize e da validação.
+export const evidenciaUpload = createUpload(multer.memoryStorage())
 
-export const lembreteEvidenciaUpload = createUpload({
-  directory: LEMBRETE_EVIDENCIA_DIR,
-  prefixo: request => `lembrete_${String(request.params.lembreteId)}`
-})
+mkdirSync(LEMBRETE_EVIDENCIA_DIR, { recursive: true })
+
+export const lembreteEvidenciaUpload = createUpload(multer.diskStorage({
+  destination: (_request, _file, callback) => {
+    callback(null, LEMBRETE_EVIDENCIA_DIR)
+  },
+  filename: (request, file, callback) => {
+    const timestamp = Date.now()
+    const sufixo = randomBytes(2).toString('hex')
+    const extensao = MIME_TYPE_EXTENSAO[file.mimetype]
+    callback(null, `lembrete_${String(request.params.lembreteId)}_${timestamp}-${sufixo}${extensao}`)
+  }
+}))

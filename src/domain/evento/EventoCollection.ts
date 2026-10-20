@@ -5,15 +5,15 @@ import {
 } from './Evento'
 
 export interface EventoOrder {
-  column: 'id' | 'capturado_em'
+  column: 'id' | 'data_captura'
   direction: 'asc' | 'desc'
 }
 
 export interface EventoFilters {
   expedicao_id?: number
   tipo?: EventoTipo
-  capturado_de?: Date
-  capturado_ate?: Date
+  data_captura_de?: Date
+  data_captura_ate?: Date
   order?: EventoOrder
   limite?: number
   pagina?: number
@@ -26,9 +26,9 @@ export interface Paginated<T> {
   pagina: number
 }
 
-export interface AtualizarEventoAttributes {
+export interface AtualizaEventoAttributes {
   tipo: EventoTipo
-  capturado_em: Date
+  data_captura: Date
   latitude: number | null
   longitude: number | null
   altitude: number | null
@@ -42,6 +42,6 @@ export interface EventoCollection {
   findById(id: number): Promise<Either<Error, Attributes | null>>
   findByClientUuid(clientUuid: string): Promise<Either<Error, Attributes | null>>
   create(attributes: CreateAttributes): Promise<Either<Error, Attributes>>
-  update(id: number, attributes: AtualizarEventoAttributes): Promise<Either<Error, Attributes | null>>
+  update(id: number, attributes: AtualizaEventoAttributes): Promise<Either<Error, Attributes | null>>
   delete(id: number): Promise<Either<Error, boolean>>
 }

@@ -40,7 +40,7 @@ function makeRequest(body: unknown, user?: { id: number; tipo_usuario_id: number
     headers,
     method: Method.Post,
     params: {},
-    path: '/v2/expedicoes',
+    path: '/v1/expedicoes',
     user: user
       ? {
           ...user,

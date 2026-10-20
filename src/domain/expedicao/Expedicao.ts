@@ -43,8 +43,16 @@ export interface ExpedicaoDetalhada extends Attributes {
   rotas: RotaDetalhada[]
 }
 
+type PersistedField = 'id' | 'created_at' | 'updated_at' | 'updated_by'
+
+/**
+ * Shape aceito pela entidade: uma linha nova ainda não tem id nem datas de
+ * auditoria; o adapter devolve o registro completo depois do insert.
+ */
+export type EntityAttributes = Omit<Attributes, PersistedField> & Partial<Pick<Attributes, PersistedField>>
+
 export type CreateAttributes =
-  Omit<Attributes, 'id' | 'created_at' | 'updated_at' | 'updated_by'>
+  Omit<Attributes, PersistedField>
   & {
     participantes: number[]
     rotas: RotaInput[]
@@ -59,17 +67,17 @@ export interface UpdateAttributes {
 }
 
 export class Expedicao {
-  readonly id: number
+  readonly id?: number
   readonly descricao: string | null
   readonly data_inicio: string
   readonly data_fim: string
   readonly cidade_id: number
-  readonly created_at: Date
-  readonly updated_at: Date
+  readonly created_at?: Date
+  readonly updated_at?: Date
   readonly created_by: number | null
-  readonly updated_by: number | null
+  readonly updated_by?: number | null
 
-  private constructor(attributes: Attributes) {
+  private constructor(attributes: EntityAttributes) {
     this.id = attributes.id
     this.descricao = attributes.descricao
     this.data_inicio = attributes.data_inicio
@@ -81,7 +89,7 @@ export class Expedicao {
     this.updated_by = attributes.updated_by
   }
 
-  static create(attributes: Attributes): Either<Error, Expedicao> {
+  static create(attributes: EntityAttributes): Either<Error, Expedicao> {
     if (!attributes.data_inicio) {
       return Either.left(new Error('Data de início da expedição é obrigatória'))
     }
@@ -101,7 +109,7 @@ export class Expedicao {
     return Either.right(new Expedicao(attributes))
   }
 
-  toAttributes(): Attributes {
+  toAttributes(): EntityAttributes {
     return {
       id: this.id,
       descricao: this.descricao,

@@ -2,7 +2,9 @@ import {
   describe, expect, test
 } from 'vitest'
 
-import { Attributes, Expedicao } from '@/domain/expedicao/Expedicao'
+import {
+  Attributes, CreateAttributes, Expedicao
+} from '@/domain/expedicao/Expedicao'
 
 const base: Attributes = {
   id: 1,
@@ -17,6 +19,22 @@ const base: Attributes = {
 }
 
 describe('Expedicao.create', () => {
+  test('aceita uma linha nova, ainda sem id e datas de auditoria', () => {
+    const {
+      id, created_at, updated_at, updated_by, ...novaLinha
+    } = base
+
+    const dados: CreateAttributes = {
+      ...novaLinha, participantes: [], rotas: []
+    }
+
+    const result = Expedicao.create(dados)
+
+    expect(result.right()).toBe(true)
+    expect(result.value).toMatchObject({ created_by: base.created_by })
+    expect((result.value as Expedicao).id).toBeUndefined()
+  })
+
   test('cria a expedição quando o período e o destino são válidos', () => {
     const result = Expedicao.create(base)
 

@@ -3,7 +3,7 @@ import {
 } from 'vitest'
 
 import { ListaLembretesController } from '@/application/lembrete/ListaLembretesController'
-import { ListaLembretesUseCase } from '@/domain/lembrete/ListaLembretesUseCase'
+import { LembreteCollection } from '@/domain/lembrete/LembreteCollection'
 import { Either } from '@/library/either/Either'
 import {
   Headers, HttpRequest, Method, StatusCode
@@ -15,7 +15,7 @@ const headers = {} as Headers
 
 function makeRequest(params: Record<string, unknown>): HttpRequest {
   return {
-    body: undefined, headers, method: Method.Get, params, path: '/v2/lembretes'
+    body: undefined, headers, method: Method.Get, params, path: '/v1/lembretes'
   } satisfies HttpRequest
 }
 
@@ -25,11 +25,11 @@ const pagina = {
 
 describe('ListaLembretesController', () => {
   test('repassa filtros de data, ordenação e paginação', async () => {
-    const listaLembretesUseCase = {
-      execute: vi.fn().mockResolvedValue(Either.right(pagina))
-    } as unknown as ListaLembretesUseCase
+    const lembreteCollection = {
+      findAll: vi.fn().mockResolvedValue(Either.right(pagina))
+    } as unknown as LembreteCollection
 
-    const controller = new ListaLembretesController({ listaLembretesUseCase })
+    const controller = new ListaLembretesController({ lembreteCollection })
     const response = await controller.handle(makeRequest({
       data_coleta_ate: '2026-12-31',
       data_coleta_de: '2026-10-05',
@@ -38,7 +38,7 @@ describe('ListaLembretesController', () => {
       pagina: '2'
     }), vi.fn())
 
-    expect(listaLembretesUseCase.execute).toHaveBeenCalledWith({
+    expect(lembreteCollection.findAll).toHaveBeenCalledWith({
       data_coleta_ate: '2026-12-31',
       data_coleta_de: '2026-10-05',
       limite: 10,
@@ -49,54 +49,54 @@ describe('ListaLembretesController', () => {
   })
 
   test('retorna 400 quando data_coleta_de é inválida', async () => {
-    const listaLembretesUseCase = { execute: vi.fn() } as unknown as ListaLembretesUseCase
-    const controller = new ListaLembretesController({ listaLembretesUseCase })
+    const lembreteCollection = { findAll: vi.fn() } as unknown as LembreteCollection
+    const controller = new ListaLembretesController({ lembreteCollection })
 
     const response = await controller.handle(makeRequest({ data_coleta_de: 'ontem' }), vi.fn())
 
-    expect(listaLembretesUseCase.execute).not.toHaveBeenCalled()
+    expect(lembreteCollection.findAll).not.toHaveBeenCalled()
     expect(response).toBeInstanceOf(BadRequestError)
   })
 
   test('retorna 400 quando order é inválido', async () => {
-    const listaLembretesUseCase = { execute: vi.fn() } as unknown as ListaLembretesUseCase
-    const controller = new ListaLembretesController({ listaLembretesUseCase })
+    const lembreteCollection = { findAll: vi.fn() } as unknown as LembreteCollection
+    const controller = new ListaLembretesController({ lembreteCollection })
 
     const response = await controller.handle(makeRequest({ order: 'familia:asc' }), vi.fn())
 
-    expect(listaLembretesUseCase.execute).not.toHaveBeenCalled()
+    expect(lembreteCollection.findAll).not.toHaveBeenCalled()
     expect(response).toBeInstanceOf(BadRequestError)
   })
 
   test('retorna 500 quando a collection falha', async () => {
-    const listaLembretesUseCase = {
-      execute: vi.fn().mockResolvedValue(Either.left(new Error('DB failure')))
-    } as unknown as ListaLembretesUseCase
+    const lembreteCollection = {
+      findAll: vi.fn().mockResolvedValue(Either.left(new Error('DB failure')))
+    } as unknown as LembreteCollection
 
-    const controller = new ListaLembretesController({ listaLembretesUseCase })
+    const controller = new ListaLembretesController({ lembreteCollection })
     const response = await controller.handle(makeRequest({}), vi.fn())
 
     expect(response).toBeInstanceOf(InternalServerError)
   })
 
   test('filtra pela expedição de origem', async () => {
-    const listaLembretesUseCase = {
-      execute: vi.fn().mockResolvedValue(Either.right(pagina))
-    } as unknown as ListaLembretesUseCase
+    const lembreteCollection = {
+      findAll: vi.fn().mockResolvedValue(Either.right(pagina))
+    } as unknown as LembreteCollection
 
-    const controller = new ListaLembretesController({ listaLembretesUseCase })
+    const controller = new ListaLembretesController({ lembreteCollection })
     await controller.handle(makeRequest({ expedicao_id: '3', data_coleta_de: '2026-10-21' }), vi.fn())
 
-    expect(listaLembretesUseCase.execute).toHaveBeenCalledWith({ expedicao_id: 3, data_coleta_de: '2026-10-21' })
+    expect(lembreteCollection.findAll).toHaveBeenCalledWith({ expedicao_id: 3, data_coleta_de: '2026-10-21' })
   })
 
   test('retorna 400 quando expedicao_id é inválido', async () => {
-    const listaLembretesUseCase = { execute: vi.fn() } as unknown as ListaLembretesUseCase
+    const lembreteCollection = { findAll: vi.fn() } as unknown as LembreteCollection
 
-    const controller = new ListaLembretesController({ listaLembretesUseCase })
+    const controller = new ListaLembretesController({ lembreteCollection })
     const response = await controller.handle(makeRequest({ expedicao_id: 'abc' }), vi.fn())
 
-    expect(listaLembretesUseCase.execute).not.toHaveBeenCalled()
+    expect(lembreteCollection.findAll).not.toHaveBeenCalled()
     expect(response).toBeInstanceOf(BadRequestError)
   })
 })

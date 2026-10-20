@@ -4,7 +4,7 @@ import {
   Attributes, COLETA_FIELDS, ColetaAttributes, CreateAttributes, EventoTipo
 } from '@/domain/evento/Evento'
 import {
-  AtualizarEventoAttributes, EventoCollection, EventoFilters, Paginated
+  AtualizaEventoAttributes, EventoCollection, EventoFilters, Paginated
 } from '@/domain/evento/EventoCollection'
 import { Either } from '@/library/either/Either'
 
@@ -24,7 +24,7 @@ interface Row {
   id: number
   expedicao_id: number
   tipo: EventoTipo
-  capturado_em: Date
+  data_captura: Date
   latitude: number | null
   longitude: number | null
   altitude: number | null
@@ -51,7 +51,7 @@ function toAttributes(row: Row & Record<string, unknown>): Attributes {
     id: row.id,
     expedicao_id: row.expedicao_id,
     tipo: row.tipo,
-    capturado_em: row.capturado_em,
+    data_captura: row.data_captura,
     latitude: row.latitude,
     longitude: row.longitude,
     altitude: row.altitude,
@@ -103,7 +103,7 @@ export class EventoCollectionKnexAdapter implements EventoCollection {
         'eventos.id',
         'eventos.expedicao_id',
         'eventos.tipo',
-        'eventos.capturado_em',
+        'eventos.data_captura',
         'eventos.latitude',
         'eventos.longitude',
         'eventos.altitude',
@@ -131,12 +131,12 @@ export class EventoCollectionKnexAdapter implements EventoCollection {
         query.where('eventos.tipo', filters.tipo)
       }
 
-      if (filters.capturado_de) {
-        query.where('eventos.capturado_em', '>=', filters.capturado_de)
+      if (filters.data_captura_de) {
+        query.where('eventos.data_captura', '>=', filters.data_captura_de)
       }
 
-      if (filters.capturado_ate) {
-        query.where('eventos.capturado_em', '<=', filters.capturado_ate)
+      if (filters.data_captura_ate) {
+        query.where('eventos.data_captura', '<=', filters.data_captura_ate)
       }
 
       const countQuery = query.clone()
@@ -150,7 +150,7 @@ export class EventoCollectionKnexAdapter implements EventoCollection {
       const pagina = filters.pagina && filters.pagina > 0 ? filters.pagina : 1
       const offset = (pagina - 1) * limite
 
-      query.orderBy('eventos.capturado_em', 'desc')
+      query.orderBy('eventos.data_captura', 'desc')
       query.orderBy('eventos.id', 'desc')
       query.limit(limite).offset(offset)
 
@@ -232,7 +232,9 @@ export class EventoCollectionKnexAdapter implements EventoCollection {
 
         if (attributes.client_uuid) {
           await trx('eventos_envios')
-            .insert({ client_uuid: attributes.client_uuid, evento_id: id, created_by: attributes.created_by })
+            .insert({
+              client_uuid: attributes.client_uuid, evento_id: id, created_by: attributes.created_by
+            })
             .onConflict('client_uuid')
             .ignore()
         }
@@ -253,7 +255,7 @@ export class EventoCollectionKnexAdapter implements EventoCollection {
       .insert({
         expedicao_id: attributes.expedicao_id,
         tipo: attributes.tipo,
-        capturado_em: attributes.capturado_em,
+        data_captura: attributes.data_captura,
         latitude: attributes.latitude,
         longitude: attributes.longitude,
         altitude: attributes.altitude,
@@ -294,7 +296,7 @@ export class EventoCollectionKnexAdapter implements EventoCollection {
     await trx('eventos')
       .where({ id })
       .update({
-        capturado_em: novo.capturado_em < atual.capturado_em ? novo.capturado_em : atual.capturado_em,
+        data_captura: novo.data_captura < atual.data_captura ? novo.data_captura : atual.data_captura,
         latitude: semCoordenadas ? novo.latitude : atual.latitude,
         longitude: semCoordenadas ? novo.longitude : atual.longitude,
         altitude: atual.altitude ?? novo.altitude,
@@ -324,14 +326,14 @@ export class EventoCollectionKnexAdapter implements EventoCollection {
    * caminho inverso cria a ficha; manter o tipo e mandar `coleta` faz upsert
    * (evento_id é PK de eventos_coletas).
    */
-  async update(id: number, attributes: AtualizarEventoAttributes): Promise<Either<Error, Attributes | null>> {
+  async update(id: number, attributes: AtualizaEventoAttributes): Promise<Either<Error, Attributes | null>> {
     try {
       const updated = await this.knex.transaction(async trx => {
         const updatedRows = await trx('eventos')
           .where({ id })
           .update({
             tipo: attributes.tipo,
-            capturado_em: attributes.capturado_em,
+            data_captura: attributes.data_captura,
             latitude: attributes.latitude,
             longitude: attributes.longitude,
             altitude: attributes.altitude,
