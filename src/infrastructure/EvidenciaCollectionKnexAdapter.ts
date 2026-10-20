@@ -89,8 +89,10 @@ export class EvidenciaCollectionKnexAdapter implements EvidenciaCollection {
         query.whereILike('nome', `%${filters.nome}%`)
       }
 
-      const order = filters.order ?? { column: 'id' as const, direction: 'desc' as const }
+      // Padrão: na ordem em que foram capturadas (numa coleta juntada, vêm de vários celulares)
+      const order = filters.order ?? { column: 'capturado_em' as const, direction: 'asc' as const }
       query.orderBy(order.column, order.direction)
+      query.orderBy('id', order.direction)
 
       const rows = await query as Row[]
       return Either.right(rows.map(toAttributes))

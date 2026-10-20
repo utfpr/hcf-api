@@ -57,6 +57,8 @@ export interface Attributes {
   altitude: number | null
   observacoes: string | null
   coleta: ColetaAttributes | null
+  // Mesma coleta física registrada por várias pessoas: um evento por número na expedição
+  numero_coleta?: string | null
   // Chave de idempotência do app (offline); null para o que veio do web
   client_uuid?: string | null
   created_at: Date
