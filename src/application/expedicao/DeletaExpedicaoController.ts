@@ -1,3 +1,4 @@
+import { ExpedicaoNaoEncontradaError } from '@/domain/expedicao/error/ExpedicaoNaoEncontradaError'
 import { ExpedicaoCollection } from '@/domain/expedicao/ExpedicaoCollection'
 import {
   HttpRequest, HttpResponse, StatusCode
@@ -35,7 +36,7 @@ export class DeletaExpedicaoController implements RequestHandler {
 
       if (result.left()) {
         // Distingue não encontrado (404) de erro no banco (500)
-        if (result.value.message === 'Expedição não encontrada') {
+        if (result.value instanceof ExpedicaoNaoEncontradaError) {
           return new NotFoundError({ message: result.value.message })
         }
         return new InternalServerError({ message: result.value.message })

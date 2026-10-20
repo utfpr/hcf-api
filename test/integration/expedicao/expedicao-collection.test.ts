@@ -2,6 +2,7 @@ import {
   afterAll, beforeAll, describe, expect, test
 } from 'vitest'
 
+import { ExpedicaoNaoEncontradaError } from '@/domain/expedicao/error/ExpedicaoNaoEncontradaError'
 import { ExpedicaoCollectionKnexAdapter } from '@/infrastructure/ExpedicaoCollectionKnexAdapter'
 
 import { createTestKnex } from '../setup/app-factory'
@@ -145,6 +146,20 @@ describe('ExpedicaoCollectionKnexAdapter', () => {
     } finally {
       await knex('expedicoes').where({ id: created.value.id }).delete()
     }
+  })
+
+  test('devolve ExpedicaoNaoEncontradaError ao alterar uma expedição que não existe', async () => {
+    const rotas = [{ cidade_id: fixtures.cidades[2], locais_coleta_ids: [locaisIds[2]] }]
+
+    const substituida = await collection.substituteRoute(999999999, rotas)
+    const removida = await collection.delete(999999999)
+    const atualizada = await collection.update(999999999, {
+      cidade_id: fixtures.cidades[0], data_fim: '2026-02-18', data_inicio: '2026-02-14', descricao: null, updated_by: 1
+    })
+
+    expect(substituida.value).toBeInstanceOf(ExpedicaoNaoEncontradaError)
+    expect(removida.value).toBeInstanceOf(ExpedicaoNaoEncontradaError)
+    expect(atualizada.value).toBeInstanceOf(ExpedicaoNaoEncontradaError)
   })
 
   test('Verificação de ON DELETE CASCADE ao remover a rota/expedição', async () => {

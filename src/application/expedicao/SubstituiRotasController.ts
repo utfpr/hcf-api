@@ -1,3 +1,4 @@
+import { ExpedicaoNaoEncontradaError } from '@/domain/expedicao/error/ExpedicaoNaoEncontradaError'
 import { RotaInput } from '@/domain/expedicao/Expedicao'
 import { ExpedicaoCollection } from '@/domain/expedicao/ExpedicaoCollection'
 import {
@@ -6,6 +7,7 @@ import {
 import { BadRequestError } from '@/library/http/error/BadRequestError'
 import { HttpError } from '@/library/http/error/HttpError'
 import { InternalServerError } from '@/library/http/error/InternalServerError'
+import { NotFoundError } from '@/library/http/error/NotFoundError'
 import { NextHandler, RequestHandler } from '@/library/http/Server'
 
 interface Dependencies {
@@ -66,8 +68,8 @@ export class SubstituiRotasController implements RequestHandler {
       if (result.left()) {
         const error = result.value
         // Erro 404
-        if (error.message === 'Expedição não encontrada') {
-          return { statusCode: StatusCode.NotFound, body: { error: { message: error.message } } }
+        if (error instanceof ExpedicaoNaoEncontradaError) {
+          return new NotFoundError({ message: error.message })
         }
         // Erro de BD (500)
         if (error.name === 'CollectionError' || error.message.includes('Falha ao substituir')) {

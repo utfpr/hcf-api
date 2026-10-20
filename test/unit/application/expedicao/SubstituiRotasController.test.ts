@@ -3,12 +3,14 @@ import {
 } from 'vitest'
 
 import { SubstituiRotasController } from '@/application/expedicao/SubstituiRotasController'
+import { ExpedicaoNaoEncontradaError } from '@/domain/expedicao/error/ExpedicaoNaoEncontradaError'
 import { ExpedicaoCollection } from '@/domain/expedicao/ExpedicaoCollection'
 import { Either } from '@/library/either/Either'
 import {
   Headers, HttpRequest, Method, StatusCode
 } from '@/library/http/common'
 import { BadRequestError } from '@/library/http/error/BadRequestError'
+import { NotFoundError } from '@/library/http/error/NotFoundError'
 
 const headers = {} as Headers
 
@@ -45,6 +47,17 @@ describe('SubstituiRotasController', () => {
 
     expect(expedicaoCollection.substituteRoute).toHaveBeenCalledWith(1, rotas, 42)
     expect('statusCode' in response ? response.statusCode : undefined).toBe(StatusCode.NoContent)
+  })
+
+  test('retorna 404 quando a expedição não existe', async () => {
+    const expedicaoCollection = {
+      substituteRoute: vi.fn().mockResolvedValue(Either.left(new ExpedicaoNaoEncontradaError()))
+    } as unknown as ExpedicaoCollection
+
+    const controller = new SubstituiRotasController({ expedicaoCollection })
+    const response = await controller.handle(makeRequest({ expedicaoId: '1' }, { rotas }), vi.fn())
+
+    expect(response).toBeInstanceOf(NotFoundError)
   })
 
   test('retorna 400 quando expedicaoId é inválido', async () => {
