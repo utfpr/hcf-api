@@ -1,0 +1,22 @@
+import { Either } from '@/library/either/Either'
+
+import { Attributes, CreateAttributes } from './Evidencia'
+
+export interface EvidenciaOrder {
+  column: 'id' | 'nome' | 'data_captura'
+  direction: 'asc' | 'desc'
+}
+
+export interface EvidenciaFilters {
+  evento_id?: number
+  nome?: string
+  order?: EvidenciaOrder
+}
+
+export interface EvidenciaCollection {
+  findAll(filters: EvidenciaFilters): Promise<Either<Error, Attributes[]>>
+  findById(id: number): Promise<Either<Error, Attributes | null>>
+  findByClientUuid(clientUuid: string): Promise<Either<Error, Attributes | null>>
+  create(attributes: CreateAttributes): Promise<Either<Error, Attributes>>
+  delete(id: number): Promise<Either<Error, boolean>>
+}
