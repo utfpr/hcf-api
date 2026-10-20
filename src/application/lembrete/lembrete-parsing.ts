@@ -4,7 +4,11 @@ export function parseId(raw: unknown, field: string): number | Error {
   if (typeof raw !== 'string' || !/^\d+$/.test(raw)) {
     return new Error(`${field} inválido`)
   }
-  return Number(raw)
+  const id = Number(raw)
+  if (id <= 0) {
+    return new Error(`${field} inválido`)
+  }
+  return id
 }
 
 export function parseRequiredString(raw: unknown, field: string): string | Error {
