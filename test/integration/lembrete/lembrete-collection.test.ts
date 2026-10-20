@@ -1,11 +1,15 @@
 import {
-  afterAll, describe, expect, test
+  afterAll, beforeAll, describe, expect, test
 } from 'vitest'
 
 import { CreateAttributes } from '@/domain/lembrete/Lembrete'
+import { ForeignKeyViolationError } from '@/infrastructure/error/ForeignKeyViolationError'
 import { LembreteCollectionKnexAdapter } from '@/infrastructure/LembreteCollectionKnexAdapter'
 
 import { createTestKnex } from '../setup/app-factory'
+import {
+  cleanupExpedicaoFixtures, ExpedicaoFixtures, seedExpedicaoFixtures
+} from '../setup/seeds/expedicao.seed'
 
 const PREFIXO = 'XLEMB'
 
@@ -106,5 +110,71 @@ describe('LembreteCollectionKnexAdapter', () => {
     } finally {
       await limpar()
     }
+  })
+})
+
+describe('LembreteCollectionKnexAdapter: expedição de origem', () => {
+  const knex = createTestKnex()
+  const collection = new LembreteCollectionKnexAdapter({ knex })
+  let fixtures: ExpedicaoFixtures
+  const expedicoes: number[] = []
+
+  async function criarExpedicao(descricao: string): Promise<number> {
+    const [expedicao] = await knex('expedicoes')
+      .insert({
+        descricao, data_inicio: '2026-11-10', data_fim: '2026-11-14', cidade_id: fixtures.cidades[0]
+      })
+      .returning<Array<{ id: number }>>(['id'])
+    expedicoes.push(expedicao.id)
+    return expedicao.id
+  }
+
+  beforeAll(async () => {
+    fixtures = await seedExpedicaoFixtures(knex)
+  })
+
+  afterAll(async () => {
+    await knex('lembretes').where('local_coleta', 'like', `${PREFIXO}%`).delete()
+    await knex('expedicoes').whereIn('id', expedicoes).delete()
+    await cleanupExpedicaoFixtures(knex, fixtures)
+    await knex.destroy()
+  })
+
+  test('guarda a expedição e lista só os lembretes dela', async () => {
+    const expedicaoA = await criarExpedicao('XLEMB expedição A')
+    const expedicaoB = await criarExpedicao('XLEMB expedição B')
+
+    const criado = await collection.create(novoLembrete({ expedicao_id: expedicaoA }))
+    await collection.create(novoLembrete({ expedicao_id: expedicaoB }))
+    await collection.create(novoLembrete())
+
+    expect(criado.right()).toBe(true)
+    if (criado.left()) return
+    expect(criado.value.expedicao_id).toBe(expedicaoA)
+
+    const result = await collection.findAll({ expedicao_id: expedicaoA })
+    expect(result.right()).toBe(true)
+    if (result.left()) return
+    expect(result.value.itens.map(item => item.expedicao_id)).toEqual([expedicaoA])
+  })
+
+  test('recusa expedição inexistente', async () => {
+    const result = await collection.create(novoLembrete({ expedicao_id: 999_999_999 }))
+
+    expect(result.left()).toBe(true)
+    expect(result.value).toBeInstanceOf(ForeignKeyViolationError)
+  })
+
+  test('mantém o lembrete, sem expedição, quando a expedição é apagada', async () => {
+    const expedicaoId = await criarExpedicao('XLEMB expedição apagada')
+    const criado = await collection.create(novoLembrete({ expedicao_id: expedicaoId }))
+    if (criado.left()) throw criado.value
+
+    await knex('expedicoes').where({ id: expedicaoId }).delete()
+
+    const depois = await collection.findById(criado.value.id)
+    expect(depois.right()).toBe(true)
+    if (depois.left()) return
+    expect(depois.value?.expedicao_id).toBeNull()
   })
 })
