@@ -3,6 +3,7 @@ import {
 } from 'vitest'
 
 import { createTestApp } from '../setup/app-factory'
+import { createCuradorAuth } from '../setup/curador-auth'
 import {
   cleanupExpedicaoFixtures, ExpedicaoFixtures, seedExpedicaoFixtures
 } from '../setup/seeds/expedicao.seed'
@@ -21,12 +22,18 @@ type EventoResponse = {
 
 describe('Eventos routes', () => {
   const { agent, knex } = createTestApp()
+  let authHeader: { Authorization: string }
+  let cleanupAuth: () => Promise<void>
 
   let fixtures: ExpedicaoFixtures
   let expedicaoId: number
 
   beforeAll(async () => {
     fixtures = await seedExpedicaoFixtures(knex)
+
+    const auth = await createCuradorAuth(knex)
+    authHeader = auth.header
+    cleanupAuth = auth.cleanup
 
     const [expedicao] = await knex('expedicoes')
       .insert({
@@ -61,6 +68,7 @@ describe('Eventos routes', () => {
     try {
       const response = await agent
         .get(`/api/v2/expedicoes/${expedicaoId}/eventos`)
+        .set(authHeader)
         .expect(200)
 
       const body = response.body as ListaEventosResponse
@@ -87,6 +95,7 @@ describe('Eventos routes', () => {
     try {
       const response = await agent
         .get(`/api/v2/eventos/${evento.id}`)
+        .set(authHeader)
         .expect(200)
 
       const body = response.body as EventoResponse
@@ -100,6 +109,7 @@ describe('Eventos routes', () => {
 
   afterAll(async () => {
     await knex('expedicoes').where({ id: expedicaoId }).delete()
+    await cleanupAuth()
     await cleanupExpedicaoFixtures(knex, fixtures)
     await knex.destroy()
   })
