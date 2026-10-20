@@ -3752,3 +3752,14 @@ ALTER TABLE ONLY public.eventos_envios
 
 ALTER TABLE ONLY public.eventos_envios
     ADD CONSTRAINT eventos_envios_created_by_foreign FOREIGN KEY (created_by) REFERENCES public.usuarios(id) ON UPDATE CASCADE;
+
+--
+-- Modulo Expedicao: expedição de origem dos lembretes
+-- Migration 20261021120000
+--
+ALTER TABLE ONLY public.lembretes ADD COLUMN expedicao_id integer;
+
+CREATE INDEX lembretes_expedicao_id_index ON public.lembretes USING btree (expedicao_id);
+
+ALTER TABLE ONLY public.lembretes
+    ADD CONSTRAINT lembretes_expedicao_id_foreign FOREIGN KEY (expedicao_id) REFERENCES public.expedicoes(id) ON UPDATE CASCADE ON DELETE SET NULL;
