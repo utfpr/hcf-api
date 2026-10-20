@@ -9,6 +9,8 @@ import { HttpError } from '@/library/http/error/HttpError'
 import { InternalServerError } from '@/library/http/error/InternalServerError'
 import { NextHandler, RequestHandler } from '@/library/http/Server'
 
+import { parseExpedicaoId } from './lembrete-parsing'
+
 interface Dependencies {
   listaLembretesUseCase: ListaLembretesUseCase
 }
@@ -29,8 +31,12 @@ export class ListaLembretesController implements RequestHandler {
   // Lembretes de um intervalo:
   // GET /api/v2/lembretes?data_coleta_de=2026-11-01&data_coleta_ate=2026-11-30
 
+  // Lembretes criados numa expedição:
+  // GET /api/v2/lembretes?expedicao_id=3
+
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const {
+      expedicao_id,
       data_coleta_de,
       data_coleta_ate,
       order,
@@ -39,6 +45,12 @@ export class ListaLembretesController implements RequestHandler {
     } = request.params as Record<string, string | undefined>
 
     const filters: LembreteFilters = {}
+
+    if (expedicao_id !== undefined) {
+      const expedicaoId = parseExpedicaoId(expedicao_id)
+      if (expedicaoId instanceof Error) return new BadRequestError({ message: expedicaoId.message })
+      if (expedicaoId !== null) filters.expedicao_id = expedicaoId
+    }
 
     if (data_coleta_de) {
       if (!isDataValida(data_coleta_de)) {
