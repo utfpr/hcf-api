@@ -3,6 +3,7 @@ import {
 } from 'vitest'
 
 import { createTestApp } from '../setup/app-factory'
+import { createCuradorAuth } from '../setup/curador-auth'
 import {
   cleanupExpedicaoFixtures, ExpedicaoFixtures, seedExpedicaoFixtures
 } from '../setup/seeds/expedicao.seed'
@@ -21,11 +22,17 @@ type EventoResponse = {
 
 describe('Eventos routes', () => {
   const { agent, knex } = createTestApp()
+  let authHeader: { Authorization: string }
+  let cleanupAuth: () => Promise<void>
 
   let fixtures: ExpedicaoFixtures
   let expedicaoId: number
 
   beforeAll(async () => {
+    const auth = await createCuradorAuth(knex)
+    authHeader = auth.header
+    cleanupAuth = auth.cleanup
+
     fixtures = await seedExpedicaoFixtures(knex)
 
     const [expedicao] = await knex('expedicoes')
@@ -38,6 +45,10 @@ describe('Eventos routes', () => {
       .returning<Array<{ id: number }>>(['id'])
 
     expedicaoId = expedicao.id
+  })
+
+  test('retorna 401 sem Authorization', async () => {
+    await agent.get(`/api/v1/expedicoes/${expedicaoId}/eventos`).expect(401)
   })
 
   test('lista os eventos da expedição com paginação e ordenação estável', async () => {
@@ -61,6 +72,7 @@ describe('Eventos routes', () => {
     try {
       const response = await agent
         .get(`/api/v1/expedicoes/${expedicaoId}/eventos`)
+        .set(authHeader)
         .expect(200)
 
       const body = response.body as ListaEventosResponse
@@ -87,6 +99,7 @@ describe('Eventos routes', () => {
     try {
       const response = await agent
         .get(`/api/v1/eventos/${evento.id}`)
+        .set(authHeader)
         .expect(200)
 
       const body = response.body as EventoResponse
@@ -101,6 +114,7 @@ describe('Eventos routes', () => {
   afterAll(async () => {
     await knex('expedicoes').where({ id: expedicaoId }).delete()
     await cleanupExpedicaoFixtures(knex, fixtures)
+    await cleanupAuth()
     await knex.destroy()
   })
 })
