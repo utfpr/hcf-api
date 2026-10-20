@@ -1,4 +1,4 @@
-import { LembreteCollection } from '@/domain/lembrete/LembreteCollection'
+import { RemoveLembreteUseCase } from '@/domain/lembrete/RemoveLembreteUseCase'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
@@ -11,14 +11,14 @@ import { NextHandler, RequestHandler } from '@/library/http/Server'
 import { parseId } from './lembrete-parsing'
 
 interface Dependencies {
-  lembreteCollection: LembreteCollection
+  removeLembreteUseCase: RemoveLembreteUseCase
 }
 
 export class RemoveLembreteController implements RequestHandler {
-  private readonly lembreteCollection: LembreteCollection
+  private readonly removeLembreteUseCase: RemoveLembreteUseCase
 
   constructor(dependencies: Dependencies) {
-    this.lembreteCollection = dependencies.lembreteCollection
+    this.removeLembreteUseCase = dependencies.removeLembreteUseCase
   }
 
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
@@ -26,7 +26,7 @@ export class RemoveLembreteController implements RequestHandler {
     const lembreteId = parseId(rawLembreteId, 'lembreteId')
     if (lembreteId instanceof Error) return new BadRequestError({ message: lembreteId.message })
 
-    const result = await this.lembreteCollection.delete(lembreteId)
+    const result = await this.removeLembreteUseCase.execute({ id: lembreteId })
 
     if (result.left()) {
       return new InternalServerError({ message: result.value.message })

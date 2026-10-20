@@ -3656,3 +3656,47 @@ ALTER TABLE ONLY public.lembretes
 
 ALTER TABLE ONLY public.lembretes
     ADD CONSTRAINT lembretes_updated_by_foreign FOREIGN KEY (updated_by) REFERENCES public.usuarios(id) ON UPDATE CASCADE;
+
+--
+-- Modulo Expedicao: multimídia dos lembretes
+-- Migration 20261019120000
+--
+CREATE TABLE public.lembretes_evidencias (
+    id integer NOT NULL,
+    lembrete_id integer NOT NULL,
+    nome character varying(255) NOT NULL,
+    arquivo character varying(255) NOT NULL,
+    mime_type character varying(100) NOT NULL,
+    tamanho bigint NOT NULL,
+    data_captura timestamp with time zone NOT NULL,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    created_by bigint,
+    updated_by bigint
+);
+
+CREATE SEQUENCE public.lembretes_evidencias_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE public.lembretes_evidencias_id_seq OWNED BY public.lembretes_evidencias.id;
+
+ALTER TABLE ONLY public.lembretes_evidencias ALTER COLUMN id SET DEFAULT nextval('public.lembretes_evidencias_id_seq'::regclass);
+
+ALTER TABLE ONLY public.lembretes_evidencias
+    ADD CONSTRAINT lembretes_evidencias_pkey PRIMARY KEY (id);
+
+CREATE INDEX lembretes_evidencias_lembrete_id_index ON public.lembretes_evidencias USING btree (lembrete_id);
+
+ALTER TABLE ONLY public.lembretes_evidencias
+    ADD CONSTRAINT lembretes_evidencias_lembrete_id_foreign FOREIGN KEY (lembrete_id) REFERENCES public.lembretes(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+ALTER TABLE ONLY public.lembretes_evidencias
+    ADD CONSTRAINT lembretes_evidencias_created_by_foreign FOREIGN KEY (created_by) REFERENCES public.usuarios(id) ON UPDATE CASCADE;
+
+ALTER TABLE ONLY public.lembretes_evidencias
+    ADD CONSTRAINT lembretes_evidencias_updated_by_foreign FOREIGN KEY (updated_by) REFERENCES public.usuarios(id) ON UPDATE CASCADE;

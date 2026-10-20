@@ -4,7 +4,11 @@ export function parseId(raw: unknown, field: string): number | Error {
   if (typeof raw !== 'string' || !/^\d+$/.test(raw)) {
     return new Error(`${field} inválido`)
   }
-  return Number(raw)
+  const id = Number(raw)
+  if (id <= 0) {
+    return new Error(`${field} inválido`)
+  }
+  return id
 }
 
 export function parseRequiredString(raw: unknown, field: string): string | Error {
@@ -12,6 +16,28 @@ export function parseRequiredString(raw: unknown, field: string): string | Error
     return new Error(`${field} inválido`)
   }
   return raw
+}
+
+export function parseNonEmptyString(raw: unknown, field: string): string | Error {
+  if (typeof raw !== 'string' || !raw.trim()) {
+    return new Error(`${field} é obrigatório`)
+  }
+  return raw
+}
+
+export function parseDate(raw: unknown, field: string): Date | Error {
+  if (typeof raw !== 'string') {
+    return new Error(`${field} inválido. Use uma data no formato ISO 8601`)
+  }
+  const date = new Date(raw)
+  if (Number.isNaN(date.getTime())) {
+    return new Error(`${field} inválido. Use uma data no formato ISO 8601`)
+  }
+  return date
+}
+
+export function lembreteEvidenciaUrl(arquivo: string): string {
+  return `/uploads/lembretes/${arquivo}`
 }
 
 /**

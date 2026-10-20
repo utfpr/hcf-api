@@ -3,6 +3,7 @@ import { resolve } from 'node:path'
 import { upload } from './directory'
 
 export const EVIDENCIA_DIR = resolve(upload, 'evidencias')
+export const LEMBRETE_EVIDENCIA_DIR = resolve(upload, 'lembretes')
 
 const DEFAULT_MAX_FILE_SIZE_MB = 200
 const maxFileSizeMb = Number(process.env.EVIDENCIA_MAX_FILE_SIZE_MB) || DEFAULT_MAX_FILE_SIZE_MB
