@@ -44,6 +44,8 @@ interface RotaBancoRow {
   ordem: number
   nome_cidade: string
   estado_id: string
+  estado_nome: string | null
+  estado_sigla: string | null
 }
 
 interface LocalBancoRow {
@@ -221,13 +223,17 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
       // Busca as rotas
       const rotasBanco = await this.knex('expedicoes_rotas')
         .join('cidades', 'cidades.id', 'expedicoes_rotas.cidade_id')
+        // Nome do estado para o app preencher a ficha (município e estado) pelo local escolhido
+        .leftJoin('estados', 'estados.id', 'cidades.estado_id')
         .where('expedicoes_rotas.expedicao_id', id)
         .select(
           'expedicoes_rotas.id as rota_id',
           'cidades.id as cidade_id',
           'expedicoes_rotas.ordem',
           'cidades.nome as nome_cidade',
-          'cidades.estado_id'
+          'cidades.estado_id',
+          'estados.nome as estado_nome',
+          'estados.sigla as estado_sigla'
         )
         .orderBy('expedicoes_rotas.ordem', 'asc') as RotaBancoRow[]
 
@@ -250,6 +256,9 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
         ordem: rota.ordem,
         nome_cidade: rota.nome_cidade,
         estado: rota.estado_id,
+        estado_nome: rota.estado_nome,
+        // sigla é char(4) no banco: vem com espaços à direita
+        estado_sigla: rota.estado_sigla?.trim() || null,
         locais_coleta: locaisBanco
           .filter((l: LocalBancoRow) => l.expedicao_rota_id === rota.rota_id)
           .map((l: LocalBancoRow) => ({ id: Number(l.id), descricao: l.descricao }))

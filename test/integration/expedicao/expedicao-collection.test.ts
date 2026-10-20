@@ -214,6 +214,28 @@ describe('ExpedicaoCollectionKnexAdapter', () => {
     }
   })
 
+  test('devolve nas rotas a cidade e o estado (nome e sigla) para preencher a ficha', async () => {
+    const created = await collection.create(novaExpedicao())
+    expect(created.right()).toBe(true)
+    if (!created.right()) return
+
+    try {
+      const found = await collection.findById(created.value.id)
+      expect(found.right()).toBe(true)
+      if (!found.right() || !found.value) return
+
+      const [primeira] = (found.value as unknown as { rotas: Array<Record<string, unknown>> }).rotas
+      expect(primeira).toMatchObject({
+        nome_cidade: 'XEXP Londrina',
+        estado_nome: 'XEXP Paraná',
+        estado_sigla: 'XEXP',
+        locais_coleta: [{ id: locaisIds[0], descricao: 'Local Teste 1' }, { id: locaisIds[1], descricao: 'Local Teste 2' }]
+      })
+    } finally {
+      await knex('expedicoes').where({ id: created.value.id }).delete()
+    }
+  })
+
   test('filtra por participante', async () => {
     const comAna = await collection.create({ ...novaExpedicao(), participantes: [fixtures.usuarios[0]] })
     const comBruno = await collection.create({ ...novaExpedicao(), participantes: [fixtures.usuarios[1]] })
