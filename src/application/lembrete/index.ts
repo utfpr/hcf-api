@@ -22,6 +22,7 @@ import { ListaLembreteEvidenciasController } from './ListaLembreteEvidenciasCont
 import { ListaLembretesController } from './ListaLembretesController'
 import { RemoveLembreteController } from './RemoveLembreteController'
 import { RemoveLembreteEvidenciaController } from './RemoveLembreteEvidenciaController'
+import { validarLembreteExisteMiddleware } from './ValidarLembreteExisteMiddleware'
 
 export function routes(knex: Knex): Route[] {
   const lembreteCollection = new LembreteCollectionKnexAdapter({ knex })
@@ -86,7 +87,7 @@ export function routes(knex: Knex): Route[] {
         })
       ],
       method: Method.Post,
-      middlewares: [lembreteEvidenciaUpload],
+      middlewares: [validarLembreteExisteMiddleware(lembreteCollection), lembreteEvidenciaUpload],
       path: '/v2/lembretes/:lembreteId/evidencias'
     },
     {
