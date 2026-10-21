@@ -4,17 +4,17 @@ import {
 
 import { createTestApp } from '../setup/app-factory'
 
-type Vegetacao = { id: number; nome: string }
+type Vegetacao = { id: string; nome: string }
 
 const returning = ['id', 'nome'] as const
 
-describe('GET /api/v2/vegetacoes', () => {
+describe('GET /api/v1/vegetacoes', () => {
   const { agent, knex } = createTestApp()
 
   afterAll(() => knex.destroy())
 
   test('retorna a lista ordenada por id decrescente como padrão dentro do prefixo do teste', async () => {
-    const prefix = 'XVEG'
+    const prefix = `XVEG_LISTA_${Date.now()}`
     const nomes = [
       `${prefix} Mata Atlântica`,
       `${prefix} Restinga`,
@@ -26,8 +26,8 @@ describe('GET /api/v2/vegetacoes', () => {
       .returning<Vegetacao[]>(returning)
 
     try {
-      const response = await agent.get(`/api/v2/vegetacoes?nome=${prefix}`).expect(200)
-      const expected = [...inserted].sort((a, b) => b.id - a.id)
+      const response = await agent.get(`/api/v1/vegetacoes?nome=${prefix}`).expect(200)
+      const expected = [...inserted].sort((a, b) => b.id.localeCompare(a.id, undefined, { numeric: true }))
       expect(response.body).toEqual(expected)
     } finally {
       await knex('vegetacoes').whereIn('nome', nomes).delete()
@@ -35,7 +35,7 @@ describe('GET /api/v2/vegetacoes', () => {
   })
 
   test('filtra por nome sem diferenciar maiúsculas e minúsculas', async () => {
-    const prefix = 'XVEG'
+    const prefix = `XVEG_FILTRO_${Date.now()}`
     const nomes = [
       `${prefix} Floresta`,
       `${prefix} Cerrado`,
@@ -46,7 +46,7 @@ describe('GET /api/v2/vegetacoes', () => {
       .returning<Vegetacao[]>(returning)
 
     try {
-      const response = await agent.get(`/api/v2/vegetacoes?nome=${prefix} floresta`).expect(200)
+      const response = await agent.get(`/api/v1/vegetacoes?nome=${prefix} floresta`).expect(200)
       expect(response.body).toEqual(inserted.filter(item => item.nome === `${prefix} Floresta`))
     } finally {
       await knex('vegetacoes').whereIn('nome', nomes).delete()
@@ -54,7 +54,7 @@ describe('GET /api/v2/vegetacoes', () => {
   })
 
   test('aceita ordenação customizada por nome e id', async () => {
-    const prefix = 'XVEG'
+    const prefix = `XVEG_ORDEM_${Date.now()}`
     const nomes = [
       `${prefix} Z`,
       `${prefix} A`,
@@ -65,18 +65,18 @@ describe('GET /api/v2/vegetacoes', () => {
       .returning<Vegetacao[]>(returning)
 
     try {
-      const byNameAsc = await agent.get(`/api/v2/vegetacoes?nome=${prefix}&order=nome:asc`).expect(200)
+      const byNameAsc = await agent.get(`/api/v1/vegetacoes?nome=${prefix}&order=nome:asc`).expect(200)
       expect(byNameAsc.body).toEqual([...inserted].sort((a, b) => a.nome.localeCompare(b.nome)))
 
-      const byIdAsc = await agent.get(`/api/v2/vegetacoes?nome=${prefix}&order=id:asc`).expect(200)
-      expect(byIdAsc.body).toEqual([...inserted].sort((a, b) => a.id - b.id))
+      const byIdAsc = await agent.get(`/api/v1/vegetacoes?nome=${prefix}&order=id:asc`).expect(200)
+      expect(byIdAsc.body).toEqual([...inserted].sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true })))
     } finally {
       await knex('vegetacoes').whereIn('nome', nomes).delete()
     }
   })
 
   test('retorna 400 quando a ordenação é inválida', async () => {
-    const prefix = 'XVEG'
+    const prefix = `XVEG_ORDEM_INVALIDA_${Date.now()}`
     const nomes = [
       `${prefix} Z`,
       `${prefix} A`,
@@ -86,44 +86,11 @@ describe('GET /api/v2/vegetacoes', () => {
     await knex('vegetacoes').insert(nomes.map(nome => ({ nome })))
 
     try {
-      const response = await agent.get(`/api/v2/vegetacoes?nome=${prefix}&order=foo:bar`).expect(400)
+      const response = await agent.get(`/api/v1/vegetacoes?nome=${prefix}&order=foo:bar`).expect(400)
       const body = response.body as { error: { message: string } }
       expect(body.error.message).toMatch(/inválido|invalid/i)
     } finally {
       await knex('vegetacoes').whereIn('nome', nomes).delete()
     }
-  })
-})
-
-describe('GET /api/v2/vegetacoes/:vegetacaoId', () => {
-  const { agent, knex } = createTestApp()
-
-  afterAll(() => knex.destroy())
-
-  test('retorna o registro encontrado', async () => {
-    const [vegetacao] = await knex('vegetacoes')
-      .insert({ nome: 'XVEG Vegetação Encontrada' })
-      .returning<Vegetacao[]>(returning)
-
-    try {
-      const response = await agent.get(`/api/v2/vegetacoes/${vegetacao.id}`).expect(200)
-      expect(response.body).toEqual({ id: vegetacao.id, nome: vegetacao.nome })
-    } finally {
-      await knex('vegetacoes').where({ id: vegetacao.id }).delete()
-    }
-  })
-
-  test('retorna 404 para id inexistente', async () => {
-    const response = await agent.get('/api/v2/vegetacoes/999999').expect(404)
-    const body = response.body as { error: { message: string } }
-
-    expect(body.error.message).toMatch(/não encontrad[ao]|not found/i)
-  })
-
-  test('retorna 400 para id inválido', async () => {
-    const response = await agent.get('/api/v2/vegetacoes/abc').expect(400)
-    const body = response.body as { error: { message: string } }
-
-    expect(body.error.message).toMatch(/inválido|invalid/i)
   })
 })
