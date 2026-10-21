@@ -12,7 +12,10 @@ export class HttpError extends BaseError {
     report?: unknown
     cause?: unknown
   }) {
-    super(params)
+    super({
+      message: params.message,
+      cause: params.cause
+    })
     this.statusCode = params.statusCode
     this.type = params.type
     this.report = params.report

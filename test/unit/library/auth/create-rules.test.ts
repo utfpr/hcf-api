@@ -8,7 +8,14 @@ import { createRules } from '@/library/auth/createRules'
 
 const publicReads = [
   { action: 'read', resource: 'Pais' },
-  { action: 'read', resource: 'Estado' }
+  { action: 'read', resource: 'Estado' },
+  { action: 'read', resource: 'Vegetacao' }
+]
+
+const vegetacaoWrites = [
+  { action: 'create', resource: 'Vegetacao' },
+  { action: 'update', resource: 'Vegetacao' },
+  { action: 'delete', resource: 'Vegetacao' }
 ]
 
 describe('createRules', () => {
@@ -17,15 +24,24 @@ describe('createRules', () => {
     expect(createRules(undefined)).toEqual(publicReads)
   })
 
-  test('grants authenticated users public reads and UsuarioSessao', () => {
-    const users = [
+  test('grants curador and operador vegetacao writes', () => {
+    for (const user of [
       { id: 1, tipo_usuario_id: 1 },
-      { id: 2, tipo_usuario_id: 2 },
+      { id: 2, tipo_usuario_id: 2 }
+    ]) {
+      expect(createRules(user)).toEqual([
+        ...publicReads,
+        { action: 'read', resource: 'UsuarioSessao' },
+        ...vegetacaoWrites
+      ])
+    }
+  })
+
+  test('grants other authenticated users public reads and UsuarioSessao', () => {
+    for (const user of [
       { id: 3, tipo_usuario_id: 3 },
       { id: 99, tipo_usuario_id: 99 }
-    ]
-
-    for (const user of users) {
+    ]) {
       expect(createRules(user)).toEqual([
         ...publicReads,
         { action: 'read', resource: 'UsuarioSessao' }
