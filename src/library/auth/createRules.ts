@@ -67,10 +67,8 @@ export function createRules(user?: RulesUser): Rule<Resource, Action>[] {
       { action: 'create', resource: 'FaseSucessional' },
       { action: 'update', resource: 'FaseSucessional' },
       { action: 'delete', resource: 'FaseSucessional' }
-  const rules: Rule<Resource, Action>[] = [
-    ...publicReads,
-    { action: 'read', resource: 'UsuarioSessao' }
-  ]
+    )
+  }
 
   if (user.tipo_usuario_id === CURADOR || user.tipo_usuario_id === OPERADOR) {
     rules.push(
