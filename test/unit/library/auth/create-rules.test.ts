@@ -24,8 +24,6 @@ describe('createRules', () => {
     expect(createRules(undefined)).toEqual(publicReads)
   })
 
-  test('grants authenticated users public reads and UsuarioSessao', () => {
-    const users = [
   test('grants curador and operador vegetacao writes', () => {
     for (const user of [
       { id: 1, tipo_usuario_id: 1 },
@@ -67,4 +65,3 @@ describe('createRules', () => {
       ])
     }
   })
-})
