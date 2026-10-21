@@ -9,19 +9,17 @@ import { createRules } from '@/library/auth/createRules'
 const publicReads = [
   { action: 'read', resource: 'Pais' },
   { action: 'read', resource: 'Estado' },
+  { action: 'read', resource: 'FaseSucessional' },
   { action: 'read', resource: 'Vegetacao' }
 ]
 
-const vegetacaoWrites = [
+const writerRules = [
+  { action: 'create', resource: 'FaseSucessional' },
+  { action: 'update', resource: 'FaseSucessional' },
+  { action: 'delete', resource: 'FaseSucessional' },
   { action: 'create', resource: 'Vegetacao' },
   { action: 'update', resource: 'Vegetacao' },
   { action: 'delete', resource: 'Vegetacao' }
-]
-
-const faseSucessionalWrites = [
-  { action: 'create', resource: 'FaseSucessional' },
-  { action: 'update', resource: 'FaseSucessional' },
-  { action: 'delete', resource: 'FaseSucessional' }
 ]
 
 describe('createRules', () => {
@@ -38,8 +36,7 @@ describe('createRules', () => {
       expect(createRules(user)).toEqual([
         ...publicReads,
         { action: 'read', resource: 'UsuarioSessao' },
-        ...faseSucessionalWrites,
-        ...vegetacaoWrites
+        ...writerRules
       ])
     }
   })
@@ -52,22 +49,6 @@ describe('createRules', () => {
       expect(createRules(user)).toEqual([
         ...publicReads,
         { action: 'read', resource: 'UsuarioSessao' }
-      ])
-    }
-  })
-
-  test('grants FaseSucessional writes only to tipo_usuario_id 1 and 2', () => {
-    const users = [
-      { id: 1, tipo_usuario_id: 1 },
-      { id: 2, tipo_usuario_id: 2 }
-    ]
-
-    for (const user of users) {
-      expect(createRules(user)).toEqual([
-        ...publicReads,
-        { action: 'read', resource: 'UsuarioSessao' },
-        ...faseSucessionalWrites,
-        ...vegetacaoWrites
       ])
     }
   })

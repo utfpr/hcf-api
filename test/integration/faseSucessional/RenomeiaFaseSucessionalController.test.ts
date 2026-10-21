@@ -41,10 +41,10 @@ describe('RenomeiaFaseSucessionalController', () => {
     const nomeNovo = `${nomeOriginal}_NOVO`
     const [faseSucessional] = await knex('fase_sucessional')
       .insert({ nome: nomeOriginal })
-      .returning<{ id: number; nome: string }[]>(['id', 'nome'])
+      .returning<{ id: string; nome: string }[]>(['id', 'nome'])
 
     try {
-      const response = await agent.put(`/api/v2/fases-sucessionais/${faseSucessional.id}`).set(buildAuthHeader()).send({ nome: nomeNovo }).expect(200)
+      const response = await agent.put(`/api/v1/fases-sucessionais/${faseSucessional.id}`).set(buildAuthHeader()).send({ nome: nomeNovo }).expect(200)
       expect(response.body).toMatchObject({ id: faseSucessional.id, nome: nomeNovo })
     } finally {
       await knex('fase_sucessional').where({ id: faseSucessional.id }).delete()
@@ -52,21 +52,21 @@ describe('RenomeiaFaseSucessionalController', () => {
   })
 
   test('retorna 400 para id inválido', async () => {
-    const response = await agent.put('/api/v2/fases-sucessionais/abc').set(buildAuthHeader()).send({ nome: 'Nome válido' }).expect(400)
+    const response = await agent.put('/api/v1/fases-sucessionais/abc').set(buildAuthHeader()).send({ nome: 'Nome válido' }).expect(400)
     const body = response.body as { error: { message: string } }
 
     expect(body.error.message).toMatch(/inválido|invalid/i)
   })
 
   test('retorna 400 para nome vazio', async () => {
-    const response = await agent.put('/api/v2/fases-sucessionais/1').set(buildAuthHeader()).send({ nome: '   ' }).expect(400)
+    const response = await agent.put('/api/v1/fases-sucessionais/1').set(buildAuthHeader()).send({ nome: '   ' }).expect(400)
     const body = response.body as { error: { message: string } }
 
     expect(body.error.message).toMatch(/não pode ser vazio|vazio/i)
   })
 
   test('retorna 404 para id inexistente', async () => {
-    const response = await agent.put('/api/v2/fases-sucessionais/999999').set(buildAuthHeader()).send({ nome: 'Nome inexistente' }).expect(404)
+    const response = await agent.put('/api/v1/fases-sucessionais/999999').set(buildAuthHeader()).send({ nome: 'Nome inexistente' }).expect(404)
     const body = response.body as { error: { message: string } }
 
     expect(body.error.message).toMatch(/não encontrada|not found/i)
@@ -76,11 +76,11 @@ describe('RenomeiaFaseSucessionalController', () => {
     const nomeOriginal = `XFAS_RENOMEIA_DUP_${Date.now()}`
     const nomeOutro = `${nomeOriginal}_OUTRO`
 
-    const [faseA] = await knex('fase_sucessional').insert({ nome: nomeOriginal }).returning<{ id: number; nome: string }[]>(['id', 'nome'])
-    const [faseB] = await knex('fase_sucessional').insert({ nome: nomeOutro }).returning<{ id: number; nome: string }[]>(['id', 'nome'])
+    const [faseA] = await knex('fase_sucessional').insert({ nome: nomeOriginal }).returning<{ id: string; nome: string }[]>(['id', 'nome'])
+    const [faseB] = await knex('fase_sucessional').insert({ nome: nomeOutro }).returning<{ id: string; nome: string }[]>(['id', 'nome'])
 
     try {
-      const response = await agent.put(`/api/v2/fases-sucessionais/${faseA.id}`).set(buildAuthHeader()).send({ nome: nomeOutro.toLowerCase() }).expect(409)
+      const response = await agent.put(`/api/v1/fases-sucessionais/${faseA.id}`).set(buildAuthHeader()).send({ nome: nomeOutro.toLowerCase() }).expect(409)
       const body = response.body as { error: { message: string } }
 
       expect(body.error.message).toMatch(/já existe uma fase sucessional com esse nome/i)
@@ -91,14 +91,14 @@ describe('RenomeiaFaseSucessionalController', () => {
   })
 
   test('rejeita token ausente', async () => {
-    const response = await agent.put('/api/v2/fases-sucessionais/1').send({ nome: 'Sem token' }).expect(401)
+    const response = await agent.put('/api/v1/fases-sucessionais/1').send({ nome: 'Sem token' }).expect(401)
     const body = response.body as { error: { message: string } }
 
     expect(body.error.message).toMatch(/unauthorized/i)
   })
 
   test('rejeita usuário com papel fora do permitido', async () => {
-    const response = await agent.put('/api/v2/fases-sucessionais/1').set(buildAuthHeader({ id: outsiderId })).send({ nome: 'Sem permissão' }).expect(403)
+    const response = await agent.put('/api/v1/fases-sucessionais/1').set(buildAuthHeader({ id: outsiderId })).send({ nome: 'Sem permissão' }).expect(403)
     const body = response.body as { error: { message: string } }
 
     expect(body.error.message).toMatch(/forbidden/i)
@@ -112,7 +112,7 @@ describe('RenomeiaFaseSucessionalController', () => {
       },
       process.env.JWT_SECRET as string
     )
-    const response = await agent.put('/api/v2/fases-sucessionais/1').set({ Authorization: `Bearer ${token}` }).send({ nome: 'Token expirado' }).expect(401)
+    const response = await agent.put('/api/v1/fases-sucessionais/1').set({ Authorization: `Bearer ${token}` }).send({ nome: 'Token expirado' }).expect(401)
     const body = response.body as { error: { message: string } }
 
     expect(body.error.message).toMatch(/unauthorized|expired/i)
@@ -120,7 +120,7 @@ describe('RenomeiaFaseSucessionalController', () => {
 
   test('rejeita token inválido', async () => {
     const token = jwt.sign({ id: writerId }, 'segredo-diferente')
-    const response = await agent.put('/api/v2/fases-sucessionais/1').set({ Authorization: `Bearer ${token}` }).send({ nome: 'Token inválido' }).expect(401)
+    const response = await agent.put('/api/v1/fases-sucessionais/1').set({ Authorization: `Bearer ${token}` }).send({ nome: 'Token inválido' }).expect(401)
     const body = response.body as { error: { message: string } }
 
     expect(body.error.message).toMatch(/unauthorized/i)

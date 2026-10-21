@@ -4,7 +4,7 @@ import {
 
 import { createTestApp } from '../setup/app-factory'
 
-type FaseSucessional = { id: number; nome: string }
+type FaseSucessional = { id: string; nome: string }
 
 const returning = ['id', 'nome'] as const
 
@@ -26,8 +26,8 @@ describe('ListaFasesSucessionaisController', () => {
       .returning<FaseSucessional[]>(returning)
 
     try {
-      const response = await agent.get(`/api/v2/fases-sucessionais?nome=${prefix}`).expect(200)
-      const expected = [...inserted].sort((a, b) => b.id - a.id)
+      const response = await agent.get(`/api/v1/fases-sucessionais?nome=${prefix}`).expect(200)
+      const expected = [...inserted].sort((a, b) => Number(b.id) - Number(a.id))
       expect(response.body).toEqual(expected)
     } finally {
       await knex('fase_sucessional').whereIn('nome', nomes).delete()
@@ -47,7 +47,7 @@ describe('ListaFasesSucessionaisController', () => {
       .returning<FaseSucessional[]>(returning)
 
     try {
-      const response = await agent.get(`/api/v2/fases-sucessionais?nome=${prefix} inicial`).expect(200)
+      const response = await agent.get(`/api/v1/fases-sucessionais?nome=${prefix} inicial`).expect(200)
       expect(response.body).toEqual(inserted.filter(item => item.nome === `${prefix} Inicial`))
     } finally {
       await knex('fase_sucessional').whereIn('nome', nomes).delete()
@@ -67,11 +67,11 @@ describe('ListaFasesSucessionaisController', () => {
       .returning<FaseSucessional[]>(returning)
 
     try {
-      const byNameAsc = await agent.get(`/api/v2/fases-sucessionais?nome=${prefix}&order=nome:asc`).expect(200)
+      const byNameAsc = await agent.get(`/api/v1/fases-sucessionais?nome=${prefix}&order=nome:asc`).expect(200)
       expect(byNameAsc.body).toEqual([...inserted].sort((a, b) => a.nome.localeCompare(b.nome)))
 
-      const byIdAsc = await agent.get(`/api/v2/fases-sucessionais?nome=${prefix}&order=id:asc`).expect(200)
-      expect(byIdAsc.body).toEqual([...inserted].sort((a, b) => a.id - b.id))
+      const byIdAsc = await agent.get(`/api/v1/fases-sucessionais?nome=${prefix}&order=id:asc`).expect(200)
+      expect(byIdAsc.body).toEqual([...inserted].sort((a, b) => Number(a.id) - Number(b.id)))
     } finally {
       await knex('fase_sucessional').whereIn('nome', nomes).delete()
     }
@@ -88,7 +88,7 @@ describe('ListaFasesSucessionaisController', () => {
     await knex('fase_sucessional').insert(nomes.map(nome => ({ nome })))
 
     try {
-      const response = await agent.get(`/api/v2/fases-sucessionais?nome=${prefix}&order=foo:bar`).expect(400)
+      const response = await agent.get(`/api/v1/fases-sucessionais?nome=${prefix}&order=foo:bar`).expect(400)
       const body = response.body as { error: { message: string } }
       expect(body.error.message).toMatch(/inválido|invalid/i)
     } finally {

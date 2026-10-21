@@ -9,6 +9,8 @@ import { HttpError } from '@/library/http/error/HttpError'
 import { InternalServerError } from '@/library/http/error/InternalServerError'
 import { NextHandler, RequestHandler } from '@/library/http/Server'
 
+import { faseSucessionalBody } from './faseSucessionalHttp'
+
 interface Dependencies {
   cadastraFaseSucessionalUseCase: CadastraFaseSucessionalUseCase
 }
@@ -37,6 +39,11 @@ export class CadastraFaseSucessionalController implements RequestHandler {
       return new InternalServerError({ message: result.value.message })
     }
 
-    return { statusCode: StatusCode.Created, body: result.value }
+    const body = faseSucessionalBody(result.value)
+    if (!body) {
+      return new InternalServerError({ message: 'Erro ao criar fase sucessional' })
+    }
+
+    return { statusCode: StatusCode.Created, body }
   }
 }

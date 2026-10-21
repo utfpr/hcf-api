@@ -1,10 +1,7 @@
 import { type Knex } from 'knex'
 
 import { authorize } from '@/application/AuthorizeMiddlewareFactory'
-import { BuscaFaseSucessionalUseCase } from '@/domain/faseSucessional/BuscaFaseSucessionalUseCase'
 import { CadastraFaseSucessionalUseCase } from '@/domain/faseSucessional/CadastraFaseSucessionalUseCase'
-import { ListaFasesSucessionaisUseCase } from '@/domain/faseSucessional/ListaFasesSucessionaisUseCase'
-import { RemoveFaseSucessionalUseCase } from '@/domain/faseSucessional/RemoveFaseSucessionalUseCase'
 import { RenomeiaFaseSucessionalUseCase } from '@/domain/faseSucessional/RenomeiaFaseSucessionalUseCase'
 import { FaseSucessionalCollectionKnexAdapter } from '@/infrastructure/FaseSucessionalCollectionKnexAdapter'
 import { Method } from '@/library/http/common'
@@ -22,21 +19,19 @@ export function routes(knex: Knex): Route[] {
   return [
     {
       handlers: [
-        new ListaFasesSucessionaisController({
-          listaFasesSucessionaisUseCase: new ListaFasesSucessionaisUseCase({ faseSucessionalCollection })
-        })
+        authorize('read', 'FaseSucessional'),
+        new ListaFasesSucessionaisController({ faseSucessionalCollection })
       ],
       method: Method.Get,
-      path: '/v2/fases-sucessionais'
+      path: '/v1/fases-sucessionais'
     },
     {
       handlers: [
-        new BuscaFaseSucessionalController({
-          buscaFaseSucessionalUseCase: new BuscaFaseSucessionalUseCase({ faseSucessionalCollection })
-        })
+        authorize('read', 'FaseSucessional'),
+        new BuscaFaseSucessionalController({ faseSucessionalCollection })
       ],
       method: Method.Get,
-      path: '/v2/fases-sucessionais/:faseSucessionalId'
+      path: '/v1/fases-sucessionais/:faseSucessionalId'
     },
     {
       handlers: [
@@ -46,7 +41,7 @@ export function routes(knex: Knex): Route[] {
         })
       ],
       method: Method.Post,
-      path: '/v2/fases-sucessionais'
+      path: '/v1/fases-sucessionais'
     },
     {
       handlers: [
@@ -56,17 +51,15 @@ export function routes(knex: Knex): Route[] {
         })
       ],
       method: Method.Put,
-      path: '/v2/fases-sucessionais/:faseSucessionalId'
+      path: '/v1/fases-sucessionais/:faseSucessionalId'
     },
     {
       handlers: [
         authorize('delete', 'FaseSucessional'),
-        new RemoveFaseSucessionalController({
-          removeFaseSucessionalUseCase: new RemoveFaseSucessionalUseCase({ faseSucessionalCollection })
-        })
+        new RemoveFaseSucessionalController({ faseSucessionalCollection })
       ],
       method: Method.Delete,
-      path: '/v2/fases-sucessionais/:faseSucessionalId'
+      path: '/v1/fases-sucessionais/:faseSucessionalId'
     }
   ]
 }

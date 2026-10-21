@@ -1,4 +1,4 @@
-import { BuscaFaseSucessionalUseCase } from '@/domain/faseSucessional/BuscaFaseSucessionalUseCase'
+import { FaseSucessionalCollection } from '@/domain/faseSucessional/FaseSucessionalCollection'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
@@ -8,26 +8,27 @@ import { InternalServerError } from '@/library/http/error/InternalServerError'
 import { NotFoundError } from '@/library/http/error/NotFoundError'
 import { NextHandler, RequestHandler } from '@/library/http/Server'
 
+import { faseSucessionalBody } from './faseSucessionalHttp'
+
 interface Dependencies {
-  buscaFaseSucessionalUseCase: BuscaFaseSucessionalUseCase
+  faseSucessionalCollection: FaseSucessionalCollection
 }
 
 export class BuscaFaseSucessionalController implements RequestHandler {
-  private readonly buscaFaseSucessionalUseCase: BuscaFaseSucessionalUseCase
+  private readonly faseSucessionalCollection: FaseSucessionalCollection
 
   constructor(dependencies: Dependencies) {
-    this.buscaFaseSucessionalUseCase = dependencies.buscaFaseSucessionalUseCase
+    this.faseSucessionalCollection = dependencies.faseSucessionalCollection
   }
 
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const { faseSucessionalId } = request.params as { faseSucessionalId?: string }
 
-    if (!faseSucessionalId || Number.isNaN(Number(faseSucessionalId)) || Number(faseSucessionalId) <= 0) {
+    if (faseSucessionalId === undefined || faseSucessionalId === null || faseSucessionalId === '' || !/^\d+$/.test(faseSucessionalId)) {
       return new BadRequestError({ message: 'faseSucessionalId inválido' })
     }
 
-    const id = Number(faseSucessionalId)
-    const result = await this.buscaFaseSucessionalUseCase.execute({ id })
+    const result = await this.faseSucessionalCollection.findById(faseSucessionalId)
 
     if (result.left()) {
       return new InternalServerError({ message: result.value.message })
@@ -37,6 +38,11 @@ export class BuscaFaseSucessionalController implements RequestHandler {
       return new NotFoundError({ message: 'Fase sucessional não encontrada' })
     }
 
-    return { statusCode: StatusCode.Ok, body: result.value }
+    const body = faseSucessionalBody(result.value)
+    if (!body) {
+      return new InternalServerError({ message: 'Erro ao buscar fase sucessional' })
+    }
+
+    return { statusCode: StatusCode.Ok, body }
   }
 }

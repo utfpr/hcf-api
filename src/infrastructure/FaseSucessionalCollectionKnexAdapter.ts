@@ -2,11 +2,15 @@ import { Knex } from 'knex'
 
 import { FaseSucessionalEmUsoError } from '@/domain/faseSucessional/error/FaseSucessionalEmUsoError'
 import { FaseSucessionalNomeDuplicadoError } from '@/domain/faseSucessional/error/FaseSucessionalNomeDuplicadoError'
-import { Attributes } from '@/domain/faseSucessional/FaseSucessional'
+import { Attributes, FaseSucessional } from '@/domain/faseSucessional/FaseSucessional'
 import { FaseSucessionalCollection, FaseSucessionalFilters } from '@/domain/faseSucessional/FaseSucessionalCollection'
 import { Either } from '@/library/either/Either'
 
 import { CollectionError } from './error/CollectionError'
+
+const TABLE_NAME = 'fase_sucessional'
+
+type FaseSucessionalRow = { id: string; nome: string }
 
 function isDuplicateFaseSucessionalError(error: unknown): boolean {
   const code = typeof error === 'object' && error !== null && 'code' in error
@@ -24,7 +28,7 @@ function isDuplicateFaseSucessionalError(error: unknown): boolean {
 
   return code === '23505'
     || /duplicate key|already exists|unique constraint/i.test(`${detail} ${message} ${constraint}`)
-    || (/nome/i.test(constraint) && /fase/i.test(constraint))
+    || (/nome/i.test(constraint) && /fase_sucessional/i.test(constraint))
 }
 
 function isFaseSucessionalInUseError(error: unknown): boolean {
@@ -40,7 +44,20 @@ function isFaseSucessionalInUseError(error: unknown): boolean {
 
   return code === '23503'
     || /foreign key|still referenced|cannot delete or update a parent row|violates foreign key constraint/i.test(`${message} ${constraint}`)
-    || /fase/i.test(constraint)
+    || /fase_sucessional/i.test(constraint)
+}
+
+function toEntity(row: FaseSucessionalRow): Either<Error, FaseSucessional> {
+  const created = FaseSucessional.create({ id: row.id, nome: row.nome })
+  if (created.left()) {
+    return created
+  }
+
+  if (created.value.id === undefined) {
+    return Either.left(new CollectionError({ message: 'Fase sucessional persistida sem id' }))
+  }
+
+  return created
 }
 
 interface Dependencies {
@@ -54,25 +71,9 @@ export class FaseSucessionalCollectionKnexAdapter implements FaseSucessionalColl
     this.knex = dependencies.knex
   }
 
-  private async resolveTableName(): Promise<string> {
-    const candidates = ['fase_sucessional', 'fases_sucessionais']
-
-    for (const tableName of candidates) {
-      try {
-        await this.knex(tableName).select('id').limit(1)
-        return tableName
-      } catch {
-        // fallback to next candidate
-      }
-    }
-
-    return 'fase_sucessional'
-  }
-
-  async findAll(filters: FaseSucessionalFilters): Promise<Either<Error, Attributes[]>> {
+  async findAll(filters: FaseSucessionalFilters): Promise<Either<Error, FaseSucessional[]>> {
     try {
-      const tableName = await this.resolveTableName()
-      const query = this.knex<Attributes>(tableName)
+      const query = this.knex<FaseSucessionalRow>(TABLE_NAME)
         .select(['id', 'nome'])
 
       if (filters.nome) {
@@ -85,49 +86,69 @@ export class FaseSucessionalCollectionKnexAdapter implements FaseSucessionalColl
         query.orderBy('id', 'desc')
       }
 
-      return Either.right(await query)
+      const rows = await query
+      const mapped: FaseSucessional[] = []
+
+      for (const row of rows) {
+        const entity = toEntity(row)
+        if (entity.left()) {
+          return entity
+        }
+        mapped.push(entity.value)
+      }
+
+      return Either.right(mapped)
     } catch (error) {
       return Either.left(new CollectionError({ message: 'Failed to list fases sucessionais', cause: error }))
     }
   }
 
-  async findById(id: number): Promise<Either<Error, Attributes | null>> {
+  async findById(id: string): Promise<Either<Error, FaseSucessional | undefined>> {
     try {
-      const tableName = await this.resolveTableName()
-      const faseSucessional = await this.knex<Attributes>(tableName)
+      const faseSucessional = await this.knex<FaseSucessionalRow>(TABLE_NAME)
         .select(['id', 'nome'])
         .where({ id })
         .first()
 
-      return Either.right(faseSucessional ?? null)
+      if (!faseSucessional) {
+        return Either.right(undefined)
+      }
+
+      return toEntity(faseSucessional)
     } catch (error) {
       return Either.left(new CollectionError({ message: 'Failed to find fase sucessional by id', cause: error }))
     }
   }
 
-  async findByNome(nome: string): Promise<Either<Error, Attributes | null>> {
+  async findByNome(nome: string): Promise<Either<Error, FaseSucessional | undefined>> {
     try {
-      const tableName = await this.resolveTableName()
-      const faseSucessional = await this.knex<Attributes>(tableName)
+      const faseSucessional = await this.knex<FaseSucessionalRow>(TABLE_NAME)
         .select(['id', 'nome'])
         .whereRaw('LOWER(nome) = LOWER(?)', [nome.trim()])
         .first()
 
-      return Either.right(faseSucessional ?? null)
+      if (!faseSucessional) {
+        return Either.right(undefined)
+      }
+
+      return toEntity(faseSucessional)
     } catch (error) {
       return Either.left(new CollectionError({ message: 'Failed to find fase sucessional by name', cause: error }))
     }
   }
 
-  async create({ nome }: Pick<Attributes, 'nome'>): Promise<Either<Error, Attributes>> {
+  async create({ nome }: Pick<Attributes, 'nome'>): Promise<Either<Error, FaseSucessional>> {
     try {
-      const tableName = await this.resolveTableName()
-      const createdRows = await this.knex<Attributes>(tableName)
+      const createdRows = await this.knex<FaseSucessionalRow>(TABLE_NAME)
         .insert({ nome: nome.trim() })
-        .returning(['id', 'nome']) as unknown as Attributes[]
+        .returning(['id', 'nome']) as unknown as FaseSucessionalRow[]
       const [created] = createdRows
 
-      return Either.right(created)
+      if (!created) {
+        return Either.left(new CollectionError({ message: 'Failed to create fase sucessional' }))
+      }
+
+      return toEntity(created)
     } catch (error) {
       if (isDuplicateFaseSucessionalError(error)) {
         return Either.left(new FaseSucessionalNomeDuplicadoError({ cause: error }))
@@ -137,16 +158,19 @@ export class FaseSucessionalCollectionKnexAdapter implements FaseSucessionalColl
     }
   }
 
-  async update(id: number, { nome }: Pick<Attributes, 'nome'>): Promise<Either<Error, Attributes | null>> {
+  async update(id: string, { nome }: Pick<Attributes, 'nome'>): Promise<Either<Error, FaseSucessional | undefined>> {
     try {
-      const tableName = await this.resolveTableName()
-      const updatedRows = await this.knex<Attributes>(tableName)
+      const updatedRows = await this.knex<FaseSucessionalRow>(TABLE_NAME)
         .where({ id })
         .update({ nome: nome.trim() })
-        .returning(['id', 'nome']) as unknown as Attributes[]
+        .returning(['id', 'nome']) as unknown as FaseSucessionalRow[]
       const [updated] = updatedRows
 
-      return Either.right(updated ?? null)
+      if (!updated) {
+        return Either.right(undefined)
+      }
+
+      return toEntity(updated)
     } catch (error) {
       if (isDuplicateFaseSucessionalError(error)) {
         return Either.left(new FaseSucessionalNomeDuplicadoError({ cause: error }))
@@ -156,10 +180,9 @@ export class FaseSucessionalCollectionKnexAdapter implements FaseSucessionalColl
     }
   }
 
-  async delete(id: number): Promise<Either<Error, boolean>> {
+  async delete(id: string): Promise<Either<Error, boolean>> {
     try {
-      const tableName = await this.resolveTableName()
-      const existing = await this.knex<Attributes>(tableName)
+      const existing = await this.knex<FaseSucessionalRow>(TABLE_NAME)
         .where({ id })
         .first()
 
@@ -181,7 +204,7 @@ export class FaseSucessionalCollectionKnexAdapter implements FaseSucessionalColl
         return Either.left(new FaseSucessionalEmUsoError())
       }
 
-      const deleted = await this.knex(tableName)
+      const deleted = await this.knex(TABLE_NAME)
         .where({ id })
         .delete()
 

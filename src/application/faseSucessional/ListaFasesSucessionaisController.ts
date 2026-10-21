@@ -1,4 +1,4 @@
-import { ListaFasesSucessionaisUseCase } from '@/domain/faseSucessional/ListaFasesSucessionaisUseCase'
+import { FaseSucessionalCollection } from '@/domain/faseSucessional/FaseSucessionalCollection'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
@@ -7,15 +7,17 @@ import { HttpError } from '@/library/http/error/HttpError'
 import { InternalServerError } from '@/library/http/error/InternalServerError'
 import { NextHandler, RequestHandler } from '@/library/http/Server'
 
+import { faseSucessionalBody } from './faseSucessionalHttp'
+
 interface Dependencies {
-  listaFasesSucessionaisUseCase: ListaFasesSucessionaisUseCase
+  faseSucessionalCollection: FaseSucessionalCollection
 }
 
 export class ListaFasesSucessionaisController implements RequestHandler {
-  private readonly listaFasesSucessionaisUseCase: ListaFasesSucessionaisUseCase
+  private readonly faseSucessionalCollection: FaseSucessionalCollection
 
   constructor(dependencies: Dependencies) {
-    this.listaFasesSucessionaisUseCase = dependencies.listaFasesSucessionaisUseCase
+    this.faseSucessionalCollection = dependencies.faseSucessionalCollection
   }
 
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
@@ -29,7 +31,7 @@ export class ListaFasesSucessionaisController implements RequestHandler {
       return new BadRequestError({ message: parsedOrder.message })
     }
 
-    const result = await this.listaFasesSucessionaisUseCase.execute({
+    const result = await this.faseSucessionalCollection.findAll({
       nome,
       order: parsedOrder
     })
@@ -38,7 +40,12 @@ export class ListaFasesSucessionaisController implements RequestHandler {
       return new InternalServerError({ message: result.value.message })
     }
 
-    return { statusCode: StatusCode.Ok, body: result.value }
+    const body = result.value.map(faseSucessionalBody)
+    if (body.some(item => item === undefined)) {
+      return new InternalServerError({ message: 'Erro ao listar fases sucessionais' })
+    }
+
+    return { statusCode: StatusCode.Ok, body }
   }
 }
 

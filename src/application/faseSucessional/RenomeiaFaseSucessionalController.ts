@@ -11,6 +11,8 @@ import { InternalServerError } from '@/library/http/error/InternalServerError'
 import { NotFoundError } from '@/library/http/error/NotFoundError'
 import { NextHandler, RequestHandler } from '@/library/http/Server'
 
+import { faseSucessionalBody } from './faseSucessionalHttp'
+
 interface Dependencies {
   renomeiaFaseSucessionalUseCase: RenomeiaFaseSucessionalUseCase
 }
@@ -26,13 +28,7 @@ export class RenomeiaFaseSucessionalController implements RequestHandler {
     const { faseSucessionalId } = request.params as { faseSucessionalId?: string }
     const { nome } = request.body as { nome?: string }
 
-    if (
-      faseSucessionalId === undefined
-      || faseSucessionalId === null
-      || faseSucessionalId === ''
-      || Number.isNaN(Number(faseSucessionalId))
-      || Number(faseSucessionalId) <= 0
-    ) {
+    if (faseSucessionalId === undefined || faseSucessionalId === null || faseSucessionalId === '' || !/^\d+$/.test(faseSucessionalId)) {
       return new BadRequestError({ message: 'faseSucessionalId inválido' })
     }
 
@@ -40,8 +36,7 @@ export class RenomeiaFaseSucessionalController implements RequestHandler {
       return new BadRequestError({ message: 'Nome da fase sucessional não pode ser vazio' })
     }
 
-    const parsedId = Number(faseSucessionalId)
-    const result = await this.renomeiaFaseSucessionalUseCase.execute({ id: parsedId, nome: nome.trim() })
+    const result = await this.renomeiaFaseSucessionalUseCase.execute({ id: faseSucessionalId, nome: nome.trim() })
 
     if (result.left()) {
       if (result.value instanceof FaseSucessionalNomeDuplicadoError) {
@@ -55,6 +50,11 @@ export class RenomeiaFaseSucessionalController implements RequestHandler {
       return new InternalServerError({ message: result.value.message })
     }
 
-    return { statusCode: StatusCode.Ok, body: result.value }
+    const body = faseSucessionalBody(result.value)
+    if (!body) {
+      return new InternalServerError({ message: 'Erro ao atualizar fase sucessional' })
+    }
+
+    return { statusCode: StatusCode.Ok, body }
   }
 }

@@ -1,7 +1,7 @@
 import { Either } from '@/library/either/Either'
 
 import { FaseSucessionalNomeDuplicadoError } from './error/FaseSucessionalNomeDuplicadoError'
-import { FaseSucessional, Attributes } from './FaseSucessional'
+import { FaseSucessional } from './FaseSucessional'
 import { FaseSucessionalCollection } from './FaseSucessionalCollection'
 
 interface Dependencies {
@@ -15,7 +15,7 @@ export class CadastraFaseSucessionalUseCase {
     this.faseSucessionalCollection = dependencies.faseSucessionalCollection
   }
 
-  async execute({ nome }: { nome: string }): Promise<Either<Error, Attributes>> {
+  async execute({ nome }: { nome: string }): Promise<Either<Error, FaseSucessional>> {
     const normalizedNome = nome.trim()
 
     const faseSucessional = FaseSucessional.create({ nome: normalizedNome })

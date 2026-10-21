@@ -2,7 +2,7 @@ import { Either } from '@/library/either/Either'
 
 import { FaseSucessionalNaoEncontradoError } from './error/FaseSucessionalNaoEncontradoError'
 import { FaseSucessionalNomeDuplicadoError } from './error/FaseSucessionalNomeDuplicadoError'
-import { FaseSucessional, Attributes } from './FaseSucessional'
+import { FaseSucessional } from './FaseSucessional'
 import { FaseSucessionalCollection } from './FaseSucessionalCollection'
 
 interface Dependencies {
@@ -16,7 +16,7 @@ export class RenomeiaFaseSucessionalUseCase {
     this.faseSucessionalCollection = dependencies.faseSucessionalCollection
   }
 
-  async execute({ id, nome }: { id: number; nome: string }): Promise<Either<Error, Attributes>> {
+  async execute({ id, nome }: { id: string; nome: string }): Promise<Either<Error, FaseSucessional>> {
     const normalizedNome = nome.trim()
 
     const faseSucessional = FaseSucessional.create({ nome: normalizedNome })
