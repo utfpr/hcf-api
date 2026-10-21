@@ -23,6 +23,7 @@ export const RESOURCES = [
   'Estado',
   'Vegetacao',
   'Cidade',
+  'Solo',
   'Usuario',
   'UsuarioSessao',
   'Identificador',
