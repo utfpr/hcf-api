@@ -18,13 +18,19 @@ const vegetacaoWrites = [
   { action: 'delete', resource: 'Vegetacao' }
 ]
 
+const faseSucessionalWrites = [
+  { action: 'create', resource: 'FaseSucessional' },
+  { action: 'update', resource: 'FaseSucessional' },
+  { action: 'delete', resource: 'FaseSucessional' }
+]
+
 describe('createRules', () => {
   test('grants Guest only public reads', () => {
     expect(createRules()).toEqual(publicReads)
     expect(createRules(undefined)).toEqual(publicReads)
   })
 
-  test('grants curador and operador vegetacao writes', () => {
+  test('grants curador and operador write permissions', () => {
     for (const user of [
       { id: 1, tipo_usuario_id: 1 },
       { id: 2, tipo_usuario_id: 2 }
@@ -32,6 +38,7 @@ describe('createRules', () => {
       expect(createRules(user)).toEqual([
         ...publicReads,
         { action: 'read', resource: 'UsuarioSessao' },
+        ...faseSucessionalWrites,
         ...vegetacaoWrites
       ])
     }
@@ -59,9 +66,9 @@ describe('createRules', () => {
       expect(createRules(user)).toEqual([
         ...publicReads,
         { action: 'read', resource: 'UsuarioSessao' },
-        { action: 'create', resource: 'FaseSucessional' },
-        { action: 'update', resource: 'FaseSucessional' },
-        { action: 'delete', resource: 'FaseSucessional' }
+        ...faseSucessionalWrites,
+        ...vegetacaoWrites
       ])
     }
   })
+})
