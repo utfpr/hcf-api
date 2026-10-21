@@ -23,7 +23,7 @@ export function routes(knex: Knex): Route[] {
         new ListaFasesSucessionaisController({ faseSucessionalCollection })
       ],
       method: Method.Get,
-      path: '/v1/fases-sucessionais'
+      path: '/v2/fases-sucessionais'
     },
     {
       handlers: [
@@ -31,7 +31,7 @@ export function routes(knex: Knex): Route[] {
         new BuscaFaseSucessionalController({ faseSucessionalCollection })
       ],
       method: Method.Get,
-      path: '/v1/fases-sucessionais/:faseSucessionalId'
+      path: '/v2/fases-sucessionais/:faseSucessionalId'
     },
     {
       handlers: [
@@ -41,7 +41,7 @@ export function routes(knex: Knex): Route[] {
         })
       ],
       method: Method.Post,
-      path: '/v1/fases-sucessionais'
+      path: '/v2/fases-sucessionais'
     },
     {
       handlers: [
@@ -51,7 +51,7 @@ export function routes(knex: Knex): Route[] {
         })
       ],
       method: Method.Put,
-      path: '/v1/fases-sucessionais/:faseSucessionalId'
+      path: '/v2/fases-sucessionais/:faseSucessionalId'
     },
     {
       handlers: [
@@ -59,7 +59,7 @@ export function routes(knex: Knex): Route[] {
         new RemoveFaseSucessionalController({ faseSucessionalCollection })
       ],
       method: Method.Delete,
-      path: '/v1/fases-sucessionais/:faseSucessionalId'
+      path: '/v2/fases-sucessionais/:faseSucessionalId'
     }
   ]
 }
