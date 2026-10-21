@@ -21,6 +21,7 @@ export const RESOURCES = [
   'Autor',
   'Pais',
   'Estado',
+  'Relevo',
   'Vegetacao',
   'Cidade',
   'Usuario',
