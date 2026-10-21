@@ -11,7 +11,7 @@ import { createCuradorAuth } from '../setup/curador-auth'
 
 type Vegetacao = { id: string; nome: string }
 
-describe('POST /api/v1/vegetacoes', () => {
+describe('POST /api/v2/vegetacoes', () => {
   const { agent, knex } = createTestApp()
   let authHeader: { Authorization: string }
   let cleanupAuth: () => Promise<void>
@@ -28,7 +28,7 @@ describe('POST /api/v1/vegetacoes', () => {
   })
 
   test('retorna 401 sem Authorization', async () => {
-    await agent.post('/api/v1/vegetacoes').send({ nome: 'Mata' }).expect(401)
+    await agent.post('/api/v2/vegetacoes').send({ nome: 'Mata' }).expect(401)
   })
 
   test('cadastra uma vegetação com sucesso', async () => {
@@ -36,7 +36,7 @@ describe('POST /api/v1/vegetacoes', () => {
     const nome = `${prefix} Mata Atlântica`
 
     try {
-      const response = await agent.post('/api/v1/vegetacoes').set(authHeader).send({ nome }).expect(201)
+      const response = await agent.post('/api/v2/vegetacoes').set(authHeader).send({ nome }).expect(201)
       const body = response.body as Vegetacao
 
       expect(body).toMatchObject({ nome })
@@ -51,7 +51,7 @@ describe('POST /api/v1/vegetacoes', () => {
   })
 
   test('retorna 400 quando o nome está vazio', async () => {
-    const response = await agent.post('/api/v1/vegetacoes').set(authHeader).send({ nome: '   ' }).expect(400)
+    const response = await agent.post('/api/v2/vegetacoes').set(authHeader).send({ nome: '   ' }).expect(400)
     const body = response.body as { error: { message: string } }
 
     expect(body.error.message).toMatch(/vazio|empty|obrigat/i)
@@ -64,7 +64,7 @@ describe('POST /api/v1/vegetacoes', () => {
     await knex('vegetacoes').insert({ nome })
 
     try {
-      const response = await agent.post('/api/v1/vegetacoes').set(authHeader).send({ nome: nome.toUpperCase() }).expect(409)
+      const response = await agent.post('/api/v2/vegetacoes').set(authHeader).send({ nome: nome.toUpperCase() }).expect(409)
       const body = response.body as { error: { message: string } }
 
       expect(body.error.message).toMatch(/já existe|duplic/i)

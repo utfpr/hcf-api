@@ -11,7 +11,7 @@ import { createCuradorAuth } from '../setup/curador-auth'
 
 type Vegetacao = { id: string; nome: string }
 
-describe('DELETE /api/v1/vegetacoes/:vegetacaoId', () => {
+describe('DELETE /api/v2/vegetacoes/:vegetacaoId', () => {
   const { agent, knex } = createTestApp()
   let authHeader: { Authorization: string }
   let cleanupAuth: () => Promise<void>
@@ -34,7 +34,7 @@ describe('DELETE /api/v1/vegetacoes/:vegetacaoId', () => {
       .returning(['id', 'nome']) as Vegetacao[]
 
     try {
-      await agent.delete(`/api/v1/vegetacoes/${vegetacao.id}`).set(authHeader).expect(204)
+      await agent.delete(`/api/v2/vegetacoes/${vegetacao.id}`).set(authHeader).expect(204)
       const found = await knex('vegetacoes').where({ id: vegetacao.id }).first()
       expect(found).toBeUndefined()
     } finally {
@@ -43,14 +43,14 @@ describe('DELETE /api/v1/vegetacoes/:vegetacaoId', () => {
   })
 
   test('retorna 404 para id inexistente', async () => {
-    const response = await agent.delete('/api/v1/vegetacoes/999999').set(authHeader).expect(404)
+    const response = await agent.delete('/api/v2/vegetacoes/999999').set(authHeader).expect(404)
     const body = response.body as { error: { message: string } }
 
     expect(body.error.message).toMatch(/não encontrad|not found/i)
   })
 
   test('retorna 400 para id inválido', async () => {
-    const response = await agent.delete('/api/v1/vegetacoes/abc').set(authHeader).expect(400)
+    const response = await agent.delete('/api/v2/vegetacoes/abc').set(authHeader).expect(400)
     const body = response.body as { error: { message: string } }
 
     expect(body.error.message).toMatch(/inválido|invalid/i)
@@ -72,7 +72,7 @@ describe('DELETE /api/v1/vegetacoes/:vegetacaoId', () => {
         updated_at: new Date()
       })
 
-      const response = await agent.delete(`/api/v1/vegetacoes/${vegetacao.id}`).set(authHeader).expect(409)
+      const response = await agent.delete(`/api/v2/vegetacoes/${vegetacao.id}`).set(authHeader).expect(409)
       const body = response.body as { error: { message: string } }
 
       expect(body.error.message).toMatch(/em uso|in use|uso/i)

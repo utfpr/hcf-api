@@ -8,7 +8,7 @@ type Vegetacao = { id: string; nome: string }
 
 const returning = ['id', 'nome'] as const
 
-describe('GET /api/v1/vegetacoes', () => {
+describe('GET /api/v2/vegetacoes', () => {
   const { agent, knex } = createTestApp()
 
   afterAll(() => knex.destroy())
@@ -26,7 +26,7 @@ describe('GET /api/v1/vegetacoes', () => {
       .returning<Vegetacao[]>(returning)
 
     try {
-      const response = await agent.get(`/api/v1/vegetacoes?nome=${prefix}`).expect(200)
+      const response = await agent.get(`/api/v2/vegetacoes?nome=${prefix}`).expect(200)
       const expected = [...inserted].sort((a, b) => b.id.localeCompare(a.id, undefined, { numeric: true }))
       expect(response.body).toEqual(expected)
     } finally {
@@ -46,7 +46,7 @@ describe('GET /api/v1/vegetacoes', () => {
       .returning<Vegetacao[]>(returning)
 
     try {
-      const response = await agent.get(`/api/v1/vegetacoes?nome=${prefix} floresta`).expect(200)
+      const response = await agent.get(`/api/v2/vegetacoes?nome=${prefix} floresta`).expect(200)
       expect(response.body).toEqual(inserted.filter(item => item.nome === `${prefix} Floresta`))
     } finally {
       await knex('vegetacoes').whereIn('nome', nomes).delete()
@@ -65,10 +65,10 @@ describe('GET /api/v1/vegetacoes', () => {
       .returning<Vegetacao[]>(returning)
 
     try {
-      const byNameAsc = await agent.get(`/api/v1/vegetacoes?nome=${prefix}&order=nome:asc`).expect(200)
+      const byNameAsc = await agent.get(`/api/v2/vegetacoes?nome=${prefix}&order=nome:asc`).expect(200)
       expect(byNameAsc.body).toEqual([...inserted].sort((a, b) => a.nome.localeCompare(b.nome)))
 
-      const byIdAsc = await agent.get(`/api/v1/vegetacoes?nome=${prefix}&order=id:asc`).expect(200)
+      const byIdAsc = await agent.get(`/api/v2/vegetacoes?nome=${prefix}&order=id:asc`).expect(200)
       expect(byIdAsc.body).toEqual([...inserted].sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true })))
     } finally {
       await knex('vegetacoes').whereIn('nome', nomes).delete()
@@ -86,7 +86,7 @@ describe('GET /api/v1/vegetacoes', () => {
     await knex('vegetacoes').insert(nomes.map(nome => ({ nome })))
 
     try {
-      const response = await agent.get(`/api/v1/vegetacoes?nome=${prefix}&order=foo:bar`).expect(400)
+      const response = await agent.get(`/api/v2/vegetacoes?nome=${prefix}&order=foo:bar`).expect(400)
       const body = response.body as { error: { message: string } }
       expect(body.error.message).toMatch(/inválido|invalid/i)
     } finally {

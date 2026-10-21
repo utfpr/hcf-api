@@ -26,7 +26,7 @@ export function routes(knex: Knex): Route[] {
         })
       ],
       method: Method.Post,
-      path: '/v1/vegetacoes'
+      path: '/v2/vegetacoes'
     },
     {
       handlers: [
@@ -36,7 +36,7 @@ export function routes(knex: Knex): Route[] {
         })
       ],
       method: Method.Get,
-      path: '/v1/vegetacoes'
+      path: '/v2/vegetacoes'
     },
     {
       handlers: [
@@ -44,7 +44,7 @@ export function routes(knex: Knex): Route[] {
         new BuscaVegetacaoController({ vegetacaoCollection })
       ],
       method: Method.Get,
-      path: '/v1/vegetacoes/:vegetacaoId'
+      path: '/v2/vegetacoes/:vegetacaoId'
     },
     {
       handlers: [
@@ -54,7 +54,7 @@ export function routes(knex: Knex): Route[] {
         })
       ],
       method: Method.Put,
-      path: '/v1/vegetacoes/:vegetacaoId'
+      path: '/v2/vegetacoes/:vegetacaoId'
     },
     {
       handlers: [
@@ -62,7 +62,7 @@ export function routes(knex: Knex): Route[] {
         new RemoveVegetacaoController({ vegetacaoCollection })
       ],
       method: Method.Delete,
-      path: '/v1/vegetacoes/:vegetacaoId'
+      path: '/v2/vegetacoes/:vegetacaoId'
     }
   ]
 }
