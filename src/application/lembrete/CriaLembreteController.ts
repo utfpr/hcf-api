@@ -13,7 +13,7 @@ import { NotFoundError } from '@/library/http/error/NotFoundError'
 import { NextHandler, RequestHandler } from '@/library/http/Server'
 
 import {
-  parseExpedicaoId, parseFicha, parseRequiredString
+  parseExpedicaoId, parseFicha, parseOptionalNumber, parseOptionalString, parseRequiredString
 } from './lembrete-parsing'
 
 interface Dependencies {
@@ -45,6 +45,15 @@ export class CriaLembreteController implements RequestHandler {
     const expedicaoId = parseExpedicaoId(body.expedicao_id)
     if (expedicaoId instanceof Error) return new BadRequestError({ message: expedicaoId.message })
 
+    const descricao = parseOptionalString(body.descricao, 'descricao')
+    if (descricao instanceof Error) return new BadRequestError({ message: descricao.message })
+
+    const latitude = parseOptionalNumber(body.latitude, 'latitude')
+    if (latitude instanceof Error) return new BadRequestError({ message: latitude.message })
+
+    const longitude = parseOptionalNumber(body.longitude, 'longitude')
+    if (longitude instanceof Error) return new BadRequestError({ message: longitude.message })
+
     const usuarioId = request.user?.id ?? null
 
     const result = await this.criaLembreteUseCase.execute({
@@ -52,6 +61,9 @@ export class CriaLembreteController implements RequestHandler {
       created_by: usuarioId,
       data_coleta: dataColeta,
       local_coleta: localColeta,
+      descricao: descricao ?? null,
+      latitude: latitude ?? null,
+      longitude: longitude ?? null,
       expedicao_id: expedicaoId,
       ...(clientUuid ? { client_uuid: clientUuid } : {})
     })

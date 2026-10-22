@@ -10,7 +10,7 @@ import { NotFoundError } from '@/library/http/error/NotFoundError'
 import { NextHandler, RequestHandler } from '@/library/http/Server'
 
 import {
-  parseFicha, parseId, parseRequiredString
+  parseFicha, parseId, parseOptionalNumber, parseOptionalString, parseRequiredString
 } from './lembrete-parsing'
 
 interface Dependencies {
@@ -49,6 +49,18 @@ export class AtualizaLembreteController implements RequestHandler {
       if (localColeta instanceof Error) return new BadRequestError({ message: localColeta.message })
       input.local_coleta = localColeta
     }
+
+    const descricao = parseOptionalString(body.descricao, 'descricao')
+    if (descricao instanceof Error) return new BadRequestError({ message: descricao.message })
+    if (descricao !== undefined) input.descricao = descricao
+
+    const latitude = parseOptionalNumber(body.latitude, 'latitude')
+    if (latitude instanceof Error) return new BadRequestError({ message: latitude.message })
+    if (latitude !== undefined) input.latitude = latitude
+
+    const longitude = parseOptionalNumber(body.longitude, 'longitude')
+    if (longitude instanceof Error) return new BadRequestError({ message: longitude.message })
+    if (longitude !== undefined) input.longitude = longitude
 
     const result = await this.atualizaLembreteUseCase.execute(input)
 

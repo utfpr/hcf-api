@@ -3763,3 +3763,13 @@ CREATE INDEX lembretes_expedicao_id_index ON public.lembretes USING btree (exped
 
 ALTER TABLE ONLY public.lembretes
     ADD CONSTRAINT lembretes_expedicao_id_foreign FOREIGN KEY (expedicao_id) REFERENCES public.expedicoes(id) ON UPDATE CASCADE ON DELETE SET NULL;
+
+--
+-- Modulo Expedicao: descricao e coordenadas dos lembretes
+-- Migration 20261022120000
+--
+ALTER TABLE ONLY public.lembretes ADD COLUMN descricao text;
+
+ALTER TABLE ONLY public.lembretes ADD COLUMN latitude double precision;
+
+ALTER TABLE ONLY public.lembretes ADD COLUMN longitude double precision;

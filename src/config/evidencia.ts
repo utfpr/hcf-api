@@ -21,3 +21,12 @@ export const MIME_TYPE_EXTENSAO: Record<string, string> = {
 }
 
 export const MIME_TYPES_ACEITOS = Object.keys(MIME_TYPE_EXTENSAO)
+
+// Lembrete só aceita foto
+export const LEMBRETE_MIME_TYPE_EXTENSAO: Record<string, string> = {
+  'image/jpeg': '.jpg',
+  'image/png': '.png',
+  'image/webp': '.webp'
+}
+
+export const LEMBRETE_MIME_TYPES_ACEITOS = Object.keys(LEMBRETE_MIME_TYPE_EXTENSAO)

@@ -48,6 +48,35 @@ describe('CriaLembreteController', () => {
     expect('body' in response ? response.body : undefined).toEqual(criado)
   })
 
+  test('repassa descricao, latitude e longitude e usa null quando ausentes', async () => {
+    const criaLembreteUseCase = {
+      execute: vi.fn().mockResolvedValue(Either.right({ id: 1, ...validBody }))
+    } as unknown as CriaLembreteUseCase
+    const controller = new CriaLembreteController({ criaLembreteUseCase })
+
+    await controller.handle(makeRequest({
+      ...validBody, descricao: 'Voltar na floração', latitude: -19.27, longitude: -43.58
+    }), vi.fn())
+    await controller.handle(makeRequest(validBody), vi.fn())
+
+    expect(criaLembreteUseCase.execute).toHaveBeenNthCalledWith(1, expect.objectContaining({
+      descricao: 'Voltar na floração', latitude: -19.27, longitude: -43.58
+    }))
+    expect(criaLembreteUseCase.execute).toHaveBeenNthCalledWith(2, expect.objectContaining({
+      descricao: null, latitude: null, longitude: null
+    }))
+  })
+
+  test('retorna 400 quando latitude não é número', async () => {
+    const criaLembreteUseCase = { execute: vi.fn() } as unknown as CriaLembreteUseCase
+    const controller = new CriaLembreteController({ criaLembreteUseCase })
+
+    const response = await controller.handle(makeRequest({ ...validBody, latitude: '-19.27' }), vi.fn())
+
+    expect(criaLembreteUseCase.execute).not.toHaveBeenCalled()
+    expect(response).toBeInstanceOf(BadRequestError)
+  })
+
   test('retorna 400 quando local_coleta está ausente', async () => {
     const criaLembreteUseCase = { execute: vi.fn() } as unknown as CriaLembreteUseCase
     const controller = new CriaLembreteController({ criaLembreteUseCase })

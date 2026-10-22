@@ -33,6 +33,30 @@ export function parseRequiredString(raw: unknown, field: string): string | Error
   return raw
 }
 
+/**
+ * Campo opcional: ausente fica `undefined` (na atualização, mantém o valor);
+ * null limpa; número tem de ser finito.
+ */
+export function parseOptionalNumber(raw: unknown, field: string): number | null | undefined | Error {
+  if (raw === undefined || raw === null) {
+    return raw
+  }
+  if (typeof raw !== 'number' || !Number.isFinite(raw)) {
+    return new Error(`${field} inválido`)
+  }
+  return raw
+}
+
+export function parseOptionalString(raw: unknown, field: string): string | null | undefined | Error {
+  if (raw === undefined || raw === null) {
+    return raw
+  }
+  if (typeof raw !== 'string') {
+    return new Error(`${field} inválido`)
+  }
+  return raw
+}
+
 export function parseNonEmptyString(raw: unknown, field: string): string | Error {
   if (typeof raw !== 'string' || !raw.trim()) {
     return new Error(`${field} é obrigatório`)

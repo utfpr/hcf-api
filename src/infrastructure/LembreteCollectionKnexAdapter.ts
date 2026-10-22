@@ -21,6 +21,9 @@ interface Row extends FichaAttributes {
   id: number
   data_coleta: string
   local_coleta: string
+  descricao: string | null
+  latitude: number | null
+  longitude: number | null
   expedicao_id: number | null
   client_uuid: string | null
   created_at: Date
@@ -34,6 +37,9 @@ function toAttributes(row: Row): Attributes {
     id: row.id,
     data_coleta: row.data_coleta,
     local_coleta: row.local_coleta,
+    descricao: row.descricao,
+    latitude: row.latitude,
+    longitude: row.longitude,
     ...Object.fromEntries(FICHA_FIELDS.map(campo => [campo, row[campo] ?? null])) as unknown as FichaAttributes,
     expedicao_id: row.expedicao_id,
     client_uuid: row.client_uuid,
@@ -68,6 +74,9 @@ export class LembreteCollectionKnexAdapter implements LembreteCollection {
         // `date` sem conversão vira Date em meia-noite local; devolve como YYYY-MM-DD
         knex.raw('to_char(lembretes.data_coleta, \'YYYY-MM-DD\') as data_coleta'),
         'lembretes.local_coleta',
+        'lembretes.descricao',
+        'lembretes.latitude',
+        'lembretes.longitude',
         ...FICHA_FIELDS.map(campo => `lembretes.${campo}`),
         'lembretes.expedicao_id',
         'lembretes.client_uuid',

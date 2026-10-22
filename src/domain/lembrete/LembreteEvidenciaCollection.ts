@@ -4,6 +4,7 @@ import { Attributes, CreateAttributes } from './LembreteEvidencia'
 
 export interface LembreteEvidenciaFilters {
   lembrete_id?: number
+  lembrete_ids?: number[]
 }
 
 export interface LembreteEvidenciaCollection {

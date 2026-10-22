@@ -1,8 +1,9 @@
 import { Knex } from 'knex'
 
 /**
- * Multimídia (fotos, vídeos e áudios) do lembrete, no mesmo formato das
- * evidências do evento. O arquivo fica em `uploads/lembretes`.
+ * Multimídia do lembrete, no mesmo formato das evidências do evento, mas só
+ * fotos (a regra fica no upload e na entidade). O arquivo fica em
+ * `uploads/lembretes`.
  */
 export async function run(knex: Knex): Promise<void> {
   const hasTable = await knex.schema.hasTable('lembretes_evidencias')

@@ -1,3 +1,4 @@
+import { LEMBRETE_MIME_TYPES_ACEITOS } from '@/config/evidencia'
 import { Either } from '@/library/either/Either'
 
 export interface Attributes {
@@ -19,7 +20,7 @@ export interface Attributes {
 export type CreateAttributes = Omit<Attributes, 'id' | 'created_at' | 'updated_at' | 'updated_by'>
 
 /**
- * Multimídia do lembrete; mesmas regras da evidência do evento.
+ * Multimídia do lembrete; diferente da evidência do evento, aceita apenas fotos.
  */
 export class LembreteEvidencia {
   readonly id: number
@@ -63,6 +64,10 @@ export class LembreteEvidencia {
 
     if (!attributes.mime_type.trim()) {
       return Either.left(new Error('Tipo do arquivo da evidência é obrigatório'))
+    }
+
+    if (!LEMBRETE_MIME_TYPES_ACEITOS.includes(attributes.mime_type)) {
+      return Either.left(new Error('Multimídia do lembrete aceita apenas fotos (jpeg, png ou webp)'))
     }
 
     if (!Number.isInteger(attributes.tamanho) || attributes.tamanho <= 0) {
