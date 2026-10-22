@@ -128,11 +128,17 @@ export class Lembrete {
       return Either.left(new Error('Local de coleta do lembrete é obrigatório'))
     }
 
-    if (attributes.latitude != null && (attributes.latitude < -90 || attributes.latitude > 90)) {
+    if (
+      attributes.latitude != null &&
+      (!Number.isFinite(attributes.latitude) || attributes.latitude < -90 || attributes.latitude > 90)
+    ) {
       return Either.left(new Error('Latitude do lembrete deve estar entre -90 e 90'))
     }
 
-    if (attributes.longitude != null && (attributes.longitude < -180 || attributes.longitude > 180)) {
+    if (
+      attributes.longitude != null &&
+      (!Number.isFinite(attributes.longitude) || attributes.longitude < -180 || attributes.longitude > 180)
+    ) {
       return Either.left(new Error('Longitude do lembrete deve estar entre -180 e 180'))
     }
 
