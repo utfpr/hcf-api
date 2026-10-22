@@ -10,16 +10,17 @@ const publicReads = [
   { action: 'read', resource: 'Pais' },
   { action: 'read', resource: 'Estado' },
   { action: 'read', resource: 'Vegetacao' },
+  { action: 'read', resource: 'FaseSucessional' },
   { action: 'read', resource: 'Relevo' }
 ]
 
-const vegetacaoWrites = [
+const writerRules = [
+  { action: 'create', resource: 'FaseSucessional' },
+  { action: 'update', resource: 'FaseSucessional' },
+  { action: 'delete', resource: 'FaseSucessional' },
   { action: 'create', resource: 'Vegetacao' },
   { action: 'update', resource: 'Vegetacao' },
-  { action: 'delete', resource: 'Vegetacao' }
-]
-
-const relevoWrites = [
+  { action: 'delete', resource: 'Vegetacao' },
   { action: 'create', resource: 'Relevo' },
   { action: 'update', resource: 'Relevo' },
   { action: 'delete', resource: 'Relevo' }
@@ -31,16 +32,15 @@ describe('createRules', () => {
     expect(createRules(undefined)).toEqual(publicReads)
   })
 
-  test('grants curador and operador vegetacao writes', () => {
+  test('grants curador and operador write permissions', () => {
     for (const user of [
       { id: 1, tipo_usuario_id: 1 },
       { id: 2, tipo_usuario_id: 2 }
     ]) {
       expect(createRules(user)).toEqual([
         ...publicReads,
-        { action: 'read', resource: 'UsuarioSessao' },
-        ...vegetacaoWrites,
-        ...relevoWrites
+        ...writerRules,
+        { action: 'read', resource: 'UsuarioSessao' }
       ])
     }
   })

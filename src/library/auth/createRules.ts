@@ -22,6 +22,7 @@ export const RESOURCES = [
   'Pais',
   'Estado',
   'Relevo',
+  'FaseSucessional',
   'Vegetacao',
   'Cidade',
   'Usuario',
@@ -49,6 +50,7 @@ const publicReads: Rule<Resource, Action>[] = [
   { action: 'read', resource: 'Pais' },
   { action: 'read', resource: 'Estado' },
   { action: 'read', resource: 'Vegetacao' },
+  { action: 'read', resource: 'FaseSucessional' },
   { action: 'read', resource: 'Relevo' }
 ]
 
@@ -60,13 +62,13 @@ export function createRules(user?: RulesUser): Rule<Resource, Action>[] {
     return [...publicReads]
   }
 
-  const rules: Rule<Resource, Action>[] = [
-    ...publicReads,
-    { action: 'read', resource: 'UsuarioSessao' }
-  ]
+  const rules: Rule<Resource, Action>[] = [...publicReads, { action: 'read', resource: 'UsuarioSessao' }]
 
   if (user.tipo_usuario_id === CURADOR || user.tipo_usuario_id === OPERADOR) {
     rules.push(
+      { action: 'create', resource: 'FaseSucessional' },
+      { action: 'update', resource: 'FaseSucessional' },
+      { action: 'delete', resource: 'FaseSucessional' },
       { action: 'create', resource: 'Vegetacao' },
       { action: 'update', resource: 'Vegetacao' },
       { action: 'delete', resource: 'Vegetacao' },
