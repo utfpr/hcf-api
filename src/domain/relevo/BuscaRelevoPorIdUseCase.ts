@@ -14,7 +14,7 @@ export class BuscaRelevoPorIdUseCase {
     this.relevoCollection = dependencies.relevoCollection
   }
 
-  execute({ id }: { id: number }): Promise<Either<Error, Attributes | null>> {
+  execute({ id }: { id: string }): Promise<Either<Error, Attributes | undefined>> {
     return this.relevoCollection.findById(id)
   }
 }

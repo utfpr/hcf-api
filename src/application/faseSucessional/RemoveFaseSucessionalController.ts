@@ -1,35 +1,40 @@
-import { BuscaFaseSucessionalUseCase } from '@/domain/faseSucessional/BuscaFaseSucessionalUseCase'
+import { FaseSucessionalEmUsoError } from '@/domain/faseSucessional/error/FaseSucessionalEmUsoError'
+import { FaseSucessionalCollection } from '@/domain/faseSucessional/FaseSucessionalCollection'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
 import { BadRequestError } from '@/library/http/error/BadRequestError'
+import { ConflictError } from '@/library/http/error/ConflictError'
 import { HttpError } from '@/library/http/error/HttpError'
 import { InternalServerError } from '@/library/http/error/InternalServerError'
 import { NotFoundError } from '@/library/http/error/NotFoundError'
 import { NextHandler, RequestHandler } from '@/library/http/Server'
 
 interface Dependencies {
-  buscaFaseSucessionalUseCase: BuscaFaseSucessionalUseCase
+  faseSucessionalCollection: FaseSucessionalCollection
 }
 
-export class BuscaFaseSucessionalController implements RequestHandler {
-  private readonly buscaFaseSucessionalUseCase: BuscaFaseSucessionalUseCase
+export class RemoveFaseSucessionalController implements RequestHandler {
+  private readonly faseSucessionalCollection: FaseSucessionalCollection
 
   constructor(dependencies: Dependencies) {
-    this.buscaFaseSucessionalUseCase = dependencies.buscaFaseSucessionalUseCase
+    this.faseSucessionalCollection = dependencies.faseSucessionalCollection
   }
 
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const { faseSucessionalId } = request.params as { faseSucessionalId?: string }
 
-    if (!faseSucessionalId || Number.isNaN(Number(faseSucessionalId)) || Number(faseSucessionalId) <= 0) {
+    if (faseSucessionalId === undefined || faseSucessionalId === null || faseSucessionalId === '' || !/^\d+$/.test(faseSucessionalId)) {
       return new BadRequestError({ message: 'faseSucessionalId inválido' })
     }
 
-    const id = Number(faseSucessionalId)
-    const result = await this.buscaFaseSucessionalUseCase.execute({ id })
+    const result = await this.faseSucessionalCollection.delete(faseSucessionalId)
 
     if (result.left()) {
+      if (result.value instanceof FaseSucessionalEmUsoError) {
+        return new ConflictError({ message: result.value.message })
+      }
+
       return new InternalServerError({ message: result.value.message })
     }
 
@@ -37,6 +42,6 @@ export class BuscaFaseSucessionalController implements RequestHandler {
       return new NotFoundError({ message: 'Fase sucessional não encontrada' })
     }
 
-    return { statusCode: StatusCode.Ok, body: result.value }
+    return { statusCode: StatusCode.NoContent, body: undefined }
   }
 }

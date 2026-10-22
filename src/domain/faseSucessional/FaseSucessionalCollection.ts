@@ -1,6 +1,6 @@
 import { Either } from '@/library/either/Either'
 
-import { Attributes } from './FaseSucessional'
+import { Attributes, FaseSucessional } from './FaseSucessional'
 
 export interface FaseSucessionalFilters {
   nome?: string
@@ -11,6 +11,10 @@ export interface FaseSucessionalFilters {
 }
 
 export interface FaseSucessionalCollection {
-  findAll(filters: FaseSucessionalFilters): Promise<Either<Error, Attributes[]>>
-  findById(id: number): Promise<Either<Error, Attributes | null>>
+  findAll(filters: FaseSucessionalFilters): Promise<Either<Error, FaseSucessional[]>>
+  findById(id: string): Promise<Either<Error, FaseSucessional | undefined>>
+  findByNome(nome: string): Promise<Either<Error, FaseSucessional | undefined>>
+  create(attributes: Pick<Attributes, 'nome'>): Promise<Either<Error, FaseSucessional>>
+  update(id: string, attributes: Pick<Attributes, 'nome'>): Promise<Either<Error, FaseSucessional | undefined>>
+  delete(id: string): Promise<Either<Error, boolean>>
 }
