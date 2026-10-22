@@ -79,8 +79,16 @@ describe('Lembrete.create', () => {
     })
     const semCampos = Lembrete.create(lembrete)
 
-    expect(comCampos.value).toMatchObject({ descricao: 'Voltar na floração', latitude: -19.27, longitude: -43.58 })
-    expect(semCampos.value).toMatchObject({ descricao: null, latitude: null, longitude: null })
+    expect(comCampos.value).toMatchObject({
+      descricao: 'Voltar na floração',
+      latitude: -19.27,
+      longitude: -43.58
+    })
+    expect(semCampos.value).toMatchObject({
+      descricao: null,
+      latitude: null,
+      longitude: null
+    })
   })
 
   test.each([

@@ -19,13 +19,23 @@ const evidencia: Attributes = {
 }
 
 describe('LembreteEvidencia.create', () => {
-  test.each(['image/jpeg', 'image/png', 'image/webp'])('aceita foto %s', mimeType => {
+  test.each([
+    'image/jpeg',
+    'image/png',
+    'image/webp'
+  ])('aceita foto %s', mimeType => {
     const result = LembreteEvidencia.create({ ...evidencia, mime_type: mimeType })
 
     expect(result.right()).toBe(true)
   })
 
-  test.each(['video/mp4', 'video/quicktime', 'audio/mpeg', 'audio/wav', 'application/pdf'])(
+  test.each([
+    'video/mp4',
+    'video/quicktime',
+    'audio/mpeg',
+    'audio/wav',
+    'application/pdf'
+  ])(
     'rejeita %s, pois o lembrete só aceita fotos',
     mimeType => {
       const result = LembreteEvidencia.create({ ...evidencia, mime_type: mimeType })
