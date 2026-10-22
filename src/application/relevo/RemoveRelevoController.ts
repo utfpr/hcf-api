@@ -29,7 +29,7 @@ export class RemoveRelevoController implements RequestHandler {
       return new BadRequestError({ message: 'relevoId inválido' })
     }
 
-    const existing = await this.removeRelevoUseCase.execute({ id: Number(relevoId) })
+    const existing = await this.removeRelevoUseCase.execute({ id: relevoId })
 
     if (existing.left()) {
       if (existing.value instanceof RelevoEmUsoError) {

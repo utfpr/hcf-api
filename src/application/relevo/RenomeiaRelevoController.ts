@@ -1,5 +1,6 @@
 import { RelevoNaoEncontradoError } from '@/domain/relevo/error/RelevoNaoEncontradoError'
 import { RelevoNomeDuplicadoError } from '@/domain/relevo/error/RelevoNomeDuplicadoError'
+import { Relevo } from '@/domain/relevo/Relevo'
 import { RenomeiaRelevoUseCase } from '@/domain/relevo/RenomeiaRelevoUseCase'
 import {
   HttpRequest, HttpResponse, StatusCode
@@ -34,7 +35,7 @@ export class RenomeiaRelevoController implements RequestHandler {
       return new BadRequestError({ message: 'Nome do relevo não pode ser vazio' })
     }
 
-    const result = await this.renomeiaRelevoUseCase.execute({ id: Number(relevoId), nome: nome.trim() })
+    const result = await this.renomeiaRelevoUseCase.execute({ id: relevoId, nome: nome.trim() })
 
     if (result.left()) {
       if (result.value instanceof RelevoNomeDuplicadoError) {
@@ -46,6 +47,19 @@ export class RenomeiaRelevoController implements RequestHandler {
       return new InternalServerError({ message: result.value.message })
     }
 
-    return { statusCode: StatusCode.Ok, body: result.value }
+    const body = relevoBody(result.value)
+    if (!body) {
+      return new InternalServerError({ message: 'Erro ao atualizar relevo' })
+    }
+
+    return { statusCode: StatusCode.Ok, body }
   }
+}
+
+function relevoBody(relevo: Relevo): { id: string; nome: string } | undefined {
+  if (relevo.id === undefined) {
+    return undefined
+  }
+
+  return { id: relevo.id, nome: relevo.nome }
 }

@@ -15,7 +15,7 @@ export class RemoveRelevoUseCase {
     this.relevoCollection = dependencies.relevoCollection
   }
 
-  async execute({ id }: { id: number }): Promise<Either<Error, boolean>> {
+  async execute({ id }: { id: string }): Promise<Either<Error, boolean>> {
     const existing = await this.relevoCollection.findById(id)
     if (existing.left()) {
       return existing

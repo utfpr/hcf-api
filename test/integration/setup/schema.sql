@@ -910,6 +910,9 @@ CREATE TABLE public.relevos (
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
+CREATE UNIQUE INDEX relevos_nome_unique
+    ON public.relevos (LOWER(nome));
+
 
 --
 -- TOC entry 262 (class 1259 OID 31084)

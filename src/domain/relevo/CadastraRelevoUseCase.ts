@@ -1,7 +1,6 @@
 import { Either } from '@/library/either/Either'
 
-import { RelevoNomeDuplicadoError } from './error/RelevoNomeDuplicadoError'
-import { Relevo, Attributes } from './Relevo'
+import { Relevo } from './Relevo'
 import { RelevoCollection } from './RelevoCollection'
 
 interface Dependencies {
@@ -15,21 +14,10 @@ export class CadastraRelevoUseCase {
     this.relevoCollection = dependencies.relevoCollection
   }
 
-  async execute({ nome }: { nome: string }): Promise<Either<Error, Attributes>> {
-    const normalizedNome = nome.trim()
-
-    const relevo = Relevo.create({ nome: normalizedNome })
+  async execute({ nome }: { nome: string }): Promise<Either<Error, Relevo>> {
+    const relevo = Relevo.create({ nome })
     if (relevo.left()) {
-      return Either.left(relevo.value)
-    }
-
-    const existing = await this.relevoCollection.findByNome(normalizedNome)
-    if (existing.left()) {
-      return existing
-    }
-
-    if (existing.value && existing.value.nome.toLowerCase() === normalizedNome.toLowerCase()) {
-      return Either.left(new RelevoNomeDuplicadoError())
+      return relevo
     }
 
     return this.relevoCollection.create({ nome: relevo.value.nome })

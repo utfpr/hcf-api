@@ -1,6 +1,6 @@
 import { Either } from '@/library/either/Either'
 
-import { Attributes } from './Relevo'
+import { Attributes, Relevo } from './Relevo'
 
 export interface RelevoOrder {
   column: 'id' | 'nome'
@@ -14,10 +14,9 @@ export interface RelevoFilters {
 
 export interface RelevoCollection {
   findAll(filters: RelevoFilters): Promise<Either<Error, Attributes[]>>
-  findById(id: number): Promise<Either<Error, Attributes | null>>
-  findByNome(nome: string): Promise<Either<Error, Attributes | null>>
-  create(attributes: Pick<Attributes, 'nome'>): Promise<Either<Error, Attributes>>
-  updateById(id: number, attributes: Pick<Attributes, 'nome'>): Promise<Either<Error, Attributes | null>>
-  deleteById(id: number): Promise<Either<Error, boolean>>
-  countTomboReferences(id: number): Promise<Either<Error, number>>
+  findById(id: string): Promise<Either<Error, Attributes | undefined>>
+  create(attributes: Pick<Attributes, 'nome'>): Promise<Either<Error, Relevo>>
+  updateById(id: string, attributes: Pick<Attributes, 'nome'>): Promise<Either<Error, Relevo | undefined>>
+  deleteById(id: string): Promise<Either<Error, boolean>>
+  countTomboReferences(id: string): Promise<Either<Error, number>>
 }

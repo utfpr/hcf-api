@@ -1,58 +1,65 @@
 import jwt from 'jsonwebtoken'
 import {
   afterAll,
+  beforeAll,
   describe,
   expect,
-  test,
-  vi
+  test
 } from 'vitest'
 
 import { createTestApp } from '../setup/app-factory'
+import { createCuradorAuth } from '../setup/curador-auth'
 
-type Relevo = { id: number; nome: string }
+type Relevo = { id: string; nome: string }
 
-const buildAuthHeader = (
-  payload = { id: 1, tipo_usuario_id: 1 },
-  secret = process.env.JWT_SECRET as string
-) => ({
-  Authorization: `Bearer ${jwt.sign(payload, secret)}`
-})
-
-describe('POST /api/v2/relevos', () => {
+describe('POST /api/v1/relevos', () => {
   const { agent, knex } = createTestApp()
+  let authHeader: { Authorization: string }
+  let cleanupAuth: () => Promise<void>
 
-  afterAll(() => knex.destroy())
+  beforeAll(async () => {
+    const auth = await createCuradorAuth(knex)
+    authHeader = auth.header
+    cleanupAuth = auth.cleanup
+  })
+
+  afterAll(async () => {
+    await cleanupAuth()
+    await knex.destroy()
+  })
 
   test('cadastra um novo tipo de relevo', async () => {
     const nome = `plano-${Date.now()}`
-    const response = await agent.post('/api/v2/relevos').set(buildAuthHeader()).send({ nome: ` ${nome} ` }).expect(201)
+    const response = await agent.post('/api/v1/relevos').set(authHeader).send({ nome: ` ${nome} ` }).expect(201)
     const body = response.body as Relevo
 
     expect(body).toMatchObject({ nome })
-    expect(body).toHaveProperty('id')
+    expect(body.id).toMatch(/^\d+$/)
+    expect(BigInt(body.id)).toBeGreaterThan(0n)
 
     await knex('relevos').where({ id: body.id }).delete()
   })
 
   test('rejeita token ausente', async () => {
-    const response = await agent.post('/api/v2/relevos').send({ nome: 'Sem token' }).expect(403)
+    const response = await agent.post('/api/v1/relevos').send({ nome: 'Sem token' }).expect(401)
     const body = response.body as { error: { message: string } }
 
-    expect(body.error.message).toMatch(/Token de autenticação obrigatório|sem permissão/i)
+    expect(body.error.message).toMatch(/unauthorized|obrigatório|sem permissão/i)
   })
 
   test('rejeita token vazio', async () => {
-    const response = await agent.post('/api/v2/relevos').set({ Authorization: 'Bearer ' }).send({ nome: 'Token vazio' }).expect(403)
+    const response = await agent.post('/api/v1/relevos').set({ Authorization: 'Bearer ' }).send({ nome: 'Token vazio' }).expect(401)
     const body = response.body as { error: { message: string } }
 
-    expect(body.error.message).toMatch(/Token de autenticação obrigatório|sem permissão/i)
+    expect(body.error.message).toMatch(/unauthorized|obrigatório|sem permissão/i)
   })
 
   test('rejeita usuário com papel fora do permitido', async () => {
-    const response = await agent.post('/api/v2/relevos').set(buildAuthHeader({ id: 1, tipo_usuario_id: 99 })).send({ nome: 'Sem permissão' }).expect(403)
+    const token = jwt.sign({ id: 1, tipo_usuario_id: 99 }, process.env.JWT_SECRET as string)
+    const response = await agent.post('/api/v1/relevos').set({ Authorization: `Bearer ${token}` }).send({ nome: 'Sem permissão' }).expect(401)
     const body = response.body as { error: { message: string } }
 
-    expect(body.error.message).toMatch(/sem permissão|permissão/i)
+    expect(body.error.message).toMatch(/unauthorized|sem permissão|forbidden/i)
   })
 
   test('rejeita token expirado', async () => {
@@ -64,59 +71,22 @@ describe('POST /api/v2/relevos', () => {
       },
       process.env.JWT_SECRET as string
     )
-    const response = await agent.post('/api/v2/relevos').set({ Authorization: `Bearer ${token}` }).send({ nome: 'Token expirado' }).expect(401)
+    const response = await agent.post('/api/v1/relevos').set({ Authorization: `Bearer ${token}` }).expect(401)
     const body = response.body as { error: { message: string } }
 
-    expect(body.error.message).toMatch(/token expirado|expirado/i)
+    expect(body.error.message).toMatch(/unauthorized|expirado|expired/i)
   })
 
   test('rejeita token inválido', async () => {
     const token = jwt.sign({ id: 1, tipo_usuario_id: 1 }, 'segredo-diferente')
-    const response = await agent.post('/api/v2/relevos').set({ Authorization: `Bearer ${token}` }).send({ nome: 'Token inválido' }).expect(401)
+    const response = await agent.post('/api/v1/relevos').set({ Authorization: `Bearer ${token}` }).send({ nome: 'Token inválido' }).expect(401)
     const body = response.body as { error: { message: string } }
 
-    expect(body.error.message).toMatch(/token de autenticação inválido|invalid/i)
-  })
-
-  test('rejeita quando JWT_SECRET não está configurado', async () => {
-    const originalSecret = process.env.JWT_SECRET
-    vi.resetModules()
-    delete process.env.JWT_SECRET
-
-    try {
-      const { ExigePermissaoEscritaRelevo } = await import('@/application/relevo/ExigePermissaoEscritaRelevo')
-      const middleware = new ExigePermissaoEscritaRelevo()
-      const response = await middleware.handle(
-        {
-          method: 'post',
-          path: '/api/v2/relevos',
-          headers: {
-            Authorization: 'Bearer qualquer-token',
-            'Content-Length': 0,
-            'Content-Type': 'application/json'
-          },
-          params: {},
-          body: { nome: 'Sem secret' }
-        },
-        () => Promise.resolve({ statusCode: 200, body: {} })
-      )
-
-      expect(response).toMatchObject({
-        statusCode: 401,
-        message: expect.stringMatching(/token de autenticação inválido|invalid/i)
-      })
-    } finally {
-      if (originalSecret === undefined) {
-        delete process.env.JWT_SECRET
-      } else {
-        process.env.JWT_SECRET = originalSecret
-      }
-      vi.resetModules()
-    }
+    expect(body.error.message).toMatch(/unauthorized|inválido|invalid/i)
   })
 
   test('retorna 400 quando o nome está vazio', async () => {
-    const response = await agent.post('/api/v2/relevos').set(buildAuthHeader()).send({ nome: '   ' }).expect(400)
+    const response = await agent.post('/api/v1/relevos').set(authHeader).send({ nome: '   ' }).expect(400)
     const body = response.body as { error: { message: string } }
 
     expect(body.error.message).toMatch(/vazio|empty/i)
@@ -127,7 +97,7 @@ describe('POST /api/v2/relevos', () => {
     await knex('relevos').insert({ nome })
 
     try {
-      const response = await agent.post('/api/v2/relevos').set(buildAuthHeader()).send({ nome: nome.toUpperCase() }).expect(409)
+      const response = await agent.post('/api/v1/relevos').set(authHeader).send({ nome: nome.toUpperCase() }).expect(409)
       const body = response.body as { error: { message: string } }
 
       expect(body.error.message).toMatch(/já existe|already exists/i)

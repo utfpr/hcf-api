@@ -48,7 +48,8 @@ export type RulesUser = { id: number; tipo_usuario_id: number }
 const publicReads: Rule<Resource, Action>[] = [
   { action: 'read', resource: 'Pais' },
   { action: 'read', resource: 'Estado' },
-  { action: 'read', resource: 'Vegetacao' }
+  { action: 'read', resource: 'Vegetacao' },
+  { action: 'read', resource: 'Relevo' }
 ]
 
 const CURADOR = 1
@@ -68,7 +69,10 @@ export function createRules(user?: RulesUser): Rule<Resource, Action>[] {
     rules.push(
       { action: 'create', resource: 'Vegetacao' },
       { action: 'update', resource: 'Vegetacao' },
-      { action: 'delete', resource: 'Vegetacao' }
+      { action: 'delete', resource: 'Vegetacao' },
+      { action: 'create', resource: 'Relevo' },
+      { action: 'update', resource: 'Relevo' },
+      { action: 'delete', resource: 'Relevo' }
     )
   }
 

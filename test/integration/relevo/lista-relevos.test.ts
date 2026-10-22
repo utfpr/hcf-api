@@ -4,11 +4,11 @@ import {
 
 import { createTestApp } from '../setup/app-factory'
 
-type Relevo = { id: number; nome: string }
+type Relevo = { id: string; nome: string }
 
 const returning = ['id', 'nome'] as const
 
-describe('GET /api/v2/relevos', () => {
+describe('GET /api/v1/relevos', () => {
   const { agent, knex } = createTestApp()
 
   afterAll(() => knex.destroy())
@@ -26,8 +26,8 @@ describe('GET /api/v2/relevos', () => {
       .returning<Relevo[]>(returning)
 
     try {
-      const response = await agent.get(`/api/v2/relevos?nome=${prefix}`).expect(200)
-      const expected = [...inserted].sort((a, b) => b.id - a.id)
+      const response = await agent.get(`/api/v1/relevos?nome=${prefix}`).expect(200)
+      const expected = [...inserted].sort((a, b) => b.id.localeCompare(a.id, undefined, { numeric: true }))
       expect(response.body).toEqual(expected)
     } finally {
       await knex('relevos').whereIn('nome', nomes).delete()
@@ -47,7 +47,7 @@ describe('GET /api/v2/relevos', () => {
       .returning<Relevo[]>(returning)
 
     try {
-      const response = await agent.get(`/api/v2/relevos?nome=${prefix} plano`).expect(200)
+      const response = await agent.get(`/api/v1/relevos?nome=${prefix} plano`).expect(200)
       expect(response.body).toEqual(inserted.filter(item => item.nome === `${prefix} Plano`))
     } finally {
       await knex('relevos').whereIn('nome', nomes).delete()
@@ -67,11 +67,11 @@ describe('GET /api/v2/relevos', () => {
       .returning<Relevo[]>(returning)
 
     try {
-      const byNameAsc = await agent.get(`/api/v2/relevos?nome=${prefix}&order=nome:asc`).expect(200)
+      const byNameAsc = await agent.get(`/api/v1/relevos?nome=${prefix}&order=nome:asc`).expect(200)
       expect(byNameAsc.body).toEqual([...inserted].sort((a, b) => a.nome.localeCompare(b.nome)))
 
-      const byIdAsc = await agent.get(`/api/v2/relevos?nome=${prefix}&order=id:asc`).expect(200)
-      expect(byIdAsc.body).toEqual([...inserted].sort((a, b) => a.id - b.id))
+      const byIdAsc = await agent.get(`/api/v1/relevos?nome=${prefix}&order=id:asc`).expect(200)
+      expect(byIdAsc.body).toEqual([...inserted].sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true })))
     } finally {
       await knex('relevos').whereIn('nome', nomes).delete()
     }
@@ -88,7 +88,7 @@ describe('GET /api/v2/relevos', () => {
     await knex('relevos').insert(nomes.map(nome => ({ nome })))
 
     try {
-      const response = await agent.get(`/api/v2/relevos?nome=${prefix}&order=foo:bar`).expect(400)
+      const response = await agent.get(`/api/v1/relevos?nome=${prefix}&order=foo:bar`).expect(400)
       const body = response.body as { error: { message: string } }
       expect(body.error.message).toMatch(/inválido|invalid/i)
     } finally {

@@ -1,5 +1,6 @@
 import { CadastraRelevoUseCase } from '@/domain/relevo/CadastraRelevoUseCase'
 import { RelevoNomeDuplicadoError } from '@/domain/relevo/error/RelevoNomeDuplicadoError'
+import { Relevo } from '@/domain/relevo/Relevo'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
@@ -27,8 +28,7 @@ export class CadastraRelevoController implements RequestHandler {
       return new BadRequestError({ message: 'Nome do relevo não pode ser vazio' })
     }
 
-    const normalized = nome.trim()
-    const result = await this.cadastraRelevoUseCase.execute({ nome: normalized })
+    const result = await this.cadastraRelevoUseCase.execute({ nome: nome.trim() })
 
     if (result.left()) {
       if (result.value instanceof RelevoNomeDuplicadoError) {
@@ -37,6 +37,19 @@ export class CadastraRelevoController implements RequestHandler {
       return new InternalServerError({ message: result.value.message })
     }
 
-    return { statusCode: StatusCode.Created, body: result.value }
+    const body = relevoBody(result.value)
+    if (!body) {
+      return new InternalServerError({ message: 'Erro ao criar relevo' })
+    }
+
+    return { statusCode: StatusCode.Created, body }
   }
+}
+
+function relevoBody(relevo: Relevo): { id: string; nome: string } | undefined {
+  if (relevo.id === undefined) {
+    return undefined
+  }
+
+  return { id: relevo.id, nome: relevo.nome }
 }
