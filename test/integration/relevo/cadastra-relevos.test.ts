@@ -9,6 +9,7 @@ import {
 
 import { createTestApp } from '../setup/app-factory'
 import { createCuradorAuth } from '../setup/curador-auth'
+import { insertUsuarioComTipo } from '../setup/usuarios'
 
 type Relevo = { id: string; nome: string }
 
@@ -55,11 +56,20 @@ describe('POST /api/v1/relevos', () => {
   })
 
   test('rejeita usuário com papel fora do permitido', async () => {
-    const token = jwt.sign({ id: 1, tipo_usuario_id: 99 }, process.env.JWT_SECRET as string)
-    const response = await agent.post('/api/v1/relevos').set({ Authorization: `Bearer ${token}` }).send({ nome: 'Sem permissão' }).expect(401)
-    const body = response.body as { error: { message: string } }
+    const usuario = await insertUsuarioComTipo(knex, 3)
+    const token = jwt.sign(
+      { id: usuario.id, tipo_usuario_id: 3 },
+      process.env.JWT_SECRET as string
+    )
 
-    expect(body.error.message).toMatch(/unauthorized|sem permissão|forbidden/i)
+    try {
+      const response = await agent.post('/api/v1/relevos').set({ Authorization: `Bearer ${token}` }).send({ nome: 'Sem permissão' }).expect(403)
+      const body = response.body as { error: { message: string } }
+
+      expect(body.error.message).toMatch(/forbidden|sem permissão/i)
+    } finally {
+      await usuario.cleanup()
+    }
   })
 
   test('rejeita token expirado', async () => {
