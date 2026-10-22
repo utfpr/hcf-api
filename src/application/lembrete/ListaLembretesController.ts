@@ -97,6 +97,9 @@ export class ListaLembretesController implements RequestHandler {
 
     // As fotos vêm junto para o app montar o card sem uma chamada por lembrete
     const ids = result.value.itens.map(lembrete => lembrete.id)
+    if (ids.length === 0) {
+      return { body: { ...result.value, itens: [] }, statusCode: StatusCode.Ok }
+    }
     const evidenciasResult = await this.lembreteEvidenciaCollection.findAll({ lembrete_ids: ids })
     if (evidenciasResult.left()) return new InternalServerError({ message: evidenciasResult.value.message })
     const evidencias = evidenciasResult.value
