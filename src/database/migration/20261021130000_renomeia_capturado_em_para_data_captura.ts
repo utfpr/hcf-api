@@ -8,7 +8,11 @@ import { Knex } from 'knex'
  *
  * Renomeia só onde ainda estiver o nome antigo: em banco novo não faz nada.
  */
-const TABELAS = ['eventos', 'evidencias', 'lembretes_evidencias']
+const TABELAS = [
+  'eventos',
+  'evidencias',
+  'lembretes_evidencias'
+]
 
 export async function run(knex: Knex): Promise<void> {
   await knex.transaction(async trx => {
