@@ -1,3 +1,4 @@
+import { LEMBRETE_MIME_TYPES_ACEITOS } from '@/config/evidencia'
 import { Either } from '@/library/either/Either'
 
 export interface Attributes {
@@ -65,8 +66,8 @@ export class LembreteEvidencia {
       return Either.left(new Error('Tipo do arquivo da evidência é obrigatório'))
     }
 
-    if (!attributes.mime_type.startsWith('image/')) {
-      return Either.left(new Error('Multimídia do lembrete aceita apenas fotos'))
+    if (!LEMBRETE_MIME_TYPES_ACEITOS.includes(attributes.mime_type)) {
+      return Either.left(new Error('Multimídia do lembrete aceita apenas fotos (jpeg, png ou webp)'))
     }
 
     if (!Number.isInteger(attributes.tamanho) || attributes.tamanho <= 0) {

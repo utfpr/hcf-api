@@ -34,14 +34,19 @@ describe('LembreteEvidencia.create', () => {
     'video/quicktime',
     'audio/mpeg',
     'audio/wav',
-    'application/pdf'
+    'application/pdf',
+    'image/gif',
+    'image/bmp',
+    'image/svg+xml'
   ])(
     'rejeita %s, pois o lembrete só aceita fotos',
     mimeType => {
       const result = LembreteEvidencia.create({ ...evidencia, mime_type: mimeType })
 
       expect(result.left()).toBe(true)
-      expect((result.value as Error).message).toBe('Multimídia do lembrete aceita apenas fotos')
+      expect((result.value as Error).message).toBe(
+        'Multimídia do lembrete aceita apenas fotos (jpeg, png ou webp)'
+      )
     }
   )
 
