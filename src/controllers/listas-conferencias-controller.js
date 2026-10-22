@@ -4,6 +4,11 @@ import models from '../models/index.js';
 
 const {
     Rfid,
+    TomboFoto,
+    Tombo,
+    Familia,
+    Genero,
+    Especie,
     ListaConferencia,
     ListaConferenciaRfid,
     Inventario,
@@ -28,6 +33,83 @@ const normalizarIdsRfids = rfidIds => {
     return [...new Set(ids)];
 };
 
+const normalizarIdsFiltro = valor => {
+    const valores = Array.isArray(valor) ? valor : [valor];
+    const ids = valores
+        .map(item => Number(item))
+        .filter(item => Number.isInteger(item) && item > 0);
+
+    return [...new Set(ids)];
+};
+
+const criarFiltroRfids = filtros => {
+    const {
+        tombo_hcf: tomboHcf,
+        familia_id: familiaId,
+        genero_id: generoId,
+        especie_id: especieId,
+        rfid_ids: rfidIdsRequest,
+    } = filtros || {};
+    const whereFoto = {};
+    const whereTombo = {};
+    const familiaIds = normalizarIdsFiltro(familiaId);
+    const generoIds = normalizarIdsFiltro(generoId);
+    const especieIds = normalizarIdsFiltro(especieId);
+    const rfidIds = normalizarIdsRfids(rfidIdsRequest) || [];
+
+    if (tomboHcf) whereFoto.tombo_hcf = tomboHcf;
+    if (familiaIds.length > 0) whereTombo.familia_id = { [Op.in]: familiaIds };
+    if (generoIds.length > 0) whereTombo.genero_id = { [Op.in]: generoIds };
+    if (especieIds.length > 0) whereTombo.especie_id = { [Op.in]: especieIds };
+
+    const possuiFiltroTaxonomico = Object.keys(whereTombo).length > 0;
+    const includeTombo = [];
+
+    if (possuiFiltroTaxonomico) {
+        includeTombo.push({
+            model: Tombo,
+            attributes: ['hcf', 'familia_id', 'genero_id', 'especie_id'],
+            where: whereTombo,
+            required: true,
+            include: [
+                { model: Familia, attributes: ['id', 'nome'], required: false },
+                { model: Genero, attributes: ['id', 'nome'], required: false },
+                { model: Especie, as: 'especie', attributes: ['id', 'nome'], required: false },
+            ],
+        });
+    }
+
+    return {
+        where: {
+            status: 'CONCLUIDO',
+            ...(rfidIds.length > 0 ? { id: { [Op.in]: rfidIds } } : {}),
+        },
+        include: [{
+            model: TomboFoto,
+            attributes: ['id', 'tombo_hcf', 'codigo_barra', 'caminho_foto'],
+            where: Object.keys(whereFoto).length > 0 ? whereFoto : undefined,
+            required: Object.keys(whereFoto).length > 0 || possuiFiltroTaxonomico,
+            include: includeTombo,
+        }],
+        possuiFiltro: Object.keys(whereFoto).length > 0 || possuiFiltroTaxonomico || rfidIds.length > 0,
+    };
+};
+
+const buscarIdsRfidsPorFiltro = async (filtros, transaction) => {
+    const filtro = criarFiltroRfids(filtros);
+    const rfids = await Rfid.findAll({
+        attributes: ['id'],
+        where: filtro.where,
+        include: filtro.include,
+        transaction,
+    });
+
+    return {
+        ids: rfids.map(rfid => rfid.id),
+        possuiFiltro: filtro.possuiFiltro,
+    };
+};
+
 const validarRfidsExistentes = async (rfidIds, transaction) => {
     const rfids = await Rfid.findAll({
         attributes: ['id', 'tid', 'tombo_foto_id'],
@@ -48,8 +130,11 @@ const formatarRfidListaConferencia = rfid => {
 
     return {
         id: rfidJson.id,
+        epc: rfidJson.epc,
         tid: rfidJson.tid,
+        status: rfidJson.status,
         tombo_foto_id: rfidJson.tombo_foto_id,
+        tombos_foto: rfidJson.TomboFoto || rfidJson.tombos_foto || null,
     };
 };
 
@@ -99,14 +184,17 @@ export const listarListasConferencias = async (request, response, next) => {
 export const criarListaConferencia = async (request, response, next) => {
     try {
         const { nome, descricao, rfid_ids: rfidIdsRequest } = request.body;
-        const rfidIds = normalizarIdsRfids(rfidIdsRequest);
+        const rfidIds = rfidIdsRequest === undefined
+            || (Array.isArray(rfidIdsRequest) && rfidIdsRequest.length === 0)
+            ? []
+            : normalizarIdsRfids(rfidIdsRequest);
 
         if (!nome || !String(nome).trim()) {
             return response.status(400).json({ mensagem: 'Nome é obrigatório.' });
         }
 
-        if (!rfidIds || rfidIds.length < 1) {
-            return response.status(400).json({ mensagem: 'rfid_ids deve ser um array não vazio.' });
+        if (rfidIds === null) {
+            return response.status(400).json({ mensagem: 'rfid_ids deve ser um array de IDs válidos.' });
         }
 
         const listaCriada = await sequelize.transaction(async transaction => {
@@ -168,15 +256,10 @@ export const buscarListaConferencia = async (request, response, next) => {
 export const atualizarListaConferencia = async (request, response, next) => {
     try {
         const { id } = request.params;
-        const { nome, descricao, rfid_ids: rfidIdsRequest } = request.body;
-        const rfidIds = normalizarIdsRfids(rfidIdsRequest);
+        const { nome, descricao } = request.body;
 
         if (!nome || !String(nome).trim()) {
             return response.status(400).json({ mensagem: 'Nome é obrigatório.' });
-        }
-
-        if (!rfidIds || rfidIds.length < 1) {
-            return response.status(400).json({ mensagem: 'rfid_ids deve ser um array não vazio.' });
         }
 
         const listaAtualizada = await sequelize.transaction(async transaction => {
@@ -186,32 +269,12 @@ export const atualizarListaConferencia = async (request, response, next) => {
                 return { erro: { status: 404, mensagem: 'Lista de conferência não encontrada.' } };
             }
 
-            const { valido, rfids } = await validarRfidsExistentes(rfidIds, transaction);
-
-            if (!valido) {
-                return { erro: { status: 400, mensagem: 'Um ou mais RFIDs informados não existem.' } };
-            }
-
             lista.nome = String(nome).trim();
             lista.descricao = descricao;
             await lista.save({ transaction });
 
-            await ListaConferenciaRfid.destroy({
-                where: { lista_conferencia_id: lista.id },
-                transaction,
-            });
-
-            await ListaConferenciaRfid.bulkCreate(
-                rfidIds.map(rfidId => ({
-                    lista_conferencia_id: lista.id,
-                    rfid_id: rfidId,
-                })),
-                { transaction },
-            );
-
             return {
                 ...formatarListaConferencia(lista),
-                rfids: rfids.map(formatarRfidListaConferencia),
             };
         });
 
@@ -250,9 +313,13 @@ export const listarRfidsListaConferencia = async (request, response, next) => {
             include: [
                 {
                     model: Rfid,
-                    attributes: ['id', 'tid', 'tombo_foto_id'],
+                    attributes: ['id', 'epc', 'tid', 'status', 'tombo_foto_id'],
                     where: Object.keys(whereRfid).length > 0 ? whereRfid : undefined,
                     required: true,
+                    include: [{
+                        model: TomboFoto,
+                        attributes: ['id', 'tombo_hcf', 'codigo_barra', 'caminho_foto'],
+                    }],
                 },
             ],
             order: [['id', 'ASC']],
@@ -268,6 +335,100 @@ export const listarRfidsListaConferencia = async (request, response, next) => {
                 limite,
             },
         });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const adicionarRfidsPorFiltro = async (request, response, next) => {
+    try {
+        const { id } = request.params;
+        const lista = await ListaConferencia.findByPk(id, { attributes: ['id'] });
+
+        if (!lista) {
+            return response.status(404).json({ mensagem: 'Lista de conferência não encontrada.' });
+        }
+
+        const resultado = await sequelize.transaction(async transaction => {
+            const { ids } = await buscarIdsRfidsPorFiltro(request.body, transaction);
+            const existentes = await ListaConferenciaRfid.findAll({
+                attributes: ['rfid_id'],
+                where: {
+                    lista_conferencia_id: id,
+                    rfid_id: { [Op.in]: ids.length > 0 ? ids : [0] },
+                },
+                transaction,
+            });
+            const existentesSet = new Set(existentes.map(vinculo => vinculo.rfid_id));
+            const novosIds = ids.filter(rfidId => !existentesSet.has(rfidId));
+
+            if (novosIds.length > 0) {
+                await ListaConferenciaRfid.bulkCreate(
+                    novosIds.map(rfidId => ({ lista_conferencia_id: id, rfid_id: rfidId })),
+                    { transaction },
+                );
+            }
+
+            return { encontrados: ids.length, adicionados: novosIds.length };
+        });
+
+        return response.status(200).json(resultado);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const removerRfidsPorFiltro = async (request, response, next) => {
+    try {
+        const { id } = request.params;
+        const lista = await ListaConferencia.findByPk(id, { attributes: ['id'] });
+
+        if (!lista) {
+            return response.status(404).json({ mensagem: 'Lista de conferência não encontrada.' });
+        }
+
+        const resultado = await sequelize.transaction(async transaction => {
+            const { ids, possuiFiltro } = await buscarIdsRfidsPorFiltro(request.body, transaction);
+
+            if (!possuiFiltro) {
+                return { erro: { status: 400, mensagem: 'Informe ao menos um filtro para remover vínculos.' } };
+            }
+
+            const removidos = await ListaConferenciaRfid.destroy({
+                where: {
+                    lista_conferencia_id: id,
+                    rfid_id: { [Op.in]: ids.length > 0 ? ids : [0] },
+                },
+                transaction,
+            });
+
+            return { removidos };
+        });
+
+        if (resultado?.erro) {
+            return response.status(resultado.erro.status).json({ mensagem: resultado.erro.mensagem });
+        }
+
+        return response.status(200).json(resultado);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const removerTodosRfids = async (request, response, next) => {
+    try {
+        const { id } = request.params;
+        const lista = await ListaConferencia.findByPk(id, { attributes: ['id'] });
+
+        if (!lista) {
+            return response.status(404).json({ mensagem: 'Lista de conferência não encontrada.' });
+        }
+
+        const removidos = await ListaConferenciaRfid.destroy({
+            where: { lista_conferencia_id: id },
+        });
+
+        return response.status(200).json({ removidos });
     } catch (error) {
         next(error);
     }
@@ -383,6 +544,40 @@ const criarFiltroPeriodo = ({ dataInicio, dataFim }) => {
     return filtro;
 };
 
+const montarDetalhesTid = vinculos => vinculos.reduce((acc, vinculo) => {
+    const rfid = vinculo.Rfid;
+    const tid = normalizarTid(rfid?.tid);
+
+    if (!tidValido(tid)) return acc;
+
+    acc[tid] = {
+        tid,
+        rfid_id: rfid.id,
+        tombo_foto_id: rfid.tombo_foto_id,
+        tombo_hcf: rfid.tombos_foto?.tombo_hcf || rfid.TomboFoto?.tombo_hcf || null,
+        codigo_barra: rfid.tombos_foto?.codigo_barra || rfid.TomboFoto?.codigo_barra || null,
+        caminho_foto: rfid.tombos_foto?.caminho_foto || rfid.TomboFoto?.caminho_foto || null,
+    };
+
+    return acc;
+}, {});
+
+const mapearTidsComDetalhes = (tids = [], detalhesPorTid) => tids.map(tid => detalhesPorTid[tid] || { tid });
+
+const formatarInventarioListaConferencia = (inventario, detalhesPorTid) => {
+    const inventarioJson = typeof inventario.toJSON === 'function' ? inventario.toJSON() : inventario;
+    const status = inventarioJson.status || {};
+
+    return {
+        ...inventarioJson,
+        status_detalhado: {
+            encontrados: mapearTidsComDetalhes(status.encontrados, detalhesPorTid),
+            nao_encontrados: mapearTidsComDetalhes(status.nao_encontrados, detalhesPorTid),
+            tids_invalidos: mapearTidsComDetalhes(status.tids_invalidos, detalhesPorTid),
+        },
+    };
+};
+
 export const listarInventariosListaConferencia = async (request, response, next) => {
     try {
         const { id } = request.params;
@@ -429,8 +624,29 @@ export const listarInventariosListaConferencia = async (request, response, next)
             offset,
         });
 
+        const vinculos = await ListaConferenciaRfid.findAll({
+            attributes: ['id'],
+            where: { lista_conferencia_id: id },
+            include: [
+                {
+                    model: Rfid,
+                    attributes: ['id', 'tid', 'tombo_foto_id'],
+                    required: true,
+                    include: [
+                        {
+                            model: TomboFoto,
+                            attributes: ['id', 'tombo_hcf', 'codigo_barra', 'caminho_foto'],
+                        },
+                    ],
+                },
+            ],
+            order: [['id', 'ASC']],
+        });
+
+        const detalhesPorTid = montarDetalhesTid(vinculos);
+
         return response.status(200).json({
-            dados: inventarios.rows,
+            dados: inventarios.rows.map(inventario => formatarInventarioListaConferencia(inventario, detalhesPorTid)),
             meta: {
                 total: inventarios.count,
                 pagina,

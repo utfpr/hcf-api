@@ -156,6 +156,17 @@ export default app => {
     app.route('/rfids/listas_conferencias/:id/rfids').get([
         tokensMiddleware(),
         ListasConferenciasController.listarRfidsListaConferencia,
+    ]).post([
+        tokensMiddleware(),
+        ListasConferenciasController.adicionarRfidsPorFiltro,
+    ]).delete([
+        tokensMiddleware(),
+        ListasConferenciasController.removerRfidsPorFiltro,
+    ]);
+
+    app.route('/rfids/listas_conferencias/:id/rfids/todos').delete([
+        tokensMiddleware(),
+        ListasConferenciasController.removerTodosRfids,
     ]);
 
     app.route('/rfids/listas_conferencias/:id/inventarios').get([

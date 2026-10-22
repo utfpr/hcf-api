@@ -2,7 +2,15 @@ import { Op, Sequelize } from 'sequelize';
 
 import models from '../models/index.js';
 
-const { Rfid, TomboFoto, Tombo, Especie, Coletor } = models;
+const {
+    Rfid,
+    TomboFoto,
+    Tombo,
+    Especie,
+    Genero,
+    Familia,
+    Coletor,
+} = models;
 
 const getIncludedTomboFoto = rfidJson => (
     rfidJson.TomboFoto || rfidJson.tombos_foto || rfidJson.tombo_foto || rfidJson.TomboFotos
@@ -115,6 +123,15 @@ const criarFiltroEpc = epc => {
     return {
         epc: { [Op.iLike]: `%${termo}%` },
     };
+};
+
+const normalizarIdsFiltro = valor => {
+    const valores = Array.isArray(valor) ? valor : [valor];
+    const ids = valores
+        .map(item => Number(item))
+        .filter(item => Number.isInteger(item) && item > 0);
+
+    return [...new Set(ids)];
 };
 
 const formatarRfidResposta = rfid => {
@@ -243,7 +260,18 @@ export const listagem = async (request, response, next) => {
         const pagina = parseInt(request.query.pagina) || 1;
         const offset = (pagina - 1) * limite;
 
-        const { tombo_hcf, epc, codigo_barra, status } = request.query;
+        const {
+            tombo_hcf,
+            epc,
+            codigo_barra,
+            status,
+            familia_id,
+            genero_id,
+            especie_id,
+        } = request.query;
+        const familiaFiltro = familia_id || request.query['familia_id[]'];
+        const generoFiltro = genero_id || request.query['genero_id[]'];
+        const especieFiltro = especie_id || request.query['especie_id[]'];
         const whereRfid = {};
 
         if (epc) {
@@ -264,6 +292,41 @@ export const listagem = async (request, response, next) => {
             whereFoto.codigo_barra = codigo_barra;
         }
 
+        const whereTombo = {};
+
+        const familiaIds = normalizarIdsFiltro(familiaFiltro);
+        const generoIds = normalizarIdsFiltro(generoFiltro);
+        const especieIds = normalizarIdsFiltro(especieFiltro);
+
+        if (familiaIds.length > 0) {
+            whereTombo.familia_id = { [Op.in]: familiaIds };
+        }
+
+        if (generoIds.length > 0) {
+            whereTombo.genero_id = { [Op.in]: generoIds };
+        }
+
+        if (especieIds.length > 0) {
+            whereTombo.especie_id = { [Op.in]: especieIds };
+        }
+
+        const possuiFiltroTaxonomico = Object.keys(whereTombo).length > 0;
+        const includeTombo = [];
+
+        if (possuiFiltroTaxonomico) {
+            includeTombo.push({
+                model: Tombo,
+                attributes: ['hcf', 'familia_id', 'genero_id', 'especie_id'],
+                where: whereTombo,
+                required: true,
+                include: [
+                    { model: Familia, attributes: ['id', 'nome'], required: false },
+                    { model: Genero, attributes: ['id', 'nome'], required: false },
+                    { model: Especie, as: 'especie', attributes: ['id', 'nome'], required: false },
+                ],
+            });
+        }
+
         const rfids = await Rfid.unscoped().findAndCountAll({
             attributes: ['id', 'tombo_foto_id', 'epc', 'tid', 'status', 'created_at', 'updated_at'],
             limit: limite,
@@ -274,7 +337,8 @@ export const listagem = async (request, response, next) => {
                     model: TomboFoto,
                     attributes: ['id', 'tombo_hcf', 'codigo_barra', 'caminho_foto'],
                     where: Object.keys(whereFoto).length > 0 ? whereFoto : undefined,
-                    required: Object.keys(whereFoto).length > 0,
+                    required: Object.keys(whereFoto).length > 0 || possuiFiltroTaxonomico,
+                    include: includeTombo,
                 },
             ],
             order: [['created_at', 'DESC']],
