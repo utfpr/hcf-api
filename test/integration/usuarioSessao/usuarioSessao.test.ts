@@ -65,10 +65,14 @@ describe('usuario sessao HTTP', () => {
   async function insertUsuario(email: string, senha: string) {
     let tipo = await knex('tipos_usuarios').orderBy('id', 'asc').first<{ id: number }>()
     if (!tipo) {
-      const inserted = await knex('tipos_usuarios')
-        .insert({ tipo: 'Curador' })
-        .returning<{ id: number }[]>('id')
-      tipo = inserted[0]
+      try {
+        const inserted = await knex('tipos_usuarios')
+          .insert({ tipo: 'Curador' })
+          .returning<{ id: number }[]>('id')
+        tipo = inserted[0]
+      } catch {
+        tipo = await knex('tipos_usuarios').orderBy('id', 'asc').first<{ id: number }>()
+      }
     }
     if (!tipo) {
       throw new Error('tipos_usuarios row is required')
