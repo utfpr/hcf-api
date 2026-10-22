@@ -65,7 +65,11 @@ function isDuplicateRelevoError(error: unknown): boolean {
 }
 
 function isRelevoInUseError(error: unknown): boolean {
-  const { code, message, constraint } = errorFields(error)
+  const {
+    code,
+    message,
+    constraint
+  } = errorFields(error)
   const normalized = [
     code,
     message,

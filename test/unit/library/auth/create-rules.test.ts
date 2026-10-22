@@ -39,8 +39,8 @@ describe('createRules', () => {
     ]) {
       expect(createRules(user)).toEqual([
         ...publicReads,
-        ...writerRules,
-        { action: 'read', resource: 'UsuarioSessao' }
+        { action: 'read', resource: 'UsuarioSessao' },
+        ...writerRules
       ])
     }
   })
