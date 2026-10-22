@@ -85,6 +85,10 @@ export class LembreteEvidenciaCollectionKnexAdapter implements LembreteEvidencia
         query.where({ lembrete_id: filters.lembrete_id })
       }
 
+      if (filters.lembrete_ids !== undefined) {
+        query.whereIn('lembrete_id', filters.lembrete_ids)
+      }
+
       query.orderBy('id', 'desc')
 
       const rows = await query as Row[]

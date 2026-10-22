@@ -2,6 +2,7 @@ import { isDataValida } from '@/domain/lembrete/Lembrete'
 import {
   LembreteCollection, LembreteFilters, LembreteOrder
 } from '@/domain/lembrete/LembreteCollection'
+import { LembreteEvidenciaCollection } from '@/domain/lembrete/LembreteEvidenciaCollection'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
@@ -10,10 +11,11 @@ import { HttpError } from '@/library/http/error/HttpError'
 import { InternalServerError } from '@/library/http/error/InternalServerError'
 import { NextHandler, RequestHandler } from '@/library/http/Server'
 
-import { parseExpedicaoId } from './lembrete-parsing'
+import { lembreteEvidenciaUrl, parseExpedicaoId } from './lembrete-parsing'
 
 interface Dependencies {
   lembreteCollection: LembreteCollection
+  lembreteEvidenciaCollection: LembreteEvidenciaCollection
 }
 
 const COLUNAS_ORDENAVEIS: ReadonlyArray<LembreteOrder['column']> = ['id', 'data_coleta']
@@ -21,9 +23,11 @@ const DIRECOES: ReadonlyArray<LembreteOrder['direction']> = ['asc', 'desc']
 
 export class ListaLembretesController implements RequestHandler {
   private readonly lembreteCollection: LembreteCollection
+  private readonly lembreteEvidenciaCollection: LembreteEvidenciaCollection
 
   constructor(dependencies: Dependencies) {
     this.lembreteCollection = dependencies.lembreteCollection
+    this.lembreteEvidenciaCollection = dependencies.lembreteEvidenciaCollection
   }
 
   // Próximos lembretes (a partir de hoje, o mais próximo primeiro):
@@ -91,6 +95,20 @@ export class ListaLembretesController implements RequestHandler {
       return new InternalServerError({ message: result.value.message })
     }
 
-    return { body: result.value, statusCode: StatusCode.Ok }
+    // As fotos vêm junto para o app montar o card sem uma chamada por lembrete
+    const ids = result.value.itens.map(lembrete => lembrete.id)
+    const evidencias = ids.length > 0
+      ? await this.lembreteEvidenciaCollection.findAll({ lembrete_ids: ids })
+      : null
+    if (evidencias?.left()) return new InternalServerError({ message: evidencias.value.message })
+
+    const itens = result.value.itens.map(lembrete => ({
+      ...lembrete,
+      evidencias: (evidencias?.value ?? [])
+        .filter(evidencia => evidencia.lembrete_id === lembrete.id)
+        .map(evidencia => ({ ...evidencia, url: lembreteEvidenciaUrl(evidencia.arquivo) }))
+    }))
+
+    return { body: { ...result.value, itens }, statusCode: StatusCode.Ok }
   }
 }

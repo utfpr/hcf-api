@@ -47,6 +47,9 @@ export interface Attributes extends FichaAttributes {
   id: number
   data_coleta: string
   local_coleta: string
+  descricao?: string | null
+  latitude?: number | null
+  longitude?: number | null
   // Expedição de onde o lembrete foi criado; null quando não veio de uma
   expedicao_id?: number | null
   // Chave de idempotência do app (offline); null para o que veio do web
@@ -91,6 +94,9 @@ export class Lembrete {
   readonly id?: number
   readonly data_coleta: string
   readonly local_coleta: string
+  readonly descricao: string | null
+  readonly latitude: number | null
+  readonly longitude: number | null
   readonly ficha: FichaAttributes
   readonly created_at?: Date
   readonly updated_at?: Date
@@ -101,6 +107,9 @@ export class Lembrete {
     this.id = attributes.id
     this.data_coleta = attributes.data_coleta
     this.local_coleta = attributes.local_coleta
+    this.descricao = attributes.descricao ?? null
+    this.latitude = attributes.latitude ?? null
+    this.longitude = attributes.longitude ?? null
     this.ficha = Object.fromEntries(
       FICHA_FIELDS.map(campo => [campo, attributes[campo]])
     ) as unknown as FichaAttributes
@@ -117,6 +126,14 @@ export class Lembrete {
 
     if (typeof attributes.local_coleta !== 'string' || attributes.local_coleta.trim() === '') {
       return Either.left(new Error('Local de coleta do lembrete é obrigatório'))
+    }
+
+    if (attributes.latitude != null && (attributes.latitude < -90 || attributes.latitude > 90)) {
+      return Either.left(new Error('Latitude do lembrete deve estar entre -90 e 90'))
+    }
+
+    if (attributes.longitude != null && (attributes.longitude < -180 || attributes.longitude > 180)) {
+      return Either.left(new Error('Longitude do lembrete deve estar entre -180 e 180'))
     }
 
     return Either.right(new Lembrete(attributes))

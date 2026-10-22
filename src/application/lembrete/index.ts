@@ -30,7 +30,7 @@ export function routes(knex: Knex): Route[] {
     {
       handlers: [
         authorize('read', 'Lembrete'),
-        new ListaLembretesController({ lembreteCollection })
+        new ListaLembretesController({ lembreteCollection, lembreteEvidenciaCollection })
       ],
       method: Method.Get,
       path: '/v1/lembretes'

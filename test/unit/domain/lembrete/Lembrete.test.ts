@@ -72,6 +72,27 @@ describe('Lembrete.create', () => {
 
     expect(result.left()).toBe(true)
   })
+
+  test('guarda descrição e coordenadas, que são opcionais', () => {
+    const comCampos = Lembrete.create({
+      ...lembrete, descricao: 'Voltar na floração', latitude: -19.27, longitude: -43.58
+    })
+    const semCampos = Lembrete.create(lembrete)
+
+    expect(comCampos.value).toMatchObject({ descricao: 'Voltar na floração', latitude: -19.27, longitude: -43.58 })
+    expect(semCampos.value).toMatchObject({ descricao: null, latitude: null, longitude: null })
+  })
+
+  test.each([
+    ['latitude', 91],
+    ['latitude', -91],
+    ['longitude', 181],
+    ['longitude', -181]
+  ])('rejeita %s fora do intervalo (%s)', (campo, valor) => {
+    const result = Lembrete.create({ ...lembrete, [campo]: valor })
+
+    expect(result.left()).toBe(true)
+  })
 })
 
 describe('isDataValida', () => {
