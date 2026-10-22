@@ -9,8 +9,9 @@ import { createRules } from '@/library/auth/createRules'
 const publicReads = [
   { action: 'read', resource: 'Pais' },
   { action: 'read', resource: 'Estado' },
+  { action: 'read', resource: 'Vegetacao' },
   { action: 'read', resource: 'FaseSucessional' },
-  { action: 'read', resource: 'Vegetacao' }
+  { action: 'read', resource: 'Relevo' }
 ]
 
 const writerRules = [
@@ -19,7 +20,10 @@ const writerRules = [
   { action: 'delete', resource: 'FaseSucessional' },
   { action: 'create', resource: 'Vegetacao' },
   { action: 'update', resource: 'Vegetacao' },
-  { action: 'delete', resource: 'Vegetacao' }
+  { action: 'delete', resource: 'Vegetacao' },
+  { action: 'create', resource: 'Relevo' },
+  { action: 'update', resource: 'Relevo' },
+  { action: 'delete', resource: 'Relevo' }
 ]
 
 describe('createRules', () => {
