@@ -202,9 +202,42 @@ export const buscarFasesSucessionais = (request, response, next) => {
         .catch(next);
 };
 
+const normalizaDescricaoLocalColeta = valor => limparEspacos(String(valor ?? '').trim());
+
+const validarLocalColetaDuplicado = async ({ cidadeId, descricao, idIgnorado = null }) => {
+    const descricaoNormalizada = normalizaDescricaoLocalColeta(descricao);
+
+    if (!cidadeId || !descricaoNormalizada) {
+        return null;
+    }
+
+    const localColetaExistente = await LocalColeta.findOne({
+        where: {
+            cidade_id: cidadeId,
+            ...(idIgnorado ? { id: { [sequelize.Op.ne]: idIgnorado } } : {}),
+            [sequelize.Op.and]: sequelize.where(
+                sequelize.fn('LOWER', sequelize.col('descricao')),
+                sequelize.fn('LOWER', descricaoNormalizada),
+            ),
+        },
+    });
+
+    if (localColetaExistente) {
+        throw new BadRequestExeption(null, 'Já existe um local de coleta com essa descrição na cidade informada.');
+    }
+
+    return localColetaExistente;
+};
+
 export const cadastrarLocalColeta = async (request, response, next) => {
     try {
         const dados = pick(request.body, ['descricao', 'cidade_id', 'fase_sucessional_id']);
+        dados.descricao = normalizaDescricaoLocalColeta(dados.descricao);
+        await validarLocalColetaDuplicado({
+            cidadeId: dados.cidade_id,
+            descricao: dados.descricao,
+        });
+
         const localColeta = await LocalColeta.create(dados);
         response.status(201).json(localColeta);
     } catch (error) {
@@ -318,6 +351,14 @@ export const atualizarLocalColeta = async (request, response, next) => {
     try {
         const { id } = request.params;
         const dados = pick(request.body, ['descricao', 'cidade_id', 'fase_sucessional_id']);
+        dados.descricao = normalizaDescricaoLocalColeta(dados.descricao);
+
+        await validarLocalColetaDuplicado({
+            cidadeId: dados.cidade_id,
+            descricao: dados.descricao,
+            idIgnorado: Number(id),
+        });
+
         const [updated] = await LocalColeta.update(dados, {
             where: { id },
         });
