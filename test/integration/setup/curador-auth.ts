@@ -11,12 +11,18 @@ export async function createCuradorAuth(knex: Knex): Promise<{
   cleanup: () => Promise<void>
 }> {
   const tipoId = 1
-  const tipo = await knex('tipos_usuarios').where({ id: tipoId }).first<{ id: number }>()
-  if (!tipo) {
-    await knex('tipos_usuarios').insert({ id: tipoId, tipo: 'Curador' })
-  }
+  await knex('tipos_usuarios')
+    .insert({ id: tipoId, tipo: 'Curador' })
+    .onConflict('id')
+    .ignore()
+  await knex.raw(`
+    SELECT setval(
+      pg_get_serial_sequence('tipos_usuarios', 'id'),
+      (SELECT COALESCE(MAX(id), 1) FROM tipos_usuarios)
+    )
+  `)
 
-  const suffix = `veg${Date.now()}`
+  const suffix = `veg${Date.now()}${Math.floor(Math.random() * 1e6)}`
   const [herbario] = await knex('herbarios')
     .insert({
       nome: `Herbario ${suffix}`,

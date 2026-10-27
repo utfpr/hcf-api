@@ -1,6 +1,6 @@
 import moment from 'moment-timezone';
 
-import { converteDecimalParaGrausMinutosSegundos } from '~/helpers/coordenadas';
+import { converteDecimalParaGrausMinutosSegundos } from '@/helpers/coordenadas';
 
 import { resolveSource } from '../config/directory';
 import formataColunasSeparadas from '../helpers/formata-colunas-separadas';

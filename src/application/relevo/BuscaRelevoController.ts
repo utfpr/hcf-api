@@ -26,7 +26,7 @@ export class BuscaRelevoController implements RequestHandler {
       return new BadRequestError({ message: 'relevoId inválido' })
     }
 
-    const result = await this.buscaRelevoPorIdUseCase.execute({ id: Number(relevoId) })
+    const result = await this.buscaRelevoPorIdUseCase.execute({ id: relevoId })
 
     if (result.left()) {
       return new InternalServerError({ message: result.value.message })

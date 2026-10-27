@@ -1,8 +1,8 @@
 import { format } from 'date-fns';
 
-import { padronizarNomeDarwincore } from '~/helpers/padroniza-nome-darwincore';
-import { colunasComoLinhaUnica } from '~/resources/darwincore/cabecalho';
-import { license } from '~/resources/darwincore/licenca';
+import { padronizarNomeDarwincore } from '@/helpers/padroniza-nome-darwincore';
+import { colunasComoLinhaUnica } from '@/resources/darwincore/cabecalho';
+import { license } from '@/resources/darwincore/licenca';
 
 import models from '../models';
 
