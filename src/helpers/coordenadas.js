@@ -171,34 +171,43 @@ export const converteDecimalParaGMSSinal = (decimal, isLat) => {
 };
 
 export const converteDecimalParaGrausMinutosSegundos = (gDec, ehLat, formatada) => {
-    let graus;
-    let minutos;
-    let aux;
-    let segundos;
-    let direcao;
+    const sinal = gDec < 0 ? -1 : 1;
+    const abs = Math.abs(gDec);
 
-    graus = parseInt(gDec);
-    aux = (graus - gDec) * 60;
-    minutos = parseInt(aux);
-    aux = (aux - minutos) * 60;
-    segundos = aux;
+    let graus = Math.floor(abs);
+    const minutosDecimal = (abs - graus) * 60;
+    let minutos = Math.floor(minutosDecimal);
+    const segundosRaw = (minutosDecimal - minutos) * 60;
 
-    if (ehLat) {
-        direcao = graus < 0 ? 'S' : 'N';
-    } else {
-        direcao = graus < 0 ? 'W' : 'E';
+    // Arredonda para 2 casas decimais e propaga carry se segundos >= 60
+    // (evita exibicao de "60.00" causada por erro de ponto flutuante)
+    let segundos = Math.round(segundosRaw * 100) / 100;
+    if (segundos >= 60) {
+        segundos = 0;
+        minutos += 1;
+    }
+    if (minutos >= 60) {
+        minutos = 0;
+        graus += 1;
     }
 
+    let direcao;
+    if (ehLat) {
+        direcao = sinal < 0 ? 'S' : 'N';
+    } else {
+        direcao = sinal < 0 ? 'W' : 'E';
+    }
+
+    const segundosStr = segundos.toFixed(2).replace('.', ',');
+
     if (formatada) {
-        return `${Math.abs(graus)}°${Math.abs(minutos)}'${Math.abs(segundos).toFixed(2)
-            .replace('.', ',')}" ${direcao}`;
+        return `${graus}\u00B0${minutos}'${segundosStr}" ${direcao}`;
     }
 
     return {
-        graus: Math.abs(graus),
-        minutos: Math.abs(minutos),
-        segundos: Math.abs(segundos).toFixed(2)
-            .replace('.', ','),
+        graus,
+        minutos,
+        segundos: segundosStr,
         direcao,
     };
 };

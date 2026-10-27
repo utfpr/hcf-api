@@ -1,3 +1,4 @@
+import * as ListasConferenciasController from '../controllers/listas-conferencias-controller.js';
 import * as RfidsController from '../controllers/rfids-controller.js';
 import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middleware';
 
@@ -131,6 +132,52 @@ export default app => {
      *         $ref: '#/components/responses/InternalServerError'
      */
     app.route('/rfids/tombos-pendentes').get(somenteCurador, RfidsController.listarPendentesRfid);
+
+    app.route('/rfids/listas_conferencias')
+        .get([
+            tokensMiddleware(),
+            ListasConferenciasController.listarListasConferencias,
+        ])
+        .post([
+            tokensMiddleware(),
+            ListasConferenciasController.criarListaConferencia,
+        ]);
+
+    app.route('/rfids/listas_conferencias/:id')
+        .get([
+            tokensMiddleware(),
+            ListasConferenciasController.buscarListaConferencia,
+        ])
+        .put([
+            tokensMiddleware(),
+            ListasConferenciasController.atualizarListaConferencia,
+        ]);
+
+    app.route('/rfids/listas_conferencias/:id/rfids').get([
+        tokensMiddleware(),
+        ListasConferenciasController.listarRfidsListaConferencia,
+    ]).post([
+        tokensMiddleware(),
+        ListasConferenciasController.adicionarRfidsPorFiltro,
+    ]).delete([
+        tokensMiddleware(),
+        ListasConferenciasController.removerRfidsPorFiltro,
+    ]);
+
+    app.route('/rfids/listas_conferencias/:id/rfids/todos').delete([
+        tokensMiddleware(),
+        ListasConferenciasController.removerTodosRfids,
+    ]);
+
+    app.route('/rfids/listas_conferencias/:id/inventarios').get([
+        tokensMiddleware(),
+        ListasConferenciasController.listarInventariosListaConferencia,
+    ]);
+
+    app.route('/rfids/listas_conferencias/:id/inventario').post([
+        tokensMiddleware(),
+        ListasConferenciasController.registrarInventarioListaConferencia,
+    ]);
 
     /**
      * @swagger

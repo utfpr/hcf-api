@@ -53,6 +53,7 @@ COMMENT ON SCHEMA topology IS 'PostGIS Topology schema';
 --
 
 CREATE EXTENSION IF NOT EXISTS postgis WITH SCHEMA public;
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
 
 
 --
@@ -572,6 +573,9 @@ CREATE TABLE public.fase_sucessional (
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
+CREATE UNIQUE INDEX fase_sucessional_nome_lower_uidx
+    ON public.fase_sucessional USING btree (lower((nome)::text));
+
 
 --
 -- TOC entry 244 (class 1259 OID 30988)
@@ -908,6 +912,9 @@ CREATE TABLE public.relevos (
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
+
+CREATE UNIQUE INDEX relevos_nome_unique
+    ON public.relevos (LOWER(nome));
 
 
 --
@@ -1394,6 +1401,23 @@ CREATE TABLE public.usuarios (
 );
 
 
+CREATE TABLE public.usuarios_sessoes (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    usuario_id integer NOT NULL,
+    refresh_token_hash character varying(64) NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    last_used_at timestamp without time zone NOT NULL,
+    expires_at timestamp without time zone NOT NULL
+);
+
+ALTER TABLE ONLY public.usuarios_sessoes
+    ADD CONSTRAINT usuarios_sessoes_pkey PRIMARY KEY (id);
+
+CREATE UNIQUE INDEX usuarios_sessoes_refresh_token_hash_unique ON public.usuarios_sessoes USING btree (refresh_token_hash);
+
+CREATE INDEX usuarios_sessoes_usuario_id_index ON public.usuarios_sessoes USING btree (usuario_id);
+
+
 --
 -- TOC entry 287 (class 1259 OID 31243)
 -- Name: usuarios_id_seq; Type: SEQUENCE; Schema: public; Owner: -
@@ -1466,6 +1490,9 @@ CREATE TABLE public.vegetacoes (
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
+
+CREATE UNIQUE INDEX vegetacoes_nome_unique
+    ON public.vegetacoes (LOWER(nome));
 
 
 --

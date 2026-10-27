@@ -19,7 +19,8 @@ export default defineConfig([
       '.pnp.cjs',
       '.pnp.loader.mjs',
       '.yarn/',
-      'splinker/'
+      'splinker/',
+      'caprover/',
     ]
   },
   {

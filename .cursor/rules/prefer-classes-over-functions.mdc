@@ -1,0 +1,13 @@
+---
+description: Prefer a class over a standalone function when the unit is a collaborator
+globs: "{src,test}/**/*.{ts,js}"
+alwaysApply: false
+---
+
+# Prefer classes over standalone functions
+
+When adding behavior that other modules will depend on, prefer a class if that unit will be constructed and injected, hold configuration or instance state, implement a port, wrap a vendor library, or group several operations on the same concern.
+
+Use a standalone function only when the work is a pure transformation or catalog with no collaborators, no configuration to inject, and no reason to substitute an implementation in tests or at the composition root.
+
+If both shapes would work, choose the class.

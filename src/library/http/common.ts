@@ -1,5 +1,8 @@
 import '@/library/enum'
 
+import { type Action, type Resource } from '@/library/auth/createRules'
+import { type Manager } from '@/library/auth/Manager'
+
 export const Method = {
   Get: 'get',
   Post: 'post',
@@ -19,6 +22,7 @@ export const StatusCode = {
   NotFound: 404,
   Conflict: 409,
   UnprocessableEntity: 422,
+  TooManyRequests: 429,
   InternalServerError: 500
 } as const
 
@@ -38,7 +42,15 @@ export interface Headers {
   Authorization?: string
   'Content-Length': number
   'Content-Type': ContentTypeHeaderValue
+  'Set-Cookie'?: string
   [name: string]: HeaderValue
+}
+
+export interface RequestUser {
+  id: number
+  nome: string
+  email: string
+  tipo_usuario_id: number
 }
 
 export interface HttpRequest<
@@ -48,8 +60,11 @@ export interface HttpRequest<
   method: Method
   path: string
   headers: Headers
+  cookies?: Record<string, string>
   params: Params
   body: Body
+  user?: RequestUser
+  auth?: Manager<Resource, Action>
 }
 
 export interface HttpResponse<Body = unknown> {

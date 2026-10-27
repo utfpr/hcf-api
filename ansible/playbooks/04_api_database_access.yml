@@ -1,0 +1,127 @@
+- name: Setup API database access
+  hosts: herbario
+  become: true
+
+  roles:
+    - postgresql_client
+
+  tasks:
+    - name: Ensure API PostgreSQL user is present
+      tags:
+        - postgres
+      community.postgresql.postgresql_user:
+        name: "{{ item.name }}"
+        password: "{{ item.password }}"
+        login_user: "{{ postgres.login_user }}"
+        login_host: "{{ postgres.login_host }}"
+        login_port: "{{ postgres.login_port }}"
+        login_password: "{{ postgres.login_password }}"
+        state: present
+      loop: "{{ postgres.api_users }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: Grant CONNECT on the API database
+      tags:
+        - postgres
+      community.postgresql.postgresql_privs:
+        database: "{{ item.database }}"
+        type: database
+        privs: CONNECT
+        roles: "{{ item.name }}"
+        login_user: "{{ postgres.login_user }}"
+        login_host: "{{ postgres.login_host }}"
+        login_port: "{{ postgres.login_port }}"
+        login_password: "{{ postgres.login_password }}"
+      loop: "{{ postgres.api_users }}"
+      loop_control:
+        label: "{{ item.name }} -> {{ item.database }}"
+
+    - name: Grant USAGE on schemas
+      tags:
+        - postgres
+      community.postgresql.postgresql_privs:
+        database: "{{ item.0.database }}"
+        type: schema
+        objs: "{{ item.1 }}"
+        privs: USAGE
+        roles: "{{ item.0.name }}"
+        login_user: "{{ postgres.login_user }}"
+        login_host: "{{ postgres.login_host }}"
+        login_port: "{{ postgres.login_port }}"
+        login_password: "{{ postgres.login_password }}"
+      loop: "{{ postgres.api_users | product(['public', 'topology']) | list }}"
+      loop_control:
+        label: "{{ item.0.name }} {{ item.0.database }}.{{ item.1 }}"
+
+    - name: Grant DML on all tables
+      tags:
+        - postgres
+      community.postgresql.postgresql_privs:
+        database: "{{ item.0.database }}"
+        schema: "{{ item.1 }}"
+        type: table
+        objs: ALL_IN_SCHEMA
+        privs: SELECT,INSERT,UPDATE,DELETE
+        roles: "{{ item.0.name }}"
+        login_user: "{{ postgres.login_user }}"
+        login_host: "{{ postgres.login_host }}"
+        login_port: "{{ postgres.login_port }}"
+        login_password: "{{ postgres.login_password }}"
+      loop: "{{ postgres.api_users | product(['public', 'topology']) | list }}"
+      loop_control:
+        label: "{{ item.0.name }} {{ item.0.database }}.{{ item.1 }}"
+
+    - name: Grant USAGE,SELECT on all sequences
+      tags:
+        - postgres
+      community.postgresql.postgresql_privs:
+        database: "{{ item.0.database }}"
+        schema: "{{ item.1 }}"
+        type: sequence
+        objs: ALL_IN_SCHEMA
+        privs: USAGE,SELECT
+        roles: "{{ item.0.name }}"
+        login_user: "{{ postgres.login_user }}"
+        login_host: "{{ postgres.login_host }}"
+        login_port: "{{ postgres.login_port }}"
+        login_password: "{{ postgres.login_password }}"
+      loop: "{{ postgres.api_users | product(['public', 'topology']) | list }}"
+      loop_control:
+        label: "{{ item.0.name }} {{ item.0.database }}.{{ item.1 }}"
+
+    - name: Set default privileges for future tables
+      tags:
+        - postgres
+      community.postgresql.postgresql_privs:
+        database: "{{ item.0.database }}"
+        schema: "{{ item.1 }}"
+        type: default_privs
+        objs: tables
+        privs: SELECT,INSERT,UPDATE,DELETE
+        roles: "{{ item.0.name }}"
+        login_user: "{{ postgres.login_user }}"
+        login_host: "{{ postgres.login_host }}"
+        login_port: "{{ postgres.login_port }}"
+        login_password: "{{ postgres.login_password }}"
+      loop: "{{ postgres.api_users | product(['public', 'topology']) | list }}"
+      loop_control:
+        label: "{{ item.0.name }} {{ item.0.database }}.{{ item.1 }}"
+
+    - name: Set default privileges for future sequences
+      tags:
+        - postgres
+      community.postgresql.postgresql_privs:
+        database: "{{ item.0.database }}"
+        schema: "{{ item.1 }}"
+        type: default_privs
+        objs: sequences
+        privs: USAGE,SELECT
+        roles: "{{ item.0.name }}"
+        login_user: "{{ postgres.login_user }}"
+        login_host: "{{ postgres.login_host }}"
+        login_port: "{{ postgres.login_port }}"
+        login_password: "{{ postgres.login_password }}"
+      loop: "{{ postgres.api_users | product(['public', 'topology']) | list }}"
+      loop_control:
+        label: "{{ item.0.name }} {{ item.0.database }}.{{ item.1 }}"
