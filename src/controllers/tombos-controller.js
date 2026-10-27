@@ -1,6 +1,6 @@
 import { ForeignKeyConstraintError, fn, col } from 'sequelize';
 
-import { padronizarNomeDarwincore } from '~/helpers/padroniza-nome-darwincore';
+import { padronizarNomeDarwincore } from '@/helpers/padroniza-nome-darwincore';
 
 import BadRequestExeption from '../errors/bad-request-exception';
 import NotFoundException from '../errors/not-found-exception';

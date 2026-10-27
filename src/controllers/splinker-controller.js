@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 
-import { converteDecimalParaGrausMinutosSegundos } from '~/helpers/coordenadas';
+import { converteDecimalParaGrausMinutosSegundos } from '@/helpers/coordenadas';
 
 import models from '../models';
 
