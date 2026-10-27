@@ -3,6 +3,10 @@ dist/
 coverage/
 node_modules/
 
+# Yarn Berry local state — este projeto usa Yarn Classic (yarn lockfile v1)
+.yarnrc.yml
+.yarn/
+
 uploads/
 mysql/data/
 postgresql/
