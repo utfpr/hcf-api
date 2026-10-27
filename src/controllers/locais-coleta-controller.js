@@ -1,4 +1,4 @@
-import pick from '~/helpers/pick';
+import pick from '@/helpers/pick';
 
 import BadRequestExeption from '../errors/bad-request-exception';
 import limparEspacos from '../helpers/limpa-espaco';

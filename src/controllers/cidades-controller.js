@@ -1,6 +1,6 @@
 import { Op } from 'sequelize';
 
-import pick from '~/helpers/pick';
+import pick from '@/helpers/pick';
 
 import BadRequestException from '../errors/bad-request-exception';
 import limparEspacos from '../helpers/limpa-espaco';
