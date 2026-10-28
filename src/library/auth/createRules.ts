@@ -25,6 +25,7 @@ export const RESOURCES = [
   'FaseSucessional',
   'Vegetacao',
   'Cidade',
+  'Solo',
   'Usuario',
   'UsuarioSessao',
   'Identificador',
@@ -38,7 +39,11 @@ export const RESOURCES = [
   'Relatorio',
   'Local',
   'Darwin',
-  'Splink'
+  'Splink',
+  'Expedicao',
+  'Evento',
+  'Evidencia',
+  'Lembrete'
 ] as const
 
 export type Action = typeof ACTIONS[number]
@@ -62,7 +67,14 @@ export function createRules(user?: RulesUser): Rule<Resource, Action>[] {
     return [...publicReads]
   }
 
-  const rules: Rule<Resource, Action>[] = [...publicReads, { action: 'read', resource: 'UsuarioSessao' }]
+  const rules: Rule<Resource, Action>[] = [
+    ...publicReads,
+    { action: 'read', resource: 'UsuarioSessao' },
+    { action: 'read', resource: 'Expedicao' },
+    { action: 'read', resource: 'Evento' },
+    { action: 'read', resource: 'Evidencia' },
+    { action: 'read', resource: 'Lembrete' }
+  ]
 
   if (user.tipo_usuario_id === CURADOR || user.tipo_usuario_id === OPERADOR) {
     rules.push(
@@ -72,9 +84,23 @@ export function createRules(user?: RulesUser): Rule<Resource, Action>[] {
       { action: 'create', resource: 'Vegetacao' },
       { action: 'update', resource: 'Vegetacao' },
       { action: 'delete', resource: 'Vegetacao' },
+      { action: 'create', resource: 'Solo' },
+      { action: 'update', resource: 'Solo' },
+      { action: 'delete', resource: 'Solo' },
       { action: 'create', resource: 'Relevo' },
       { action: 'update', resource: 'Relevo' },
-      { action: 'delete', resource: 'Relevo' }
+      { action: 'delete', resource: 'Relevo' },
+      { action: 'create', resource: 'Expedicao' },
+      { action: 'update', resource: 'Expedicao' },
+      { action: 'delete', resource: 'Expedicao' },
+      { action: 'create', resource: 'Evento' },
+      { action: 'update', resource: 'Evento' },
+      { action: 'delete', resource: 'Evento' },
+      { action: 'create', resource: 'Evidencia' },
+      { action: 'delete', resource: 'Evidencia' },
+      { action: 'create', resource: 'Lembrete' },
+      { action: 'update', resource: 'Lembrete' },
+      { action: 'delete', resource: 'Lembrete' }
     )
   }
 

@@ -69,7 +69,6 @@ export default defineConfig([
           groups: [
             'module',
             '/^@//',
-            '/^~/',
             [
               'parent',
               'sibling',

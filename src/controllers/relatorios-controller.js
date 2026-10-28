@@ -15,17 +15,17 @@ import {
     agruparPorFamiliaComContadorECodigo,
     agruparResultadoPorFamilia,
     agruparPorGenero,
-} from '~/helpers/formata-dados-relatorio';
-import { generateReport } from '~/reports/reports';
-import ReportCoordenadaForaPoligono from '~/reports/templates/CoordenadaForaPoligono';
-import ReportInventario from '~/reports/templates/InventarioEspecies';
-import ReportLocalColeta from '~/reports/templates/LocaisColeta';
-import ReportFamiliasGeneros from '~/reports/templates/RelacaoFamiliasGenero';
-import ReportQtd from '~/reports/templates/RelacaoFamiliasGeneroQtd';
-import ReportColetaModelo1 from '~/reports/templates/RelacaoTombos';
-import ReportColetaModelo2 from '~/reports/templates/RelacaoTombosComColeta';
-import ReportTombosPorCidade from '~/reports/templates/TombosPorCidade';
-import codigosHttp from '~/resources/codigos-http';
+} from '@/helpers/formata-dados-relatorio';
+import { generateReport } from '@/reports/reports';
+import ReportCoordenadaForaPoligono from '@/reports/templates/CoordenadaForaPoligono';
+import ReportInventario from '@/reports/templates/InventarioEspecies';
+import ReportLocalColeta from '@/reports/templates/LocaisColeta';
+import ReportFamiliasGeneros from '@/reports/templates/RelacaoFamiliasGenero';
+import ReportQtd from '@/reports/templates/RelacaoFamiliasGeneroQtd';
+import ReportColetaModelo1 from '@/reports/templates/RelacaoTombos';
+import ReportColetaModelo2 from '@/reports/templates/RelacaoTombosComColeta';
+import ReportTombosPorCidade from '@/reports/templates/TombosPorCidade';
+import codigosHttp from '@/resources/codigos-http';
 
 import models from '../models';
 
@@ -503,6 +503,19 @@ export const obtemDadosDoRelatorioDeLocalDeColeta = async (req, res, next) => {
     const { paginacao } = req;
     const { limite, pagina, offset } = paginacao;
     const { local, dataInicio, dataFim, showCoord } = req.query;
+
+    if (req.method === 'GET' && !local && !dataInicio) {
+        res.json({
+            metadados: {
+                total: 0,
+                pagina,
+                limite,
+            },
+            resultado: agruparPorLocal([]),
+            filtro: formataTextFilter(local, dataInicio, dataFim || new Date()),
+        });
+        return;
+    }
 
     let whereLocal = {};
     let whereData = {};

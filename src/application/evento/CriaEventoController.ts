@@ -1,0 +1,165 @@
+import { parseClientUuid } from '@/application/parseClientUuid'
+import { CriaEventoUseCase } from '@/domain/evento/CriaEventoUseCase'
+import { EVENTO_TIPOS, EventoTipo } from '@/domain/evento/Evento'
+import { CheckViolationError } from '@/infrastructure/error/CheckViolationError'
+import { ForeignKeyViolationError } from '@/infrastructure/error/ForeignKeyViolationError'
+import { InfrastructureError } from '@/infrastructure/error/InfrastructureError'
+import {
+  HttpRequest, HttpResponse, StatusCode
+} from '@/library/http/common'
+import { BadRequestError } from '@/library/http/error/BadRequestError'
+import { HttpError } from '@/library/http/error/HttpError'
+import { InternalServerError } from '@/library/http/error/InternalServerError'
+import { NotFoundError } from '@/library/http/error/NotFoundError'
+import { UnprocessableEntityError } from '@/library/http/error/UnprocessableEntityError'
+import { NextHandler, RequestHandler } from '@/library/http/Server'
+
+import { parseColeta } from './coleta-parsing'
+
+interface Dependencies {
+  criaEventoUseCase: CriaEventoUseCase
+}
+
+interface Body {
+  tipo?: unknown
+  data_captura?: unknown
+  latitude?: unknown
+  longitude?: unknown
+  altitude?: unknown
+  observacoes?: unknown
+  coleta?: unknown
+  client_uuid?: unknown
+  numero_coleta?: unknown
+}
+
+export class CriaEventoController implements RequestHandler {
+  private readonly criaEventoUseCase: CriaEventoUseCase
+
+  constructor(dependencies: Dependencies) {
+    this.criaEventoUseCase = dependencies.criaEventoUseCase
+  }
+
+  async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
+    const { expedicaoId: rawExpedicaoId } = request.params as { expedicaoId?: string }
+    const expedicaoId = parseId(rawExpedicaoId, 'expedicaoId')
+    if (expedicaoId instanceof Error) return new BadRequestError({ message: expedicaoId.message })
+
+    const body = (request.body ?? {}) as Body
+
+    const tipo = parseTipo(body.tipo)
+    if (tipo instanceof Error) return new BadRequestError({ message: tipo.message })
+
+    const dataCaptura = parseDate(body.data_captura, 'data_captura')
+    if (dataCaptura instanceof Error) return new BadRequestError({ message: dataCaptura.message })
+
+    const latitude = parseOptionalNumber(body.latitude, 'latitude')
+    if (latitude instanceof Error) return new BadRequestError({ message: latitude.message })
+
+    const longitude = parseOptionalNumber(body.longitude, 'longitude')
+    if (longitude instanceof Error) return new BadRequestError({ message: longitude.message })
+
+    const altitude = parseOptionalNumber(body.altitude, 'altitude')
+    if (altitude instanceof Error) return new BadRequestError({ message: altitude.message })
+
+    const observacoes = parseOptionalString(body.observacoes, 'observacoes')
+    if (observacoes instanceof Error) return new BadRequestError({ message: observacoes.message })
+
+    const coleta = body.coleta === undefined ? null : parseColeta(body.coleta)
+    if (coleta instanceof Error) return new BadRequestError({ message: coleta.message })
+
+    const numeroColeta = parseNumeroColeta(body.numero_coleta)
+    if (numeroColeta instanceof Error) return new BadRequestError({ message: numeroColeta.message })
+    if (numeroColeta && tipo !== 'COLETA') {
+      return new BadRequestError({ message: 'numero_coleta só vale para eventos do tipo COLETA' })
+    }
+
+    const clientUuid = parseClientUuid(body.client_uuid)
+    if (clientUuid instanceof Error) return new BadRequestError({ message: clientUuid.message })
+
+    const usuarioId = request.user?.id ?? null
+
+    const result = await this.criaEventoUseCase.execute({
+      altitude,
+      data_captura: dataCaptura,
+      coleta,
+      created_by: usuarioId,
+      expedicao_id: expedicaoId,
+      latitude,
+      longitude,
+      observacoes,
+      tipo,
+      ...(clientUuid ? { client_uuid: clientUuid } : {}),
+      ...(numeroColeta ? { numero_coleta: numeroColeta } : {})
+    })
+
+    if (result.left()) {
+      const error = result.value
+      if (error instanceof ForeignKeyViolationError) return new NotFoundError({ message: error.message })
+      if (error instanceof CheckViolationError) return new UnprocessableEntityError({ message: error.message })
+      if (!(error instanceof InfrastructureError)) return new BadRequestError({ message: error.message })
+      return new InternalServerError({ message: error.message })
+    }
+
+    return { body: result.value, statusCode: StatusCode.Created }
+  }
+}
+
+function parseId(raw: unknown, field: string): number | Error {
+  if (typeof raw !== 'string' || !/^\d+$/.test(raw)) {
+    return new Error(`${field} inválido`)
+  }
+  return Number(raw)
+}
+
+function parseTipo(raw: unknown): EventoTipo | Error {
+  if (typeof raw !== 'string' || !EVENTO_TIPOS.includes(raw as EventoTipo)) {
+    return new Error(`tipo inválido. Use um de: ${EVENTO_TIPOS.join(', ')}`)
+  }
+  return raw as EventoTipo
+}
+
+function parseDate(raw: unknown, field: string): Date | Error {
+  if (typeof raw !== 'string') {
+    return new Error(`${field} inválido. Use uma data no formato ISO 8601`)
+  }
+  const date = new Date(raw)
+  if (Number.isNaN(date.getTime())) {
+    return new Error(`${field} inválido. Use uma data no formato ISO 8601`)
+  }
+  return date
+}
+
+function parseOptionalNumber(raw: unknown, field: string): number | null | Error {
+  if (raw === undefined || raw === null) {
+    return null
+  }
+  if (typeof raw !== 'number' || Number.isNaN(raw)) {
+    return new Error(`${field} inválido`)
+  }
+  return raw
+}
+
+// Mesmo número na mesma expedição = mesma coleta (registrada por várias pessoas)
+function parseNumeroColeta(raw: unknown): string | null | Error {
+  if (raw === undefined || raw === null || raw === '') {
+    return null
+  }
+  if (typeof raw !== 'string' && typeof raw !== 'number') {
+    return new Error('numero_coleta inválido')
+  }
+  const numero = String(raw).trim()
+  if (numero.length > 50) {
+    return new Error('numero_coleta deve ter no máximo 50 caracteres')
+  }
+  return numero || null
+}
+
+function parseOptionalString(raw: unknown, field: string): string | null | Error {
+  if (raw === undefined || raw === null) {
+    return null
+  }
+  if (typeof raw !== 'string') {
+    return new Error(`${field} inválido`)
+  }
+  return raw
+}

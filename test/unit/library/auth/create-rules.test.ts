@@ -21,9 +21,33 @@ const writerRules = [
   { action: 'create', resource: 'Vegetacao' },
   { action: 'update', resource: 'Vegetacao' },
   { action: 'delete', resource: 'Vegetacao' },
+  { action: 'create', resource: 'Solo' },
+  { action: 'update', resource: 'Solo' },
+  { action: 'delete', resource: 'Solo' },
   { action: 'create', resource: 'Relevo' },
   { action: 'update', resource: 'Relevo' },
   { action: 'delete', resource: 'Relevo' }
+]
+
+const expedicaoReads = [
+  { action: 'read', resource: 'Expedicao' },
+  { action: 'read', resource: 'Evento' },
+  { action: 'read', resource: 'Evidencia' },
+  { action: 'read', resource: 'Lembrete' }
+]
+
+const expedicaoWrites = [
+  { action: 'create', resource: 'Expedicao' },
+  { action: 'update', resource: 'Expedicao' },
+  { action: 'delete', resource: 'Expedicao' },
+  { action: 'create', resource: 'Evento' },
+  { action: 'update', resource: 'Evento' },
+  { action: 'delete', resource: 'Evento' },
+  { action: 'create', resource: 'Evidencia' },
+  { action: 'delete', resource: 'Evidencia' },
+  { action: 'create', resource: 'Lembrete' },
+  { action: 'update', resource: 'Lembrete' },
+  { action: 'delete', resource: 'Lembrete' }
 ]
 
 describe('createRules', () => {
@@ -40,7 +64,9 @@ describe('createRules', () => {
       expect(createRules(user)).toEqual([
         ...publicReads,
         { action: 'read', resource: 'UsuarioSessao' },
-        ...writerRules
+        ...expedicaoReads,
+        ...writerRules,
+        ...expedicaoWrites
       ])
     }
   })
@@ -52,7 +78,8 @@ describe('createRules', () => {
     ]) {
       expect(createRules(user)).toEqual([
         ...publicReads,
-        { action: 'read', resource: 'UsuarioSessao' }
+        { action: 'read', resource: 'UsuarioSessao' },
+        ...expedicaoReads
       ])
     }
   })

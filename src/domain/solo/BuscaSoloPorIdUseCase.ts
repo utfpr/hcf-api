@@ -14,7 +14,7 @@ export class BuscaSoloPorIdUseCase {
     this.soloCollection = dependencies.soloCollection
   }
 
-  execute({ id }: { id: number }): Promise<Either<Error, Attributes | null>> {
+  execute({ id }: { id: number }): Promise<Either<Error, Attributes | undefined>> {
     return this.soloCollection.findById(id)
   }
 }
