@@ -14,7 +14,7 @@ export class Solo {
     this.nome = attributes.nome
   }
 
-  static create(attributes: Pick<Attributes, 'nome'>): Either<Error, Solo> {
+  static create(attributes: Attributes): Either<Error, Solo> {
     if (!attributes.nome.trim()) {
       return Either.left(new Error('Nome do solo não pode ser vazio'))
     }

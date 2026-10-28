@@ -2,7 +2,7 @@ import { Knex } from 'knex'
 
 import { SoloEmUsoError } from '@/domain/solo/error/SoloEmUsoError'
 import { SoloNomeDuplicadoError } from '@/domain/solo/error/SoloNomeDuplicadoError'
-import { Attributes } from '@/domain/solo/Solo'
+import { Attributes, Solo } from '@/domain/solo/Solo'
 import { SoloCollection, SoloFilters } from '@/domain/solo/SoloCollection'
 import { Either } from '@/library/either/Either'
 
@@ -44,6 +44,11 @@ function isSoloInUseError(error: unknown): boolean {
     || /solo/i.test(constraint)
 }
 
+interface SoloRow {
+  id: number | string
+  nome: string
+}
+
 interface Dependencies {
   knex: Knex
 }
@@ -73,35 +78,43 @@ export class SoloCollectionKnexAdapter implements SoloCollection {
     }
   }
 
-  async findById(id: number): Promise<Either<Error, Attributes | null>> {
+  async findById(id: number): Promise<Either<Error, Attributes | undefined>> {
     try {
       const solo = await this.knex<Attributes>('solos').select(['id', 'nome']).where({ id }).first()
-      return Either.right(solo ?? null)
+      return Either.right(solo)
     } catch (error) {
       return Either.left(new CollectionError({ message: 'Failed to find solo', cause: error }))
     }
   }
 
-  async findByNome(nome: string): Promise<Either<Error, Attributes | null>> {
+  private toEntity(row: SoloRow): Either<Error, Solo> {
+    const solo = Solo.create({ id: Number(row.id), nome: row.nome })
+    if (solo.left()) {
+      return Either.left(new CollectionError({ message: 'Solo persistido inválido', cause: solo.value }))
+    }
+    return solo
+  }
+
+  async findByNome(nome: string): Promise<Either<Error, Solo | undefined>> {
     try {
-      const solo = await this.knex<Attributes>('solos')
+      const solo = await this.knex<SoloRow>('solos')
         .select(['id', 'nome'])
         .whereRaw('LOWER(nome) = LOWER(?)', [nome.trim()])
         .first()
 
-      return Either.right(solo ?? null)
+      return solo ? this.toEntity(solo) : Either.right(undefined)
     } catch (error) {
       return Either.left(new CollectionError({ message: 'Failed to find solo by name', cause: error }))
     }
   }
 
-  async create(data: Pick<Attributes, 'nome'>): Promise<Either<Error, Attributes>> {
+  async create(data: Pick<Attributes, 'nome'>): Promise<Either<Error, Solo>> {
     try {
-      const [solo] = await this.knex<Attributes>('solos')
+      const [solo] = await this.knex<SoloRow>('solos')
         .insert({ nome: data.nome.trim() })
-        .returning(['id', 'nome']) as Attributes[]
+        .returning(['id', 'nome']) as SoloRow[]
 
-      return Either.right(solo)
+      return this.toEntity(solo)
     } catch (error) {
       if (isDuplicateSoloError(error)) {
         return Either.left(new SoloNomeDuplicadoError({ cause: error }))
@@ -111,14 +124,14 @@ export class SoloCollectionKnexAdapter implements SoloCollection {
     }
   }
 
-  async update(id: number, data: Pick<Attributes, 'nome'>): Promise<Either<Error, Attributes | null>> {
+  async update(id: number, data: Pick<Attributes, 'nome'>): Promise<Either<Error, Solo | undefined>> {
     try {
-      const [solo] = await this.knex<Attributes>('solos')
+      const [solo] = await this.knex<SoloRow>('solos')
         .where({ id })
         .update({ nome: data.nome.trim() })
-        .returning(['id', 'nome']) as Attributes[]
+        .returning(['id', 'nome']) as SoloRow[]
 
-      return Either.right(solo ?? null)
+      return solo ? this.toEntity(solo) : Either.right(undefined)
     } catch (error) {
       if (isDuplicateSoloError(error)) {
         return Either.left(new SoloNomeDuplicadoError({ cause: error }))
@@ -130,7 +143,7 @@ export class SoloCollectionKnexAdapter implements SoloCollection {
 
   async delete(id: number): Promise<Either<Error, boolean>> {
     try {
-      const deleted = await this.knex<Attributes>('solos').where({ id }).delete()
+      const deleted = await this.knex<SoloRow>('solos').where({ id }).delete()
       return Either.right(deleted > 0)
     } catch (error) {
       if (isSoloInUseError(error)) {

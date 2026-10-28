@@ -1,7 +1,7 @@
 import { Either } from '@/library/either/Either'
 
 import { SoloNomeDuplicadoError } from './error/SoloNomeDuplicadoError'
-import { Attributes, Solo } from './Solo'
+import { Solo } from './Solo'
 import { SoloCollection } from './SoloCollection'
 
 interface Dependencies {
@@ -15,7 +15,7 @@ export class CadastraSoloUseCase {
     this.soloCollection = dependencies.soloCollection
   }
 
-  async execute({ nome }: { nome: string }): Promise<Either<Error, Attributes>> {
+  async execute({ nome }: { nome: string }): Promise<Either<Error, Solo>> {
     const normalizedNome = nome.trim()
     const created = Solo.create({ nome: normalizedNome })
     if (created.left()) {

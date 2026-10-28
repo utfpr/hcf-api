@@ -21,6 +21,9 @@ const writerRules = [
   { action: 'create', resource: 'Vegetacao' },
   { action: 'update', resource: 'Vegetacao' },
   { action: 'delete', resource: 'Vegetacao' },
+  { action: 'create', resource: 'Solo' },
+  { action: 'update', resource: 'Solo' },
+  { action: 'delete', resource: 'Solo' },
   { action: 'create', resource: 'Relevo' },
   { action: 'update', resource: 'Relevo' },
   { action: 'delete', resource: 'Relevo' }

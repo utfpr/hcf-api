@@ -1,26 +1,29 @@
-import jwt from 'jsonwebtoken'
 import {
   afterAll,
+  beforeAll,
   describe,
   expect,
   test
 } from 'vitest'
 
 import { createTestApp } from '../setup/app-factory'
+import { createSoloAuth } from './soloAuth'
 
 type Solo = { id: number; nome: string }
-
-const buildAuthHeader = (
-  payload = { id: 1, tipo_usuario_id: 1 },
-  secret = process.env.JWT_SECRET as string
-) => ({
-  Authorization: `Bearer ${jwt.sign(payload, secret)}`
-})
 
 describe('DELETE /api/v2/solos/:soloId', () => {
   const { agent, knex } = createTestApp()
 
-  afterAll(() => knex.destroy())
+  let auth: Awaited<ReturnType<typeof createSoloAuth>>
+
+  beforeAll(async () => {
+    auth = await createSoloAuth(knex)
+  })
+
+  afterAll(async () => {
+    await auth?.cleanup()
+    await knex.destroy()
+  })
 
   test('remove um solo sem dependências', async () => {
     const prefix = `DELSOL-${Date.now()}`
@@ -29,7 +32,7 @@ describe('DELETE /api/v2/solos/:soloId', () => {
       .returning(['id', 'nome']) as Solo[]
 
     try {
-      await agent.delete(`/api/v2/solos/${solo.id}`).set(buildAuthHeader()).expect(204)
+      await agent.delete(`/api/v2/solos/${solo.id}`).set(auth.header).expect(204)
       const found = await knex('solos').where({ id: solo.id }).first()
       expect(found).toBeUndefined()
     } finally {
@@ -38,14 +41,14 @@ describe('DELETE /api/v2/solos/:soloId', () => {
   })
 
   test('retorna 404 quando o solo não existe', async () => {
-    const response = await agent.delete('/api/v2/solos/999999').set(buildAuthHeader()).expect(404)
+    const response = await agent.delete('/api/v2/solos/999999').set(auth.header).expect(404)
     const body = response.body as { error: { message: string } }
 
     expect(body.error.message).toMatch(/não encontrad|not found/i)
   })
 
   test('retorna 400 quando o id é inválido', async () => {
-    const response = await agent.delete('/api/v2/solos/abc').set(buildAuthHeader()).expect(400)
+    const response = await agent.delete('/api/v2/solos/abc').set(auth.header).expect(400)
     const body = response.body as { error: { message: string } }
 
     expect(body.error.message).toMatch(/inválido|invalid/i)
@@ -67,7 +70,7 @@ describe('DELETE /api/v2/solos/:soloId', () => {
         updated_at: new Date()
       })
 
-      const response = await agent.delete(`/api/v2/solos/${solo.id}`).set(buildAuthHeader()).expect(409)
+      const response = await agent.delete(`/api/v2/solos/${solo.id}`).set(auth.header).expect(409)
       const body = response.body as { error: { message: string } }
 
       expect(body.error.message).toMatch(/em uso|in use|uso/i)

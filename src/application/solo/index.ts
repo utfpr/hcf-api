@@ -1,5 +1,6 @@
 import { type Knex } from 'knex'
 
+import { authorize } from '@/application/AuthorizeMiddlewareFactory'
 import { BuscaSoloPorIdUseCase } from '@/domain/solo/BuscaSoloPorIdUseCase'
 import { CadastraSoloUseCase } from '@/domain/solo/CadastraSoloUseCase'
 import { ListaSolosUseCase } from '@/domain/solo/ListaSolosUseCase'
@@ -11,14 +12,12 @@ import { Route } from '@/library/http/Router'
 
 import { BuscaSoloController } from './BuscaSoloController'
 import { CadastraSoloController } from './CadastraSoloController'
-import { ExigePermissaoEscritaSolo } from './ExigePermissaoEscritaSolo'
 import { ListaSolosController } from './ListaSolosController'
 import { RemoveSoloController } from './RemoveSoloController'
 import { RenomeiaSoloController } from './RenomeiaSoloController'
 
 export function routes(knex: Knex): Route[] {
   const soloCollection = new SoloCollectionKnexAdapter({ knex })
-  const exigePermissaoEscritaSolo = new ExigePermissaoEscritaSolo()
 
   return [
     {
@@ -41,7 +40,7 @@ export function routes(knex: Knex): Route[] {
     },
     {
       handlers: [
-        exigePermissaoEscritaSolo,
+        authorize('create', 'Solo'),
         new CadastraSoloController({
           cadastraSoloUseCase: new CadastraSoloUseCase({ soloCollection })
         })
@@ -51,7 +50,7 @@ export function routes(knex: Knex): Route[] {
     },
     {
       handlers: [
-        exigePermissaoEscritaSolo,
+        authorize('update', 'Solo'),
         new RenomeiaSoloController({
           renomeiaSoloUseCase: new RenomeiaSoloUseCase({ soloCollection })
         })
@@ -61,7 +60,7 @@ export function routes(knex: Knex): Route[] {
     },
     {
       handlers: [
-        exigePermissaoEscritaSolo,
+        authorize('delete', 'Solo'),
         new RemoveSoloController({
           removeSoloUseCase: new RemoveSoloUseCase({ soloCollection })
         })

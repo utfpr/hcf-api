@@ -41,6 +41,6 @@ export class RemoveSoloController implements RequestHandler {
       return new InternalServerError({ message: result.value.message })
     }
 
-    return { statusCode: StatusCode.NoContent, body: null }
+    return { statusCode: StatusCode.NoContent, body: undefined }
   }
 }

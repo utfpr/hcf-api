@@ -1,26 +1,29 @@
-import jwt from 'jsonwebtoken'
 import {
   afterAll,
+  beforeAll,
   describe,
   expect,
   test
 } from 'vitest'
 
 import { createTestApp } from '../setup/app-factory'
+import { createSoloAuth } from './soloAuth'
 
 type Solo = { id: number; nome: string }
-
-const buildAuthHeader = (
-  payload = { id: 1, tipo_usuario_id: 1 },
-  secret = process.env.JWT_SECRET as string
-) => ({
-  Authorization: `Bearer ${jwt.sign(payload, secret)}`
-})
 
 describe('PUT /api/v2/solos/:soloId', () => {
   const { agent, knex } = createTestApp()
 
-  afterAll(() => knex.destroy())
+  let auth: Awaited<ReturnType<typeof createSoloAuth>>
+
+  beforeAll(async () => {
+    auth = await createSoloAuth(knex)
+  })
+
+  afterAll(async () => {
+    await auth?.cleanup()
+    await knex.destroy()
+  })
 
   test('atualiza um solo existente', async () => {
     const prefix = `UPDSOL-${Date.now()}`
@@ -29,24 +32,37 @@ describe('PUT /api/v2/solos/:soloId', () => {
       .returning(['id', 'nome']) as Solo[]
 
     try {
-      const response = await agent.put(`/api/v2/solos/${solo.id}`).set(buildAuthHeader()).send({ nome: `${prefix} Novo` }).expect(200)
+      const response = await agent.put(`/api/v2/solos/${solo.id}`).set(auth.header).send({ nome: `${prefix} Novo` }).expect(200)
       const body = response.body as Solo
 
-      expect(body).toEqual({ id: solo.id, nome: `${prefix} Novo` })
+      expect(body).toEqual({ id: Number(solo.id), nome: `${prefix} Novo` })
+    } finally {
+      await knex('solos').where({ id: solo.id }).delete()
+    }
+  })
+
+  test.each([false, true])('permite manter o próprio nome (maiúsculas: %s)', async uppercase => {
+    const nome = `SAMESOL-${Date.now()} Arenoso`
+    const [solo] = await knex<Solo>('solos').insert({ nome }).returning(['id', 'nome'])
+    const updatedNome = uppercase ? nome.toUpperCase() : nome
+    try {
+      const response = await agent.put(`/api/v2/solos/${solo.id}`)
+        .set(auth.header).send({ nome: updatedNome }).expect(200)
+      expect(response.body).toEqual({ id: Number(solo.id), nome: updatedNome })
     } finally {
       await knex('solos').where({ id: solo.id }).delete()
     }
   })
 
   test('retorna 404 para id inexistente', async () => {
-    const response = await agent.put('/api/v2/solos/999999').set(buildAuthHeader()).send({ nome: 'Qualquer' }).expect(404)
+    const response = await agent.put('/api/v2/solos/999999').set(auth.header).send({ nome: 'Qualquer' }).expect(404)
     const body = response.body as { error: { message: string } }
 
     expect(body.error.message).toMatch(/não encontrad|not found/i)
   })
 
   test('retorna 400 para id inválido', async () => {
-    const response = await agent.put('/api/v2/solos/abc').set(buildAuthHeader()).send({ nome: 'Qualquer' }).expect(400)
+    const response = await agent.put('/api/v2/solos/abc').set(auth.header).send({ nome: 'Qualquer' }).expect(400)
     const body = response.body as { error: { message: string } }
 
     expect(body.error.message).toMatch(/inválido|invalid/i)
@@ -63,7 +79,7 @@ describe('PUT /api/v2/solos/:soloId', () => {
       .returning(['id', 'nome']) as Solo[]
 
     try {
-      const response = await agent.put(`/api/v2/solos/${other.id}`).set(buildAuthHeader()).send({ nome: original.nome }).expect(409)
+      const response = await agent.put(`/api/v2/solos/${other.id}`).set(auth.header).send({ nome: original.nome }).expect(409)
       const body = response.body as { error: { message: string } }
 
       expect(body.error.message).toMatch(/já existe|duplic/i)
@@ -83,7 +99,7 @@ describe('PUT /api/v2/solos/:soloId', () => {
       .returning(['id', 'nome']) as Solo[]
 
     try {
-      const response = await agent.put(`/api/v2/solos/${other.id}`).set(buildAuthHeader()).send({ nome: original.nome.toUpperCase() }).expect(409)
+      const response = await agent.put(`/api/v2/solos/${other.id}`).set(auth.header).send({ nome: original.nome.toUpperCase() }).expect(409)
       const body = response.body as { error: { message: string } }
 
       expect(body.error.message).toMatch(/já existe|duplic/i)

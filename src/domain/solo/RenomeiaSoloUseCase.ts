@@ -2,7 +2,7 @@ import { Either } from '@/library/either/Either'
 
 import { SoloNaoEncontradoError } from './error/SoloNaoEncontradoError'
 import { SoloNomeDuplicadoError } from './error/SoloNomeDuplicadoError'
-import { Attributes, Solo } from './Solo'
+import { Solo } from './Solo'
 import { SoloCollection } from './SoloCollection'
 
 interface Dependencies {
@@ -16,7 +16,7 @@ export class RenomeiaSoloUseCase {
     this.soloCollection = dependencies.soloCollection
   }
 
-  async execute({ id, nome }: { id: number; nome: string }): Promise<Either<Error, Attributes>> {
+  async execute({ id, nome }: { id: number; nome: string }): Promise<Either<Error, Solo>> {
     const normalizedNome = nome.trim()
     const solo = Solo.create({ nome: normalizedNome })
     if (solo.left()) {
