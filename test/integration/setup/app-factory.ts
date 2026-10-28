@@ -17,11 +17,12 @@ export function createTestKnex(): Knex {
   })
 }
 
-export function createTestApp() {
+export function createTestApp(legacyRouter?: unknown) {
   const knexInstance = createTestKnex()
   const application = createApp({
     knex: knexInstance,
     logger: new ConsoleLogger(),
+    legacyRouter,
     cors: {
       origins: ['http://localhost:5173'],
       methods: [
