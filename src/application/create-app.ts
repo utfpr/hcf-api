@@ -100,33 +100,29 @@ export function createApp({
     })
     // .use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
     // .use('/fotos', express.static(upload))
-    .use(
-      '/assets',
-      express.static(assets, {
-        index: false,
-        redirect: false,
-        setHeaders: res => {
-          res.setHeader('Cache-Control', 'public, max-age=2592000, immutable')
-          res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin')
-        }
-      })
-    )
-    .use(
-      '/uploads',
-      express.static(upload, {
-        index: false,
-        redirect: false,
-        setHeaders: res => {
-          res.setHeader('Cache-Control', 'public, max-age=2592000, immutable')
-          res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin')
-        }
-      })
-    )
+
+  // Nginx de prod prefixa /api. O mesmo diretório precisa responder nos dois paths.
+  const staticOptions = {
+    index: false,
+    redirect: false,
+    setHeaders: (res: express.Response) => {
+      res.setHeader('Cache-Control', 'public, max-age=2592000, immutable')
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin')
+    }
+  }
+  const assetsStatic = express.static(assets, staticOptions)
+  const uploadsStatic = express.static(upload, staticOptions)
+  application
+    .use('/assets', assetsStatic)
+    .use('/api/assets', assetsStatic)
+    .use('/uploads', uploadsStatic)
+    .use('/api/uploads', uploadsStatic)
 
   const reportsRouter = express.Router()
   reportsRouter.get('/:fileName', reportPreview)
   reportsRouter.post('/:fileName', generatePreview)
   application.use('/reports', reportsRouter)
+  application.use('/api/reports', reportsRouter)
 
   for (const route of routes) {
     const sanitizedPath = `/api/${route.path}`.replaceAll(/\/{2,}/g, '/').replaceAll(/\/$/g, '')

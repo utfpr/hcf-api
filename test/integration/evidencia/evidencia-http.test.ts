@@ -110,6 +110,13 @@ describe('Evidências (upload, HTTP)', () => {
       expect(body.arquivo).toMatch(new RegExp(`^${expedicaoId}_${eventoId}_\\d+-[0-9a-f]{4}\\.jpg$`))
       expect(body.url).toBe(`/uploads/evidencias/${body.arquivo}`)
       expect(existsSync(resolve('uploads', 'evidencias', body.arquivo))).toBe(true)
+
+      const arquivoPath = `/evidencias/${body.arquivo}`
+      const semPrefixo = await agent.get(`/uploads${arquivoPath}`).expect(200)
+      const comPrefixo = await agent.get(`/api/uploads${arquivoPath}`).expect(200)
+      expect(semPrefixo.headers['content-type']).toMatch(/jpeg/)
+      expect(comPrefixo.headers['content-type']).toBe(semPrefixo.headers['content-type'])
+      expect(comPrefixo.headers['content-length']).toBe(semPrefixo.headers['content-length'])
     } finally {
       await knex('evidencias').where({ id: body.id }).delete()
       await deleteArquivo(body.arquivo)
