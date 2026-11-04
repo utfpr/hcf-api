@@ -11,7 +11,7 @@ import { createSoloAuth } from './soloAuth'
 
 type Solo = { id: number; nome: string }
 
-describe('PUT /api/v2/solos/:soloId', () => {
+describe('PUT /api/v1/solos/:soloId', () => {
   const { agent, knex } = createTestApp()
 
   let auth: Awaited<ReturnType<typeof createSoloAuth>>
@@ -32,7 +32,7 @@ describe('PUT /api/v2/solos/:soloId', () => {
       .returning(['id', 'nome']) as Solo[]
 
     try {
-      const response = await agent.put(`/api/v2/solos/${solo.id}`).set(auth.header).send({ nome: `${prefix} Novo` }).expect(200)
+      const response = await agent.put(`/api/v1/solos/${solo.id}`).set(auth.header).send({ nome: `${prefix} Novo` }).expect(200)
       const body = response.body as Solo
 
       expect(body).toEqual({ id: Number(solo.id), nome: `${prefix} Novo` })
@@ -46,7 +46,7 @@ describe('PUT /api/v2/solos/:soloId', () => {
     const [solo] = await knex<Solo>('solos').insert({ nome }).returning(['id', 'nome'])
     const updatedNome = uppercase ? nome.toUpperCase() : nome
     try {
-      const response = await agent.put(`/api/v2/solos/${solo.id}`)
+      const response = await agent.put(`/api/v1/solos/${solo.id}`)
         .set(auth.header).send({ nome: updatedNome }).expect(200)
       expect(response.body).toEqual({ id: Number(solo.id), nome: updatedNome })
     } finally {
@@ -55,14 +55,14 @@ describe('PUT /api/v2/solos/:soloId', () => {
   })
 
   test('retorna 404 para id inexistente', async () => {
-    const response = await agent.put('/api/v2/solos/999999').set(auth.header).send({ nome: 'Qualquer' }).expect(404)
+    const response = await agent.put('/api/v1/solos/999999').set(auth.header).send({ nome: 'Qualquer' }).expect(404)
     const body = response.body as { error: { message: string } }
 
     expect(body.error.message).toMatch(/não encontrad|not found/i)
   })
 
   test('retorna 400 para id inválido', async () => {
-    const response = await agent.put('/api/v2/solos/abc').set(auth.header).send({ nome: 'Qualquer' }).expect(400)
+    const response = await agent.put('/api/v1/solos/abc').set(auth.header).send({ nome: 'Qualquer' }).expect(400)
     const body = response.body as { error: { message: string } }
 
     expect(body.error.message).toMatch(/inválido|invalid/i)
@@ -79,7 +79,7 @@ describe('PUT /api/v2/solos/:soloId', () => {
       .returning(['id', 'nome']) as Solo[]
 
     try {
-      const response = await agent.put(`/api/v2/solos/${other.id}`).set(auth.header).send({ nome: original.nome }).expect(409)
+      const response = await agent.put(`/api/v1/solos/${other.id}`).set(auth.header).send({ nome: original.nome }).expect(409)
       const body = response.body as { error: { message: string } }
 
       expect(body.error.message).toMatch(/já existe|duplic/i)
@@ -99,7 +99,7 @@ describe('PUT /api/v2/solos/:soloId', () => {
       .returning(['id', 'nome']) as Solo[]
 
     try {
-      const response = await agent.put(`/api/v2/solos/${other.id}`).set(auth.header).send({ nome: original.nome.toUpperCase() }).expect(409)
+      const response = await agent.put(`/api/v1/solos/${other.id}`).set(auth.header).send({ nome: original.nome.toUpperCase() }).expect(409)
       const body = response.body as { error: { message: string } }
 
       expect(body.error.message).toMatch(/já existe|duplic/i)
