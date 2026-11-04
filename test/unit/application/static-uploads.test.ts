@@ -3,31 +3,24 @@ import { resolve } from 'node:path'
 import {
   afterAll, beforeAll, describe, expect, test
 } from 'vitest'
-import type { Knex } from 'knex'
+import express from 'express'
 import supertest from 'supertest'
+
+import { mountPublicStatic } from '@/application/mount-public-static'
+import { upload } from '@/config/directory'
 
 const ARQUIVO = 'dual-mount-prova.txt'
 const RELATIVO = `evidencias/${ARQUIVO}`
-const DISCO = resolve('uploads', RELATIVO)
+const DISCO = resolve(upload, RELATIVO)
 
 describe('static uploads dual mount', () => {
   let agent: ReturnType<typeof supertest>
 
-  beforeAll(async () => {
-    process.env.JWT_SECRET ??= 'test-dual-mount-secret'
-    const { createApp } = await import('@/application/create-app')
-    const { ConsoleLogger } = await import('@/infrastructure/ConsoleLogger')
-    const application = createApp({
-      knex: {} as Knex,
-      logger: new ConsoleLogger(),
-      cors: {
-        origins: ['http://localhost:5173'],
-        methods: ['GET'],
-        allowedHeaders: ['Content-Type']
-      }
-    })
-    agent = supertest(application.server)
-    mkdirSync(resolve('uploads', 'evidencias'), { recursive: true })
+  beforeAll(() => {
+    const application = express()
+    mountPublicStatic(application)
+    agent = supertest(application)
+    mkdirSync(resolve(upload, 'evidencias'), { recursive: true })
     writeFileSync(DISCO, 'prova dual-mount')
   })
 

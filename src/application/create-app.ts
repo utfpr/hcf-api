@@ -9,7 +9,6 @@ import { StatusCode } from '@/library/http/common'
 import { Route } from '@/library/http/Router'
 import { Logger } from '@/library/logger/Logger'
 
-import { assets, upload } from '../config/directory'
 import legacyErrors from '../middlewares/erros-middleware'
 import { generatePreview, reportPreview } from '../reports/controller'
 import { routes as createEstadoRoutes } from './estado'
@@ -18,6 +17,7 @@ import { routes as createEvidenciaRoutes } from './evidencia'
 import { routes as createExpedicoesRoutes } from './expedicao'
 import { routes as createFaseSucessionalRoutes } from './faseSucessional'
 import { routes as createLembreteRoutes } from './lembrete'
+import { mountPublicStatic } from './mount-public-static'
 import { routes as createPaisRoutes } from './pais'
 import { assertCookieSafeOrigins } from './parseCorsOrigins'
 import { routes as createRelevoRoutes } from './relevo'
@@ -99,24 +99,9 @@ export function createApp({
       }
     })
     // .use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
-    // .use('/fotos', express.static(upload))
 
   // Nginx de prod prefixa /api. O mesmo diretório precisa responder nos dois paths.
-  const staticOptions = {
-    index: false,
-    redirect: false,
-    setHeaders: (res: express.Response) => {
-      res.setHeader('Cache-Control', 'public, max-age=2592000, immutable')
-      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin')
-    }
-  }
-  const assetsStatic = express.static(assets, staticOptions)
-  const uploadsStatic = express.static(upload, staticOptions)
-  application
-    .use('/assets', assetsStatic)
-    .use('/api/assets', assetsStatic)
-    .use('/uploads', uploadsStatic)
-    .use('/api/uploads', uploadsStatic)
+  mountPublicStatic(application)
 
   const reportsRouter = express.Router()
   reportsRouter.get('/:fileName', reportPreview)
