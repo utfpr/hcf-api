@@ -4,7 +4,6 @@ import {
   afterAll, beforeAll, describe, expect, test
 } from 'vitest'
 import type { Knex } from 'knex'
-import type { Server } from 'node:http'
 import supertest from 'supertest'
 
 const ARQUIVO = 'dual-mount-prova.txt'
@@ -13,7 +12,6 @@ const DISCO = resolve('uploads', RELATIVO)
 
 describe('static uploads dual mount', () => {
   let agent: ReturnType<typeof supertest>
-  let server: Server
 
   beforeAll(async () => {
     process.env.JWT_SECRET ??= 'test-dual-mount-secret'
@@ -28,17 +26,13 @@ describe('static uploads dual mount', () => {
         allowedHeaders: ['Content-Type']
       }
     })
-    server = application.server
-    agent = supertest(server)
+    agent = supertest(application.server)
     mkdirSync(resolve('uploads', 'evidencias'), { recursive: true })
     writeFileSync(DISCO, 'prova dual-mount')
   })
 
-  afterAll(async () => {
+  afterAll(() => {
     if (existsSync(DISCO)) unlinkSync(DISCO)
-    await new Promise<void>((resolveClose, reject) => {
-      server.close(error => (error ? reject(error) : resolveClose()))
-    })
   })
 
   test('GET /uploads and GET /api/uploads serve the same file', async () => {
