@@ -11,7 +11,7 @@ import { createSoloAuth } from './soloAuth'
 
 type Solo = { id: number; nome: string }
 
-describe('DELETE /api/v2/solos/:soloId', () => {
+describe('DELETE /api/v1/solos/:soloId', () => {
   const { agent, knex } = createTestApp()
 
   let auth: Awaited<ReturnType<typeof createSoloAuth>>
@@ -32,7 +32,7 @@ describe('DELETE /api/v2/solos/:soloId', () => {
       .returning(['id', 'nome']) as Solo[]
 
     try {
-      await agent.delete(`/api/v2/solos/${solo.id}`).set(auth.header).expect(204)
+      await agent.delete(`/api/v1/solos/${solo.id}`).set(auth.header).expect(204)
       const found = await knex('solos').where({ id: solo.id }).first()
       expect(found).toBeUndefined()
     } finally {
@@ -41,14 +41,14 @@ describe('DELETE /api/v2/solos/:soloId', () => {
   })
 
   test('retorna 404 quando o solo não existe', async () => {
-    const response = await agent.delete('/api/v2/solos/999999').set(auth.header).expect(404)
+    const response = await agent.delete('/api/v1/solos/999999').set(auth.header).expect(404)
     const body = response.body as { error: { message: string } }
 
     expect(body.error.message).toMatch(/não encontrad|not found/i)
   })
 
   test('retorna 400 quando o id é inválido', async () => {
-    const response = await agent.delete('/api/v2/solos/abc').set(auth.header).expect(400)
+    const response = await agent.delete('/api/v1/solos/abc').set(auth.header).expect(400)
     const body = response.body as { error: { message: string } }
 
     expect(body.error.message).toMatch(/inválido|invalid/i)
@@ -70,7 +70,7 @@ describe('DELETE /api/v2/solos/:soloId', () => {
         updated_at: new Date()
       })
 
-      const response = await agent.delete(`/api/v2/solos/${solo.id}`).set(auth.header).expect(409)
+      const response = await agent.delete(`/api/v1/solos/${solo.id}`).set(auth.header).expect(409)
       const body = response.body as { error: { message: string } }
 
       expect(body.error.message).toMatch(/em uso|in use|uso/i)
