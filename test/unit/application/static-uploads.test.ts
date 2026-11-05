@@ -1,10 +1,12 @@
-import { mkdirSync, writeFileSync, unlinkSync, existsSync } from 'node:fs'
+import express from 'express'
+import {
+  mkdirSync, writeFileSync, unlinkSync, existsSync
+} from 'node:fs'
 import { resolve } from 'node:path'
+import supertest from 'supertest'
 import {
   afterAll, beforeAll, describe, expect, test
 } from 'vitest'
-import express from 'express'
-import supertest from 'supertest'
 
 import { mountPublicStatic } from '@/application/mount-public-static'
 import { upload } from '@/config/directory'
