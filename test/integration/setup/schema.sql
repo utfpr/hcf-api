@@ -3781,3 +3781,19 @@ ALTER TABLE ONLY public.lembretes ADD COLUMN descricao text;
 ALTER TABLE ONLY public.lembretes ADD COLUMN latitude double precision;
 
 ALTER TABLE ONLY public.lembretes ADD COLUMN longitude double precision;
+
+
+CREATE TABLE public.evidencias_transcricoes (
+    evidencia_id integer PRIMARY KEY REFERENCES public.evidencias(id) ON DELETE CASCADE,
+    status varchar(20) NOT NULL,
+    texto_original text,
+    texto_revisado text,
+    versao integer NOT NULL DEFAULT 0,
+    tentativa uuid NOT NULL,
+    processamento_expira_em timestamptz,
+    codigo_erro varchar(80),
+    gerado_por bigint REFERENCES public.usuarios(id),
+    gerado_em timestamptz,
+    revisado_por bigint REFERENCES public.usuarios(id),
+    revisado_em timestamptz
+);

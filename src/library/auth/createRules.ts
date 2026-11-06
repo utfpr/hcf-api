@@ -97,6 +97,7 @@ export function createRules(user?: RulesUser): Rule<Resource, Action>[] {
       { action: 'update', resource: 'Evento' },
       { action: 'delete', resource: 'Evento' },
       { action: 'create', resource: 'Evidencia' },
+      { action: 'update', resource: 'Evidencia' },
       { action: 'delete', resource: 'Evidencia' },
       { action: 'create', resource: 'Lembrete' },
       { action: 'update', resource: 'Lembrete' },
