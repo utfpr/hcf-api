@@ -19,8 +19,14 @@ export interface ColetaAttributes {
   associacoes: string | null
   folhas: string | null
   habito: string | null
+  // Altura e exsudado ficam no bloco Hábito da ficha impressa
+  altura: string | null
+  exsudado: string | null
   frutos: string | null
+  // Observação das flores; as cores do cálice e da corola têm coluna própria
   flores: string | null
+  flores_cor_calice: string | null
+  flores_cor_corola: string | null
   luminosidade: string | null
 }
 
@@ -42,8 +48,12 @@ export const COLETA_FIELDS = [
   'associacoes',
   'folhas',
   'habito',
+  'altura',
+  'exsudado',
   'frutos',
   'flores',
+  'flores_cor_calice',
+  'flores_cor_corola',
   'luminosidade'
 ] as const satisfies ReadonlyArray<keyof ColetaAttributes>
 
