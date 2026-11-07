@@ -9,6 +9,7 @@ import { StatusCode } from '@/library/http/common'
 import { Route } from '@/library/http/Router'
 import { Logger } from '@/library/logger/Logger'
 
+import { assets, upload } from '../config/directory'
 import legacyErrors from '../middlewares/erros-middleware'
 import { generatePreview, reportPreview } from '../reports/controller'
 import { routes as createEstadoRoutes } from './estado'
@@ -17,7 +18,6 @@ import { routes as createEvidenciaRoutes } from './evidencia'
 import { routes as createExpedicoesRoutes } from './expedicao'
 import { routes as createFaseSucessionalRoutes } from './faseSucessional'
 import { routes as createLembreteRoutes } from './lembrete'
-import { mountPublicStatic } from './mount-public-static'
 import { routes as createPaisRoutes } from './pais'
 import { assertCookieSafeOrigins } from './parseCorsOrigins'
 import { routes as createRelevoRoutes } from './relevo'
@@ -99,15 +99,34 @@ export function createApp({
       }
     })
     // .use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
-
-  // Nginx de prod prefixa /api. O mesmo diretório precisa responder nos dois paths.
-  mountPublicStatic(application)
+    // .use('/fotos', express.static(upload))
+    .use(
+      '/assets',
+      express.static(assets, {
+        index: false,
+        redirect: false,
+        setHeaders: res => {
+          res.setHeader('Cache-Control', 'public, max-age=2592000, immutable')
+          res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin')
+        }
+      })
+    )
+    .use(
+      '/uploads',
+      express.static(upload, {
+        index: false,
+        redirect: false,
+        setHeaders: res => {
+          res.setHeader('Cache-Control', 'public, max-age=2592000, immutable')
+          res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin')
+        }
+      })
+    )
 
   const reportsRouter = express.Router()
   reportsRouter.get('/:fileName', reportPreview)
   reportsRouter.post('/:fileName', generatePreview)
   application.use('/reports', reportsRouter)
-  application.use('/api/reports', reportsRouter)
 
   for (const route of routes) {
     const sanitizedPath = `/api/${route.path}`.replaceAll(/\/{2,}/g, '/').replaceAll(/\/$/g, '')

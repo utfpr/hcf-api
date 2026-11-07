@@ -138,7 +138,7 @@ describe('ListaLembretesController', () => {
     expect(itens[0].evidencias).toEqual([])
     expect(itens[1].evidencias).toEqual([
       {
-        id: 10, lembrete_id: 2, arquivo: 'lembrete_2_1-ab12.jpg', url: '/uploads/lembretes/lembrete_2_1-ab12.jpg'
+        id: 10, lembrete_id: 2, arquivo: 'lembrete_2_1-ab12.jpg', url: '/images/lembretes/lembrete_2_1-ab12.jpg'
       }
     ])
   })

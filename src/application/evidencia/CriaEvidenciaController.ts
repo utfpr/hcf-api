@@ -75,7 +75,7 @@ export class CriaEvidenciaController implements RequestHandler {
     }
 
     return {
-      body: { ...result.value, url: `/uploads/evidencias/${result.value.arquivo}` },
+      body: { ...result.value, url: `/images/evidencias/${result.value.arquivo}` },
       statusCode: StatusCode.Created
     }
   }
