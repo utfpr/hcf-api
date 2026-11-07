@@ -76,7 +76,7 @@ export function parseDate(raw: unknown, field: string): Date | Error {
 }
 
 export function lembreteEvidenciaUrl(arquivo: string): string {
-  return `/uploads/lembretes/${arquivo}`
+  return `/images/lembretes/${arquivo}`
 }
 
 /**

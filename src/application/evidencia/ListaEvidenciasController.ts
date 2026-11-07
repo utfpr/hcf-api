@@ -28,7 +28,7 @@ export class ListaEvidenciasController implements RequestHandler {
 
     const body = result.value.map(evidencia => ({
       ...evidencia,
-      url: `/uploads/evidencias/${evidencia.arquivo}`
+      url: `/images/evidencias/${evidencia.arquivo}`
     }))
 
     return { body, statusCode: StatusCode.Ok }
