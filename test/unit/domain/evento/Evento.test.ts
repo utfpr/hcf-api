@@ -21,8 +21,12 @@ const ficha: ColetaAttributes = {
   associacoes: 'Lychnophora ericoides',
   folhas: 'Lineares, rígidas',
   habito: 'Herbácea',
+  altura: '0,8 m',
+  exsudado: 'Ausente',
   frutos: 'Ausentes',
   flores: 'Presentes, lilases',
+  flores_cor_calice: 'Verde',
+  flores_cor_corola: 'Lilás',
   luminosidade: 'Pleno sol'
 }
 
