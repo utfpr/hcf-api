@@ -268,6 +268,7 @@ export const listagem = async (request, response, next) => {
             familia_id,
             genero_id,
             especie_id,
+            excluir_lista_conferencia_id: excluirListaConferenciaId,
         } = request.query;
         const familiaFiltro = familia_id || request.query['familia_id[]'];
         const generoFiltro = genero_id || request.query['genero_id[]'];
@@ -280,6 +281,18 @@ export const listagem = async (request, response, next) => {
 
         if (status) {
             whereRfid.status = status;
+        }
+
+        if (excluirListaConferenciaId !== undefined) {
+            const listaId = Number(excluirListaConferenciaId);
+
+            if (!Number.isSafeInteger(listaId) || listaId < 1) {
+                return response.status(400).json({ mensagem: 'ID da lista de conferência inválido.' });
+            }
+
+            whereRfid.id = {
+                [Op.notIn]: Sequelize.literal(`(SELECT rfid_id FROM listas_conferencias_rfids WHERE lista_conferencia_id = ${listaId})`),
+            };
         }
 
         const whereFoto = {};
