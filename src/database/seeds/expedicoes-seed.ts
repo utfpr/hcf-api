@@ -19,7 +19,7 @@ import { Logger } from '@/library/logger/Logger'
  * Usuários não são criados: o seed usa os usuários jáexistentes
  * (ex.: do dump de desenvolvimento) e falha se não houver nenhum.
  *
- * Arquivos das evidências são gravados em EVIDENCIA_DIR (/uploads/evidencias), com prefixo SEED_ARQUIVO_PREFIXO.
+ * Arquivos das evidências são gravados em EVIDENCIA_DIR (uploads/evidencias), com prefixo SEED_ARQUIVO_PREFIXO.
  */
 
 export const SEED_PREFIXO = '[SEED]'
