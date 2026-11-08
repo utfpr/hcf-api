@@ -51,7 +51,7 @@ server {
 
         <% if (s.httpBasicAuthPath) { %>
             auth_basic           "Restricted Access";
-            auth_basic_user_file <%-s.httpBasicAuthPath%>; 
+            auth_basic_user_file <%-s.httpBasicAuthPath%>;
         <% } %>
 
         root <%- '/nginx-shared/' + s.localDomain %>;
@@ -63,16 +63,16 @@ server {
             proxy_set_header Connection "upgrade";
             proxy_http_version 1.1;
         <% } %>
-    
+
     <% } %>
-    
+
     }
 
     # Used by Lets Encrypt
     location /.well-known/acme-challenge/ {
         root <%-s.staticWebRoot%>;
     }
-    
+
     # Used by CapRover for health check
     location /.well-known/captain-identifier {
         root <%-s.staticWebRoot%>;
