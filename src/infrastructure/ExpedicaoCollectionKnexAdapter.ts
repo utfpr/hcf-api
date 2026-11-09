@@ -415,6 +415,17 @@ export class ExpedicaoCollectionKnexAdapter implements ExpedicaoCollection {
     }
   }
 
+  async isParticipant(expedicaoId: number, usuarioId: number): Promise<Either<Error, boolean>> {
+    try {
+      const row: unknown = await this.knex('expedicoes_participantes')
+        .where({ expedicao_id: expedicaoId, usuario_id: usuarioId })
+        .first('usuario_id')
+      return Either.right(row !== undefined)
+    } catch (error: unknown) {
+      return Either.left(new CollectionError({ message: 'Falha ao consultar participante', cause: error }))
+    }
+  }
+
   async removeParticipant(expedicaoId: number, usuarioId: number): Promise<Either<Error, void>> {
     try {
       await this.knex('expedicoes_participantes')

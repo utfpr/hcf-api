@@ -1,6 +1,8 @@
 import { type Knex } from 'knex'
 
 import { authorize } from '@/application/AuthorizeMiddlewareFactory'
+import { AutorizaExpedicionarioMiddleware } from '@/application/AutorizaExpedicionarioMiddleware'
+import { alvoPorEvento, alvoPorEvidencia } from '@/application/expedicionarioAlvos'
 import { CriaEvidenciaUseCase } from '@/domain/evidencia/CriaEvidenciaUseCase'
 import { RemoveEvidenciaUseCase } from '@/domain/evidencia/RemoveEvidenciaUseCase'
 import { ConsoleLogger } from '@/infrastructure/ConsoleLogger'
@@ -8,6 +10,7 @@ import { EventoCollectionKnexAdapter } from '@/infrastructure/EventoCollectionKn
 import { EvidenciaArquivoDiskAdapter } from '@/infrastructure/EvidenciaArquivoDiskAdapter'
 import { EvidenciaCollectionKnexAdapter } from '@/infrastructure/EvidenciaCollectionKnexAdapter'
 import { evidenciaUpload } from '@/infrastructure/EvidenciaUploadMiddleware'
+import { ExpedicaoCollectionKnexAdapter } from '@/infrastructure/ExpedicaoCollectionKnexAdapter'
 import { Method } from '@/library/http/common'
 import { Route } from '@/library/http/Router'
 
@@ -20,11 +23,15 @@ export function routes(knex: Knex): Route[] {
   const eventoCollection = new EventoCollectionKnexAdapter({ knex })
   const evidenciaArquivo = new EvidenciaArquivoDiskAdapter()
   const logger = new ConsoleLogger()
+  const participacao = new ExpedicaoCollectionKnexAdapter({ knex })
 
   return [
     {
       handlers: [
         authorize('create', 'Evidencia'),
+        new AutorizaExpedicionarioMiddleware({
+          participacao, resolveAlvo: alvoPorEvento(eventoCollection), semExpedicao: 'livre'
+        }),
         new CriaEvidenciaController({
           criaEvidenciaUseCase: new CriaEvidenciaUseCase({
             eventoCollection, evidenciaCollection, evidenciaArquivo, logger
@@ -46,6 +53,12 @@ export function routes(knex: Knex): Route[] {
     {
       handlers: [
         authorize('delete', 'Evidencia'),
+        new AutorizaExpedicionarioMiddleware({
+          participacao,
+          resolveAlvo: alvoPorEvidencia(evidenciaCollection, eventoCollection),
+          dono: { action: 'delete', resource: 'Evidencia' },
+          semExpedicao: 'livre'
+        }),
         new RemoveEvidenciaController({
           removeEvidenciaUseCase: new RemoveEvidenciaUseCase({
             evidenciaArquivo, evidenciaCollection, logger
