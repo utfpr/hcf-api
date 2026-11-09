@@ -1,6 +1,7 @@
+import { TranscricaoError } from '@/domain/evidencia/error/TranscricaoError'
 import { EvidenciaCollection } from '@/domain/evidencia/EvidenciaCollection'
 import {
-  TranscreveEvidencia, TranscricaoCollection, TranscricaoError
+  TranscreveEvidencia, TranscricaoCollection
 } from '@/domain/evidencia/Transcricao'
 import {
   HttpRequest, HttpResponse, StatusCode

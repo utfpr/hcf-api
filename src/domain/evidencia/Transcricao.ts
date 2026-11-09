@@ -1,3 +1,4 @@
+import { TranscricaoError } from '@/domain/evidencia/error/TranscricaoError'
 import { Logger } from '@/library/logger/Logger'
 
 export type TranscricaoStatus = 'processando' | 'concluida' | 'erro'
@@ -25,12 +26,6 @@ export interface TranscricaoCollection {
   complete(id: number, tentativa: string, texto: string): Promise<boolean>
   fail(id: number, tentativa: string, codigo: string): Promise<void>
   revise(id: number, versao: number, texto: string, usuarioId: number): Promise<boolean>
-}
-
-export class TranscricaoError extends Error {
-  constructor(readonly statusCode: number, readonly code: string, message: string) {
-    super(message)
-  }
 }
 
 export interface AudioTranscriber {

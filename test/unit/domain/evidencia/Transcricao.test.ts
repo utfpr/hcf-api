@@ -2,8 +2,9 @@ import {
   describe, expect, it, vi
 } from 'vitest'
 
+import { TranscricaoError } from '@/domain/evidencia/error/TranscricaoError'
 import {
-  TranscreveEvidencia, Transcricao, TranscricaoCollection, TranscricaoError
+  TranscreveEvidencia, Transcricao, TranscricaoCollection
 } from '@/domain/evidencia/Transcricao'
 import { createRules } from '@/library/auth/createRules'
 

@@ -3,7 +3,8 @@ import { readFile, stat } from 'node:fs/promises'
 import path from 'node:path'
 
 import { EVIDENCIA_DIR } from '@/config/evidencia'
-import { AudioTranscriber, TranscricaoError } from '@/domain/evidencia/Transcricao'
+import { TranscricaoError } from '@/domain/evidencia/error/TranscricaoError'
+import { AudioTranscriber } from '@/domain/evidencia/Transcricao'
 
 interface Configuration {
   url?: string
