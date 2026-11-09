@@ -3094,7 +3094,11 @@ CREATE TABLE public.eventos_coletas (
     habito text,
     frutos text,
     flores text,
-    luminosidade text
+    luminosidade text,
+    altura text,
+    exsudado text,
+    flores_cor_calice text,
+    flores_cor_corola text
 );
 
 

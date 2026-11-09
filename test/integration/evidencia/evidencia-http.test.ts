@@ -108,7 +108,7 @@ describe('Evidências (upload, HTTP)', () => {
       expect(body.mime_type).toBe('image/jpeg')
       expect(body.tamanho).toBeGreaterThan(0)
       expect(body.arquivo).toMatch(new RegExp(`^${expedicaoId}_${eventoId}_\\d+-[0-9a-f]{4}\\.jpg$`))
-      expect(body.url).toBe(`/uploads/evidencias/${body.arquivo}`)
+      expect(body.url).toBe(`/images/evidencias/${body.arquivo}`)
       expect(existsSync(resolve('uploads', 'evidencias', body.arquivo))).toBe(true)
     } finally {
       await knex('evidencias').where({ id: body.id }).delete()

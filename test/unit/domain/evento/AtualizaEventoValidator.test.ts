@@ -7,10 +7,14 @@ import { Attributes, ColetaAttributes } from '@/domain/evento/Evento'
 
 function fichaCompleta(overrides: Partial<ColetaAttributes> = {}): ColetaAttributes {
   return {
+    altura: null,
     associacoes: null,
     estado: null,
+    exsudado: null,
     familia: null,
     flores: null,
+    flores_cor_calice: null,
+    flores_cor_corola: null,
     folhas: null,
     frutos: null,
     habito: null,
