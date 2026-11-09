@@ -39,8 +39,9 @@ function setup() {
   const logger = {
     debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn()
   }
+  const idGenerator = { generate: vi.fn().mockReturnValue('tentativa-1') }
   const service = new TranscreveEvidencia({
-    collection, transcriber, logger
+    collection, transcriber, idGenerator, logger
   })
   return {
     collection, transcriber, logger, service

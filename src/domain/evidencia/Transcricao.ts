@@ -1,5 +1,3 @@
-import { randomUUID } from 'node:crypto'
-
 import { Logger } from '@/library/logger/Logger'
 
 export type TranscricaoStatus = 'processando' | 'concluida' | 'erro'
@@ -40,23 +38,28 @@ export interface AudioTranscriber {
   transcribe(arquivo: string, mimeType: string): Promise<string>
 }
 
+export interface IdGenerator {
+  generate(): string
+}
+
 export class TranscreveEvidencia {
   constructor(private readonly dependencies: {
     collection: TranscricaoCollection
     transcriber: AudioTranscriber
+    idGenerator: IdGenerator
     logger: Logger
   }) {}
 
   async execute(evidencia: { id: number; arquivo: string; mime_type: string }, usuarioId: number): Promise<Transcricao> {
     const {
-      collection, transcriber, logger
+      collection, transcriber, idGenerator, logger
     } = this.dependencies
     if (!evidencia.mime_type.startsWith('audio/')) {
       throw new TranscricaoError(415, 'formato_incompativel', 'Apenas evidências de áudio podem ser transcritas.')
     }
     const existente = await collection.find(evidencia.id)
     if (existente?.status === 'concluida') return existente
-    const tentativa = randomUUID()
+    const tentativa = idGenerator.generate()
     const startedAt = Date.now()
     const claimed = await collection.claim(evidencia.id, tentativa, usuarioId, transcriber.leaseMs)
     if (!claimed) {

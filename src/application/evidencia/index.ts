@@ -5,6 +5,7 @@ import { CriaEvidenciaUseCase } from '@/domain/evidencia/CriaEvidenciaUseCase'
 import { RemoveEvidenciaUseCase } from '@/domain/evidencia/RemoveEvidenciaUseCase'
 import { TranscreveEvidencia } from '@/domain/evidencia/Transcricao'
 import { ConsoleLogger } from '@/infrastructure/ConsoleLogger'
+import { CryptoIdGeneratorAdapter } from '@/infrastructure/CryptoIdGeneratorAdapter'
 import { EventoCollectionKnexAdapter } from '@/infrastructure/EventoCollectionKnexAdapter'
 import { EvidenciaArquivoDiskAdapter } from '@/infrastructure/EvidenciaArquivoDiskAdapter'
 import { EvidenciaCollectionKnexAdapter } from '@/infrastructure/EvidenciaCollectionKnexAdapter'
@@ -27,7 +28,10 @@ export function routes(knex: Knex): Route[] {
 
   const transcricoes = new TranscricaoCollectionKnexAdapter(knex)
   const transcreve = new TranscreveEvidencia({
-    collection: transcricoes, transcriber: new SpeechToTextAdapter(), logger
+    collection: transcricoes,
+    transcriber: new SpeechToTextAdapter(),
+    idGenerator: new CryptoIdGeneratorAdapter(),
+    logger
   })
   const transcricaoRoutes: Route[] = ([
     {
