@@ -5,6 +5,7 @@ export const TIPOS_USUARIOS = {
     CURADOR: 1,
     OPERADOR: 2,
     IDENTIFICADOR: 3,
+    EXPEDICIONARIO: 4,
 };
 
 export default (tipoUsuarioPermitido = []) =>
