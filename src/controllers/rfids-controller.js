@@ -10,6 +10,7 @@ const {
     Genero,
     Familia,
     Coletor,
+    sequelize,
 } = models;
 
 const getIncludedTomboFoto = rfidJson => (
@@ -132,6 +133,66 @@ const normalizarIdsFiltro = valor => {
         .filter(item => Number.isInteger(item) && item > 0);
 
     return [...new Set(ids)];
+};
+
+const filtrosFotosPendentes = filtros => {
+    const whereFoto = {
+        id: { [Op.notIn]: Sequelize.literal("(SELECT tombo_foto_id FROM rfids WHERE status = 'CONCLUIDO' AND tombo_foto_id IS NOT NULL)") },
+    };
+
+    if (filtros.q) {
+        whereFoto[Op.or] = [
+            Sequelize.where(Sequelize.cast(Sequelize.col('tombo_hcf'), 'varchar'), { [Op.iLike]: `%${filtros.q}%` }),
+            { codigo_barra: { [Op.iLike]: `%${filtros.q}%` } },
+        ];
+    }
+
+    if (filtros.tombo_hcf) {
+        whereFoto.tombo_hcf = filtros.tombo_hcf;
+    }
+
+    const whereTombo = {};
+
+    for (const campo of ['familia_id', 'genero_id', 'especie_id']) {
+        const ids = normalizarIdsFiltro(filtros[campo] || filtros[`${campo}[]`]);
+
+        if (ids.length) {
+            whereTombo[campo] = { [Op.in]: ids };
+        }
+    }
+
+    return {
+        where: whereFoto,
+        include: [{
+            model: Tombo,
+            attributes: ['hcf', 'nome_cientifico', 'nomes_populares', 'data_coleta_dia', 'data_coleta_mes', 'data_coleta_ano'],
+            where: Object.keys(whereTombo).length ? whereTombo : undefined,
+            required: Object.keys(whereTombo).length > 0,
+            include: [
+                { model: Especie, as: 'especie', attributes: ['nome'], required: false },
+                { model: Coletor, as: 'coletor', attributes: ['nome'], required: false },
+            ],
+        }],
+        attributes: ['id', 'tombo_hcf', 'codigo_barra', 'caminho_foto'],
+        order: [['id', 'DESC']],
+    };
+};
+
+const formatarFotoPendente = foto => {
+    const item = foto.toJSON();
+    const tombo = getIncludedTombo(item);
+    const partesData = [tombo?.data_coleta_dia, tombo?.data_coleta_mes, tombo?.data_coleta_ano];
+
+    return {
+        id: item.id,
+        tombo_hcf: item.tombo_hcf,
+        codigo_barra: item.codigo_barra,
+        caminho_foto: item.caminho_foto,
+        nome_cientifico: getNomeCientifico(tombo),
+        coletor_principal: getColetorPrincipal(tombo),
+        nome_popular: tombo?.nomes_populares || 'N/A',
+        data_coleta: partesData.every(Boolean) ? partesData.map((parte, indice) => indice < 2 ? String(parte).padStart(2, '0') : parte).join('/') : 'N/A',
+    };
 };
 
 const formatarRfidResposta = rfid => {
@@ -379,63 +440,14 @@ export const listarPendentesRfid = async (request, response, next) => {
         const limite = parseInt(request.query.limite) || 10;
         const pagina = parseInt(request.query.pagina) || 1;
         const offset = (pagina - 1) * limite;
-        const { q } = request.query;
-
-        const whereCondicao = {
-            id: {
-                [Op.notIn]: Sequelize.literal('(SELECT tombo_foto_id FROM rfids WHERE status = \'CONCLUIDO\' AND tombo_foto_id IS NOT NULL)'),
-            },
-        };
-
-        if (q) {
-            whereCondicao[Op.or] = [
-                Sequelize.where(Sequelize.cast(Sequelize.col('tombo_hcf'), 'varchar'), { [Op.iLike]: `%${q}%` }),
-                Sequelize.where(Sequelize.cast(Sequelize.col('codigo_barra'), 'varchar'), { [Op.iLike]: `%${q}%` }),
-            ];
-        }
-
         const tombosPendentes = await TomboFoto.findAndCountAll({
-            attributes: ['id', 'tombo_hcf', 'codigo_barra', 'caminho_foto'],
-            where: whereCondicao,
-            include: [
-                {
-                    model: Tombo,
-                    attributes: ['hcf', 'nome_cientifico'],
-                    required: false,
-                    include: [
-                        {
-                            model: Especie,
-                            as: 'especie',
-                            attributes: ['nome'],
-                            required: false,
-                        },
-                        {
-                            model: Coletor,
-                            as: 'coletor',
-                            attributes: ['nome'],
-                            required: false,
-                        },
-                    ],
-                },
-            ],
+            ...filtrosFotosPendentes(request.query),
             limit: limite,
             offset: offset,
-            order: [['id', 'DESC']],
+            distinct: true,
         });
 
-        const dados = tombosPendentes.rows.map(tomboFoto => {
-            const item = tomboFoto.toJSON();
-            const tombo = getIncludedTombo(item);
-
-            return {
-                id: item.id,
-                tombo_hcf: item.tombo_hcf,
-                codigo_barra: item.codigo_barra,
-                caminho_foto: item.caminho_foto,
-                nome_cientifico: getNomeCientifico(tombo),
-                coletor_principal: getColetorPrincipal(tombo),
-            };
-        });
+        const dados = tombosPendentes.rows.map(formatarFotoPendente);
 
         return response.status(200).json({
             dados,
@@ -444,6 +456,103 @@ export const listarPendentesRfid = async (request, response, next) => {
                 pagina,
                 limite,
             },
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const prepararImpressao = async (request, response, next) => {
+    try {
+        const fotos = await TomboFoto.findAll(filtrosFotosPendentes(request.body || {}));
+
+        if (!fotos.length) {
+            return response.status(200).json({ tags: [], total: 0 });
+        }
+
+        const tags = await sequelize.transaction(async transaction => {
+            const resultado = [];
+
+            for (const foto of fotos) {
+                const dados = formatarFotoPendente(foto);
+                const epc = codificarParaEpcHex(dados.tombo_hcf, dados.codigo_barra);
+                const [rfid] = await Rfid.findOrCreate({
+                    where: { tombo_foto_id: dados.id },
+                    defaults: { epc, status: 'PENDENTE' },
+                    transaction,
+                });
+
+                if (rfid.status === 'CONCLUIDO') {
+                    continue;
+                }
+
+                if (rfid.epc !== epc || rfid.status !== 'PENDENTE' || rfid.tid) {
+                    await rfid.update({ epc, status: 'PENDENTE', tid: null }, { transaction });
+                }
+
+                resultado.push({ ...dados, epc, rfid_id: rfid.id });
+            }
+
+            return resultado;
+        });
+
+        return response.status(200).json({ tags, total: tags.length });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const confirmarLeituraImpressa = async (request, response, next) => {
+    const epcInformado = typeof request.body?.epc === 'string' ? request.body.epc.trim() : '';
+    const epc = /^[0-9a-f]{24}$/i.test(epcInformado) ? epcInformado.toUpperCase() : codificarEpcFormatadoParaHex(epcInformado);
+    const tid = normalizarTid(request.body?.tid);
+
+    if (!/^[0-9A-F]{24}$/.test(epc) || !tidValido(tid)) {
+        return response.status(400).json({ erro: 'EPC hexadecimal de 24 caracteres e TID válido são obrigatórios.' });
+    }
+
+    try {
+        const resultado = await sequelize.transaction(async transaction => {
+            const rfid = await Rfid.findOne({ where: { epc }, transaction, lock: transaction.LOCK.UPDATE });
+
+            if (!rfid) {
+                return { status: 404, erro: 'EPC não encontrado entre os vínculos pendentes.' };
+            }
+
+            if (rfid.status === 'CONCLUIDO') {
+                if (rfid.tid !== tid) {
+                    return { status: 409, erro: 'Inconsistencia: vinculo já concluído em outra tag.' };
+                }
+
+                return { status: 200, rfid, repetida: true };
+            }
+
+            if (rfid.status !== 'PENDENTE') {
+                return { status: 409, erro: 'Inconsistencia: vinculo nao pendente.' };
+            }
+
+            const rfidTid = await Rfid.findOne({ where: { tid }, transaction });
+
+            if (rfidTid && rfidTid.id !== rfid.id) {
+                return { status: 409, erro: 'Inconsistencia: vinculo já concluído em outra tag.' };
+            }
+
+            await rfid.update({ tid, status: 'CONCLUIDO' }, { transaction });
+            return { status: 200, rfid, repetida: false };
+        });
+
+        if (resultado.erro) {
+            return response.status(resultado.status).json({ erro: resultado.erro });
+        }
+
+        const foto = await TomboFoto.findByPk(resultado.rfid.tombo_foto_id);
+
+        return response.status(200).json({
+            rfid: { id: resultado.rfid.id, epc, tid, status: 'CONCLUIDO' },
+            tombo_hcf: foto?.tombo_hcf,
+            codigo_barra: foto?.codigo_barra,
+            repetida: resultado.repetida,
         });
 
     } catch (error) {

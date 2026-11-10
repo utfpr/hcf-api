@@ -76,6 +76,14 @@ export function createApp({
     ...createLembreteRoutes(knex),
     ...createUsuarioSessaoRoutes(knex)
   ]
+  const uploadsStatic = express.static(upload, {
+    index: false,
+    redirect: false,
+    setHeaders: res => {
+      res.setHeader('Cache-Control', 'public, max-age=2592000, immutable')
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin')
+    }
+  })
   const origins = assertCookieSafeOrigins(cors.origins)
   const application = new ExpressApplication({ logger })
 
@@ -111,17 +119,10 @@ export function createApp({
         }
       })
     )
-    .use(
-      '/uploads',
-      express.static(upload, {
-        index: false,
-        redirect: false,
-        setHeaders: res => {
-          res.setHeader('Cache-Control', 'public, max-age=2592000, immutable')
-          res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin')
-        }
-      })
-    )
+    .use('/uploads', uploadsStatic)
+    // Em produção o nginx serve /images; aqui espelha isso para o ambiente local,
+    // já que a API devolve URLs de evidência em /images/...
+    .use('/images', uploadsStatic)
 
   const reportsRouter = express.Router()
   reportsRouter.get('/:fileName', reportPreview)

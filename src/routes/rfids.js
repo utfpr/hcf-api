@@ -133,6 +133,9 @@ export default app => {
      */
     app.route('/rfids/tombos-pendentes').get(somenteCurador, RfidsController.listarPendentesRfid);
 
+    app.route('/rfids/preparar-impressao').post(somenteCurador, RfidsController.prepararImpressao);
+    app.route('/rfids/confirmar-leitura-impressa').post(somenteCurador, RfidsController.confirmarLeituraImpressa);
+
     app.route('/rfids/listas_conferencias')
         .get([
             tokensMiddleware(),
