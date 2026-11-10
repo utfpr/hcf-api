@@ -418,6 +418,7 @@ export default app => {
                 TIPOS_USUARIOS.CURADOR,
                 TIPOS_USUARIOS.OPERADOR,
                 TIPOS_USUARIOS.IDENTIFICADOR,
+                TIPOS_USUARIOS.EXPEDICIONARIO,
             ]),
             listagensMiddleware,
             validacoesMiddleware(localColetaListagemEsquema),
@@ -553,6 +554,7 @@ export default app => {
                 TIPOS_USUARIOS.CURADOR,
                 TIPOS_USUARIOS.OPERADOR,
                 TIPOS_USUARIOS.IDENTIFICADOR,
+                TIPOS_USUARIOS.EXPEDICIONARIO,
             ]),
             controller.buscarLocalColetaPorId,
         ])

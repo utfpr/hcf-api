@@ -28,16 +28,20 @@ async function truncateTables(knex: Knex): Promise<void> {
   await knex.raw(`TRUNCATE TABLE ${TABLES.join(', ')} CASCADE`)
 }
 
-// Curador (1) e Operador (2) são fixos nas regras de autorização e compartilhados
-// entre as suítes; o sequence avança para que as seeds criem os próprios tipos a
-// partir do 3 e, ao limpá-los, nunca apaguem um tipo que outra suíte esteja usando.
+// Curador (1), Operador (2) e Expedicionário (4) são fixos nas regras de autorização e
+// compartilhados entre as suítes; o sequence avança para que as seeds criem os próprios
+// tipos a partir do 5 e, ao limpá-los, nunca apaguem um tipo que outra suíte esteja usando.
 async function seedTiposUsuarios(knex: Knex): Promise<void> {
   await knex('tipos_usuarios')
-    .insert([{ id: 1, tipo: 'Curador' }, { id: 2, tipo: 'Operador' }])
+    .insert([
+      { id: 1, tipo: 'Curador' },
+      { id: 2, tipo: 'Operador' },
+      { id: 4, tipo: 'Expedicionário' }
+    ])
     .onConflict('id')
     .ignore()
   await knex.raw(
-    'SELECT setval(\'tipos_usuarios_id_seq\', GREATEST((SELECT MAX(id) FROM tipos_usuarios), 2))'
+    'SELECT setval(\'tipos_usuarios_id_seq\', GREATEST((SELECT MAX(id) FROM tipos_usuarios), 4))'
   )
 }
 
