@@ -2,7 +2,7 @@ import { Op, Sequelize } from 'sequelize';
 
 import models from '../models/index.js';
 
-const { Tombo, Especie, Coletor, Cidade, Familia, Genero, Herbario, TomboFoto } = models;
+const { Tombo, Especie, Coletor, Cidade, Familia, Genero, Herbario, TomboFoto, Rfid } = models;
 
 const calcularPorcentagem = (atual, passado) => {
     if (passado > 0) return parseFloat((((atual - passado) / passado) * 100).toFixed(1));
@@ -54,6 +54,7 @@ export const tomboInfo = async (request, response, next) => {
             rankColetores,
             rankHerbarios,
             totalImagens,
+            totalImagensComRfid,
         ] = await Promise.all([
             Tombo.findOne({
                 attributes: [
@@ -127,6 +128,7 @@ export const tomboInfo = async (request, response, next) => {
                 limit: 5,
             }), // rankHerbarios
             TomboFoto.count(), // totalImagens
+            Rfid.count({ where: { status: 'CONCLUIDO' }, distinct: true, col: 'tombo_foto_id' }), // totalImagensComRfid
         ]);
 
         return response.status(200).json({
@@ -136,6 +138,7 @@ export const tomboInfo = async (request, response, next) => {
                     internos: parseInt(totaisGerais.tombos_internos, 10) || 0,
                     externos: parseInt(totaisGerais.tombos_externos, 10) || 0,
                     fotos: totalImagens,
+                    fotos_com_rfid: totalImagensComRfid,
                 },
                 taxonomia: {
                     familias: { total: parseInt(distintos.familias, 10) || 0, ranking: formatarRanking(rankFamilias, 'familia') },
