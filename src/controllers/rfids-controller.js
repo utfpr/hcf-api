@@ -169,6 +169,7 @@ const filtrosFotosPendentes = filtros => {
             where: Object.keys(whereTombo).length ? whereTombo : undefined,
             required: Object.keys(whereTombo).length > 0,
             include: [
+                { model: Genero, attributes: ['nome'], required: false },
                 { model: Especie, as: 'especie', attributes: ['nome'], required: false },
                 { model: Coletor, as: 'coletor', attributes: ['nome'], required: false },
             ],
@@ -188,6 +189,7 @@ const formatarFotoPendente = foto => {
         tombo_hcf: item.tombo_hcf,
         codigo_barra: item.codigo_barra,
         caminho_foto: item.caminho_foto,
+        genero: tombo?.Genero?.nome || 'N/A',
         nome_cientifico: getNomeCientifico(tombo),
         coletor_principal: getColetorPrincipal(tombo),
         nome_popular: tombo?.nomes_populares || 'N/A',
