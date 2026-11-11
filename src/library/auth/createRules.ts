@@ -59,8 +59,9 @@ const publicReads: Rule<Resource, Action>[] = [
   { action: 'read', resource: 'Relevo' }
 ]
 
-const CURADOR = 1
-const OPERADOR = 2
+export const CURADOR = 1
+export const OPERADOR = 2
+export const EXPEDICIONARIO = 4
 
 export function createRules(user?: RulesUser): Rule<Resource, Action>[] {
   if (user === undefined) {
@@ -97,10 +98,31 @@ export function createRules(user?: RulesUser): Rule<Resource, Action>[] {
       { action: 'update', resource: 'Evento' },
       { action: 'delete', resource: 'Evento' },
       { action: 'create', resource: 'Evidencia' },
+      { action: 'update', resource: 'Evidencia' },
       { action: 'delete', resource: 'Evidencia' },
       { action: 'create', resource: 'Lembrete' },
       { action: 'update', resource: 'Lembrete' },
       { action: 'delete', resource: 'Lembrete' }
+    )
+  }
+
+  // Expedicionário cria livremente (a participação na expedição é checada por
+  // AutorizaExpedicionarioMiddleware) e só altera/exclui o que ele criou.
+  if (user.tipo_usuario_id === EXPEDICIONARIO) {
+    const proprios = { created_by: user.id }
+    rules.push(
+      { action: 'create', resource: 'Evento' },
+      {
+        action: ['update', 'delete'], resource: 'Evento', conditions: proprios
+      },
+      { action: 'create', resource: 'Lembrete' },
+      {
+        action: ['update', 'delete'], resource: 'Lembrete', conditions: proprios
+      },
+      { action: 'create', resource: 'Evidencia' },
+      {
+        action: 'delete', resource: 'Evidencia', conditions: proprios
+      }
     )
   }
 

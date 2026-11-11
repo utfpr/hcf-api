@@ -11,10 +11,14 @@ import {
 } from '../setup/seeds/expedicao.seed'
 
 const ficha: ColetaAttributes = {
+  altura: '0,8 m',
   associacoes: 'Lychnophora ericoides',
   estado: 'MG',
+  exsudado: 'Ausente',
   familia: 'Velloziaceae',
   flores: 'Presentes, lilases',
+  flores_cor_calice: 'Verde',
+  flores_cor_corola: 'Lilás',
   folhas: 'Lineares, rígidas',
   frutos: 'Ausentes',
   habito: 'Herbácea',

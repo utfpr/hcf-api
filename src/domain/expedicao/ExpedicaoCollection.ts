@@ -46,6 +46,7 @@ export interface ExpedicaoCollection {
 
   addParticipant(expedicaoId: number, usuarioId: number, createdBy?: number | null): Promise<Either<Error, void>>
   removeParticipant(expedicaoId: number, usuarioId: number): Promise<Either<Error, void>>
+  isParticipant(expedicaoId: number, usuarioId: number): Promise<Either<Error, boolean>>
 
   substituteRoute(expedicaoId: number, rotas: RotaInput[], updatedBy?: number | null): Promise<Either<Error, void>>
 

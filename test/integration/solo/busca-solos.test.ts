@@ -8,7 +8,7 @@ type Solo = { id: number; nome: string }
 
 const returning = ['id', 'nome'] as const
 
-describe('GET /api/v2/solos/:soloId', () => {
+describe('GET /api/v1/solos/:soloId', () => {
   const { agent, knex } = createTestApp()
 
   afterAll(() => knex.destroy())
@@ -19,7 +19,7 @@ describe('GET /api/v2/solos/:soloId', () => {
       .returning<Solo[]>(returning)
 
     try {
-      const response = await agent.get(`/api/v2/solos/${solo.id}`).expect(200)
+      const response = await agent.get(`/api/v1/solos/${solo.id}`).expect(200)
       expect(response.body).toEqual({ id: solo.id, nome: solo.nome })
     } finally {
       await knex('solos').where({ id: solo.id }).delete()
@@ -27,14 +27,14 @@ describe('GET /api/v2/solos/:soloId', () => {
   })
 
   test('retorna 404 para id inexistente', async () => {
-    const response = await agent.get('/api/v2/solos/999999').expect(404)
+    const response = await agent.get('/api/v1/solos/999999').expect(404)
     const body = response.body as { error: { message: string } }
 
     expect(body.error.message).toMatch(/não encontrad[ao]|not found/i)
   })
 
   test('retorna 400 para id inválido', async () => {
-    const response = await agent.get('/api/v2/solos/abc').expect(400)
+    const response = await agent.get('/api/v1/solos/abc').expect(400)
     const body = response.body as { error: { message: string } }
 
     expect(body.error.message).toMatch(/inválido|invalid/i)

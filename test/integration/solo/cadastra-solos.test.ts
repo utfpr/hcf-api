@@ -12,7 +12,7 @@ import { createSoloAuth } from './soloAuth'
 
 type Solo = { id: number; nome: string }
 
-describe('POST /api/v2/solos', () => {
+describe('POST /api/v1/solos', () => {
   const { agent, knex } = createTestApp()
 
   let auth: Awaited<ReturnType<typeof createSoloAuth>>
@@ -31,7 +31,7 @@ describe('POST /api/v2/solos', () => {
     const nome = `${prefix} Arenoso`
 
     try {
-      const response = await agent.post('/api/v2/solos').set(auth.header).send({ nome }).expect(201)
+      const response = await agent.post('/api/v1/solos').set(auth.header).send({ nome }).expect(201)
       const body = response.body as Solo
 
       expect(body).toMatchObject({ nome })
@@ -45,14 +45,14 @@ describe('POST /api/v2/solos', () => {
   })
 
   test('rejeita token ausente', async () => {
-    const response = await agent.post('/api/v2/solos').send({ nome: 'Sem token' }).expect(401)
+    const response = await agent.post('/api/v1/solos').send({ nome: 'Sem token' }).expect(401)
     const body = response.body as { error: { message: string } }
 
     expect(body.error.message).toMatch(/unauthorized/i)
   })
 
   test('rejeita token vazio', async () => {
-    const response = await agent.post('/api/v2/solos').set({ Authorization: 'Bearer ' }).send({ nome: 'Token vazio' }).expect(401)
+    const response = await agent.post('/api/v1/solos').set({ Authorization: 'Bearer ' }).send({ nome: 'Token vazio' }).expect(401)
     const body = response.body as { error: { message: string } }
 
     expect(body.error.message).toMatch(/unauthorized/i)
@@ -62,8 +62,8 @@ describe('POST /api/v2/solos', () => {
     await knex('tipos_usuarios').insert({ id: 99, tipo: 'Sem permissão' }).onConflict('id').ignore()
     await knex('usuarios').where({ id: auth.usuarioId }).update({ tipo_usuario_id: 99 })
     try {
-      await agent.post('/api/v2/solos').set(auth.header).send({ nome: 'Sem permissão' }).expect(403)
-      await agent.post('/api/v2/solos').set(auth.legacyHeader).send({ nome: 'Sem permissão' }).expect(403)
+      await agent.post('/api/v1/solos').set(auth.header).send({ nome: 'Sem permissão' }).expect(403)
+      await agent.post('/api/v1/solos').set(auth.legacyHeader).send({ nome: 'Sem permissão' }).expect(403)
     } finally {
       await knex('usuarios').where({ id: auth.usuarioId }).update({ tipo_usuario_id: 1 })
     }
@@ -78,7 +78,7 @@ describe('POST /api/v2/solos', () => {
       },
       process.env.JWT_SECRET as string
     )
-    const response = await agent.post('/api/v2/solos').set({ Authorization: `Bearer ${token}` }).send({ nome: 'Token expirado' }).expect(401)
+    const response = await agent.post('/api/v1/solos').set({ Authorization: `Bearer ${token}` }).send({ nome: 'Token expirado' }).expect(401)
     const body = response.body as { error: { message: string } }
 
     expect(body.error.message).toMatch(/expired|expirado/i)
@@ -86,7 +86,7 @@ describe('POST /api/v2/solos', () => {
 
   test('rejeita token inválido', async () => {
     const token = jwt.sign({ id: 1, tipo_usuario_id: 1 }, 'segredo-diferente')
-    const response = await agent.post('/api/v2/solos').set({ Authorization: `Bearer ${token}` }).send({ nome: 'Token inválido' }).expect(401)
+    const response = await agent.post('/api/v1/solos').set({ Authorization: `Bearer ${token}` }).send({ nome: 'Token inválido' }).expect(401)
     const body = response.body as { error: { message: string } }
 
     expect(body.error.message).toMatch(/unauthorized/i)
@@ -95,7 +95,7 @@ describe('POST /api/v2/solos', () => {
   test('aceita token legado de um curador existente', async () => {
     const nome = `LEGACYSOL-${Date.now()}`
     try {
-      await agent.post('/api/v2/solos').set(auth.legacyHeader).send({ nome }).expect(201)
+      await agent.post('/api/v1/solos').set(auth.legacyHeader).send({ nome }).expect(201)
     } finally {
       await knex('solos').where({ nome }).delete()
     }
@@ -106,14 +106,14 @@ describe('POST /api/v2/solos', () => {
     const session = await knex('usuarios_sessoes').where({ id: payload.sid }).first()
     await knex('usuarios_sessoes').where({ id: payload.sid }).delete()
     try {
-      await agent.post('/api/v2/solos').set(auth.header).send({ nome: 'Sessão revogada' }).expect(401)
+      await agent.post('/api/v1/solos').set(auth.header).send({ nome: 'Sessão revogada' }).expect(401)
     } finally {
       await knex('usuarios_sessoes').insert(session)
     }
   })
 
   test('retorna 400 quando o nome está vazio', async () => {
-    const response = await agent.post('/api/v2/solos').set(auth.header).send({ nome: '   ' }).expect(400)
+    const response = await agent.post('/api/v1/solos').set(auth.header).send({ nome: '   ' }).expect(400)
     const body = response.body as { error: { message: string } }
 
     expect(body.error.message).toMatch(/vazio|empty|obrigat/i)
@@ -126,7 +126,7 @@ describe('POST /api/v2/solos', () => {
     await knex('solos').insert({ nome })
 
     try {
-      const response = await agent.post('/api/v2/solos').set(auth.header).send({ nome }).expect(409)
+      const response = await agent.post('/api/v1/solos').set(auth.header).send({ nome }).expect(409)
       const body = response.body as { error: { message: string } }
 
       expect(body.error.message).toMatch(/já existe|duplic/i)
@@ -142,7 +142,7 @@ describe('POST /api/v2/solos', () => {
     await knex('solos').insert({ nome })
 
     try {
-      const response = await agent.post('/api/v2/solos').set(auth.header).send({ nome: nome.toUpperCase() }).expect(409)
+      const response = await agent.post('/api/v1/solos').set(auth.header).send({ nome: nome.toUpperCase() }).expect(409)
       const body = response.body as { error: { message: string } }
 
       expect(body.error.message).toMatch(/já existe|duplic/i)

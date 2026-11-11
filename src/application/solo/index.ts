@@ -27,7 +27,7 @@ export function routes(knex: Knex): Route[] {
         })
       ],
       method: Method.Get,
-      path: '/v2/solos'
+      path: '/v1/solos'
     },
     {
       handlers: [
@@ -36,7 +36,7 @@ export function routes(knex: Knex): Route[] {
         })
       ],
       method: Method.Get,
-      path: '/v2/solos/:soloId'
+      path: '/v1/solos/:soloId'
     },
     {
       handlers: [
@@ -46,7 +46,7 @@ export function routes(knex: Knex): Route[] {
         })
       ],
       method: Method.Post,
-      path: '/v2/solos'
+      path: '/v1/solos'
     },
     {
       handlers: [
@@ -56,7 +56,7 @@ export function routes(knex: Knex): Route[] {
         })
       ],
       method: Method.Put,
-      path: '/v2/solos/:soloId'
+      path: '/v1/solos/:soloId'
     },
     {
       handlers: [
@@ -66,7 +66,7 @@ export function routes(knex: Knex): Route[] {
         })
       ],
       method: Method.Delete,
-      path: '/v2/solos/:soloId'
+      path: '/v1/solos/:soloId'
     }
   ]
 }
