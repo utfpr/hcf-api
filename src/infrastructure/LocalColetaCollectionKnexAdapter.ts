@@ -1,6 +1,10 @@
 import { Knex } from 'knex'
 
-import { LocalColeta, LocalColetaRelation } from '@/domain/localColeta/LocalColeta'
+import { LocalColetaDescricaoDuplicadaError } from '@/domain/localColeta/error/LocalColetaDescricaoDuplicadaError'
+import { LocalColetaEmUsoError } from '@/domain/localColeta/error/LocalColetaEmUsoError'
+import {
+  LocalColeta, LocalColetaAttributes, LocalColetaRelation
+} from '@/domain/localColeta/LocalColeta'
 import {
   LocalColetaCollection, LocalColetaFilters
 } from '@/domain/localColeta/LocalColetaCollection'
@@ -31,6 +35,90 @@ export class LocalColetaCollectionKnexAdapter implements LocalColetaCollection {
 
   constructor({ knex }: Dependencies) {
     this.knex = knex
+  }
+
+  async create(attributes: LocalColetaAttributes): Promise<Either<Error, LocalColeta>> {
+    const duplicate = await this.findDuplicate(attributes)
+    if (duplicate.left()) return Either.left(duplicate.value)
+    if (duplicate.value) return Either.left(new LocalColetaDescricaoDuplicadaError())
+
+    try {
+      const [row] = await this.knex('locais_coleta')
+        .insert(attributes)
+        .returning<{ id: number | string }[]>('id')
+
+      const created = await this.findById(String(row.id))
+      if (created.left()) return Either.left(created.value)
+      if (!created.value) return Either.left(new CollectionError({ message: 'Created collection location could not be found' }))
+      return Either.right(created.value)
+    } catch (error) {
+      if (isLocalColetaDuplicateError(error)) {
+        return Either.left(new LocalColetaDescricaoDuplicadaError({ cause: error }))
+      }
+      return Either.left(new CollectionError({ message: 'Failed to create collection location', cause: error }))
+    }
+  }
+
+  async updateById(id: string, attributes: LocalColetaAttributes): Promise<Either<Error, LocalColeta | undefined>> {
+    const duplicate = await this.findDuplicate(attributes, id)
+    if (duplicate.left()) return Either.left(duplicate.value)
+    if (duplicate.value) return Either.left(new LocalColetaDescricaoDuplicadaError())
+
+    try {
+      const updated = await this.knex('locais_coleta')
+        .where({ id })
+        .update(attributes)
+        .returning<{ id: number | string }[]>('id')
+
+      if (!updated.length) return Either.right(undefined)
+
+      const localColeta = await this.findById(id)
+      if (localColeta.left()) return Either.left(localColeta.value)
+      return Either.right(localColeta.value)
+    } catch (error) {
+      if (isLocalColetaDuplicateError(error)) {
+        return Either.left(new LocalColetaDescricaoDuplicadaError({ cause: error }))
+      }
+      return Either.left(new CollectionError({ message: 'Failed to update collection location', cause: error }))
+    }
+  }
+
+  async countTomboReferences(id: string): Promise<Either<Error, number>> {
+    try {
+      const row = await this.knex('tombos')
+        .where({ local_coleta_id: id })
+        .count<{ count: string | number }[]>({ count: '*' })
+        .first()
+      return Either.right(Number(row?.count ?? 0))
+    } catch (error) {
+      return Either.left(new CollectionError({ message: 'Failed to count collection location references', cause: error }))
+    }
+  }
+
+  async deleteById(id: string): Promise<Either<Error, boolean>> {
+    try {
+      const deleted = await this.knex('locais_coleta').where({ id }).delete()
+      return Either.right(deleted > 0)
+    } catch (error) {
+      if (isForeignKeyError(error)) {
+        return Either.left(new LocalColetaEmUsoError({ cause: error }))
+      }
+      return Either.left(new CollectionError({ message: 'Failed to delete collection location', cause: error }))
+    }
+  }
+
+  private async findDuplicate(attributes: LocalColetaAttributes, excludeId?: string): Promise<Either<Error, boolean>> {
+    try {
+      const query = this.knex('locais_coleta')
+        .select('id')
+        .where({ cidade_id: attributes.cidade_id })
+        .whereRaw('LOWER(TRIM(descricao)) = LOWER(?)', [attributes.descricao])
+
+      if (excludeId !== undefined) query.andWhereNot({ id: excludeId })
+      return Either.right(Boolean(await query.first()))
+    } catch (error) {
+      return Either.left(new CollectionError({ message: 'Failed to check collection location description', cause: error }))
+    }
   }
 
   async findAll(filters: LocalColetaFilters): Promise<Either<Error, { total: number; resultado: LocalColeta[] }>> {
@@ -155,4 +243,14 @@ export class LocalColetaCollectionKnexAdapter implements LocalColetaCollection {
       fase_sucessional: faseSucessional
     }
   }
+}
+
+function isLocalColetaDuplicateError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false
+  const databaseError = error as { code?: string; constraint?: string }
+  return databaseError.code === '23505' && databaseError.constraint === 'uniq_locais_coleta_cidade_descricao'
+}
+
+function isForeignKeyError(error: unknown): boolean {
+  return Boolean(error && typeof error === 'object' && (error as { code?: string }).code === '23503')
 }

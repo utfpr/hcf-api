@@ -14,3 +14,13 @@ export interface LocalColeta {
   cidade: LocalColetaRelation | null
   fase_sucessional: Pick<LocalColetaRelation, 'id' | 'nome'> | null
 }
+
+export interface LocalColetaAttributes {
+  descricao: string
+  cidade_id: number
+  fase_sucessional_id?: number | null
+}
+
+export function normalizeLocalColetaDescription(descricao: string): string {
+  return descricao.trim().replace(/\s+/g, ' ')
+}
