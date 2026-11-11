@@ -1,0 +1,63 @@
+import {
+  describe, expect, test
+} from 'vitest'
+
+import { Attributes, Evidencia } from '@/domain/evidencia/Evidencia'
+
+const base: Attributes = {
+  id: 1,
+  evento_id: 10,
+  nome: 'IMG_0042.jpg',
+  arquivo: '10_20260215143200-a1b2.jpg',
+  mime_type: 'image/jpeg',
+  tamanho: 204800,
+  data_captura: new Date('2026-02-15T14:32:00.000Z'),
+  created_at: new Date('2026-02-16T00:00:00.000Z'),
+  updated_at: new Date('2026-02-16T00:00:00.000Z'),
+  created_by: null,
+  updated_by: null
+}
+
+describe('Evidencia.create', () => {
+  test('aceita uma linha nova, ainda sem id e datas de auditoria', () => {
+    const {
+      id, created_at, updated_at, updated_by, ...novaLinha
+    } = base
+
+    const result = Evidencia.create(novaLinha)
+
+    expect(result.right()).toBe(true)
+    expect(result.value).toMatchObject({ created_by: base.created_by })
+    expect((result.value as Evidencia).id).toBeUndefined()
+  })
+
+  test('cria a evidência quando nome e instante de captura são válidos', () => {
+    const result = Evidencia.create(base)
+
+    expect(result.right()).toBe(true)
+    expect(result.value).toMatchObject({ nome: 'IMG_0042.jpg' })
+  })
+
+  test('rejeita nome vazio ou só com espaços', () => {
+    expect(Evidencia.create({ ...base, nome: '' }).left()).toBe(true)
+    expect(Evidencia.create({ ...base, nome: '   ' }).left()).toBe(true)
+  })
+
+  test('rejeita evidência sem evento', () => {
+    expect(Evidencia.create({ ...base, evento_id: 0 }).left()).toBe(true)
+  })
+
+  test('rejeita instante de captura inválido', () => {
+    expect(Evidencia.create({ ...base, data_captura: new Date('não é data') }).left()).toBe(true)
+  })
+
+  test('rejeita arquivo ou mime_type vazios', () => {
+    expect(Evidencia.create({ ...base, arquivo: '' }).left()).toBe(true)
+    expect(Evidencia.create({ ...base, mime_type: '' }).left()).toBe(true)
+  })
+
+  test('rejeita tamanho inválido', () => {
+    expect(Evidencia.create({ ...base, tamanho: 0 }).left()).toBe(true)
+    expect(Evidencia.create({ ...base, tamanho: -1 }).left()).toBe(true)
+  })
+})

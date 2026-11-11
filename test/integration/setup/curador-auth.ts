@@ -5,13 +5,23 @@ import { gerarSenha } from '@/helpers/senhas'
 
 type Header = { Authorization: string }
 
-export async function createCuradorAuth(knex: Knex): Promise<{
+type UsuarioAuth = {
   header: Header
+  usuarioId: number
   cleanup: () => Promise<void>
-}> {
-  const tipoId = 1
+}
+
+export function createCuradorAuth(knex: Knex): Promise<UsuarioAuth> {
+  return createUsuarioAuth(knex, 1, 'Curador')
+}
+
+export function createExpedicionarioAuth(knex: Knex): Promise<UsuarioAuth> {
+  return createUsuarioAuth(knex, 4, 'Expedicionário')
+}
+
+export async function createUsuarioAuth(knex: Knex, tipoId: number, tipo: string): Promise<UsuarioAuth> {
   await knex('tipos_usuarios')
-    .insert({ id: tipoId, tipo: 'Curador' })
+    .insert({ id: tipoId, tipo })
     .onConflict('id')
     .ignore()
   await knex.raw(`
@@ -46,6 +56,7 @@ export async function createCuradorAuth(knex: Knex): Promise<{
 
   return {
     header: { Authorization: `Bearer ${token}` },
+    usuarioId: Number(usuario.id),
     cleanup: async () => {
       await knex('usuarios_sessoes').where({ usuario_id: usuario.id }).delete()
       await knex('usuarios').where({ id: usuario.id }).delete()

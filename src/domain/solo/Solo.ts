@@ -1,12 +1,12 @@
 import { Either } from '@/library/either/Either'
 
 export interface Attributes {
-  id: number
+  id?: number
   nome: string
 }
 
 export class Solo {
-  readonly id: number
+  readonly id?: number
   readonly nome: string
 
   private constructor(attributes: Attributes) {

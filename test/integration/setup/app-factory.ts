@@ -4,7 +4,7 @@ import supertest from 'supertest'
 import { createApp } from '@/application/create-app'
 import { ConsoleLogger } from '@/infrastructure/ConsoleLogger'
 
-function createTestKnex(): Knex {
+export function createTestKnex(): Knex {
   return knex({
     client: 'postgres',
     connection: {
@@ -17,11 +17,12 @@ function createTestKnex(): Knex {
   })
 }
 
-export function createTestApp() {
+export function createTestApp(legacyRouter?: unknown) {
   const knexInstance = createTestKnex()
   const application = createApp({
     knex: knexInstance,
     logger: new ConsoleLogger(),
+    legacyRouter,
     cors: {
       origins: ['http://localhost:5173'],
       methods: [

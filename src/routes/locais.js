@@ -1,4 +1,4 @@
-import listagensMiddleware from '~/middlewares/listagens-middleware';
+import listagensMiddleware from '@/middlewares/listagens-middleware';
 
 import * as controller from '../controllers/locais-coleta-controller';
 import tokensMiddleware, { TIPOS_USUARIOS } from '../middlewares/tokens-middleware';
@@ -418,6 +418,7 @@ export default app => {
                 TIPOS_USUARIOS.CURADOR,
                 TIPOS_USUARIOS.OPERADOR,
                 TIPOS_USUARIOS.IDENTIFICADOR,
+                TIPOS_USUARIOS.EXPEDICIONARIO,
             ]),
             listagensMiddleware,
             validacoesMiddleware(localColetaListagemEsquema),
@@ -553,6 +554,7 @@ export default app => {
                 TIPOS_USUARIOS.CURADOR,
                 TIPOS_USUARIOS.OPERADOR,
                 TIPOS_USUARIOS.IDENTIFICADOR,
+                TIPOS_USUARIOS.EXPEDICIONARIO,
             ]),
             controller.buscarLocalColetaPorId,
         ])

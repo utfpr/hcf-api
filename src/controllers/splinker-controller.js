@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 
-import { converteDecimalParaGrausMinutosSegundos } from '~/helpers/coordenadas';
+import { converteDecimalParaGrausMinutosSegundos } from '@/helpers/coordenadas';
 
 import models from '../models';
 
@@ -270,6 +270,7 @@ export const obterUltimaExecucaoSPLinker = async (request, response, next) => {
                 [models.sequelize.fn('to_char', models.sequelize.col('data_hora'), 'YYYY-MM-DD"T"HH24:MI:SS'), 'data_hora'],
                 'ultimo_tombo_hcf',
                 'sucesso',
+                'log_saida',
             ],
         });
 

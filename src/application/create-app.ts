@@ -13,7 +13,11 @@ import { assets, upload } from '../config/directory'
 import legacyErrors from '../middlewares/erros-middleware'
 import { generatePreview, reportPreview } from '../reports/controller'
 import { routes as createEstadoRoutes } from './estado'
+import { routes as createEventoRoutes } from './evento'
+import { routes as createEvidenciaRoutes } from './evidencia'
+import { routes as createExpedicoesRoutes } from './expedicao'
 import { routes as createFaseSucessionalRoutes } from './faseSucessional'
+import { routes as createLembreteRoutes } from './lembrete'
 import { routes as createPaisRoutes } from './pais'
 import { assertCookieSafeOrigins } from './parseCorsOrigins'
 import { routes as createRelevoRoutes } from './relevo'
@@ -62,12 +66,24 @@ export function createApp({
   const routes: Route[] = [
     ...createPaisRoutes(knex),
     ...createEstadoRoutes(knex),
+    ...createEventoRoutes(knex),
     ...createSoloRoutes(knex),
     ...createRelevoRoutes(knex),
     ...createFaseSucessionalRoutes(knex),
     ...createVegetacaoRoutes(knex),
+    ...createEvidenciaRoutes(knex),
+    ...createExpedicoesRoutes(knex),
+    ...createLembreteRoutes(knex),
     ...createUsuarioSessaoRoutes(knex)
   ]
+  const uploadsStatic = express.static(upload, {
+    index: false,
+    redirect: false,
+    setHeaders: res => {
+      res.setHeader('Cache-Control', 'public, max-age=2592000, immutable')
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin')
+    }
+  })
   const origins = assertCookieSafeOrigins(cors.origins)
   const application = new ExpressApplication({ logger })
 
@@ -103,17 +119,10 @@ export function createApp({
         }
       })
     )
-    .use(
-      '/uploads',
-      express.static(upload, {
-        index: false,
-        redirect: false,
-        setHeaders: res => {
-          res.setHeader('Cache-Control', 'public, max-age=2592000, immutable')
-          res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin')
-        }
-      })
-    )
+    .use('/uploads', uploadsStatic)
+    // Em produção o nginx serve /images; aqui espelha isso para o ambiente local,
+    // já que a API devolve URLs de evidência em /images/...
+    .use('/images', uploadsStatic)
 
   const reportsRouter = express.Router()
   reportsRouter.get('/:fileName', reportPreview)
@@ -122,7 +131,7 @@ export function createApp({
 
   for (const route of routes) {
     const sanitizedPath = `/api/${route.path}`.replaceAll(/\/{2,}/g, '/').replaceAll(/\/$/g, '')
-    application.endpoint(route.method, sanitizedPath, ...route.handlers)
+    application.endpoint(route.method, sanitizedPath, route.handlers, route.middlewares)
   }
 
   if (legacyRouter) {
