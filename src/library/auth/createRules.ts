@@ -43,7 +43,8 @@ export const RESOURCES = [
   'Expedicao',
   'Evento',
   'Evidencia',
-  'Lembrete'
+  'Lembrete',
+  'LocalColeta'
 ] as const
 
 export type Action = typeof ACTIONS[number]
@@ -61,6 +62,7 @@ const publicReads: Rule<Resource, Action>[] = [
 
 export const CURADOR = 1
 export const OPERADOR = 2
+export const IDENTIFICADOR = 3
 export const EXPEDICIONARIO = 4
 
 export function createRules(user?: RulesUser): Rule<Resource, Action>[] {
@@ -76,6 +78,15 @@ export function createRules(user?: RulesUser): Rule<Resource, Action>[] {
     { action: 'read', resource: 'Evidencia' },
     { action: 'read', resource: 'Lembrete' }
   ]
+
+  if ([
+    CURADOR,
+    OPERADOR,
+    IDENTIFICADOR,
+    EXPEDICIONARIO
+  ].includes(user.tipo_usuario_id)) {
+    rules.push({ action: 'read', resource: 'LocalColeta' })
+  }
 
   if (user.tipo_usuario_id === CURADOR || user.tipo_usuario_id === OPERADOR) {
     rules.push(
