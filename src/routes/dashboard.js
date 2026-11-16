@@ -36,6 +36,8 @@ export default app => {
      *                           type: integer
      *                         fotos:
      *                           type: integer
+     *                         fotos_com_rfid:
+     *                           type: integer
      *                     taxonomia:
      *                       type: object
      *                       properties:
