@@ -3801,3 +3801,43 @@ CREATE TABLE public.evidencias_transcricoes (
     revisado_por bigint REFERENCES public.usuarios(id),
     revisado_em timestamptz
 );
+
+-- RFID: schema das migrations 20260510165542 e 20260908135612/135834/140306.
+CREATE TABLE public.rfids (
+    id serial PRIMARY KEY,
+    tombo_foto_id bigint NOT NULL REFERENCES public.tombos_fotos(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    epc varchar(96) NOT NULL UNIQUE,
+    tid varchar(96) UNIQUE,
+    status varchar(20) NOT NULL DEFAULT 'PENDENTE',
+    created_at timestamptz DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamptz DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE public.listas_conferencias (
+    id serial PRIMARY KEY,
+    nome varchar(200) NOT NULL,
+    descricao text,
+    created_at timestamptz DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamptz DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE public.listas_conferencias_rfids (
+    id serial PRIMARY KEY,
+    lista_conferencia_id integer NOT NULL REFERENCES public.listas_conferencias(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    rfid_id integer NOT NULL REFERENCES public.rfids(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    created_at timestamptz DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamptz DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (lista_conferencia_id, rfid_id)
+);
+
+CREATE TABLE public.inventarios (
+    id serial PRIMARY KEY,
+    lista_conferencia_id integer NOT NULL REFERENCES public.listas_conferencias(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    usuario_id integer REFERENCES public.usuarios(id) ON DELETE SET NULL ON UPDATE CASCADE,
+    total_esperado integer NOT NULL DEFAULT 0,
+    total_encontrados integer NOT NULL DEFAULT 0,
+    total_nao_encontrados integer NOT NULL DEFAULT 0,
+    status jsonb NOT NULL DEFAULT '{}'::jsonb,
+    created_at timestamptz DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamptz DEFAULT CURRENT_TIMESTAMP
+);

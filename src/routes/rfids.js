@@ -117,6 +117,32 @@ export default app => {
 
     /**
      * @swagger
+     * /rfids/{id}:
+     *   delete:
+     *     summary: Desvincula a etiqueta RFID, preservando o tombo e a foto
+     *     description: Remove o vínculo e suas participações nas listas de conferência. Não apaga a gravação física da etiqueta.
+     *     tags: [RFIDs]
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         schema:
+     *           type: integer
+     *           minimum: 1
+     *     responses:
+     *       '204':
+     *         description: Etiqueta desvinculada.
+     *       '400':
+     *         description: ID do vínculo inválido.
+     *       '403':
+     *         description: Acesso restrito ao curador autenticado.
+     *       '404':
+     *         description: Vínculo não encontrado.
+     */
+    app.route('/rfids/:id').delete(somenteCurador, RfidsController.desvincular);
+
+    /**
+     * @swagger
      * /rfids/tombos-pendentes:
      *   get:
      *     summary: Lista tombos pendentes de gravação RFID
