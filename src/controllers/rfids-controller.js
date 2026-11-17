@@ -305,13 +305,40 @@ export const finalizarGravacao = async (request, response, next) => {
         }
 
         rfid.status = statusFinal;
-        await rfid.save();
+        const [atualizados] = await Rfid.update({
+            status: statusFinal,
+            tid: rfid.tid,
+        }, { where: { id } });
+
+        if (!atualizados) {
+            return response.status(404).json({ erro: 'Vínculo RFID não encontrado.' });
+        }
 
         return response.status(200).json({
             mensagem: 'Operação finalizada.',
             rfid,
         });
 
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const desvincular = async (request, response, next) => {
+    const id = Number(request.params.id);
+
+    if (!Number.isSafeInteger(id) || id < 1) {
+        return response.status(400).json({ erro: 'ID do vínculo RFID inválido.' });
+    }
+
+    try {
+        const removidos = await Rfid.destroy({ where: { id } });
+
+        if (!removidos) {
+            return response.status(404).json({ erro: 'Vínculo RFID não encontrado.' });
+        }
+
+        return response.status(204).send();
     } catch (error) {
         next(error);
     }
