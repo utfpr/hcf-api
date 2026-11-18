@@ -18,6 +18,7 @@ import { routes as createEvidenciaRoutes } from './evidencia'
 import { routes as createExpedicoesRoutes } from './expedicao'
 import { routes as createFaseSucessionalRoutes } from './faseSucessional'
 import { routes as createLembreteRoutes } from './lembrete'
+import { routes as createLocalColetaRoutes } from './localColeta'
 import { routes as createPaisRoutes } from './pais'
 import { assertCookieSafeOrigins } from './parseCorsOrigins'
 import { routes as createRelevoRoutes } from './relevo'
@@ -74,6 +75,7 @@ export function createApp({
     ...createEvidenciaRoutes(knex),
     ...createExpedicoesRoutes(knex),
     ...createLembreteRoutes(knex),
+    ...createLocalColetaRoutes(knex),
     ...createUsuarioSessaoRoutes(knex)
   ]
   const uploadsStatic = express.static(upload, {

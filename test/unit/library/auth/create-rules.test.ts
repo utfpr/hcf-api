@@ -66,6 +66,7 @@ describe('createRules', () => {
         ...publicReads,
         { action: 'read', resource: 'UsuarioSessao' },
         ...expedicaoReads,
+        { action: 'read', resource: 'LocalColeta' },
         ...writerRules,
         ...expedicaoWrites
       ])
@@ -73,15 +74,29 @@ describe('createRules', () => {
   })
 
   test('grants other authenticated users public reads and UsuarioSessao', () => {
-    for (const user of [
-      { id: 3, tipo_usuario_id: 3 },
-      { id: 99, tipo_usuario_id: 99 }
-    ]) {
+    for (const user of [{ id: 99, tipo_usuario_id: 99 }]) {
       expect(createRules(user)).toEqual([
         ...publicReads,
         { action: 'read', resource: 'UsuarioSessao' },
         ...expedicaoReads
       ])
     }
+  })
+
+  test('grants LocalColeta read only to legacy reader roles', () => {
+    const readers = [
+      1,
+      2,
+      3,
+      4
+    ]
+    for (const tipo_usuario_id of readers) {
+      expect(createRules({ id: tipo_usuario_id, tipo_usuario_id }))
+        .toContainEqual({ action: 'read', resource: 'LocalColeta' })
+    }
+
+    expect(createRules()).not.toContainEqual({ action: 'read', resource: 'LocalColeta' })
+    expect(createRules({ id: 99, tipo_usuario_id: 99 }))
+      .not.toContainEqual({ action: 'read', resource: 'LocalColeta' })
   })
 })
