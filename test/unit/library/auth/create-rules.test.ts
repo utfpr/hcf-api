@@ -26,7 +26,10 @@ const writerRules = [
   { action: 'delete', resource: 'Solo' },
   { action: 'create', resource: 'Relevo' },
   { action: 'update', resource: 'Relevo' },
-  { action: 'delete', resource: 'Relevo' }
+  { action: 'delete', resource: 'Relevo' },
+  { action: 'create', resource: 'LocalColeta' },
+  { action: 'update', resource: 'LocalColeta' },
+  { action: 'delete', resource: 'LocalColeta' }
 ]
 
 const expedicaoReads = [
@@ -98,5 +101,30 @@ describe('createRules', () => {
     expect(createRules()).not.toContainEqual({ action: 'read', resource: 'LocalColeta' })
     expect(createRules({ id: 99, tipo_usuario_id: 99 }))
       .not.toContainEqual({ action: 'read', resource: 'LocalColeta' })
+  })
+
+  test('grants LocalColeta write permissions only to curador and operador', () => {
+    const writes = [
+      'create',
+      'update',
+      'delete'
+    ]
+    for (const tipo_usuario_id of [1, 2]) {
+      for (const action of writes) {
+        expect(createRules({ id: tipo_usuario_id, tipo_usuario_id }))
+          .toContainEqual({ action, resource: 'LocalColeta' })
+      }
+    }
+
+    for (const tipo_usuario_id of [
+      3,
+      4,
+      99
+    ]) {
+      for (const action of writes) {
+        expect(createRules({ id: tipo_usuario_id, tipo_usuario_id }))
+          .not.toContainEqual({ action, resource: 'LocalColeta' })
+      }
+    }
   })
 })

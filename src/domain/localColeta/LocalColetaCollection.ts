@@ -1,6 +1,6 @@
 import { Either } from '@/library/either/Either'
 
-import { LocalColeta } from './LocalColeta'
+import { LocalColeta, LocalColetaAttributes } from './LocalColeta'
 
 export interface LocalColetaFilters {
   cidade_id?: string
@@ -19,6 +19,10 @@ export interface LocalColetaOrder {
 }
 
 export interface LocalColetaCollection {
+  create(attributes: LocalColetaAttributes): Promise<Either<Error, LocalColeta>>
+  updateById(id: string, attributes: LocalColetaAttributes): Promise<Either<Error, LocalColeta | undefined>>
+  deleteById(id: string): Promise<Either<Error, boolean>>
+  countTomboReferences(id: string): Promise<Either<Error, number>>
   findAll(filters: LocalColetaFilters): Promise<Either<Error, {
     total: number
     resultado: LocalColeta[]

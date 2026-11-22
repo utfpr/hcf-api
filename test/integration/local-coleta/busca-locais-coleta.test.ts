@@ -81,7 +81,10 @@ describe('GET /api/v1/locais-coleta/:localColetaId', () => {
   test('retorna 400 para id não numérico ou negativo', async () => {
     const respostas = await Promise.all([
       getAuthorized('/api/v1/locais-coleta/invalido').expect(400),
-      getAuthorized('/api/v1/locais-coleta/-12').expect(400)
+      getAuthorized('/api/v1/locais-coleta/-12').expect(400),
+      getAuthorized('/api/v1/locais-coleta/0').expect(400),
+      getAuthorized('/api/v1/locais-coleta/2147483648').expect(400),
+      getAuthorized('/api/v1/locais-coleta/9007199254740993').expect(400)
     ])
 
     for (const resposta of respostas) {
