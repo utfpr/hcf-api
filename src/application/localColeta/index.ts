@@ -1,9 +1,7 @@
 import { type Knex } from 'knex'
 
 import { authorize } from '@/application/AuthorizeMiddlewareFactory'
-import { BuscaLocalColetaPorIdUseCase } from '@/domain/localColeta/BuscaLocalColetaPorIdUseCase'
 import { CadastraLocalColetaUseCase } from '@/domain/localColeta/CadastraLocalColetaUseCase'
-import { ListaLocaisDeColetaUseCase } from '@/domain/localColeta/ListaLocaisDeColetaUseCase'
 import { RemoveLocalColetaUseCase } from '@/domain/localColeta/RemoveLocalColetaUseCase'
 import { RenomeiaLocalColetaUseCase } from '@/domain/localColeta/RenomeiaLocalColetaUseCase'
 import { LocalColetaCollectionKnexAdapter } from '@/infrastructure/LocalColetaCollectionKnexAdapter'
@@ -34,7 +32,7 @@ export function routes(knex: Knex): Route[] {
       handlers: [
         authorize('read', 'LocalColeta'),
         new ListaLocaisDeColetaController({
-          listaLocaisDeColetaUseCase: new ListaLocaisDeColetaUseCase({ localColetaCollection })
+          localColetaCollection
         })
       ],
       method: Method.Get,
@@ -44,7 +42,7 @@ export function routes(knex: Knex): Route[] {
       handlers: [
         authorize('read', 'LocalColeta'),
         new BuscaLocalColetaController({
-          buscaLocalColetaPorIdUseCase: new BuscaLocalColetaPorIdUseCase({ localColetaCollection })
+          localColetaCollection
         })
       ],
       method: Method.Get,

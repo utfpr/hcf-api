@@ -1,5 +1,7 @@
 import { LocalColetaDescricaoDuplicadaError } from '@/domain/localColeta/error/LocalColetaDescricaoDuplicadaError'
+import { LocalColetaDescricaoInvalidaError } from '@/domain/localColeta/error/LocalColetaDescricaoInvalidaError'
 import { LocalColetaNaoEncontradaError } from '@/domain/localColeta/error/LocalColetaNaoEncontradaError'
+import { LocalColetaReferenciaInvalidaError } from '@/domain/localColeta/error/LocalColetaReferenciaInvalidaError'
 import { RenomeiaLocalColetaUseCase } from '@/domain/localColeta/RenomeiaLocalColetaUseCase'
 import {
   HttpRequest, HttpResponse, StatusCode
@@ -57,6 +59,10 @@ export class RenomeiaLocalColetaController implements RequestHandler {
     }
     const result = await this.renomeiaLocalColetaUseCase.execute(localColetaId, attributes)
     if (result.left()) {
+      if (result.value instanceof LocalColetaReferenciaInvalidaError
+        || result.value instanceof LocalColetaDescricaoInvalidaError) {
+        return new BadRequestError({ message: result.value.message })
+      }
       if (result.value instanceof LocalColetaDescricaoDuplicadaError) {
         return new ConflictError({ message: result.value.message })
       }

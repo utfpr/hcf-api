@@ -1,7 +1,7 @@
 import { Either } from '@/library/either/Either'
 
 import {
-  LocalColeta, LocalColetaAttributes, normalizeLocalColetaDescription
+  LocalColeta, LocalColetaAttributes
 } from './LocalColeta'
 import { LocalColetaCollection } from './LocalColetaCollection'
 
@@ -16,10 +16,13 @@ export class CadastraLocalColetaUseCase {
     this.localColetaCollection = dependencies.localColetaCollection
   }
 
-  execute(attributes: LocalColetaAttributes): Promise<Either<Error, LocalColeta>> {
-    return this.localColetaCollection.create({
+  async execute(attributes: LocalColetaAttributes): Promise<Either<Error, LocalColeta>> {
+    const localColeta = LocalColeta.create(attributes)
+    if (localColeta.left()) return Either.left(localColeta.value)
+    const normalized = {
       ...attributes,
-      descricao: normalizeLocalColetaDescription(attributes.descricao)
-    })
+      descricao: localColeta.value.descricao as string
+    }
+    return this.localColetaCollection.create(normalized)
   }
 }

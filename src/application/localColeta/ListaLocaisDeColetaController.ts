@@ -1,4 +1,4 @@
-import { ListaLocaisDeColetaUseCase } from '@/domain/localColeta/ListaLocaisDeColetaUseCase'
+import { LocalColetaCollection } from '@/domain/localColeta/LocalColetaCollection'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
@@ -8,14 +8,14 @@ import { InternalServerError } from '@/library/http/error/InternalServerError'
 import { NextHandler, RequestHandler } from '@/library/http/Server'
 
 interface Dependencies {
-  listaLocaisDeColetaUseCase: ListaLocaisDeColetaUseCase
+  localColetaCollection: LocalColetaCollection
 }
 
 export class ListaLocaisDeColetaController implements RequestHandler {
-  private readonly listaLocaisDeColetaUseCase: ListaLocaisDeColetaUseCase
+  private readonly localColetaCollection: LocalColetaCollection
 
   constructor(dependencies: Dependencies) {
-    this.listaLocaisDeColetaUseCase = dependencies.listaLocaisDeColetaUseCase
+    this.localColetaCollection = dependencies.localColetaCollection
   }
 
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
@@ -53,7 +53,7 @@ export class ListaLocaisDeColetaController implements RequestHandler {
     }
 
     try {
-      const result = await this.listaLocaisDeColetaUseCase.execute({
+      const result = await this.localColetaCollection.findAll({
         cidade_id: params.cidade_id,
         estado_id: params.estado_id,
         pais_id: params.pais_id,

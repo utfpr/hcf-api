@@ -124,6 +124,28 @@ describe('PUT /api/v1/locais-coleta/:localColetaId', () => {
     }
   })
 
+  test('retorna 400 para cidade ou fase inexistente', async () => {
+    const cidade = await insertLocalColetaCidade(knex)
+    const localColetaId = await insertLocalColeta(knex, cidade.id, 'Referência válida')
+    try {
+      for (const attributes of [
+        { descricao: 'Cidade inexistente', cidade_id: -1 },
+        {
+          descricao: 'Fase inexistente', cidade_id: cidade.id, fase_sucessional_id: -1
+        }
+      ]) {
+        const response = await agent.put(`/api/v1/locais-coleta/${localColetaId}`)
+          .set(curadorHeader)
+          .send(attributes)
+          .expect(400)
+        expect((response.body as ApiErrorResponse).error.message).toMatch(/cidade|fase/i)
+      }
+    } finally {
+      await knex('locais_coleta').where({ id: localColetaId }).delete()
+      await cidade.cleanup()
+    }
+  })
+
   test('retorna 401 sem token', async () => {
     await agent.put('/api/v1/locais-coleta/1')
       .send({ descricao: 'Sem token', cidade_id: 1 })

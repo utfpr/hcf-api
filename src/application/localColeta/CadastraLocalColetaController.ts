@@ -1,5 +1,7 @@
 import { CadastraLocalColetaUseCase } from '@/domain/localColeta/CadastraLocalColetaUseCase'
 import { LocalColetaDescricaoDuplicadaError } from '@/domain/localColeta/error/LocalColetaDescricaoDuplicadaError'
+import { LocalColetaDescricaoInvalidaError } from '@/domain/localColeta/error/LocalColetaDescricaoInvalidaError'
+import { LocalColetaReferenciaInvalidaError } from '@/domain/localColeta/error/LocalColetaReferenciaInvalidaError'
 import { LocalColeta } from '@/domain/localColeta/LocalColeta'
 import {
   HttpRequest, HttpResponse, StatusCode
@@ -51,6 +53,10 @@ export class CadastraLocalColetaController implements RequestHandler {
     }
     const result = await this.cadastraLocalColetaUseCase.execute(attributes)
     if (result.left()) {
+      if (result.value instanceof LocalColetaReferenciaInvalidaError
+        || result.value instanceof LocalColetaDescricaoInvalidaError) {
+        return new BadRequestError({ message: result.value.message })
+      }
       if (result.value instanceof LocalColetaDescricaoDuplicadaError) {
         return new ConflictError({ message: result.value.message })
       }

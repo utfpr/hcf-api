@@ -2,6 +2,7 @@ import { Knex } from 'knex'
 
 import { LocalColetaDescricaoDuplicadaError } from '@/domain/localColeta/error/LocalColetaDescricaoDuplicadaError'
 import { LocalColetaEmUsoError } from '@/domain/localColeta/error/LocalColetaEmUsoError'
+import { LocalColetaReferenciaInvalidaError } from '@/domain/localColeta/error/LocalColetaReferenciaInvalidaError'
 import {
   LocalColeta, LocalColetaAttributes, LocalColetaRelation
 } from '@/domain/localColeta/LocalColeta'
@@ -52,6 +53,9 @@ export class LocalColetaCollectionKnexAdapter implements LocalColetaCollection {
       if (!created.value) return Either.left(new CollectionError({ message: 'Created collection location could not be found' }))
       return Either.right(created.value)
     } catch (error) {
+      if (isForeignKeyError(error)) {
+        return Either.left(new LocalColetaReferenciaInvalidaError({ cause: error }))
+      }
       if (isLocalColetaDuplicateError(error)) {
         return Either.left(new LocalColetaDescricaoDuplicadaError({ cause: error }))
       }
@@ -76,6 +80,9 @@ export class LocalColetaCollectionKnexAdapter implements LocalColetaCollection {
       if (localColeta.left()) return Either.left(localColeta.value)
       return Either.right(localColeta.value)
     } catch (error) {
+      if (isForeignKeyError(error)) {
+        return Either.left(new LocalColetaReferenciaInvalidaError({ cause: error }))
+      }
       if (isLocalColetaDuplicateError(error)) {
         return Either.left(new LocalColetaDescricaoDuplicadaError({ cause: error }))
       }
@@ -142,7 +149,13 @@ export class LocalColetaCollectionKnexAdapter implements LocalColetaCollection {
       }
 
       const rows = await rowsQuery.select(this.columns()) as LocalColetaRow[]
-      return Either.right({ total, resultado: rows.map(row => this.mapRow(row)) })
+      const resultado: LocalColeta[] = []
+      for (const row of rows) {
+        const entity = this.mapRow(row)
+        if (entity.left()) return Either.left(entity.value)
+        resultado.push(entity.value)
+      }
+      return Either.right({ total, resultado })
     } catch (error) {
       return Either.left(new CollectionError({ message: 'Failed to list collection locations', cause: error }))
     }
@@ -159,7 +172,7 @@ export class LocalColetaCollectionKnexAdapter implements LocalColetaCollection {
         .select(this.columns())
         .first() as LocalColetaRow | undefined
 
-      return Either.right(row ? this.mapRow(row) : undefined)
+      return row ? this.mapRow(row) : Either.right(undefined)
     } catch (error) {
       return Either.left(new CollectionError({ message: 'Failed to find collection location', cause: error }))
     }
@@ -202,7 +215,7 @@ export class LocalColetaCollectionKnexAdapter implements LocalColetaCollection {
     ]
   }
 
-  private mapRow(row: LocalColetaRow): LocalColeta {
+  private mapRow(row: LocalColetaRow): Either<Error, LocalColeta> {
     let pais: LocalColetaRelation | null = null
     if (row.pais_id !== null) {
       pais = {
@@ -234,14 +247,14 @@ export class LocalColetaCollectionKnexAdapter implements LocalColetaCollection {
       ? { id: row.fase_sucessional_id, nome: row.fase_nome ?? '' }
       : null
 
-    return {
+    return LocalColeta.create({
       id: row.id,
       descricao: row.descricao,
       cidade_id: row.cidade_id,
       fase_sucessional_id: row.fase_sucessional_id,
       cidade,
       fase_sucessional: faseSucessional
-    }
+    })
   }
 }
 

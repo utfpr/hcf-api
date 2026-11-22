@@ -2,7 +2,7 @@ import { Either } from '@/library/either/Either'
 
 import { LocalColetaNaoEncontradaError } from './error/LocalColetaNaoEncontradaError'
 import {
-  LocalColeta, LocalColetaAttributes, normalizeLocalColetaDescription
+  LocalColeta, LocalColetaAttributes
 } from './LocalColeta'
 import { LocalColetaCollection } from './LocalColetaCollection'
 
@@ -18,10 +18,13 @@ export class RenomeiaLocalColetaUseCase {
   }
 
   async execute(id: string, attributes: LocalColetaAttributes): Promise<Either<Error, LocalColeta>> {
-    const updated = await this.localColetaCollection.updateById(id, {
+    const localColeta = LocalColeta.create(attributes)
+    if (localColeta.left()) return Either.left(localColeta.value)
+    const normalized = {
       ...attributes,
-      descricao: normalizeLocalColetaDescription(attributes.descricao)
-    })
+      descricao: localColeta.value.descricao as string
+    }
+    const updated = await this.localColetaCollection.updateById(id, normalized)
 
     if (updated.left()) return Either.left(updated.value)
     if (!updated.value) return Either.left(new LocalColetaNaoEncontradaError())

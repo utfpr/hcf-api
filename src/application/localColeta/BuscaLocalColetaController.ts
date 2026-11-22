@@ -1,4 +1,4 @@
-import { BuscaLocalColetaPorIdUseCase } from '@/domain/localColeta/BuscaLocalColetaPorIdUseCase'
+import { LocalColetaCollection } from '@/domain/localColeta/LocalColetaCollection'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
@@ -9,14 +9,14 @@ import { NotFoundError } from '@/library/http/error/NotFoundError'
 import { NextHandler, RequestHandler } from '@/library/http/Server'
 
 interface Dependencies {
-  buscaLocalColetaPorIdUseCase: BuscaLocalColetaPorIdUseCase
+  localColetaCollection: LocalColetaCollection
 }
 
 export class BuscaLocalColetaController implements RequestHandler {
-  private readonly buscaLocalColetaPorIdUseCase: BuscaLocalColetaPorIdUseCase
+  private readonly localColetaCollection: LocalColetaCollection
 
   constructor(dependencies: Dependencies) {
-    this.buscaLocalColetaPorIdUseCase = dependencies.buscaLocalColetaPorIdUseCase
+    this.localColetaCollection = dependencies.localColetaCollection
   }
 
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
@@ -26,7 +26,7 @@ export class BuscaLocalColetaController implements RequestHandler {
     }
 
     try {
-      const localColeta = await this.buscaLocalColetaPorIdUseCase.execute(localColetaId)
+      const localColeta = await this.localColetaCollection.findById(localColetaId)
       if (localColeta.left()) {
         return new InternalServerError({ message: localColeta.value.message })
       }
