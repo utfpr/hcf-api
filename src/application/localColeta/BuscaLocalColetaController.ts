@@ -21,7 +21,7 @@ export class BuscaLocalColetaController implements RequestHandler {
 
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const { localColetaId } = request.params as { localColetaId?: string }
-    if (localColetaId === undefined || !/^\d+$/.test(localColetaId)) {
+    if (localColetaId === undefined || !/^\d+$/.test(localColetaId) || !Number.isSafeInteger(Number(localColetaId)) || Number(localColetaId) <= 0 || Number(localColetaId) > 2147483647) {
       return new BadRequestError({ message: 'localColetaId inválido' })
     }
 
@@ -34,7 +34,7 @@ export class BuscaLocalColetaController implements RequestHandler {
       return { statusCode: StatusCode.Ok, body: localColeta.value }
     } catch (error) {
       return new InternalServerError({
-        message: error instanceof Error ? error.message : 'Erro ao buscar local de coleta'
+        message: 'Erro ao buscar local de coleta', cause: error
       })
     }
   }

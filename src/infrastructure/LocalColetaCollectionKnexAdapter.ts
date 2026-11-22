@@ -144,6 +144,8 @@ export class LocalColetaCollectionKnexAdapter implements LocalColetaCollection {
             ? 'LOWER(locais_coleta.descricao) ASC'
             : 'LOWER(locais_coleta.descricao) DESC')
 
+      if (order.column !== 'id') rowsQuery.orderBy('locais_coleta.id', 'desc')
+
       if (!filters.getAll) {
         rowsQuery.limit(filters.limite).offset((filters.pagina - 1) * filters.limite)
       }

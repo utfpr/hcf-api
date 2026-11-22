@@ -83,7 +83,7 @@ export class ListaLocaisDeColetaController implements RequestHandler {
       }
     } catch (error) {
       return new InternalServerError({
-        message: error instanceof Error ? error.message : 'Erro ao listar locais de coleta'
+        message: 'Erro ao listar locais de coleta', cause: error
       })
     }
   }
