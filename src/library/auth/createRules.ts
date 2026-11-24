@@ -57,7 +57,8 @@ const publicReads: Rule<Resource, Action>[] = [
   { action: 'read', resource: 'Estado' },
   { action: 'read', resource: 'Vegetacao' },
   { action: 'read', resource: 'FaseSucessional' },
-  { action: 'read', resource: 'Relevo' }
+  { action: 'read', resource: 'Relevo' },
+  { action: 'read', resource: 'Reino' }
 ]
 
 export const CURADOR = 1
