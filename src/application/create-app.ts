@@ -16,11 +16,13 @@ import { routes as createEstadoRoutes } from './estado'
 import { routes as createEventoRoutes } from './evento'
 import { routes as createEvidenciaRoutes } from './evidencia'
 import { routes as createExpedicoesRoutes } from './expedicao'
+import { routes as createFamiliaRoutes } from './familia'
 import { routes as createFaseSucessionalRoutes } from './faseSucessional'
 import { routes as createLembreteRoutes } from './lembrete'
 import { routes as createLocalColetaRoutes } from './localColeta'
 import { routes as createPaisRoutes } from './pais'
 import { assertCookieSafeOrigins } from './parseCorsOrigins'
+import { routes as createReinoRoutes } from './reino'
 import { routes as createRelevoRoutes } from './relevo'
 import { routes as createSoloRoutes } from './solo'
 import { routes as createUsuarioSessaoRoutes } from './usuarioSessao'
@@ -66,6 +68,8 @@ export function createApp({
 }: Parameters) {
   const routes: Route[] = [
     ...createPaisRoutes(knex),
+    ...createReinoRoutes(knex),
+    ...createFamiliaRoutes(knex),
     ...createEstadoRoutes(knex),
     ...createEventoRoutes(knex),
     ...createSoloRoutes(knex),
