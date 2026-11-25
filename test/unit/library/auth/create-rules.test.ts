@@ -12,7 +12,8 @@ const publicReads = [
   { action: 'read', resource: 'Vegetacao' },
   { action: 'read', resource: 'FaseSucessional' },
   { action: 'read', resource: 'Relevo' },
-  { action: 'read', resource: 'Reino' }
+  { action: 'read', resource: 'Reino' },
+  { action: 'read', resource: 'Familia' }
 ]
 
 const writerRules = [
@@ -63,6 +64,10 @@ describe('createRules', () => {
 
   test('grants public read access to Reino', () => {
     expect(createRules()).toContainEqual({ action: 'read', resource: 'Reino' })
+  })
+
+  test('grants public read access to Familia', () => {
+    expect(createRules()).toContainEqual({ action: 'read', resource: 'Familia' })
   })
 
   test('grants curador and operador write permissions', () => {

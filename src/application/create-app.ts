@@ -16,6 +16,7 @@ import { routes as createEstadoRoutes } from './estado'
 import { routes as createEventoRoutes } from './evento'
 import { routes as createEvidenciaRoutes } from './evidencia'
 import { routes as createExpedicoesRoutes } from './expedicao'
+import { routes as createFamiliaRoutes } from './familia'
 import { routes as createFaseSucessionalRoutes } from './faseSucessional'
 import { routes as createLembreteRoutes } from './lembrete'
 import { routes as createLocalColetaRoutes } from './localColeta'
@@ -68,6 +69,7 @@ export function createApp({
   const routes: Route[] = [
     ...createPaisRoutes(knex),
     ...createReinoRoutes(knex),
+    ...createFamiliaRoutes(knex),
     ...createEstadoRoutes(knex),
     ...createEventoRoutes(knex),
     ...createSoloRoutes(knex),
