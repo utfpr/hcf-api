@@ -57,7 +57,8 @@ const publicReads: Rule<Resource, Action>[] = [
   { action: 'read', resource: 'Estado' },
   { action: 'read', resource: 'Vegetacao' },
   { action: 'read', resource: 'FaseSucessional' },
-  { action: 'read', resource: 'Relevo' }
+  { action: 'read', resource: 'Relevo' },
+  { action: 'read', resource: 'Reino' }
 ]
 
 export const CURADOR = 1
@@ -102,6 +103,8 @@ export function createRules(user?: RulesUser): Rule<Resource, Action>[] {
       { action: 'create', resource: 'Relevo' },
       { action: 'update', resource: 'Relevo' },
       { action: 'delete', resource: 'Relevo' },
+      { action: 'create', resource: 'Reino' },
+      { action: 'update', resource: 'Reino' },
       { action: 'create', resource: 'LocalColeta' },
       { action: 'update', resource: 'LocalColeta' },
       { action: 'delete', resource: 'LocalColeta' },

@@ -11,7 +11,8 @@ const publicReads = [
   { action: 'read', resource: 'Estado' },
   { action: 'read', resource: 'Vegetacao' },
   { action: 'read', resource: 'FaseSucessional' },
-  { action: 'read', resource: 'Relevo' }
+  { action: 'read', resource: 'Relevo' },
+  { action: 'read', resource: 'Reino' }
 ]
 
 const writerRules = [
@@ -27,6 +28,8 @@ const writerRules = [
   { action: 'create', resource: 'Relevo' },
   { action: 'update', resource: 'Relevo' },
   { action: 'delete', resource: 'Relevo' },
+  { action: 'create', resource: 'Reino' },
+  { action: 'update', resource: 'Reino' },
   { action: 'create', resource: 'LocalColeta' },
   { action: 'update', resource: 'LocalColeta' },
   { action: 'delete', resource: 'LocalColeta' }
@@ -58,6 +61,43 @@ describe('createRules', () => {
   test('grants Guest only public reads', () => {
     expect(createRules()).toEqual(publicReads)
     expect(createRules(undefined)).toEqual(publicReads)
+  })
+
+  test('grants public read access to Reino', () => {
+    expect(createRules()).toContainEqual({ action: 'read', resource: 'Reino' })
+  })
+
+  test('grants Reino create and update permissions only to curador and operador', () => {
+    for (const tipo_usuario_id of [
+      1,
+      2
+    ]) {
+      for (const action of [
+        'create',
+        'update'
+      ]) {
+        expect(createRules({ id: tipo_usuario_id, tipo_usuario_id }))
+          .toContainEqual({ action, resource: 'Reino' })
+      }
+    }
+
+    for (const tipo_usuario_id of [
+      3,
+      4,
+      99
+    ]) {
+      for (const action of [
+        'create',
+        'update',
+        'delete'
+      ]) {
+        expect(createRules({ id: tipo_usuario_id, tipo_usuario_id }))
+          .not.toContainEqual({ action, resource: 'Reino' })
+      }
+    }
+
+    expect(createRules({ id: 1, tipo_usuario_id: 1 }))
+      .not.toContainEqual({ action: 'delete', resource: 'Reino' })
   })
 
   test('grants curador and operador write permissions', () => {
