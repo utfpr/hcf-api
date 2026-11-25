@@ -1,4 +1,4 @@
-import { ListaReinosUseCase } from '@/domain/reino/ListaReinosUseCase'
+import { ReinoCollection } from '@/domain/reino/ReinoCollection'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
@@ -8,20 +8,23 @@ import { InternalServerError } from '@/library/http/error/InternalServerError'
 import { NextHandler, RequestHandler } from '@/library/http/Server'
 
 interface Dependencies {
-  listaReinosUseCase: ListaReinosUseCase
+  reinoCollection: ReinoCollection
 }
 
 export class ListaReinosController implements RequestHandler {
-  private readonly listaReinosUseCase: ListaReinosUseCase
+  private readonly reinoCollection: ReinoCollection
 
   constructor(dependencies: Dependencies) {
-    this.listaReinosUseCase = dependencies.listaReinosUseCase
+    this.reinoCollection = dependencies.reinoCollection
   }
 
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
-    const { nome, order } = request.params as {
-      nome?: string
-      order?: string
+    const { nome, order } = request.params
+    if (
+      (nome !== undefined && typeof nome !== 'string')
+      || (order !== undefined && typeof order !== 'string')
+    ) {
+      return new BadRequestError({ message: 'nome e order devem ser strings' })
     }
 
     const parsedOrder = parseOrder(order)
@@ -29,12 +32,15 @@ export class ListaReinosController implements RequestHandler {
       return new BadRequestError({ message: parsedOrder.message })
     }
 
-    const result = await this.listaReinosUseCase.execute({ nome, order: parsedOrder })
+    const result = await this.reinoCollection.findAll({ nome, order: parsedOrder })
     if (result.left()) {
       return new InternalServerError({ message: result.value.message })
     }
 
-    return { statusCode: StatusCode.Ok, body: result.value }
+    return {
+      statusCode: StatusCode.Ok,
+      body: result.value.map(reino => ({ id: reino.id, nome: reino.nome }))
+    }
   }
 }
 

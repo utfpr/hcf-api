@@ -1,4 +1,4 @@
-import { BuscaReinoPorIdUseCase } from '@/domain/reino/BuscaReinoPorIdUseCase'
+import { ReinoCollection } from '@/domain/reino/ReinoCollection'
 import {
   HttpRequest, HttpResponse, StatusCode
 } from '@/library/http/common'
@@ -9,14 +9,14 @@ import { NotFoundError } from '@/library/http/error/NotFoundError'
 import { NextHandler, RequestHandler } from '@/library/http/Server'
 
 interface Dependencies {
-  buscaReinoPorIdUseCase: BuscaReinoPorIdUseCase
+  reinoCollection: ReinoCollection
 }
 
 export class BuscaReinoController implements RequestHandler {
-  private readonly buscaReinoPorIdUseCase: BuscaReinoPorIdUseCase
+  private readonly reinoCollection: ReinoCollection
 
   constructor(dependencies: Dependencies) {
-    this.buscaReinoPorIdUseCase = dependencies.buscaReinoPorIdUseCase
+    this.reinoCollection = dependencies.reinoCollection
   }
 
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
@@ -25,7 +25,7 @@ export class BuscaReinoController implements RequestHandler {
       return new BadRequestError({ message: 'reinoId inválido' })
     }
 
-    const result = await this.buscaReinoPorIdUseCase.execute({ id: reinoId })
+    const result = await this.reinoCollection.findById(reinoId)
     if (result.left()) {
       return new InternalServerError({ message: result.value.message })
     }
@@ -34,6 +34,9 @@ export class BuscaReinoController implements RequestHandler {
       return new NotFoundError({ message: 'Reino não encontrado' })
     }
 
-    return { statusCode: StatusCode.Ok, body: result.value }
+    return {
+      statusCode: StatusCode.Ok,
+      body: { id: result.value.id, nome: result.value.nome }
+    }
   }
 }

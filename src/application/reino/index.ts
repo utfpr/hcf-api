@@ -1,8 +1,6 @@
 import { type Knex } from 'knex'
 
 import { authorize } from '@/application/AuthorizeMiddlewareFactory'
-import { BuscaReinoPorIdUseCase } from '@/domain/reino/BuscaReinoPorIdUseCase'
-import { ListaReinosUseCase } from '@/domain/reino/ListaReinosUseCase'
 import { ReinoCollectionKnexAdapter } from '@/infrastructure/ReinoCollectionKnexAdapter'
 import { Method } from '@/library/http/common'
 import { Route } from '@/library/http/Router'
@@ -17,9 +15,7 @@ export function routes(knex: Knex): Route[] {
     {
       handlers: [
         authorize('read', 'Reino'),
-        new ListaReinosController({
-          listaReinosUseCase: new ListaReinosUseCase({ reinoCollection })
-        })
+        new ListaReinosController({ reinoCollection })
       ],
       method: Method.Get,
       path: '/v1/reinos'
@@ -27,9 +23,7 @@ export function routes(knex: Knex): Route[] {
     {
       handlers: [
         authorize('read', 'Reino'),
-        new BuscaReinoController({
-          buscaReinoPorIdUseCase: new BuscaReinoPorIdUseCase({ reinoCollection })
-        })
+        new BuscaReinoController({ reinoCollection })
       ],
       method: Method.Get,
       path: '/v1/reinos/:reinoId'

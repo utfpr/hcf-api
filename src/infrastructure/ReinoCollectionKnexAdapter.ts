@@ -1,6 +1,6 @@
 import { Knex } from 'knex'
 
-import { Attributes } from '@/domain/reino/Reino'
+import { Reino } from '@/domain/reino/Reino'
 import { ReinoCollection, ReinoFilters } from '@/domain/reino/ReinoCollection'
 import { Either } from '@/library/either/Either'
 
@@ -10,6 +10,11 @@ interface Dependencies {
   knex: Knex
 }
 
+interface ReinoRow {
+  id: number | string
+  nome: string
+}
+
 export class ReinoCollectionKnexAdapter implements ReinoCollection {
   private readonly knex: Knex
 
@@ -17,9 +22,9 @@ export class ReinoCollectionKnexAdapter implements ReinoCollection {
     this.knex = knex
   }
 
-  async findAll(filters: ReinoFilters): Promise<Either<Error, Attributes[]>> {
+  async findAll(filters: ReinoFilters): Promise<Either<Error, Reino[]>> {
     try {
-      const query = this.knex<Attributes>('reinos')
+      const query = this.knex<ReinoRow>('reinos')
         .select(['id', 'nome'])
 
       if (filters.nome) {
@@ -29,19 +34,33 @@ export class ReinoCollectionKnexAdapter implements ReinoCollection {
       const order = filters.order ?? { column: 'id', direction: 'desc' }
       query.orderBy(order.column, order.direction)
 
-      return Either.right(await query)
+      const reinos: Reino[] = []
+      for (const row of await query) {
+        const reino = Reino.create({ id: Number(row.id), nome: row.nome })
+        if (reino.left()) {
+          return Either.left(reino.value)
+        }
+        reinos.push(reino.value)
+      }
+
+      return Either.right(reinos)
     } catch (error) {
       return Either.left(new CollectionError({ message: 'Failed to list reinos', cause: error }))
     }
   }
 
-  async findById(id: string): Promise<Either<Error, Attributes | undefined>> {
+  async findById(id: string): Promise<Either<Error, Reino | undefined>> {
     try {
-      const reino = await this.knex<Attributes>('reinos')
+      const row = await this.knex<ReinoRow>('reinos')
         .select(['id', 'nome'])
         .where({ id })
         .first()
-      return Either.right(reino)
+
+      if (!row) {
+        return Either.right(undefined)
+      }
+
+      return Reino.create({ id: Number(row.id), nome: row.nome })
     } catch (error) {
       return Either.left(new CollectionError({ message: 'Failed to find reino', cause: error }))
     }

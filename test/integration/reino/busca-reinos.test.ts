@@ -14,9 +14,10 @@ describe('GET /api/v1/reinos/:reinoId', () => {
   afterAll(() => knex.destroy())
 
   test('retorna o reino encontrado', async () => {
-    const [reino] = await knex('reinos')
+    const [inserted] = await knex('reinos')
       .insert({ nome: `XREI Encontrado ${Date.now()}` })
       .returning<Reino[]>(returning)
+    const reino = { id: Number(inserted.id), nome: inserted.nome }
 
     try {
       const response = await agent.get(`/api/v1/reinos/${reino.id}`).expect(200)

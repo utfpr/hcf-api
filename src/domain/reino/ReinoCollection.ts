@@ -1,6 +1,6 @@
 import { Either } from '@/library/either/Either'
 
-import { Attributes } from './Reino'
+import { Reino } from './Reino'
 
 export interface ReinoOrder {
   column: 'id' | 'nome'
@@ -13,6 +13,6 @@ export interface ReinoFilters {
 }
 
 export interface ReinoCollection {
-  findAll(filters: ReinoFilters): Promise<Either<Error, Attributes[]>>
-  findById(id: string): Promise<Either<Error, Attributes | undefined>>
+  findAll(filters: ReinoFilters): Promise<Either<Error, Reino[]>>
+  findById(id: string): Promise<Either<Error, Reino | undefined>>
 }

@@ -8,6 +8,10 @@ type Reino = { id: number | string; nome: string }
 
 const returning = ['id', 'nome'] as const
 
+function normalize(reinos: Reino[]): { id: number; nome: string }[] {
+  return reinos.map(reino => ({ id: Number(reino.id), nome: reino.nome }))
+}
+
 describe('GET /api/v1/reinos', () => {
   const { agent, knex } = createTestApp()
 
@@ -20,9 +24,9 @@ describe('GET /api/v1/reinos', () => {
       `${prefix} Animalia`,
       `${prefix} Fungi`
     ]
-    const inserted = await knex('reinos')
+    const inserted = normalize(await knex('reinos')
       .insert(nomes.map(nome => ({ nome })))
-      .returning<Reino[]>(returning)
+      .returning<Reino[]>(returning))
 
     try {
       const response = await agent.get(`/api/v1/reinos?nome=${prefix}`).expect(200)
@@ -36,9 +40,9 @@ describe('GET /api/v1/reinos', () => {
   test('filtra por nome sem diferenciar maiúsculas e minúsculas', async () => {
     const prefix = `XREI-${Date.now()}`
     const nome = `${prefix} Plantae`
-    const [reino] = await knex('reinos')
+    const [reino] = normalize(await knex('reinos')
       .insert({ nome })
-      .returning<Reino[]>(returning)
+      .returning<Reino[]>(returning))
 
     try {
       const filtro = encodeURIComponent(`${prefix.toLowerCase()} plantae`)
@@ -56,9 +60,9 @@ describe('GET /api/v1/reinos', () => {
       `${prefix} A`,
       `${prefix} M`
     ]
-    const inserted = await knex('reinos')
+    const inserted = normalize(await knex('reinos')
       .insert(nomes.map(nome => ({ nome })))
-      .returning<Reino[]>(returning)
+      .returning<Reino[]>(returning))
 
     try {
       const byNameAsc = await agent.get(`/api/v1/reinos?nome=${prefix}&order=nome:asc`).expect(200)
@@ -81,5 +85,13 @@ describe('GET /api/v1/reinos', () => {
     const response = await agent.get('/api/v1/reinos?order=foo:bar').expect(400)
     const body = response.body as { error: { message: string } }
     expect(body.error.message).toMatch(/inválido|invalid/i)
+  })
+
+  test('retorna 400 quando order ou nome são repetidos na consulta', async () => {
+    for (const query of ['order=id:asc&order=nome:desc', 'nome=a&nome=b']) {
+      const response = await agent.get(`/api/v1/reinos?${query}`).expect(400)
+      const body = response.body as { error: { message: string } }
+      expect(body.error.message).toMatch(/strings/i)
+    }
   })
 })
