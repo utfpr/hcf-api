@@ -9,6 +9,10 @@ interface Dependencies {
   faseSucessionalCollection: FaseSucessionalCollection
 }
 
+/**
+ * Caso de uso responsável pela alteração de nome de uma fase sucessional.
+ * Valida unicidade garantindo que outro registro com o mesmo nome não exista.
+ */
 export class RenomeiaFaseSucessionalUseCase {
   private readonly faseSucessionalCollection: FaseSucessionalCollection
 
@@ -16,6 +20,12 @@ export class RenomeiaFaseSucessionalUseCase {
     this.faseSucessionalCollection = dependencies.faseSucessionalCollection
   }
 
+  /**
+   * Atualiza o nome da fase sucessional identificada por ID.
+   *
+   * @param params ID e novo nome da fase sucessional.
+   * @returns Either com a entidade atualizada ou erro de validação/duplicidade/não encontrado.
+   */
   async execute({ id, nome }: { id: string; nome: string }): Promise<Either<Error, FaseSucessional>> {
     const normalizedNome = nome.trim()
 
@@ -29,6 +39,7 @@ export class RenomeiaFaseSucessionalUseCase {
       return existing
     }
 
+    // Impede colisão com outra fase sucessional com o mesmo nome
     if (existing.value && existing.value.id !== id) {
       return Either.left(new FaseSucessionalNomeDuplicadoError())
     }

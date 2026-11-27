@@ -23,6 +23,13 @@ import { ListaEvidenciasController } from './ListaEvidenciasController'
 import { RemoveEvidenciaController } from './RemoveEvidenciaController'
 import { TranscricaoController } from './TranscricaoController'
 
+/**
+ * Registra e configura as rotas de evidências e transcrições de áudio.
+ * Inclui endpoints de listagem, upload multipart com Multer, exclusão e rotas de transcrição (leitura, geração e revisão).
+ *
+ * @param knex Instância de conexão Knex.
+ * @returns Lista de definições de rotas configuradas.
+ */
 export function routes(knex: Knex): Route[] {
   const evidenciaCollection = new EvidenciaCollectionKnexAdapter({ knex })
   const eventoCollection = new EventoCollectionKnexAdapter({ knex })

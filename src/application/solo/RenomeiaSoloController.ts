@@ -15,6 +15,9 @@ interface Dependencies {
   renomeiaSoloUseCase: RenomeiaSoloUseCase
 }
 
+/**
+ * Controller responsável pela alteração de nome de um tipo de solo.
+ */
 export class RenomeiaSoloController implements RequestHandler {
   private readonly renomeiaSoloUseCase: RenomeiaSoloUseCase
 
@@ -22,6 +25,13 @@ export class RenomeiaSoloController implements RequestHandler {
     this.renomeiaSoloUseCase = dependencies.renomeiaSoloUseCase
   }
 
+  /**
+   * Trata a requisição PUT /v1/solos/:soloId para renomear o solo.
+   *
+   * @param request Requisição HTTP com parâmetro de rota soloId e novo nome no corpo.
+   * @param _next Próximo middleware da cadeia.
+   * @returns Resposta HTTP 200 com o solo atualizado, 400 se parâmetros inválidos, 404 se inexistente, 409 se duplicado ou 500.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const { soloId } = request.params as { soloId?: string }
     const { nome } = request.body as { nome?: string }

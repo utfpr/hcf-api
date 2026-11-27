@@ -16,6 +16,13 @@ import { ListaSolosController } from './ListaSolosController'
 import { RemoveSoloController } from './RemoveSoloController'
 import { RenomeiaSoloController } from './RenomeiaSoloController'
 
+/**
+ * Registra as rotas da API REST para gerenciamento de solos.
+ * Configura controllers e middlewares de autorização CASL por ação (create, update, delete).
+ *
+ * @param knex Instância de conexão Knex com o banco de dados.
+ * @returns Array de rotas configuradas para o recurso Solo.
+ */
 export function routes(knex: Knex): Route[] {
   const soloCollection = new SoloCollectionKnexAdapter({ knex })
 

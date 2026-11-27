@@ -28,12 +28,18 @@ import { routes as createSoloRoutes } from './solo'
 import { routes as createUsuarioSessaoRoutes } from './usuarioSessao'
 import { routes as createVegetacaoRoutes } from './vegetacao'
 
+/**
+ * Parâmetros de configuração de CORS para a aplicação.
+ */
 interface CorsParameters {
   origins: string | string[]
   methods: string[]
   allowedHeaders: string[]
 }
 
+/**
+ * Dependências e opções de inicialização da aplicação Express.
+ */
 interface Parameters {
   logger: Logger
   cors: CorsParameters
@@ -63,6 +69,14 @@ const securityConfig = {
   }
 }
 
+/**
+ * Cria e configura a instância principal da aplicação Express (ExpressApplication).
+ * Registra cabeçalhos de segurança (Helmet), políticas de CORS com suporte a credenciais,
+ * rotas de health check, roteamento de arquivos estáticos, rotas da API v1 e roteador legado.
+ *
+ * @param params Parâmetros de inicialização contendo instâncias do Logger, Knex, CORS e rotas legadas.
+ * @returns Instância configurada de ExpressApplication pronta para inicialização.
+ */
 export function createApp({
   logger, cors, knex, legacyRouter
 }: Parameters) {
@@ -90,6 +104,7 @@ export function createApp({
       res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin')
     }
   })
+  // Garante que não sejam usadas origens curinga ('*') para permitir o envio seguro de cookies HTTP-only (ex.: refresh tokens) via CORS com credentials: true.
   const origins = assertCookieSafeOrigins(cors.origins)
   const application = new ExpressApplication({ logger })
 

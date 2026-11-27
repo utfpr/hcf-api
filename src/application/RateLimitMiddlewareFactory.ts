@@ -15,4 +15,9 @@ const createRateLimit = singleton(() => {
   })
 })
 
+/**
+ * Instância singleton do middleware de rate limit para rotas sensíveis de autenticação.
+ * Configurado em memória para tolerar até 5 falhas (HTTP 401) por IP a cada janela de 15 minutos,
+ * mitigando ataques de força bruta em credenciais de usuário.
+ */
 export const rateLimit = createRateLimit()

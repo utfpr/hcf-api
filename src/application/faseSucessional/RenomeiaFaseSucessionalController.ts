@@ -17,6 +17,9 @@ interface Dependencies {
   renomeiaFaseSucessionalUseCase: RenomeiaFaseSucessionalUseCase
 }
 
+/**
+ * Controller responsável pela renomeação de uma fase sucessional.
+ */
 export class RenomeiaFaseSucessionalController implements RequestHandler {
   private readonly renomeiaFaseSucessionalUseCase: RenomeiaFaseSucessionalUseCase
 
@@ -24,6 +27,13 @@ export class RenomeiaFaseSucessionalController implements RequestHandler {
     this.renomeiaFaseSucessionalUseCase = dependencies.renomeiaFaseSucessionalUseCase
   }
 
+  /**
+   * Trata a requisição PUT /v1/fases-sucessionais/:faseSucessionalId.
+   *
+   * @param request Requisição HTTP com parâmetro de rota faseSucessionalId e novo nome no corpo.
+   * @param _next Próximo middleware da cadeia.
+   * @returns Resposta HTTP 200 com a fase atualizada, 400 se parâmetros inválidos, 404 se inexistente, 409 se duplicada ou 500.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const { faseSucessionalId } = request.params as { faseSucessionalId?: string }
     const { nome } = request.body as { nome?: string }

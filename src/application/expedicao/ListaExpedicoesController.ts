@@ -11,36 +11,34 @@ interface Dependencies {
   expedicaoCollection: ExpedicaoCollection
 }
 
-// interface do formato da nossa query
+/**
+ * Formato tipado para requisições com parâmetros de consulta da listagem de expedições.
+ */
 export interface CustomHttpRequest extends HttpRequest {
   params: Record<string, string | undefined>
 }
 
+/**
+ * Controller responsável pela listagem paginada e filtrada de expedições (GET /api/v1/expedicoes).
+ * Permite filtros por cidade, participante, períodos de início/fim e ordenação segura.
+ */
 export class ListaExpedicoesController implements RequestHandler {
   private readonly expedicaoCollection: ExpedicaoCollection
 
+  /**
+   * @param dependencies Repositório de expedições.
+   */
   constructor(dependencies: Dependencies) {
     this.expedicaoCollection = dependencies.expedicaoCollection
   }
 
-  // Listar todas (com ordenação padrão DESC):
-  // GET /api/v1/expedicoes
-
-  // Filtrar por uma cidade específica:
-  // GET /api/v1/expedicoes?cidade_id=1100049
-
-  // Filtrar por intervalo de datas:
-  // GET /api/v1/expedicoes?data_inicio_de=2026-01-01&data_fim_ate=2026-12-31
-
-  // Filtrar próximas expedições (ainda não terminaram, com a que começa primeiro antes):
-  // GET /api/v1/expedicoes?data_fim_de=2026-10-04&order=data_inicio:asc
-
-  // Filtrar expedições realizadas (já terminaram, com a mais recente antes):
-  // GET /api/v1/expedicoes?data_fim_ate=2026-10-03&order=data_fim:desc
-
-  // Filtrar com ordenação segura:
-  // GET /api/v1/expedicoes?order=data_inicio:desc
-
+  /**
+   * Executa a busca paginada de expedições conforme filtros e parâmetros de ordenação recebidos.
+   *
+   * @param request Requisição HTTP com query params de filtragem e paginação.
+   * @param _next Próximo manipulador na cadeia de execução.
+   * @returns Resposta HTTP 200 com coleção paginada ou erro 400/500.
+   */
   async handle(request: CustomHttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     try {
       const {

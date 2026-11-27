@@ -14,6 +14,13 @@ import { ListaLocaisDeColetaController } from './ListaLocaisDeColetaController'
 import { RemoveLocalColetaController } from './RemoveLocalColetaController'
 import { RenomeiaLocalColetaController } from './RenomeiaLocalColetaController'
 
+/**
+ * Registra as rotas da API REST para gerenciamento de locais de coleta.
+ * Configura controllers e autorizações CASL para ações de leitura, criação, atualização e exclusão.
+ *
+ * @param knex Instância de conexão Knex com o banco de dados.
+ * @returns Array de rotas configuradas para o recurso LocalColeta.
+ */
 export function routes(knex: Knex): Route[] {
   const localColetaCollection = new LocalColetaCollectionKnexAdapter({ knex })
 

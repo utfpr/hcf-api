@@ -18,6 +18,12 @@ import { EncerraUsuarioSessaoController } from './EncerraUsuarioSessaoController
 import { MostraUsuarioSessaoController } from './MostraUsuarioSessaoController'
 import { RenovaUsuarioSessaoController } from './RenovaUsuarioSessaoController'
 
+/**
+ * Cria e configura as definições de rota para gerenciamento de sessão e autenticação (/api/auth/*).
+ *
+ * @param knex Instância de conexão com o banco de dados.
+ * @returns Coleção de rotas contendo caminhos, métodos e manipuladores associados.
+ */
 export function routes(knex: Knex): Route[] {
   const usuarioCollection = new UsuarioCollectionKnexAdapter({ knex })
   const usuarioSessaoCollection = new UsuarioSessaoCollectionKnexAdapter({ knex })
@@ -29,6 +35,7 @@ export function routes(knex: Knex): Route[] {
       method: Method.Post,
       path: '/auth/login',
       handlers: [
+        // Aplica limitação de taxa (5 tentativas a cada 15 min por IP) para mitigar força bruta no login
         rateLimit,
         new CriaUsuarioSessaoController({
           criaUsuarioSessaoUseCase: new CriaUsuarioSessaoUseCase({

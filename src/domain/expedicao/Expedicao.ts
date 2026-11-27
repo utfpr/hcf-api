@@ -1,5 +1,8 @@
 import { Either } from '@/library/either/Either'
 
+/**
+ * Atributos persistidos de uma expedição.
+ */
 export interface Attributes {
   id: number
   descricao: string | null
@@ -12,17 +15,26 @@ export interface Attributes {
   updated_by: number | null
 }
 
+/**
+ * Informações resumidas de um participante vinculado à expedição.
+ */
 export interface ParticipanteDetalhado {
   id: number
   nome: string
   email: string
 }
 
+/**
+ * Estrutura de entrada para definição de rotas e locais de coleta de uma expedição.
+ */
 export interface RotaInput {
   cidade_id: number
   locais_coleta_ids: number[]
 }
 
+/**
+ * Detalhamento completo de uma rota com cidade, estado e locais de coleta.
+ */
 export interface RotaDetalhada {
   cidade_id: number
   ordem: number
@@ -38,6 +50,9 @@ export interface RotaDetalhada {
   }>
 }
 
+/**
+ * Representação detalhada de uma expedição contendo participantes e rotas resolvidas.
+ */
 export interface ExpedicaoDetalhada extends Attributes {
   participantes: ParticipanteDetalhado[]
   rotas: RotaDetalhada[]
@@ -51,6 +66,9 @@ type PersistedField = 'id' | 'created_at' | 'updated_at' | 'updated_by'
  */
 export type EntityAttributes = Omit<Attributes, PersistedField> & Partial<Pick<Attributes, PersistedField>>
 
+/**
+ * Dados requeridos para criação inicial de uma expedição no banco de dados.
+ */
 export type CreateAttributes =
   Omit<Attributes, PersistedField>
   & {
@@ -58,6 +76,9 @@ export type CreateAttributes =
     rotas: RotaInput[]
   }
 
+/**
+ * Atributos permitidos na atualização cadastral de uma expedição.
+ */
 export interface UpdateAttributes {
   descricao: string | null
   data_inicio: string
@@ -66,6 +87,9 @@ export interface UpdateAttributes {
   updated_by: number
 }
 
+/**
+ * Entidade de domínio que representa uma expedição botânica de campo.
+ */
 export class Expedicao {
   readonly id?: number
   readonly descricao: string | null
@@ -89,6 +113,13 @@ export class Expedicao {
     this.updated_by = attributes.updated_by
   }
 
+  /**
+   * Fábrica estática para criação e validação invariante de uma Expedicao.
+   * Valida obrigatoriedade de datas, cidade de destino e garante que data_fim não seja anterior a data_inicio.
+   *
+   * @param attributes Atributos da expedição.
+   * @returns Either com a entidade Expedicao validada ou Error de validação.
+   */
   static create(attributes: EntityAttributes): Either<Error, Expedicao> {
     if (!attributes.data_inicio) {
       return Either.left(new Error('Data de início da expedição é obrigatória'))
@@ -109,6 +140,11 @@ export class Expedicao {
     return Either.right(new Expedicao(attributes))
   }
 
+  /**
+   * Converte a instância para seus atributos primitivos.
+   *
+   * @returns Objeto com os atributos da expedição.
+   */
   toAttributes(): EntityAttributes {
     return {
       id: this.id,
@@ -123,6 +159,12 @@ export class Expedicao {
     }
   }
 
+  /**
+   * Aplica alterações sobre a expedição atual e devolve uma nova instância revalidada.
+   *
+   * @param changes Campos a serem atualizados.
+   * @returns Either com a nova Expedicao ou erro de validação.
+   */
   update(changes: UpdateAttributes): Either<Error, Expedicao> {
     return Expedicao.create({
       ...this.toAttributes(),

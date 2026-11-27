@@ -27,18 +27,33 @@ interface UploadedFile {
   buffer: Buffer
 }
 
+/**
+ * Controller responsável pelo endpoint de upload e cadastro de evidências (POST /api/v1/eventos/:eventoId/evidencias).
+ * Trata o arquivo recebido via multipart/form-data e metadados associados.
+ */
 export class CriaEvidenciaController implements RequestHandler {
   private readonly criaEvidenciaUseCase: CriaEvidenciaUseCase
 
+  /**
+   * @param dependencies Instância do caso de uso de criação de evidência.
+   */
   constructor(dependencies: Dependencies) {
     this.criaEvidenciaUseCase = dependencies.criaEvidenciaUseCase
   }
 
+  /**
+   * Processa o upload e persistência dos metadados da evidência.
+   *
+   * @param request Requisição HTTP contendo ':eventoId', 'file' nos parâmetros do middleware de upload e campos no corpo.
+   * @param _next Próximo manipulador na cadeia de execução.
+   * @returns Resposta HTTP 201 Created com dados da evidência e URL pública de acesso, ou 400/404/500.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const { eventoId: rawEventoId, file: rawFile } = request.params as { eventoId?: string; file?: unknown }
     const eventoId = parseId(rawEventoId, 'eventoId')
     if (eventoId instanceof Error) return new BadRequestError({ message: eventoId.message })
 
+    // Ordem no multipart/form-data: o Multer requer que os campos do formulário acompanhem o arquivo binário para disponibilizar buffer e body simultaneamente
     const file = rawFile as UploadedFile | undefined
     if (!file) return new BadRequestError({ message: 'Arquivo (campo "arquivo") é obrigatório' })
 
@@ -50,6 +65,7 @@ export class CriaEvidenciaController implements RequestHandler {
     const dataCaptura = parseDate(body.data_captura, 'data_captura')
     if (dataCaptura instanceof Error) return new BadRequestError({ message: dataCaptura.message })
 
+    // Processa client_uuid para garantir idempotência em reenvios de evidências pelo app móvel offline
     const clientUuid = parseClientUuid(body.client_uuid)
     if (clientUuid instanceof Error) return new BadRequestError({ message: clientUuid.message })
 

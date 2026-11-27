@@ -16,6 +16,9 @@ interface Dependencies {
   cadastraLocalColetaUseCase: CadastraLocalColetaUseCase
 }
 
+/**
+ * Controller responsável pelo cadastro de novos locais de coleta.
+ */
 export class CadastraLocalColetaController implements RequestHandler {
   private readonly cadastraLocalColetaUseCase: CadastraLocalColetaUseCase
 
@@ -23,6 +26,13 @@ export class CadastraLocalColetaController implements RequestHandler {
     this.cadastraLocalColetaUseCase = dependencies.cadastraLocalColetaUseCase
   }
 
+  /**
+   * Trata a requisição POST /v1/locais-coleta.
+   *
+   * @param request Requisição HTTP contendo descricao, cidade_id e fase_sucessional_id no corpo.
+   * @param _next Próximo middleware da cadeia.
+   * @returns Resposta HTTP 201 com o local de coleta cadastrado, 400 para dados inválidos, 409 em caso de duplicidade ou 500.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const {
       descricao, cidade_id, fase_sucessional_id

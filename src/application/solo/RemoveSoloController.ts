@@ -15,6 +15,9 @@ interface Dependencies {
   removeSoloUseCase: RemoveSoloUseCase
 }
 
+/**
+ * Controller responsável pela exclusão de um registro de solo.
+ */
 export class RemoveSoloController implements RequestHandler {
   private readonly removeSoloUseCase: RemoveSoloUseCase
 
@@ -22,6 +25,13 @@ export class RemoveSoloController implements RequestHandler {
     this.removeSoloUseCase = dependencies.removeSoloUseCase
   }
 
+  /**
+   * Trata a requisição DELETE /v1/solos/:soloId.
+   *
+   * @param request Requisição HTTP com parâmetro soloId.
+   * @param _next Próximo middleware da cadeia.
+   * @returns Resposta HTTP 204 em sucesso, 400 se ID inválido, 404 se inexistente, 409 se em uso por tombos ou 500.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const { soloId } = request.params as { soloId?: string }
 

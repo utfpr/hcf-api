@@ -12,6 +12,9 @@ interface Dependencies {
   buscaSoloPorIdUseCase: BuscaSoloPorIdUseCase
 }
 
+/**
+ * Controller responsável por receber requisições de consulta de solo por ID.
+ */
 export class BuscaSoloController implements RequestHandler {
   private readonly buscaSoloPorIdUseCase: BuscaSoloPorIdUseCase
 
@@ -19,6 +22,13 @@ export class BuscaSoloController implements RequestHandler {
     this.buscaSoloPorIdUseCase = dependencies.buscaSoloPorIdUseCase
   }
 
+  /**
+   * Trata a requisição GET /v1/solos/:soloId validando os parâmetros de rota.
+   *
+   * @param request Requisição HTTP com parâmetro de rota soloId.
+   * @param _next Próximo middleware da cadeia.
+   * @returns Resposta HTTP 200 com os dados do solo, 400 se ID for inválido, 404 se não encontrado ou 500 em falhas internas.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const { soloId } = request.params as { soloId?: string }
 

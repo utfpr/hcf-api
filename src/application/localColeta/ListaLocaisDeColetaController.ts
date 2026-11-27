@@ -11,6 +11,9 @@ interface Dependencies {
   localColetaCollection: LocalColetaCollection
 }
 
+/**
+ * Controller responsável por listar locais de coleta com suporte a filtros geográficos e paginação.
+ */
 export class ListaLocaisDeColetaController implements RequestHandler {
   private readonly localColetaCollection: LocalColetaCollection
 
@@ -18,6 +21,13 @@ export class ListaLocaisDeColetaController implements RequestHandler {
     this.localColetaCollection = dependencies.localColetaCollection
   }
 
+  /**
+   * Trata a requisição GET /v1/locais-coleta processando filtros e ordenação por query params.
+   *
+   * @param request Requisição HTTP com filtros opcionais (cidade_id, estado_id, pais_id, descricao, limite, pagina).
+   * @param _next Próximo middleware da cadeia.
+   * @returns Resposta HTTP 200 com lista de locais de coleta e total de registros ou 400/500 em caso de erro.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const params = request.params as {
       cidade_id?: string

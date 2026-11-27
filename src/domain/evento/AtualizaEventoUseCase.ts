@@ -9,21 +9,33 @@ interface Dependencies {
   atualizaEventoValidator?: AtualizaEventoValidator
 }
 
+/**
+ * Parâmetros de entrada para atualização de evento com o identificador numérico obrigatório.
+ */
 export type Input = AtualizaEventoInput & { id: number }
 
 /**
- * O PUT do agregado evento+ficha. A regra de coerência própria do update
- * (quando `tipo` da ficha muda), agora está em AtualizaEventoValidator.
+ * Caso de uso responsável pela atualização do agregado Evento e sua respectiva Ficha de Coleta.
+ * Delega a validação de coerência entre tipo ('DIARIO' ou 'COLETA') e ficha para o AtualizaEventoValidator.
  */
 export class AtualizaEventoUseCase {
   private readonly eventoCollection: EventoCollection
   private readonly atualizaEventoValidator: AtualizaEventoValidator
 
+  /**
+   * @param dependencies Repositório de eventos e validador de atualização.
+   */
   constructor(dependencies: Dependencies) {
     this.eventoCollection = dependencies.eventoCollection
     this.atualizaEventoValidator = dependencies.atualizaEventoValidator ?? new AtualizaEventoValidator()
   }
 
+  /**
+   * Executa a atualização do evento, mesclando dados anteriores com novos atributos validados.
+   *
+   * @param input Dados a serem atualizados juntamente com o ID do evento.
+   * @returns Either com o Evento atualizado, null se não encontrado ou Error em caso de falha de validação/infraestrutura.
+   */
   async execute(input: Input): Promise<Either<Error, Attributes | null>> {
     const existente = await this.eventoCollection.findById(input.id)
     if (existente.left()) {

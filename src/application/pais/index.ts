@@ -8,6 +8,13 @@ import { Route } from '@/library/http/Router'
 
 import { ListaPaisesController } from './ListaPaisesController'
 
+/**
+ * Registra a rota da API REST para consulta de países.
+ * Configura controller e autorização CASL para leitura do recurso Pais.
+ *
+ * @param knex Instância de conexão Knex com o banco de dados.
+ * @returns Array de rotas configuradas para o recurso Pais.
+ */
 export function routes(knex: Knex): Route[] {
   const paisCollection = new PaisCollectionKnexAdapter({ knex })
 

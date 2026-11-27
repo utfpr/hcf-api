@@ -1,10 +1,16 @@
 import { Either } from '@/library/either/Either'
 
+/**
+ * Atributos que definem a entidade Vegetacao.
+ */
 export interface Attributes {
   id?: string
   nome: string
 }
 
+/**
+ * Entidade de domínio que representa uma classificação de tipo de vegetação.
+ */
 export class Vegetacao {
   readonly id?: string
   readonly nome: string
@@ -14,6 +20,12 @@ export class Vegetacao {
     this.nome = attributes.nome
   }
 
+  /**
+   * Fábrica para criar e validar uma instância de Vegetacao.
+   *
+   * @param input Dados para instanciação incluindo nome e id opcional.
+   * @returns Either com a entidade criada ou erro de validação (nome vazio ou ID inválido).
+   */
   static create(input: { nome: string; id?: string }): Either<Error, Vegetacao> {
     const nome = input.nome.trim()
     if (!nome) {
@@ -31,6 +43,12 @@ export class Vegetacao {
   }
 }
 
+/**
+ * Valida se a string representa um número inteiro positivo.
+ *
+ * @param id String a ser validada.
+ * @returns true se for um número inteiro maior que zero.
+ */
 function isPositiveId(id: string): boolean {
   return /^\d+$/.test(id) && BigInt(id) > 0n
 }

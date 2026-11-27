@@ -12,13 +12,26 @@ interface Dependencies {
   eventoCollection: EventoCollection
 }
 
+/**
+ * Controller responsável pelo endpoint de consulta detalhada de evento (GET /api/v1/eventos/:eventoId).
+ */
 export class BuscaEventoController implements RequestHandler {
   private readonly eventoCollection: EventoCollection
 
+  /**
+   * @param dependencies Repositório de consulta de eventos.
+   */
   constructor(dependencies: Dependencies) {
     this.eventoCollection = dependencies.eventoCollection
   }
 
+  /**
+   * Localiza e retorna o evento pelo ID fornecido na rota.
+   *
+   * @param request Requisição HTTP contendo ':eventoId'.
+   * @param _next Próximo manipulador na cadeia de execução.
+   * @returns Resposta HTTP 200 com os dados do evento ou 400/404/500.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const { eventoId } = request.params as { eventoId?: string }
 

@@ -13,15 +13,29 @@ interface Dependencies {
   transcricoes?: TranscricaoCollection
 }
 
+/**
+ * Controller responsável pelo endpoint de listagem de evidências de um evento (GET /api/v1/eventos/:eventoId/evidencias).
+ * Retorna as evidências anexadas, URLs de acesso e resumos do status de transcrição.
+ */
 export class ListaEvidenciasController implements RequestHandler {
   private readonly transcricoes?: TranscricaoCollection
   private readonly evidenciaCollection: EvidenciaCollection
 
+  /**
+   * @param dependencies Repositório de evidências e coleção de transcrições.
+   */
   constructor(dependencies: Dependencies) {
     this.evidenciaCollection = dependencies.evidenciaCollection
     this.transcricoes = dependencies.transcricoes
   }
 
+  /**
+   * Localiza todas as evidências associadas ao evento informado na rota.
+   *
+   * @param request Requisição HTTP contendo ':eventoId'.
+   * @param _next Próximo manipulador na cadeia de execução.
+   * @returns Resposta HTTP 200 com lista de evidências ou 400/500.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const { eventoId: rawEventoId } = request.params as { eventoId?: string }
     const eventoId = parseId(rawEventoId, 'eventoId')

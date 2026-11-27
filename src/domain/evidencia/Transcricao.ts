@@ -3,6 +3,9 @@ import { Logger } from '@/library/logger/Logger'
 
 export type TranscricaoStatus = 'processando' | 'concluida' | 'erro'
 
+/**
+ * Representação da entidade de transcrição de áudio com histórico de revisão e controle de versão.
+ */
 export interface Transcricao {
   evidencia_id: number
   status: TranscricaoStatus
@@ -19,6 +22,9 @@ export interface Transcricao {
   processamento_expira_em: Date | null
 }
 
+/**
+ * Contrato de repositório para persistência, concorrência (lease/claim) e revisão de transcrições.
+ */
 export interface TranscricaoCollection {
   find(id: number): Promise<Transcricao | null>
   summaries(ids: number[]): Promise<Map<number, Pick<Transcricao, 'status' | 'versao'>>>
@@ -28,16 +34,29 @@ export interface TranscricaoCollection {
   revise(id: number, versao: number, texto: string, usuarioId: number): Promise<boolean>
 }
 
+/**
+ * Serviço de transcrição de áudio via Speech-to-Text.
+ */
 export interface AudioTranscriber {
   readonly leaseMs: number
   transcribe(arquivo: string, mimeType: string): Promise<string>
 }
 
+/**
+ * Gerador de identificadores únicos para tentativas de processamento de áudio.
+ */
 export interface IdGenerator {
   generate(): string
 }
 
+/**
+ * Caso de uso para orquestração de transcrição assíncrona de evidências de áudio.
+ * Implementa controle de concorrência com lease para evitar reprocessamentos duplicados.
+ */
 export class TranscreveEvidencia {
+  /**
+   * @param dependencies Coleção de transcrições, transcritor de áudio, gerador de IDs e logger.
+   */
   constructor(private readonly dependencies: {
     collection: TranscricaoCollection
     transcriber: AudioTranscriber
@@ -45,6 +64,14 @@ export class TranscreveEvidencia {
     logger: Logger
   }) {}
 
+  /**
+   * Inicia ou recupera a transcrição de uma evidência de áudio.
+   *
+   * @param evidencia Dados da evidência contendo id, nome do arquivo e tipo MIME de áudio.
+   * @param usuarioId ID do usuário que solicitou a transcrição.
+   * @returns Entidade Transcricao com o texto reconhecido ou status atualizado.
+   * @throws TranscricaoError em caso de formato incompatível (415), conflito de concorrência (409) ou falha no transcritor.
+   */
   async execute(evidencia: { id: number; arquivo: string; mime_type: string }, usuarioId: number): Promise<Transcricao> {
     const {
       collection, transcriber, idGenerator, logger
@@ -56,6 +83,7 @@ export class TranscreveEvidencia {
     if (existente?.status === 'concluida') return existente
     const tentativa = idGenerator.generate()
     const startedAt = Date.now()
+    // Mecanismo de lock distribuído temporizado (lease/claim) para prevenir processamento concorrente do mesmo áudio
     const claimed = await collection.claim(evidencia.id, tentativa, usuarioId, transcriber.leaseMs)
     if (!claimed) {
       const atual = await collection.find(evidencia.id)

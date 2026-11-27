@@ -27,6 +27,9 @@ const application = createApp({
   legacyRouter: legacyRoutes
 })
 
+/**
+ * Inicializa a escuta do servidor HTTP na porta definida por variável de ambiente ou padrão 3000.
+ */
 async function startServer() {
   await application.start(Number(process.env.PORT ?? 3000))
 }
@@ -35,6 +38,9 @@ if (cluster.isPrimary) {
   logger.info(`Using "${environment}" environment`)
   logger.info(`Master ${process.pid} is running`)
 
+  /**
+   * Distribui instâncias da aplicação criando um processo filho (worker) por núcleo de CPU disponível.
+   */
   function forkCluster() {
     cluster.on('exit', (worker, code, signal) => {
       logger.warn(`Worker ${worker.process.pid} died with ${code} code and ${signal} signal.`)
@@ -46,6 +52,9 @@ if (cluster.isPrimary) {
     }
   }
 
+  /**
+   * Inicializa o servidor em modo cluster quando em produção ou em processo único nos demais ambientes.
+   */
   async function initServer() {
     if (environment === 'production') {
       forkCluster()

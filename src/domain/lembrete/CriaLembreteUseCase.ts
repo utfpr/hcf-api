@@ -9,13 +9,25 @@ interface Dependencies {
   lembreteCollection: LembreteCollection
 }
 
+/**
+ * Caso de uso para criação de lembretes botânicos com suporte a chave de idempotência offline.
+ */
 export class CriaLembreteUseCase {
   private readonly lembreteCollection: LembreteCollection
 
+  /**
+   * @param dependencies Repositório de persistência de lembretes.
+   */
   constructor(dependencies: Dependencies) {
     this.lembreteCollection = dependencies.lembreteCollection
   }
 
+  /**
+   * Valida e persiste um novo lembrete, retornando o registro preexistente caso um `client_uuid` já cadastrado seja reenviado.
+   *
+   * @param input Dados para criação do lembrete.
+   * @returns Either com o Lembrete criado ou erro de validação/infraestrutura.
+   */
   async execute(input: CreateAttributes): Promise<Either<Error, Attributes>> {
     const validated = Lembrete.create(input)
 
@@ -23,7 +35,7 @@ export class CriaLembreteUseCase {
       return Either.left(validated.value)
     }
 
-    // Reenvio do app depois de uma falha de rede: devolve o que já foi criado
+    // Idempotência offline: caso o app móvel reenvie o lembrete após oscilação de conexão, devolve o registro já existente pelo client_uuid
     if (input.client_uuid) {
       const existente = await this.lembreteCollection.findByClientUuid(input.client_uuid)
       if (existente.left()) return Either.left(existente.value)

@@ -10,7 +10,9 @@ import { HttpError } from '@/library/http/error/HttpError'
 import { InternalServerError } from '@/library/http/error/InternalServerError'
 import { type NextHandler, type RequestHandler } from '@/library/http/Server'
 
-/** Registro sobre o qual a requisição age, reduzido ao que a autorização precisa. */
+/**
+ * Registro sobre o qual a requisição age, reduzido ao que a autorização de expedicionário necessita.
+ */
 export interface AlvoExpedicionario {
   expedicaoId: number | null
   /** created_by do registro que precisa ser do usuário (quando `dono` está configurado). */
@@ -20,12 +22,22 @@ export interface AlvoExpedicionario {
 }
 
 /**
- * Devolve o alvo, `undefined` quando o registro não existe ou o id é inválido
- * (o controller responde 400/404 como sempre) ou um Error de infraestrutura.
+ * Função responsável por extrair da requisição os identificadores do registro alvo para verificação de autoria/participação.
+ * Devolve `undefined` quando o registro não existe ou o ID é inválido (delegando 400/404 para o controller) ou Error de infraestrutura.
  */
 export type ResolveAlvo = (request: HttpRequest) => Promise<AlvoExpedicionario | undefined | Error>
 
+/**
+ * Contrato de serviço para consultar a participação de um usuário em uma expedição.
+ */
 export interface VerificaParticipacao {
+  /**
+   * Verifica se o usuário informado é membro participante da expedição.
+   *
+   * @param expedicaoId Identificador numérico da expedição.
+   * @param usuarioId Identificador numérico do usuário.
+   * @returns Either com booleano indicando participação ou erro de infraestrutura.
+   */
   isParticipant(expedicaoId: number, usuarioId: number): Promise<Either<Error, boolean>>
 }
 
@@ -58,6 +70,11 @@ export class AutorizaExpedicionarioMiddleware implements RequestHandler {
   private readonly dono?: Dependencies['dono']
   private readonly semExpedicao: Dependencies['semExpedicao']
 
+  /**
+   * Inicializa o middleware com as regras de verificação de expedição e posse do registro.
+   *
+   * @param dependencies Dependências com verificador de participação, resolvedor de alvo e regras de posse.
+   */
   constructor(dependencies: Dependencies) {
     this.participacao = dependencies.participacao
     this.resolveAlvo = dependencies.resolveAlvo
@@ -65,6 +82,13 @@ export class AutorizaExpedicionarioMiddleware implements RequestHandler {
     this.semExpedicao = dependencies.semExpedicao
   }
 
+  /**
+   * Valida se o usuário com perfil Expedicionário tem permissão sobre a expedição e o registro alvo.
+   *
+   * @param request Requisição HTTP contendo usuário autenticado e dados do alvo.
+   * @param next Próximo manipulador na cadeia de execução.
+   * @returns Resposta HTTP do próximo middleware/controller ou HttpError (403 Forbidden / 500 InternalServerError).
+   */
   async handle(request: HttpRequest, next: NextHandler): Promise<HttpResponse | HttpError> {
     const { user, auth } = request
     if (!user || !auth || Number(user.tipo_usuario_id) !== EXPEDICIONARIO) {
@@ -105,6 +129,7 @@ export class AutorizaExpedicionarioMiddleware implements RequestHandler {
 
 async function recusa(request: HttpRequest, message: string): Promise<HttpError> {
   const file = (request.params as { file?: { path?: string } }).file
+  // Em uploads multipart, remove imediatamente o arquivo salvo em disco pelo Multer quando a autorização é recusada, evitando arquivos órfãos
   if (file?.path) await unlink(file.path).catch(() => {})
   return new ForbiddenError({ message })
 }

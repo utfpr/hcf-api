@@ -4,6 +4,9 @@ export const EVENTO_TIPOS = ['DIARIO', 'COLETA'] as const
 
 export type EventoTipo = typeof EVENTO_TIPOS[number]
 
+/**
+ * Atributos que compõem a ficha botânica de coleta associada a um evento.
+ */
 export interface ColetaAttributes {
   familia: string | null
   nome_popular: string | null
@@ -31,7 +34,7 @@ export interface ColetaAttributes {
 }
 
 /**
- * Lista de campos da ficha de coleta.
+ * Lista dos nomes de campos que compõem a ficha de coleta.
  */
 export const COLETA_FIELDS = [
   'familia',
@@ -57,6 +60,9 @@ export const COLETA_FIELDS = [
   'luminosidade'
 ] as const satisfies ReadonlyArray<keyof ColetaAttributes>
 
+/**
+ * Atributos completos e persistidos da entidade Evento.
+ */
 export interface Attributes {
   id: number
   expedicao_id: number
@@ -79,14 +85,19 @@ export interface Attributes {
 
 type PersistedField = 'id' | 'created_at' | 'updated_at' | 'updated_by'
 
+/**
+ * Atributos necessários para criação de um novo evento (sem identificador e datas de auditoria).
+ */
 export type CreateAttributes = Omit<Attributes, PersistedField>
 
 /**
- * Shape aceito pela entidade: uma linha nova ainda não tem id nem datas de
- * auditoria; o adapter devolve o registro completo depois do insert.
+ * Shape aceito pela entidade Evento na criação/reconstituição.
  */
 export type EntityAttributes = CreateAttributes & Partial<Pick<Attributes, PersistedField>>
 
+/**
+ * Entidade de domínio que representa um evento de campo em uma expedição (diário de campo ou coleta botânica).
+ */
 export class Evento {
   readonly id?: number
   readonly expedicao_id: number
@@ -118,6 +129,13 @@ export class Evento {
     this.updated_by = attributes.updated_by
   }
 
+  /**
+   * Fábrica estática para criação e validação das regras invariantes da entidade Evento.
+   * Valida coordenadas geográficas, formato de datas e coerência mútua entre tipo e ficha de coleta.
+   *
+   * @param attributes Atributos do evento a serem validados.
+   * @returns Either com a entidade Evento validada ou Error de validação de regras de domínio.
+   */
   static create(attributes: EntityAttributes): Either<Error, Evento> {
     if (!Number.isInteger(attributes.expedicao_id) || attributes.expedicao_id <= 0) {
       return Either.left(new Error('Expedição do evento é obrigatória'))

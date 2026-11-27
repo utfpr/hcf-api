@@ -10,6 +10,9 @@ interface Dependencies {
   localColetaCollection: LocalColetaCollection
 }
 
+/**
+ * Caso de uso responsável pela atualização dos atributos de um local de coleta.
+ */
 export class RenomeiaLocalColetaUseCase {
   private readonly localColetaCollection: LocalColetaCollection
 
@@ -17,6 +20,13 @@ export class RenomeiaLocalColetaUseCase {
     this.localColetaCollection = dependencies.localColetaCollection
   }
 
+  /**
+   * Atualiza a descrição e referências do local de coleta identificado por ID.
+   *
+   * @param id Identificador do local de coleta.
+   * @param attributes Novos atributos do local de coleta.
+   * @returns Either com o LocalColeta atualizado ou erro de validação/não encontrado/persistência.
+   */
   async execute(id: string, attributes: LocalColetaAttributes): Promise<Either<Error, LocalColeta>> {
     const localColeta = LocalColeta.create(attributes)
     if (localColeta.left()) return Either.left(localColeta.value)

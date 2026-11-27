@@ -29,13 +29,27 @@ interface Body {
   coleta?: unknown
 }
 
+/**
+ * Controller responsável pelo endpoint de atualização de evento (PUT /api/v1/eventos/:eventoId).
+ * Realiza o parsing de parâmetros, sanitização de campos da ficha de coleta e delega ao AtualizaEventoUseCase.
+ */
 export class AtualizaEventoController implements RequestHandler {
   private readonly atualizaEventoUseCase: AtualizaEventoUseCase
 
+  /**
+   * @param dependencies Instância do caso de uso de atualização de evento.
+   */
   constructor(dependencies: Dependencies) {
     this.atualizaEventoUseCase = dependencies.atualizaEventoUseCase
   }
 
+  /**
+   * Processa a requisição de atualização parcial ou total do evento e sua ficha de coleta.
+   *
+   * @param request Requisição HTTP com ':eventoId' e campos editáveis no corpo.
+   * @param _next Próximo manipulador na cadeia de execução.
+   * @returns Resposta HTTP 200 com evento atualizado, 400 por payload inválido ou 404/500.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const { eventoId: rawEventoId } = request.params as { eventoId?: string }
     const eventoId = parseId(rawEventoId, 'eventoId')

@@ -8,6 +8,9 @@ interface Dependencies {
   relevoCollection: RelevoCollection
 }
 
+/**
+ * Caso de uso responsável pela alteração de nome de um relevo.
+ */
 export class RenomeiaRelevoUseCase {
   private readonly relevoCollection: RelevoCollection
 
@@ -15,6 +18,12 @@ export class RenomeiaRelevoUseCase {
     this.relevoCollection = dependencies.relevoCollection
   }
 
+  /**
+   * Atualiza o nome do relevo identificado por ID.
+   *
+   * @param params ID do relevo e novo nome.
+   * @returns Either com a entidade Relevo atualizada ou erro de validação/não encontrado/persistência.
+   */
   async execute({ id, nome }: { id: string; nome: string }): Promise<Either<Error, Relevo>> {
     const relevo = Relevo.create({ nome })
     if (relevo.left()) {

@@ -1,5 +1,8 @@
 import { BaseError } from '@/library/BaseError'
 
+/**
+ * Erro lançado ao tentar remover uma fase sucessional que está em uso no sistema.
+ */
 export class FaseSucessionalEmUsoError extends BaseError {
   constructor(params?: { cause?: unknown }) {
     super({

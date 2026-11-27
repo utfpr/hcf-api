@@ -17,13 +17,26 @@ interface CustomHttpRequest extends HttpRequest {
   params: Record<string, string | undefined>
 }
 
+/**
+ * Controller responsável pelo endpoint de remoção de expedição (DELETE /api/v1/expedicoes/:expedicaoId).
+ */
 export class DeletaExpedicaoController implements RequestHandler {
   private readonly expedicaoCollection: ExpedicaoCollection
 
+  /**
+   * @param dependencies Repositório de expedições.
+   */
   constructor(dependencies: Dependencies) {
     this.expedicaoCollection = dependencies.expedicaoCollection
   }
 
+  /**
+   * Executa a remoção da expedição informada pelo identificador na rota.
+   *
+   * @param request Requisição HTTP com ':expedicaoId'.
+   * @param _next Próximo manipulador na cadeia de execução.
+   * @returns Resposta HTTP 204 NoContent, 404 se não encontrada ou 400/500.
+   */
   async handle(request: CustomHttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     try {
       const { expedicaoId } = request.params

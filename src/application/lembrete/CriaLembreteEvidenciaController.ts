@@ -34,13 +34,27 @@ interface UploadedFile {
   path: string
 }
 
+/**
+ * Controller responsável pelo endpoint de upload e associação de fotos a lembretes (POST /api/v1/lembretes/:lembreteId/evidencias).
+ * Trata descarte de arquivos órfãos em disco em caso de erros de validação ou retentativas com `client_uuid`.
+ */
 export class CriaLembreteEvidenciaController implements RequestHandler {
   private readonly criaLembreteEvidenciaUseCase: CriaLembreteEvidenciaUseCase
 
+  /**
+   * @param dependencies Instância do caso de uso de criação de evidência de lembrete.
+   */
   constructor(dependencies: Dependencies) {
     this.criaLembreteEvidenciaUseCase = dependencies.criaLembreteEvidenciaUseCase
   }
 
+  /**
+   * Processa o upload da imagem e associa à evidência do lembrete.
+   *
+   * @param request Requisição HTTP contendo ':lembreteId', arquivo no Multer e metadados.
+   * @param _next Próximo manipulador na cadeia de execução.
+   * @returns Resposta HTTP 201 Created com a evidência e URL pública ou 400/404/500.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const { lembreteId: rawLembreteId, file: rawFile } = request.params as { lembreteId?: string; file?: unknown }
     const file = rawFile as UploadedFile | undefined
@@ -58,6 +72,7 @@ export class CriaLembreteEvidenciaController implements RequestHandler {
     const dataCaptura = parseDate(body.data_captura, 'data_captura')
     if (dataCaptura instanceof Error) return await cleanupAndReturn(file.path, dataCaptura)
 
+    // Trata idempotência com client_uuid para evitar arquivos duplicados em reconexões do app móvel
     const clientUuid = parseClientUuid(body.client_uuid)
     if (clientUuid instanceof Error) return await cleanupAndReturn(file.path, clientUuid)
 
@@ -73,6 +88,7 @@ export class CriaLembreteEvidenciaController implements RequestHandler {
     })
 
     if (result.left()) {
+      // Remove o arquivo físico salvo pelo Multer caso a validação da entidade ou gravação no banco falhe
       await cleanupFileWithLog(file.path, 'persistência de evidência de lembrete')
 
       const error = result.value
@@ -81,7 +97,7 @@ export class CriaLembreteEvidenciaController implements RequestHandler {
       return new InternalServerError({ message: error.message })
     }
 
-    // Reenvio (mesmo client_uuid): a evidência já tinha arquivo; o que acabou de chegar sobra
+    // Reenvio offline idempotente (mesmo client_uuid): se a evidência já possuía arquivo gravado, descarta o arquivo excedente recém-enviado
     if (result.value.arquivo !== file.filename) {
       await unlink(file.path).catch(() => {})
     }

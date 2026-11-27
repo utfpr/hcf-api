@@ -8,6 +8,13 @@ import { Route } from '@/library/http/Router'
 
 import { ListaEstadosController } from './ListaEstadosController'
 
+/**
+ * Registra a rota da API REST para consulta de estados de um país.
+ * Configura controller e autorização CASL para leitura do recurso Estado.
+ *
+ * @param knex Instância de conexão Knex com o banco de dados.
+ * @returns Array de rotas configuradas para o recurso Estado.
+ */
 export function routes(knex: Knex): Route[] {
   const estadoCollection = new EstadoCollectionKnexAdapter({ knex })
 

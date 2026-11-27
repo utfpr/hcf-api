@@ -14,13 +14,27 @@ interface Dependencies {
   cadastraExpedicaoUseCase: CadastraExpedicaoUseCase
 }
 
+/**
+ * Controller responsável pelo cadastro de novas expedições botânicas (POST /api/v1/expedicoes).
+ * Valida datas de início e fim, cidade de destino, lista de participantes e estrutura de rotas e locais de coleta.
+ */
 export class CadastraExpedicaoController implements RequestHandler {
   private readonly cadastraExpedicaoUseCase: CadastraExpedicaoUseCase
 
+  /**
+   * @param dependencies Instância do caso de uso de cadastro de expedição.
+   */
   constructor(dependencies: Dependencies) {
     this.cadastraExpedicaoUseCase = dependencies.cadastraExpedicaoUseCase
   }
 
+  /**
+   * Processa a criação da expedição validando payloads aninhados e regras temporais.
+   *
+   * @param request Requisição HTTP contendo os dados da expedição no corpo.
+   * @param _next Próximo manipulador na cadeia de execução.
+   * @returns Resposta HTTP 201 Created com a expedição cadastrada, 400 por validação ou 500 em falhas de banco.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     try {
       const {

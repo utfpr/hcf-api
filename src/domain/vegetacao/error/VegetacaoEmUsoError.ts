@@ -1,5 +1,8 @@
 import { BaseError } from '@/library/BaseError'
 
+/**
+ * Erro lançado quando a remoção da vegetação é impedida por estar em uso no sistema.
+ */
 export class VegetacaoEmUsoError extends BaseError {
   constructor(params?: { cause?: unknown }) {
     super({

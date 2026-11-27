@@ -1,5 +1,8 @@
 import { BaseError } from '@/library/BaseError'
 
+/**
+ * Erro lançado ao tentar cadastrar ou atualizar um local de coleta com descrição já existente na mesma cidade.
+ */
 export class LocalColetaDescricaoDuplicadaError extends BaseError {
   constructor(params?: { cause?: unknown }) {
     super({

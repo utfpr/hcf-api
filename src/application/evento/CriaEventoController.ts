@@ -32,13 +32,27 @@ interface Body {
   numero_coleta?: unknown
 }
 
+/**
+ * Controller responsável pela criação de eventos vinculados a uma expedição (POST /api/v1/expedicoes/:expedicaoId/eventos).
+ * Realiza validação de tipos, datas, coordenadas, ficha de coleta, chave de idempotência `client_uuid` e `numero_coleta`.
+ */
 export class CriaEventoController implements RequestHandler {
   private readonly criaEventoUseCase: CriaEventoUseCase
 
+  /**
+   * @param dependencies Instância do caso de uso de criação de evento.
+   */
   constructor(dependencies: Dependencies) {
     this.criaEventoUseCase = dependencies.criaEventoUseCase
   }
 
+  /**
+   * Processa a criação de um novo evento de campo.
+   *
+   * @param request Requisição HTTP contendo ':expedicaoId' e corpo com dados do evento.
+   * @param _next Próximo manipulador na cadeia de execução.
+   * @returns Resposta HTTP 201 Created com o evento criado, 400 em caso de payload inválido ou 404/422/500.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const { expedicaoId: rawExpedicaoId } = request.params as { expedicaoId?: string }
     const expedicaoId = parseId(rawExpedicaoId, 'expedicaoId')
@@ -73,6 +87,7 @@ export class CriaEventoController implements RequestHandler {
       return new BadRequestError({ message: 'numero_coleta só vale para eventos do tipo COLETA' })
     }
 
+    // Processa chave de idempotência enviada pelo app offline para garantir que retries não criem eventos duplicados
     const clientUuid = parseClientUuid(body.client_uuid)
     if (clientUuid instanceof Error) return new BadRequestError({ message: clientUuid.message })
 

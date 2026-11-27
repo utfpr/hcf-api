@@ -27,4 +27,12 @@ const createAuthorize = singleton(() => {
   }
 })
 
+/**
+ * Função de fábrica para criar instâncias de AuthorizeMiddleware associadas à ação e ao recurso.
+ * Pré-configura as dependências via adaptadores Knex, gerador de AccessToken e fallback para autenticação legada.
+ *
+ * @param action Ação a ser autorizada (ex.: 'create', 'read', 'update', 'delete').
+ * @param resource Recurso visado na verificação (ex.: 'Expedicao', 'Lembrete').
+ * @returns Instância configurada de AuthorizeMiddleware pronta para uso em rotas.
+ */
 export const authorize = createAuthorize()

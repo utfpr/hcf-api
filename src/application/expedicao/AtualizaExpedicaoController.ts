@@ -13,13 +13,26 @@ interface Dependencies {
   atualizaExpedicaoUseCase: AtualizaExpedicaoUseCase
 }
 
+/**
+ * Controller responsável pela atualização cadastral de expedições (PUT /api/v1/expedicoes/:expedicaoId).
+ */
 export class AtualizaExpedicaoController implements RequestHandler {
   private readonly atualizaExpedicaoUseCase: AtualizaExpedicaoUseCase
 
+  /**
+   * @param dependencies Instância do caso de uso de atualização de expedição.
+   */
   constructor(dependencies: Dependencies) {
     this.atualizaExpedicaoUseCase = dependencies.atualizaExpedicaoUseCase
   }
 
+  /**
+   * Processa a atualização de dados da expedição (descrição, datas e cidade).
+   *
+   * @param request Requisição HTTP com ':expedicaoId' e corpo validado.
+   * @param _next Próximo manipulador na cadeia de execução.
+   * @returns Resposta HTTP 200 com a expedição atualizada, 400 em validações ou 404/500.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     try {
       const { expedicaoId } = request.params

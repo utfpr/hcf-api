@@ -10,6 +10,9 @@ import { type SessaoAutenticada } from './sessaoAutenticada'
 import { type Attributes, UsuarioSessao } from './UsuarioSessao'
 import { type UsuarioSessaoCollection } from './UsuarioSessaoCollection'
 
+/**
+ * Dependências necessárias para instanciação de CriaUsuarioSessaoUseCase.
+ */
 interface Dependencies {
   usuarioCollection: UsuarioCollection
   usuarioSessaoCollection: UsuarioSessaoCollection
@@ -19,6 +22,9 @@ interface Dependencies {
   now?: () => Date
 }
 
+/**
+ * Caso de uso responsável por autenticar o usuário e emitir um novo par de tokens (access token e refresh token).
+ */
 export class CriaUsuarioSessaoUseCase {
   private readonly usuarioCollection: UsuarioCollection
   private readonly usuarioSessaoCollection: UsuarioSessaoCollection
@@ -27,6 +33,9 @@ export class CriaUsuarioSessaoUseCase {
   private readonly comparaSenha: Dependencies['comparaSenha']
   private readonly now: () => Date
 
+  /**
+   * @param dependencies Coleções de usuário e sessão, geradores de token, comparador de hash de senha e relógio.
+   */
   constructor(dependencies: Dependencies) {
     this.usuarioCollection = dependencies.usuarioCollection
     this.usuarioSessaoCollection = dependencies.usuarioSessaoCollection
@@ -36,6 +45,12 @@ export class CriaUsuarioSessaoUseCase {
     this.now = dependencies.now ?? (() => new Date())
   }
 
+  /**
+   * Executa a autenticação por e-mail e senha, registrando a sessão ativa no banco.
+   *
+   * @param params E-mail e senha recebidos no corpo da requisição.
+   * @returns Either com a SessaoAutenticada criada ou InvalidCredentialsError se as credenciais forem inválidas.
+   */
   async execute(params: { email: string; senha: string }): Promise<Either<Error, SessaoAutenticada>> {
     const found = await this.usuarioCollection.findByEmail(params.email)
     if (found.left()) {
@@ -51,6 +66,7 @@ export class CriaUsuarioSessaoUseCase {
     }
 
     const createdAt = this.now()
+    // Persiste apenas o hash SHA-256 do refresh token no banco; o segredo puro é devolvido para uso em cookie HTTP-only ou armazenamento seguro no mobile
     const attributes: Attributes = {
       id: randomUUID(),
       usuarioId: found.value.id,

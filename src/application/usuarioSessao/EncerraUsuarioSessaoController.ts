@@ -18,25 +18,43 @@ import {
   resolveRefreshToken
 } from './sessaoHttp'
 
+/**
+ * Dependências requeridas pelo EncerraUsuarioSessaoController.
+ */
 interface Dependencies {
   accessToken: AccessToken
   encerraUsuarioSessaoUseCase: EncerraUsuarioSessaoUseCase
 }
 
+/**
+ * Controller responsável pelo encerramento de sessão / logout (POST /api/auth/logout).
+ * Revoga a sessão no banco e limpa o cookie HTTP-only do refresh token no navegador.
+ */
 export class EncerraUsuarioSessaoController implements RequestHandler {
   private readonly accessToken: AccessToken
   private readonly encerraUsuarioSessaoUseCase: EncerraUsuarioSessaoUseCase
 
+  /**
+   * @param dependencies Validador de access token e caso de uso de encerramento de sessão.
+   */
   constructor(dependencies: Dependencies) {
     this.accessToken = dependencies.accessToken
     this.encerraUsuarioSessaoUseCase = dependencies.encerraUsuarioSessaoUseCase
   }
 
+  /**
+   * Processa a revogação da sessão atual ou de todas as sessões do usuário.
+   *
+   * @param request Requisição HTTP contendo tokens e opções de logout.
+   * @param _next Próximo manipulador na cadeia de execução.
+   * @returns Resposta HTTP 204 NoContent com cookie expirado (Max-Age=0) ou erro 401/500.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const refresh = resolveRefreshToken(request)
     const access = readBearerAccess(request)
     const verifiedAccess = access ? this.accessToken.verify(access) : undefined
 
+    // Proteção contra CSRF: quando a requisição vem de navegador utilizando cookie de refresh sem cabeçalho Authorization, exige o cabeçalho 'x-requested-with'
     if (
       refresh?.cookieOnly
       && looksLikeBrowserRequest(request)
@@ -66,6 +84,7 @@ export class EncerraUsuarioSessaoController implements RequestHandler {
       return response
     }
 
+    // Invalida o cookie HTTP-only no cliente definindo Max-Age=0
     return {
       ...response,
       headers: {

@@ -15,6 +15,9 @@ interface Dependencies {
   renomeiaVegetacaoUseCase: RenomeiaVegetacaoUseCase
 }
 
+/**
+ * Controller responsável pela alteração de nome de um tipo de vegetação.
+ */
 export class RenomeiaVegetacaoController implements RequestHandler {
   private readonly renomeiaVegetacaoUseCase: RenomeiaVegetacaoUseCase
 
@@ -22,6 +25,13 @@ export class RenomeiaVegetacaoController implements RequestHandler {
     this.renomeiaVegetacaoUseCase = dependencies.renomeiaVegetacaoUseCase
   }
 
+  /**
+   * Trata a requisição PUT /v1/vegetacoes/:vegetacaoId atualizando o nome da vegetação.
+   *
+   * @param request Requisição HTTP com parâmetro vegetacaoId e novo nome no corpo.
+   * @param _next Próximo middleware da cadeia.
+   * @returns Resposta HTTP 200 com a vegetação atualizada, 400 se parâmetros inválidos, 404 se não encontrada, 409 se duplicada ou 500.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const { vegetacaoId } = request.params as { vegetacaoId?: string }
     const { nome } = request.body as { nome?: string }
@@ -59,6 +69,12 @@ export class RenomeiaVegetacaoController implements RequestHandler {
   }
 }
 
+/**
+ * Formata a entidade Vegetacao para o payload de resposta HTTP.
+ *
+ * @param vegetacao Instância da entidade Vegetacao.
+ * @returns Objeto com id e nome ou undefined se id não existir.
+ */
 function vegetacaoBody(vegetacao: Vegetacao): { id: string; nome: string } | undefined {
   if (vegetacao.id === undefined) {
     return undefined

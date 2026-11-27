@@ -14,13 +14,26 @@ interface Dependencies {
   removeLembreteUseCase: RemoveLembreteUseCase
 }
 
+/**
+ * Controller responsável pelo endpoint de exclusão de lembretes (DELETE /api/v1/lembretes/:lembreteId).
+ */
 export class RemoveLembreteController implements RequestHandler {
   private readonly removeLembreteUseCase: RemoveLembreteUseCase
 
+  /**
+   * @param dependencies Instância do caso de uso de remoção de lembrete.
+   */
   constructor(dependencies: Dependencies) {
     this.removeLembreteUseCase = dependencies.removeLembreteUseCase
   }
 
+  /**
+   * Processa a remoção do lembrete e suas evidências associadas.
+   *
+   * @param request Requisição HTTP contendo ':lembreteId'.
+   * @param _next Próximo manipulador na cadeia de execução.
+   * @returns Resposta HTTP 204 NoContent, 404 se não encontrado ou 400/500.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const { lembreteId: rawLembreteId } = request.params as { lembreteId?: string }
     const lembreteId = parseId(rawLembreteId, 'lembreteId')

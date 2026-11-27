@@ -21,24 +21,29 @@ interface Dependencies {
 const COLUNAS_ORDENAVEIS: ReadonlyArray<LembreteOrder['column']> = ['id', 'data_coleta']
 const DIRECOES: ReadonlyArray<LembreteOrder['direction']> = ['asc', 'desc']
 
+/**
+ * Controller responsável pelo endpoint de listagem paginada e busca de lembretes (GET /api/v1/lembretes).
+ * Anexa automaticamente as fotos de cada lembrete para consumo otimizado pelo app móvel.
+ */
 export class ListaLembretesController implements RequestHandler {
   private readonly lembreteCollection: LembreteCollection
   private readonly lembreteEvidenciaCollection: LembreteEvidenciaCollection
 
+  /**
+   * @param dependencies Repositórios de lembrete e evidências.
+   */
   constructor(dependencies: Dependencies) {
     this.lembreteCollection = dependencies.lembreteCollection
     this.lembreteEvidenciaCollection = dependencies.lembreteEvidenciaCollection
   }
 
-  // Próximos lembretes (a partir de hoje, o mais próximo primeiro):
-  // GET /api/v1/lembretes?data_coleta_de=2026-10-05
-
-  // Lembretes de um intervalo:
-  // GET /api/v1/lembretes?data_coleta_de=2026-11-01&data_coleta_ate=2026-11-30
-
-  // Lembretes criados numa expedição:
-  // GET /api/v1/lembretes?expedicao_id=3
-
+  /**
+   * Executa a busca paginada com filtros por expedição, período e ordenação.
+   *
+   * @param request Requisição HTTP com query params de filtragem e paginação.
+   * @param _next Próximo manipulador na cadeia de execução.
+   * @returns Resposta HTTP 200 com itens e metadados de paginação ou 400/500.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const {
       expedicao_id,

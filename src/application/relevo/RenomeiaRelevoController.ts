@@ -16,6 +16,9 @@ interface Dependencies {
   renomeiaRelevoUseCase: RenomeiaRelevoUseCase
 }
 
+/**
+ * Controller responsável pela alteração de nome de um tipo de relevo.
+ */
 export class RenomeiaRelevoController implements RequestHandler {
   private readonly renomeiaRelevoUseCase: RenomeiaRelevoUseCase
 
@@ -23,6 +26,13 @@ export class RenomeiaRelevoController implements RequestHandler {
     this.renomeiaRelevoUseCase = dependencies.renomeiaRelevoUseCase
   }
 
+  /**
+   * Trata a requisição PUT /v1/relevos/:relevoId atualizando o nome do relevo.
+   *
+   * @param request Requisição HTTP com parâmetro de rota relevoId e novo nome no corpo.
+   * @param _next Próximo middleware da cadeia.
+   * @returns Resposta HTTP 200 com relevo atualizado, 400 se parâmetros inválidos, 404 se não encontrado, 409 se duplicado ou 500.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const { relevoId } = request.params as { relevoId?: string }
     const { nome } = request.body as { nome?: string }
@@ -56,6 +66,12 @@ export class RenomeiaRelevoController implements RequestHandler {
   }
 }
 
+/**
+ * Formata os atributos da entidade Relevo para o payload de resposta HTTP.
+ *
+ * @param relevo Instância da entidade Relevo.
+ * @returns Objeto com id e nome ou undefined se id for indefinido.
+ */
 function relevoBody(relevo: Relevo): { id: string; nome: string } | undefined {
   if (relevo.id === undefined) {
     return undefined

@@ -10,6 +10,9 @@ interface Dependencies {
   listaPaisesUseCase: ListaPaisesUseCase
 }
 
+/**
+ * Controller responsável pela listagem de países com filtro opcional por nome.
+ */
 export class ListaPaisesController implements RequestHandler {
   private readonly listaPaisesUseCase: ListaPaisesUseCase
 
@@ -17,6 +20,13 @@ export class ListaPaisesController implements RequestHandler {
     this.listaPaisesUseCase = dependencies.listaPaisesUseCase
   }
 
+  /**
+   * Trata a requisição GET /v1/paises.
+   *
+   * @param request Requisição HTTP com parâmetro de filtro por nome.
+   * @param _next Próximo middleware da cadeia.
+   * @returns Resposta HTTP 200 com lista de países ou 500 em erro interno.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const result = await this.listaPaisesUseCase.execute({
       nome: request.params.nome as string | undefined

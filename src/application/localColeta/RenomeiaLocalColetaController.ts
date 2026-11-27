@@ -17,6 +17,9 @@ interface Dependencies {
   renomeiaLocalColetaUseCase: RenomeiaLocalColetaUseCase
 }
 
+/**
+ * Controller responsável pela atualização de um local de coleta.
+ */
 export class RenomeiaLocalColetaController implements RequestHandler {
   private readonly renomeiaLocalColetaUseCase: RenomeiaLocalColetaUseCase
 
@@ -24,6 +27,13 @@ export class RenomeiaLocalColetaController implements RequestHandler {
     this.renomeiaLocalColetaUseCase = dependencies.renomeiaLocalColetaUseCase
   }
 
+  /**
+   * Trata a requisição PUT /v1/locais-coleta/:localColetaId.
+   *
+   * @param request Requisição HTTP com parâmetro localColetaId e corpo com novos atributos.
+   * @param _next Próximo middleware da cadeia.
+   * @returns Resposta HTTP 200 com o local atualizado, 400 se dados inválidos, 404 se não encontrado, 409 se duplicado ou 500.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const { localColetaId } = request.params as { localColetaId?: string }
     if (localColetaId === undefined || localColetaId === null || localColetaId === '' || !/^\d+$/.test(localColetaId)) {

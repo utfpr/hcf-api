@@ -16,15 +16,26 @@ interface CustomHttpRequest extends HttpRequest {
   params: Record<string, string | undefined>
 }
 
+/**
+ * Controller responsável pelo endpoint de busca detalhada de expedição por ID (GET /api/v1/expedicoes/:expedicaoId).
+ */
 export class BuscaExpedicaoController implements RequestHandler {
   private readonly expedicaoCollection: ExpedicaoCollection
 
+  /**
+   * @param dependencies Repositório de expedições.
+   */
   constructor(dependencies: Dependencies) {
     this.expedicaoCollection = dependencies.expedicaoCollection
   }
 
-  // Busca expedição por ID
-  // GET /v1/expedicoes/:expedicaoId
+  /**
+   * Localiza e devolve a expedição pelo seu identificador na rota.
+   *
+   * @param request Requisição HTTP contendo ':expedicaoId'.
+   * @param _next Próximo manipulador na cadeia de execução.
+   * @returns Resposta HTTP 200 com a expedição, 400 se ID inválido ou 404/500.
+   */
   async handle(request: CustomHttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     try {
       const { expedicaoId } = request.params

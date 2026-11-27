@@ -27,6 +27,13 @@ import { RemoveLembreteController } from './RemoveLembreteController'
 import { RemoveLembreteEvidenciaController } from './RemoveLembreteEvidenciaController'
 import { validarLembreteExisteMiddleware } from './ValidarLembreteExisteMiddleware'
 
+/**
+ * Registra e configura as rotas para gerenciamento de lembretes e suas evidências fotográficas (/api/v1/lembretes/*).
+ * Aplica controle de autorização baseado em perfil e regras de posse/participação para perfil Expedicionário.
+ *
+ * @param knex Instância de conexão Knex.
+ * @returns Lista de definições de rotas configuradas.
+ */
 export function routes(knex: Knex): Route[] {
   const lembreteCollection = new LembreteCollectionKnexAdapter({ knex })
   const lembreteEvidenciaCollection = new LembreteEvidenciaCollectionKnexAdapter({ knex })

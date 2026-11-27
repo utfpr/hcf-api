@@ -2,6 +2,14 @@ import express from 'express'
 
 import { LembreteCollection } from '@/domain/lembrete/LembreteCollection'
 
+/**
+ * Middleware pré-upload que valida a existência prévia do lembrete no banco de dados.
+ * Posicionado antes do Multer para evitar que arquivos de evidência sejam gravados em disco
+ * caso o lembrete de destino não exista.
+ *
+ * @param lembreteCollection Repositório para consulta do lembrete.
+ * @returns Middleware Express que prossegue caso o lembrete exista ou responde 400/404/500.
+ */
 export function validarLembreteExisteMiddleware(lembreteCollection: LembreteCollection): express.RequestHandler {
   return (request, response, next) => {
     const lembreteId = Number(request.params.lembreteId)

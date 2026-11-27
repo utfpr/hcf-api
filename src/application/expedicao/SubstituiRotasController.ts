@@ -14,13 +14,27 @@ interface Dependencies {
   expedicaoCollection: ExpedicaoCollection
 }
 
+/**
+ * Controller responsável pelo endpoint de substituição atômica de rotas da expedição (PUT /api/v1/expedicoes/:expedicaoId/rotas).
+ * Substitui o conjunto de rotas e locais de coleta associados.
+ */
 export class SubstituiRotasController implements RequestHandler {
   private readonly expedicaoCollection: ExpedicaoCollection
 
+  /**
+   * @param dependencies Repositório de expedições.
+   */
   constructor(dependencies: Dependencies) {
     this.expedicaoCollection = dependencies.expedicaoCollection
   }
 
+  /**
+   * Processa a substituição das rotas de uma expedição existente.
+   *
+   * @param request Requisição HTTP com ':expedicaoId' e array de rotas validadas.
+   * @param _next Próximo manipulador na cadeia de execução.
+   * @returns Resposta HTTP 204 NoContent, 400 para rotas inválidas ou 404/500.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     try {
       const { expedicaoId } = request.params

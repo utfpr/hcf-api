@@ -1,6 +1,9 @@
 import { LEMBRETE_MIME_TYPES_ACEITOS } from '@/config/evidencia'
 import { Either } from '@/library/either/Either'
 
+/**
+ * Atributos completos e persistidos da evidência multimídia de um lembrete.
+ */
 export interface Attributes {
   id: number
   lembrete_id: number
@@ -17,10 +20,14 @@ export interface Attributes {
   updated_by: number | null
 }
 
+/**
+ * Atributos requeridos para criação de uma evidência de lembrete.
+ */
 export type CreateAttributes = Omit<Attributes, 'id' | 'created_at' | 'updated_at' | 'updated_by'>
 
 /**
- * Multimídia do lembrete; diferente da evidência do evento, aceita apenas fotos.
+ * Entidade de domínio que representa uma evidência fotográfica anexada a um lembrete.
+ * Restringe os tipos MIME aceitos exclusivamente a fotografias (jpeg, png ou webp).
  */
 export class LembreteEvidencia {
   readonly id: number
@@ -33,7 +40,7 @@ export class LembreteEvidencia {
   readonly created_at: Date
   readonly updated_at: Date
   readonly created_by: number | null
-  readonly updated_by: number | null
+  readonly updated_by?: number | null
 
   private constructor(attributes: Attributes) {
     this.id = attributes.id
@@ -49,6 +56,13 @@ export class LembreteEvidencia {
     this.updated_by = attributes.updated_by
   }
 
+  /**
+   * Fábrica estática para criação e validação invariante de LembreteEvidencia.
+   * Valida obrigatoriedade de identificadores, nome, arquivo, tamanho, data de captura e restrição MIME fotográfica.
+   *
+   * @param attributes Atributos da evidência a serem validados.
+   * @returns Either com a entidade LembreteEvidencia ou Error de validação.
+   */
   static create(attributes: Attributes): Either<Error, LembreteEvidencia> {
     if (!Number.isInteger(attributes.lembrete_id) || attributes.lembrete_id <= 0) {
       return Either.left(new Error('Lembrete da evidência é obrigatório'))

@@ -14,6 +14,9 @@ interface Dependencies {
   vegetacaoCollection: VegetacaoCollection
 }
 
+/**
+ * Controller responsável pela exclusão de um tipo de vegetação.
+ */
 export class RemoveVegetacaoController implements RequestHandler {
   private readonly vegetacaoCollection: VegetacaoCollection
 
@@ -21,6 +24,13 @@ export class RemoveVegetacaoController implements RequestHandler {
     this.vegetacaoCollection = dependencies.vegetacaoCollection
   }
 
+  /**
+   * Trata a requisição DELETE /v1/vegetacoes/:vegetacaoId.
+   *
+   * @param request Requisição HTTP com parâmetro de rota vegetacaoId.
+   * @param _next Próximo middleware da cadeia.
+   * @returns Resposta HTTP 204 se removido, 400 se ID inválido, 404 se inexistente, 409 se em uso ou 500.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const { vegetacaoId } = request.params as { vegetacaoId?: string }
 

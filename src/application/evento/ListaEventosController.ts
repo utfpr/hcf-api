@@ -12,13 +12,26 @@ interface Dependencies {
   eventoCollection: EventoCollection
 }
 
+/**
+ * Controller responsável pelo endpoint de listagem paginada de eventos de uma expedição (GET /api/v1/expedicoes/:expedicaoId/eventos).
+ */
 export class ListaEventosController implements RequestHandler {
   private readonly eventoCollection: EventoCollection
 
+  /**
+   * @param dependencies Repositório de eventos.
+   */
   constructor(dependencies: Dependencies) {
     this.eventoCollection = dependencies.eventoCollection
   }
 
+  /**
+   * Consulta os eventos da expedição aplicando filtros opcionais de tipo, período de captura e paginação.
+   *
+   * @param request Requisição HTTP com parâmetros de rota e query strings.
+   * @param _next Próximo manipulador na cadeia de execução.
+   * @returns Resposta HTTP 200 com lista paginada de eventos ou 400/500.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const {
       expedicaoId,

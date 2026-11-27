@@ -12,20 +12,32 @@ interface Dependencies {
   lembreteEvidenciaCollection: LembreteEvidenciaCollection
 }
 
+/**
+ * Caso de uso para remoção de lembrete e desalocação de todos os arquivos de evidências vinculados.
+ */
 export class RemoveLembreteUseCase {
   private readonly lembreteCollection: LembreteCollection
   private readonly lembreteEvidenciaCollection: LembreteEvidenciaCollection
 
+  /**
+   * @param dependencies Repositórios de lembretes e evidências de lembrete.
+   */
   constructor(dependencies: Dependencies) {
     this.lembreteCollection = dependencies.lembreteCollection
     this.lembreteEvidenciaCollection = dependencies.lembreteEvidenciaCollection
   }
 
+  /**
+   * Remove o lembrete do banco e expurga os arquivos físicos de suas evidências do disco.
+   *
+   * @param params Objeto contendo o ID numérico do lembrete.
+   * @returns Either com booleano indicando se o lembrete foi removido ou erro de infraestrutura.
+   */
   async execute({ id }: { id: number }): Promise<Either<Error, boolean>> {
     const evidencias = await this.lembreteEvidenciaCollection.findAll({ lembrete_id: id })
     if (evidencias.left()) return Either.left(evidencias.value)
 
-    // As linhas de lembretes_evidencias caem por CASCADE; os arquivos em disco não
+    // As linhas de lembretes_evidencias caem por CASCADE no banco; os arquivos físicos em disco exigem exclusão explícita
     const deleted = await this.lembreteCollection.delete(id)
     if (deleted.left()) return Either.left(deleted.value)
 

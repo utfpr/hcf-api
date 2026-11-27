@@ -13,6 +13,9 @@ interface Dependencies {
   faseSucessionalCollection: FaseSucessionalCollection
 }
 
+/**
+ * Controller responsável por listar fases sucessionais com filtros e ordenação opcionais.
+ */
 export class ListaFasesSucessionaisController implements RequestHandler {
   private readonly faseSucessionalCollection: FaseSucessionalCollection
 
@@ -20,6 +23,13 @@ export class ListaFasesSucessionaisController implements RequestHandler {
     this.faseSucessionalCollection = dependencies.faseSucessionalCollection
   }
 
+  /**
+   * Trata a requisição GET /v1/fases-sucessionais.
+   *
+   * @param request Requisição HTTP com filtros opcionais de busca e ordenação.
+   * @param _next Próximo middleware da cadeia.
+   * @returns Resposta HTTP 200 com lista de fases sucessionais, 400 se order inválido ou 500.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const { nome, order } = request.params as {
       nome?: string
@@ -49,6 +59,12 @@ export class ListaFasesSucessionaisController implements RequestHandler {
   }
 }
 
+/**
+ * Faz o parsing da string de ordenação recebida no formato coluna:direcao.
+ *
+ * @param order String no formato "coluna:direcao" (ex: "nome:asc").
+ * @returns Objeto com coluna e direção, undefined se omitido, ou Error se inválido.
+ */
 function parseOrder(order?: string): { column: 'id' | 'nome'; direction: 'asc' | 'desc' } | Error | undefined {
   if (!order) return undefined
 

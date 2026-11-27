@@ -12,13 +12,26 @@ interface Dependencies {
   expedicaoCollection: ExpedicaoCollection
 }
 
+/**
+ * Controller responsável pelo endpoint para adicionar participantes a uma expedição (POST /api/v1/expedicoes/:expedicaoId/participantes).
+ */
 export class AdicionaParticipanteController implements RequestHandler {
   private readonly expedicaoCollection: ExpedicaoCollection
 
+  /**
+   * @param dependencies Repositório de expedições.
+   */
   constructor(dependencies: Dependencies) {
     this.expedicaoCollection = dependencies.expedicaoCollection
   }
 
+  /**
+   * Vincula um usuário como participante da expedição.
+   *
+   * @param request Requisição HTTP contendo ':expedicaoId' nos parâmetros e 'usuarioId' no corpo.
+   * @param _next Próximo manipulador na cadeia de execução.
+   * @returns Resposta HTTP 201 Created, 400 por parâmetros inválidos ou 409 em caso de participante duplicado.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     try {
       const { expedicaoId } = request.params as { expedicaoId?: string }

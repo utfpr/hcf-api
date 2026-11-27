@@ -1,5 +1,8 @@
 import { Either } from '@/library/either/Either'
 
+/**
+ * Atributos públicos da entidade Usuario.
+ */
 export interface Attributes {
   id: number
   nome: string
@@ -7,10 +10,16 @@ export interface Attributes {
   tipoUsuarioId: number
 }
 
+/**
+ * Atributos da entidade Usuario incluindo o hash da senha, utilizado em operações de autenticação.
+ */
 export interface AttributesComSenha extends Attributes {
   senha: string
 }
 
+/**
+ * Entidade de domínio que representa um usuário do sistema.
+ */
 export class Usuario {
   readonly id: number
   readonly nome: string
@@ -28,6 +37,12 @@ export class Usuario {
     }
   }
 
+  /**
+   * Fábrica estática para criação e validação da entidade Usuario.
+   *
+   * @param attributes Dados do usuário com ou sem senha criptografada.
+   * @returns Either com a entidade Usuario validada ou Error de validação de domínio.
+   */
   static create(attributes: Attributes | AttributesComSenha): Either<Error, Usuario> {
     if (!Number.isInteger(attributes.id) || attributes.id <= 0) {
       return Either.left(new Error('id do usuário deve ser um inteiro positivo'))
@@ -42,6 +57,11 @@ export class Usuario {
     return Either.right(new Usuario(attributes))
   }
 
+  /**
+   * Converte a entidade para seus atributos públicos primitivos, omitindo credenciais sensíveis.
+   *
+   * @returns Atributos públicos do usuário.
+   */
   toAttributes(): Attributes {
     return {
       id: this.id,

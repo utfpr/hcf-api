@@ -14,6 +14,9 @@ interface Dependencies {
   faseSucessionalCollection: FaseSucessionalCollection
 }
 
+/**
+ * Controller responsável pela busca de uma fase sucessional por ID.
+ */
 export class BuscaFaseSucessionalController implements RequestHandler {
   private readonly faseSucessionalCollection: FaseSucessionalCollection
 
@@ -21,6 +24,13 @@ export class BuscaFaseSucessionalController implements RequestHandler {
     this.faseSucessionalCollection = dependencies.faseSucessionalCollection
   }
 
+  /**
+   * Trata a requisição GET /v1/fases-sucessionais/:faseSucessionalId.
+   *
+   * @param request Requisição HTTP com parâmetro faseSucessionalId.
+   * @param _next Próximo middleware da cadeia.
+   * @returns Resposta HTTP 200 com a fase sucessional, 400 se ID inválido, 404 se não encontrada ou 500.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const { faseSucessionalId } = request.params as { faseSucessionalId?: string }
 

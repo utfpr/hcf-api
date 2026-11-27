@@ -1,10 +1,16 @@
 import { Either } from '@/library/either/Either'
 
+/**
+ * Atributos que definem a entidade FaseSucessional.
+ */
 export interface Attributes {
   id?: string
   nome: string
 }
 
+/**
+ * Entidade de domínio que representa o estágio ou fase sucessional da vegetação.
+ */
 export class FaseSucessional {
   readonly id?: string
   readonly nome: string
@@ -14,6 +20,12 @@ export class FaseSucessional {
     this.nome = attributes.nome
   }
 
+  /**
+   * Fábrica para criar e validar uma instância de FaseSucessional.
+   *
+   * @param attributes Dados para instanciação incluindo nome e id opcional.
+   * @returns Either com a entidade criada ou erro de validação (nome vazio ou ID inválido).
+   */
   static create(attributes: { nome: string; id?: string }): Either<Error, FaseSucessional> {
     const nome = attributes.nome.trim()
 
@@ -32,6 +44,12 @@ export class FaseSucessional {
   }
 }
 
+/**
+ * Verifica se a string representa um identificador inteiro positivo.
+ *
+ * @param id Identificador em string.
+ * @returns true se for um inteiro positivo.
+ */
 function isPositiveId(id: string): boolean {
   return /^\d+$/.test(id) && BigInt(id) > 0n
 }

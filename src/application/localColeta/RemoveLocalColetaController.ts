@@ -15,6 +15,9 @@ interface Dependencies {
   removeLocalColetaUseCase: RemoveLocalColetaUseCase
 }
 
+/**
+ * Controller responsável pela exclusão de um local de coleta.
+ */
 export class RemoveLocalColetaController implements RequestHandler {
   private readonly removeLocalColetaUseCase: RemoveLocalColetaUseCase
 
@@ -22,6 +25,13 @@ export class RemoveLocalColetaController implements RequestHandler {
     this.removeLocalColetaUseCase = dependencies.removeLocalColetaUseCase
   }
 
+  /**
+   * Trata a requisição DELETE /v1/locais-coleta/:localColetaId.
+   *
+   * @param request Requisição HTTP com parâmetro localColetaId.
+   * @param _next Próximo middleware da cadeia.
+   * @returns Resposta HTTP 204 se removido, 400 se ID inválido, 404 se não encontrado, 409 se em uso por tombos ou 500.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const { localColetaId } = request.params as { localColetaId?: string }
     if (localColetaId === undefined || localColetaId === null || localColetaId === '' || !/^\d+$/.test(localColetaId)) {

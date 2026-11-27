@@ -14,6 +14,9 @@ interface Dependencies {
   faseSucessionalCollection: FaseSucessionalCollection
 }
 
+/**
+ * Controller responsável pela remoção de uma fase sucessional.
+ */
 export class RemoveFaseSucessionalController implements RequestHandler {
   private readonly faseSucessionalCollection: FaseSucessionalCollection
 
@@ -21,6 +24,13 @@ export class RemoveFaseSucessionalController implements RequestHandler {
     this.faseSucessionalCollection = dependencies.faseSucessionalCollection
   }
 
+  /**
+   * Trata a requisição DELETE /v1/fases-sucessionais/:faseSucessionalId.
+   *
+   * @param request Requisição HTTP com parâmetro de rota faseSucessionalId.
+   * @param _next Próximo middleware da cadeia.
+   * @returns Resposta HTTP 204 se removida, 400 se ID inválido, 404 se inexistente, 409 se em uso ou 500.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const { faseSucessionalId } = request.params as { faseSucessionalId?: string }
 

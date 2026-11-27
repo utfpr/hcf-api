@@ -12,6 +12,9 @@ interface Dependencies {
   buscaRelevoPorIdUseCase: BuscaRelevoPorIdUseCase
 }
 
+/**
+ * Controller responsável pela busca de um relevo por ID.
+ */
 export class BuscaRelevoController implements RequestHandler {
   private readonly buscaRelevoPorIdUseCase: BuscaRelevoPorIdUseCase
 
@@ -19,6 +22,13 @@ export class BuscaRelevoController implements RequestHandler {
     this.buscaRelevoPorIdUseCase = dependencies.buscaRelevoPorIdUseCase
   }
 
+  /**
+   * Trata a requisição GET /v1/relevos/:relevoId validando o ID informado.
+   *
+   * @param request Requisição HTTP com parâmetro de rota relevoId.
+   * @param _next Próximo middleware da cadeia.
+   * @returns Resposta HTTP 200 com os dados do relevo, 400 se ID inválido, 404 se não encontrado ou 500.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const { relevoId } = request.params as { relevoId?: string }
 

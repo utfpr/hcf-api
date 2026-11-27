@@ -13,6 +13,13 @@ import { ListaFasesSucessionaisController } from './ListaFasesSucessionaisContro
 import { RemoveFaseSucessionalController } from './RemoveFaseSucessionalController'
 import { RenomeiaFaseSucessionalController } from './RenomeiaFaseSucessionalController'
 
+/**
+ * Registra as rotas da API REST para gerenciamento de fases sucessionais.
+ * Configura controllers e autorizações CASL para ações de leitura, criação, atualização e exclusão.
+ *
+ * @param knex Instância de conexão Knex com o banco de dados.
+ * @returns Array de rotas configuradas para o recurso FaseSucessional.
+ */
 export function routes(knex: Knex): Route[] {
   const faseSucessionalCollection = new FaseSucessionalCollectionKnexAdapter({ knex })
 

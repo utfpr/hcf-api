@@ -18,13 +18,26 @@ interface CustomHttpRequest extends HttpRequest {
   }
 }
 
+/**
+ * Controller responsável pelo endpoint de desvinculação de participante de uma expedição (DELETE /api/v1/expedicoes/:expedicaoId/participantes/:usuarioId).
+ */
 export class RemoveParticipanteController implements RequestHandler {
   private readonly expedicaoCollection: ExpedicaoCollection
 
+  /**
+   * @param dependencies Repositório de expedições.
+   */
   constructor(dependencies: Dependencies) {
     this.expedicaoCollection = dependencies.expedicaoCollection
   }
 
+  /**
+   * Remove o participante especificado da expedição.
+   *
+   * @param request Requisição HTTP contendo ':expedicaoId' e ':usuarioId'.
+   * @param _next Próximo manipulador na cadeia de execução.
+   * @returns Resposta HTTP 204 NoContent, 400 por parâmetros inválidos ou 500 em falha interna.
+   */
   async handle(request: CustomHttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     try {
       const { expedicaoId, usuarioId } = request.params

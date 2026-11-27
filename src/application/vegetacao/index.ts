@@ -14,6 +14,13 @@ import { ListaVegetacoesController } from './ListaVegetacoesController'
 import { RemoveVegetacaoController } from './RemoveVegetacaoController'
 import { RenomeiaVegetacaoController } from './RenomeiaVegetacaoController'
 
+/**
+ * Registra as rotas da API REST para gerenciamento de vegetações.
+ * Configura controllers e autorizações CASL para ações de leitura, criação, atualização e exclusão.
+ *
+ * @param knex Instância de conexão Knex com o banco de dados.
+ * @returns Array de rotas configuradas para o recurso Vegetacao.
+ */
 export function routes(knex: Knex): Route[] {
   const vegetacaoCollection = new VegetacaoCollectionKnexAdapter({ knex })
 

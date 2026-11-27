@@ -12,6 +12,9 @@ interface Dependencies {
   vegetacaoCollection: VegetacaoCollection
 }
 
+/**
+ * Controller responsável pela busca de um tipo de vegetação por ID.
+ */
 export class BuscaVegetacaoController implements RequestHandler {
   private readonly vegetacaoCollection: VegetacaoCollection
 
@@ -19,6 +22,13 @@ export class BuscaVegetacaoController implements RequestHandler {
     this.vegetacaoCollection = dependencies.vegetacaoCollection
   }
 
+  /**
+   * Trata a requisição GET /v1/vegetacoes/:vegetacaoId.
+   *
+   * @param request Requisição HTTP com parâmetro vegetacaoId.
+   * @param _next Próximo middleware da cadeia.
+   * @returns Resposta HTTP 200 com a vegetação, 400 se ID inválido, 404 se não encontrada ou 500.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const { vegetacaoId } = request.params as { vegetacaoId?: string }
 

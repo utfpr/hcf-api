@@ -17,13 +17,26 @@ interface Dependencies {
   atualizaLembreteUseCase: AtualizaLembreteUseCase
 }
 
+/**
+ * Controller responsável pelo endpoint de atualização cadastral de lembretes (PUT /api/v1/lembretes/:lembreteId).
+ */
 export class AtualizaLembreteController implements RequestHandler {
   private readonly atualizaLembreteUseCase: AtualizaLembreteUseCase
 
+  /**
+   * @param dependencies Instância do caso de uso de atualização de lembrete.
+   */
   constructor(dependencies: Dependencies) {
     this.atualizaLembreteUseCase = dependencies.atualizaLembreteUseCase
   }
 
+  /**
+   * Processa a atualização parcial dos dados e ficha técnica do lembrete.
+   *
+   * @param request Requisição HTTP com ':lembreteId' e corpo com campos alterados.
+   * @param _next Próximo manipulador na cadeia de execução.
+   * @returns Resposta HTTP 200 com lembrete atualizado, 400 por payload inválido ou 404/500.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const { lembreteId: rawLembreteId } = request.params as { lembreteId?: string }
     const lembreteId = parseId(rawLembreteId, 'lembreteId')

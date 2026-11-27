@@ -4,6 +4,9 @@ import {
   Attributes, ColetaAttributes, Evento, EventoTipo
 } from './Evento'
 
+/**
+ * Conjunto de campos editáveis na atualização de um evento.
+ */
 export interface AtualizaEventoInput {
   tipo?: EventoTipo
   data_captura?: Date
@@ -16,17 +19,19 @@ export interface AtualizaEventoInput {
 }
 
 /**
- * Regra de coerência própria do update, `tipo` e `coleta` não são independentes:
- * - vira DIARIO -> a ficha é descartada, não importa o que o cliente mandou
- * - vira COLETA sem `coleta` no corpo -> mantém a ficha atual
- * - vira COLETA com `coleta` no corpo -> substitui a ficha
- *
- * Reaproveita de Evento.create() para checagem final de coerência (tipo/ficha,
- * coordenadas, data_captura) sobre o estado já mesclado, afim não duplicar
- * essa regra em dois lugares.
+ * Validador responsável por aplicar as regras de coerência entre o tipo do evento e a ficha de coleta:
+ * - vira DIARIO -> a ficha é descartada, não importa o que o cliente enviou;
+ * - vira/permanece COLETA sem 'coleta' no corpo -> preserva a ficha preexistente;
+ * - vira/permanece COLETA com 'coleta' no corpo -> substitui a ficha.
  */
-
 export class AtualizaEventoValidator {
+  /**
+   * Mescla os dados atuais do evento com o patch de atualização e valida a consistência final da entidade.
+   *
+   * @param atual Estado atual persistido do evento.
+   * @param input Alterações solicitadas na requisição.
+   * @returns Either com a entidade Evento validada ou Error caso as regras de domínio sejam violadas.
+   */
   validar(atual: Attributes, input: AtualizaEventoInput): Either<Error, Evento> {
     const mesclado = this.mesclar(atual, input)
     return Evento.create(mesclado)

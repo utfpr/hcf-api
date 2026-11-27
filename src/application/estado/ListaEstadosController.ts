@@ -11,6 +11,9 @@ interface Dependencies {
   listaEstadosUseCase: ListaEstadosUseCase
 }
 
+/**
+ * Controller responsável por listar estados de um país.
+ */
 export class ListaEstadosController implements RequestHandler {
   private readonly listaEstadosUseCase: ListaEstadosUseCase
 
@@ -18,6 +21,13 @@ export class ListaEstadosController implements RequestHandler {
     this.listaEstadosUseCase = dependencies.listaEstadosUseCase
   }
 
+  /**
+   * Trata a requisição GET /v1/paises/:paisSigla/estados.
+   *
+   * @param request Requisição HTTP com parâmetro de rota paisSigla.
+   * @param _next Próximo middleware da cadeia.
+   * @returns Resposta HTTP 200 com a lista de estados, 400 se a sigla do país estiver ausente ou 500.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const { paisSigla } = request.params as { paisSigla?: string }
 

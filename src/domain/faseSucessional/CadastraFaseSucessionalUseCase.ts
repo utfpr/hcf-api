@@ -8,6 +8,10 @@ interface Dependencies {
   faseSucessionalCollection: FaseSucessionalCollection
 }
 
+/**
+ * Caso de uso responsável pelo cadastro de uma nova fase sucessional.
+ * Valida a integridade do nome e impede registros duplicados.
+ */
 export class CadastraFaseSucessionalUseCase {
   private readonly faseSucessionalCollection: FaseSucessionalCollection
 
@@ -15,6 +19,12 @@ export class CadastraFaseSucessionalUseCase {
     this.faseSucessionalCollection = dependencies.faseSucessionalCollection
   }
 
+  /**
+   * Executa a criação da fase sucessional após verificar unicidade de nome.
+   *
+   * @param params Objeto contendo o nome da fase sucessional.
+   * @returns Either com a entidade FaseSucessional criada ou erro de duplicidade/validação.
+   */
   async execute({ nome }: { nome: string }): Promise<Either<Error, FaseSucessional>> {
     const normalizedNome = nome.trim()
 

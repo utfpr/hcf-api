@@ -16,6 +16,13 @@ import { ListaExpedicoesController } from './ListaExpedicoesController'
 import { RemoveParticipanteController } from './RemoveParticipanteController'
 import { SubstituiRotasController } from './SubstituiRotasController'
 
+/**
+ * Registra e configura as rotas de expedição, participantes e rotas botânicas (/api/v1/expedicoes/*).
+ * Aplica controle de autorização baseado em perfil e regras de permissão CASL.
+ *
+ * @param knex Instância de conexão Knex.
+ * @returns Lista de rotas configuradas.
+ */
 export function routes(knex: Knex): Route[] {
   const expedicaoCollection = createExpedicaoCollection()
 

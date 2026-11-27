@@ -15,6 +15,9 @@ interface Dependencies {
   cadastraFaseSucessionalUseCase: CadastraFaseSucessionalUseCase
 }
 
+/**
+ * Controller responsável pelo cadastro de novas fases sucessionais.
+ */
 export class CadastraFaseSucessionalController implements RequestHandler {
   private readonly cadastraFaseSucessionalUseCase: CadastraFaseSucessionalUseCase
 
@@ -22,6 +25,13 @@ export class CadastraFaseSucessionalController implements RequestHandler {
     this.cadastraFaseSucessionalUseCase = dependencies.cadastraFaseSucessionalUseCase
   }
 
+  /**
+   * Trata a requisição POST /v1/fases-sucessionais.
+   *
+   * @param request Requisição HTTP contendo o nome no corpo.
+   * @param _next Próximo middleware da cadeia.
+   * @returns Resposta HTTP 201 com a fase sucessional criada, 400 se nome inválido, 409 se duplicada ou 500.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const { nome } = request.body as { nome?: string }
 

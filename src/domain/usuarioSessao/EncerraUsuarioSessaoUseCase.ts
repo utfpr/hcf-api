@@ -6,6 +6,9 @@ import { UserSessionNotFoundError } from './error/UserSessionNotFoundError'
 import { type Attributes, UsuarioSessao } from './UsuarioSessao'
 import { type UsuarioSessaoCollection } from './UsuarioSessaoCollection'
 
+/**
+ * Dependências requeridas para instanciação de EncerraUsuarioSessaoUseCase.
+ */
 interface Dependencies {
   usuarioSessaoCollection: UsuarioSessaoCollection
   refreshToken: RefreshToken
@@ -13,12 +16,18 @@ interface Dependencies {
   now?: () => Date
 }
 
+/**
+ * Caso de uso responsável pelo encerramento de sessões ativas (logout individual ou revogação global).
+ */
 export class EncerraUsuarioSessaoUseCase {
   private readonly usuarioSessaoCollection: UsuarioSessaoCollection
   private readonly refreshToken: RefreshToken
   private readonly accessToken: AccessToken
   private readonly now: () => Date
 
+  /**
+   * @param dependencies Repositório de sessões, serviços de hash e verificação de tokens e relógio.
+   */
   constructor(dependencies: Dependencies) {
     this.usuarioSessaoCollection = dependencies.usuarioSessaoCollection
     this.refreshToken = dependencies.refreshToken
@@ -26,6 +35,12 @@ export class EncerraUsuarioSessaoUseCase {
     this.now = dependencies.now ?? (() => new Date())
   }
 
+  /**
+   * Revoga a sessão específica via refresh token ou access token, ou todas as sessões do usuário se solicitado.
+   *
+   * @param params Parâmetros com refreshToken, accessToken e flag opcional 'all'.
+   * @returns Either void indicando sucesso ou UserSessionNotFoundError caso a sessão não seja identificada.
+   */
   async execute(params: {
     refreshToken?: string
     accessToken?: string
@@ -56,6 +71,7 @@ export class EncerraUsuarioSessaoUseCase {
       return Either.left(new UserSessionNotFoundError({ cause: verified.value }))
     }
 
+    // Revoga em lote todas as sessões vinculadas ao usuarioId decodificado do access token
     return this.usuarioSessaoCollection.deleteByUsuarioId(verified.value.sub)
   }
 
@@ -65,6 +81,7 @@ export class EncerraUsuarioSessaoUseCase {
       return Either.left(new UserSessionNotFoundError({ cause: hashed.value }))
     }
 
+    // Localiza a sessão pelo hash SHA-256 do refresh token para exclusão
     const found = await this.usuarioSessaoCollection.findByRefreshTokenHash(hashed.value)
     if (found.left()) {
       return found

@@ -18,6 +18,9 @@ import { type NextHandler, type RequestHandler } from '@/library/http/Server'
 
 import { readBearerAccess } from './usuarioSessao/sessaoHttp'
 
+/**
+ * Dependências requeridas para a instanciação do AuthorizeMiddleware.
+ */
 interface Dependencies {
   action: Action
   resource: Resource
@@ -29,6 +32,11 @@ interface Dependencies {
   verifyLegacyUser?: (token: string) => RequestUser | undefined | Promise<RequestUser | undefined>
 }
 
+/**
+ * Middleware de autenticação e autorização baseado em controle de acesso (RBAC).
+ * Extrai e valida o token Bearer JWT, verifica o estado e expiração da sessão ativa no banco,
+ * e valida se o usuário possui permissão para executar a ação no recurso solicitado.
+ */
 export class AuthorizeMiddleware implements RequestHandler {
   private readonly action: Action
   private readonly resource: Resource
@@ -39,6 +47,11 @@ export class AuthorizeMiddleware implements RequestHandler {
   private readonly now: () => Date
   private readonly verifyLegacyUser?: Dependencies['verifyLegacyUser']
 
+  /**
+   * Inicializa o middleware com as regras de permissão e dependências de autenticação.
+   *
+   * @param dependencies Recursos, ações, serviços de token e repositórios necessários.
+   */
   constructor(dependencies: Dependencies) {
     this.action = dependencies.action
     this.resource = dependencies.resource
@@ -50,6 +63,13 @@ export class AuthorizeMiddleware implements RequestHandler {
     this.verifyLegacyUser = dependencies.verifyLegacyUser
   }
 
+  /**
+   * Intercepta a requisição HTTP para autenticar a identidade e autorizar a ação no recurso.
+   *
+   * @param request Requisição HTTP recebida.
+   * @param next Próximo manipulador na cadeia de execução.
+   * @returns Resposta HTTP produzida pelo manipulador seguinte ou HttpError em caso de falha de autenticação (401) ou autorização (403).
+   */
   async handle(request: HttpRequest, next: NextHandler): Promise<HttpResponse | HttpError> {
     const token = readBearerAccess(request)
     if (!token) {
@@ -82,6 +102,7 @@ export class AuthorizeMiddleware implements RequestHandler {
     const verified = this.accessToken.verify(token)
     if (verified.left()) {
       if (verified.value instanceof AccessTokenExpiredError) {
+        // Sinaliza explicitamente a expiração do access token para que o cliente realize refresh da sessão
         return new UnauthorizedError({
           message: 'Access token expired',
           type: 'access_expired',
@@ -89,6 +110,7 @@ export class AuthorizeMiddleware implements RequestHandler {
         })
       }
 
+      // Suporte de transição: validação de token legado caso habilitada
       if (this.legacyFallback && this.verifyLegacyUser) {
         try {
           const legacy = await this.verifyLegacyUser(token)
@@ -114,6 +136,7 @@ export class AuthorizeMiddleware implements RequestHandler {
       return unauthorized()
     }
 
+    // Remove sessão expirada do banco para evitar acúmulo de registros e rejeitar o token associado
     if (UsuarioSessao.expired(session.value.expiresAt, this.now())) {
       const deleted = await this.usuarioSessaoCollection.deleteById(session.value.id)
       if (deleted.left()) {

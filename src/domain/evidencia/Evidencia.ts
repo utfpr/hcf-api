@@ -1,5 +1,8 @@
 import { Either } from '@/library/either/Either'
 
+/**
+ * Atributos completos e persistidos da entidade Evidencia.
+ */
 export interface Attributes {
   id: number
   evento_id: number
@@ -18,6 +21,9 @@ export interface Attributes {
 
 type PersistedField = 'id' | 'created_at' | 'updated_at' | 'updated_by'
 
+/**
+ * Atributos necessários para a inserção de uma nova evidência.
+ */
 export type CreateAttributes = Omit<Attributes, PersistedField>
 
 /**
@@ -26,6 +32,9 @@ export type CreateAttributes = Omit<Attributes, PersistedField>
  */
 export type EntityAttributes = CreateAttributes & Partial<Pick<Attributes, PersistedField>>
 
+/**
+ * Entidade de domínio que representa uma evidência de campo (foto ou gravação de áudio anexada ao evento).
+ */
 export class Evidencia {
   readonly id?: number
   readonly evento_id: number
@@ -53,6 +62,13 @@ export class Evidencia {
     this.updated_by = attributes.updated_by
   }
 
+  /**
+   * Fábrica estática para validação e criação da entidade Evidencia.
+   * Valida obrigatoriedade de identificadores, nome, nome de arquivo gerado, tipo MIME e integridade de tamanho e data.
+   *
+   * @param attributes Atributos da evidência a serem validados.
+   * @returns Either com a entidade Evidencia validada ou erro de validação.
+   */
   static create(attributes: EntityAttributes): Either<Error, Evidencia> {
     if (!Number.isInteger(attributes.evento_id) || attributes.evento_id <= 0) {
       return Either.left(new Error('Evento da evidência é obrigatório'))

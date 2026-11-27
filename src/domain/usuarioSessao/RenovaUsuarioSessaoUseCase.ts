@@ -8,6 +8,9 @@ import { type SessaoAutenticada } from './sessaoAutenticada'
 import { type Attributes, UsuarioSessao } from './UsuarioSessao'
 import { type UsuarioSessaoCollection } from './UsuarioSessaoCollection'
 
+/**
+ * Dependências necessárias para a instanciação de RenovaUsuarioSessaoUseCase.
+ */
 interface Dependencies {
   usuarioCollection: UsuarioCollection
   usuarioSessaoCollection: UsuarioSessaoCollection
@@ -16,6 +19,9 @@ interface Dependencies {
   now?: () => Date
 }
 
+/**
+ * Caso de uso responsável pela renovação de sessão aplicando rotação estrita de refresh token.
+ */
 export class RenovaUsuarioSessaoUseCase {
   private readonly usuarioCollection: UsuarioCollection
   private readonly usuarioSessaoCollection: UsuarioSessaoCollection
@@ -23,6 +29,9 @@ export class RenovaUsuarioSessaoUseCase {
   private readonly accessToken: AccessToken
   private readonly now: () => Date
 
+  /**
+   * @param dependencies Repositórios de usuário e sessão, serviços de tokens e relógio.
+   */
   constructor(dependencies: Dependencies) {
     this.usuarioCollection = dependencies.usuarioCollection
     this.usuarioSessaoCollection = dependencies.usuarioSessaoCollection
@@ -31,6 +40,12 @@ export class RenovaUsuarioSessaoUseCase {
     this.now = dependencies.now ?? (() => new Date())
   }
 
+  /**
+   * Valida o refresh token atual, rotaciona seu hash na sessão existente e emite um novo par de tokens.
+   *
+   * @param params Objeto contendo a string pura do refresh token recebido via cookie HTTP-only ou body.
+   * @returns Either com a nova SessaoAutenticada ou UserSessionNotFoundError caso o token seja inválido/expirado.
+   */
   async execute(params: { refreshToken: string }): Promise<Either<Error, SessaoAutenticada>> {
     const hashed = this.refreshToken.hash(params.refreshToken)
     if (hashed.left()) {
@@ -59,6 +74,7 @@ export class RenovaUsuarioSessaoUseCase {
     }
 
     const now = this.now()
+    // Rotação de refresh token: substitui o hash da sessão pelo do novo token e estende a expiração (sliding window de 30 dias), invalidando o token anterior contra ataques de replay
     const updated = await this.usuarioSessaoCollection.updateRotation(found.value.id, {
       refreshTokenHash: generated.value.hash,
       lastUsedAt: now,
@@ -100,6 +116,7 @@ export class RenovaUsuarioSessaoUseCase {
       return Either.right(false)
     }
 
+    // Exclui a sessão expirada do banco para evitar acúmulo e garantir que tokens inativos sejam sumariamente rejeitados
     const deleted = await this.usuarioSessaoCollection.deleteById(session.id)
     if (deleted.left()) {
       return deleted

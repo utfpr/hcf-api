@@ -12,6 +12,9 @@ interface Dependencies {
   localColetaCollection: LocalColetaCollection
 }
 
+/**
+ * Controller responsável pela busca de um local de coleta por ID.
+ */
 export class BuscaLocalColetaController implements RequestHandler {
   private readonly localColetaCollection: LocalColetaCollection
 
@@ -19,6 +22,13 @@ export class BuscaLocalColetaController implements RequestHandler {
     this.localColetaCollection = dependencies.localColetaCollection
   }
 
+  /**
+   * Trata a requisição GET /v1/locais-coleta/:localColetaId.
+   *
+   * @param request Requisição HTTP com parâmetro localColetaId.
+   * @param _next Próximo middleware da cadeia.
+   * @returns Resposta HTTP 200 com os dados do local de coleta, 400 se ID inválido, 404 se não encontrado ou 500.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const { localColetaId } = request.params as { localColetaId?: string }
     if (localColetaId === undefined || !/^\d+$/.test(localColetaId) || !Number.isSafeInteger(Number(localColetaId)) || Number(localColetaId) <= 0 || Number(localColetaId) > 2147483647) {

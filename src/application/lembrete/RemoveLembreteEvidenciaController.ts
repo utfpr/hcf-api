@@ -14,13 +14,26 @@ interface Dependencies {
   removeLembreteEvidenciaUseCase: RemoveLembreteEvidenciaUseCase
 }
 
+/**
+ * Controller responsável pela exclusão de uma foto/evidência de um lembrete (DELETE /api/v1/lembretes/:lembreteId/evidencias/:evidenciaId).
+ */
 export class RemoveLembreteEvidenciaController implements RequestHandler {
   private readonly removeLembreteEvidenciaUseCase: RemoveLembreteEvidenciaUseCase
 
+  /**
+   * @param dependencies Instância do caso de uso de remoção de evidência de lembrete.
+   */
   constructor(dependencies: Dependencies) {
     this.removeLembreteEvidenciaUseCase = dependencies.removeLembreteEvidenciaUseCase
   }
 
+  /**
+   * Executa a remoção do registro da evidência e do arquivo em disco se vinculada ao lembrete correto.
+   *
+   * @param request Requisição HTTP com ':lembreteId' e ':evidenciaId'.
+   * @param _next Próximo manipulador na cadeia de execução.
+   * @returns Resposta HTTP 204 NoContent, 404 se não encontrada ou 400/500.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const {
       lembreteId: rawLembreteId,

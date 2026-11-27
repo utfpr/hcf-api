@@ -20,6 +20,13 @@ import { CriaEventoController } from './CriaEventoController'
 import { ListaEventosController } from './ListaEventosController'
 import { RemoveEventoController } from './RemoveEventoController'
 
+/**
+ * Registra e configura as rotas de eventos de campo (/api/v1/expedicoes/:expedicaoId/eventos e /api/v1/eventos/:eventoId).
+ * Aplica controle de autorização baseado em perfil e regras de posse/participação para perfil Expedicionário.
+ *
+ * @param knex Instância de conexão Knex.
+ * @returns Lista de definições de rotas configuradas.
+ */
 export function routes(knex: Knex): Route[] {
   const eventoCollection = new EventoCollectionKnexAdapter({ knex })
   const evidenciaCollection = new EvidenciaCollectionKnexAdapter({ knex })

@@ -14,6 +14,9 @@ interface Dependencies {
   cadastraRelevoUseCase: CadastraRelevoUseCase
 }
 
+/**
+ * Controller responsável pelo cadastro de novos relevos.
+ */
 export class CadastraRelevoController implements RequestHandler {
   private readonly cadastraRelevoUseCase: CadastraRelevoUseCase
 
@@ -21,6 +24,13 @@ export class CadastraRelevoController implements RequestHandler {
     this.cadastraRelevoUseCase = dependencies.cadastraRelevoUseCase
   }
 
+  /**
+   * Trata a requisição POST /v1/relevos criando um novo tipo de relevo.
+   *
+   * @param request Requisição HTTP contendo o nome no corpo.
+   * @param _next Próximo middleware da cadeia.
+   * @returns Resposta HTTP 201 com o relevo criado, 400 para nome vazio, 409 em caso de duplicidade ou 500.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const { nome } = request.body as { nome?: string }
 
@@ -46,6 +56,12 @@ export class CadastraRelevoController implements RequestHandler {
   }
 }
 
+/**
+ * Normaliza a entidade Relevo para resposta HTTP contendo id e nome.
+ *
+ * @param relevo Instância da entidade Relevo.
+ * @returns Objeto com id e nome ou undefined se o id não estiver preenchido.
+ */
 function relevoBody(relevo: Relevo): { id: string; nome: string } | undefined {
   if (relevo.id === undefined) {
     return undefined

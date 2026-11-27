@@ -1,5 +1,8 @@
 import { BaseError } from '@/library/BaseError'
 
+/**
+ * Erro lançado ao tentar cadastrar ou renomear um solo com nome já existente.
+ */
 export class SoloNomeDuplicadoError extends BaseError {
   constructor(params?: { cause?: unknown }) {
     super({

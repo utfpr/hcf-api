@@ -1,5 +1,8 @@
 import { Either } from '@/library/either/Either'
 
+/**
+ * Campos botânicos que compõem a ficha técnica do lembrete de campo.
+ */
 export interface FichaAttributes {
   familia: string | null
   nome_popular: string | null
@@ -43,6 +46,9 @@ export const FICHA_FIELDS = [
   'luminosidade'
 ] as const satisfies ReadonlyArray<keyof FichaAttributes>
 
+/**
+ * Atributos completos e persistidos da entidade Lembrete.
+ */
 export interface Attributes extends FichaAttributes {
   id: number
   data_coleta: string
@@ -62,6 +68,9 @@ export interface Attributes extends FichaAttributes {
 
 type PersistedField = 'id' | 'created_at' | 'updated_at' | 'updated_by'
 
+/**
+ * Atributos requeridos para criação inicial de um lembrete.
+ */
 export type CreateAttributes = Omit<Attributes, PersistedField>
 
 /**
@@ -79,8 +88,11 @@ export type UpdateAttributes = Omit<
 const DATA_ISO = /^\d{4}-\d{2}-\d{2}$/
 
 /**
- * Aceita apenas YYYY-MM-DD de um dia que existe (rejeita 2026-02-30, que o
- * Date normalizaria para março).
+ * Valida se uma string representa uma data válida do calendário no formato estrito YYYY-MM-DD.
+ * Rejeita datas inexistentes que o parser padrão do JavaScript normalizaria (ex.: 2026-02-30).
+ *
+ * @param value String candidata a data.
+ * @returns True se a data existir no calendário gregoriano, false caso contrário.
  */
 export function isDataValida(value: string): boolean {
   if (!DATA_ISO.test(value)) {
@@ -90,6 +102,9 @@ export function isDataValida(value: string): boolean {
   return !Number.isNaN(date.getTime()) && date.toISOString().startsWith(value)
 }
 
+/**
+ * Entidade de domínio que representa um lembrete de observação ou coleta botânica registrado em campo.
+ */
 export class Lembrete {
   readonly id?: number
   readonly data_coleta: string
@@ -119,6 +134,13 @@ export class Lembrete {
     this.updated_by = attributes.updated_by
   }
 
+  /**
+   * Fábrica estática para criação e validação das invariantes de um Lembrete.
+   * Valida obrigatoriedade e formato de data_coleta (YYYY-MM-DD), local_coleta e limites de coordenadas.
+   *
+   * @param attributes Atributos do lembrete a validar.
+   * @returns Either com a entidade Lembrete validada ou Error de validação.
+   */
   static create(attributes: EntityAttributes): Either<Error, Lembrete> {
     if (typeof attributes.data_coleta !== 'string' || !isDataValida(attributes.data_coleta)) {
       return Either.left(new Error('Data de coleta do lembrete é obrigatória e deve estar no formato YYYY-MM-DD'))

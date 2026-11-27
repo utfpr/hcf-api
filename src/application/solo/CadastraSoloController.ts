@@ -13,6 +13,9 @@ interface Dependencies {
   cadastraSoloUseCase: CadastraSoloUseCase
 }
 
+/**
+ * Controller responsável pela criação de novos registros de tipo de solo.
+ */
 export class CadastraSoloController implements RequestHandler {
   private readonly cadastraSoloUseCase: CadastraSoloUseCase
 
@@ -20,6 +23,13 @@ export class CadastraSoloController implements RequestHandler {
     this.cadastraSoloUseCase = dependencies.cadastraSoloUseCase
   }
 
+  /**
+   * Trata a requisição POST /v1/solos para cadastrar um novo solo.
+   *
+   * @param request Requisição HTTP contendo o campo nome no corpo.
+   * @param _next Próximo middleware da cadeia.
+   * @returns Resposta HTTP 201 com o solo criado, 400 para nome inválido, 409 em caso de duplicidade ou 500.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const { nome } = request.body as { nome?: string }
 

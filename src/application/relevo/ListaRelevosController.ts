@@ -11,6 +11,9 @@ interface Dependencies {
   listaRelevosUseCase: ListaRelevosUseCase
 }
 
+/**
+ * Controller responsável pela listagem de relevos com filtros e ordenação opcionais.
+ */
 export class ListaRelevosController implements RequestHandler {
   private readonly listaRelevosUseCase: ListaRelevosUseCase
 
@@ -18,6 +21,13 @@ export class ListaRelevosController implements RequestHandler {
     this.listaRelevosUseCase = dependencies.listaRelevosUseCase
   }
 
+  /**
+   * Trata a requisição GET /v1/relevos processando parâmetros de query para consulta.
+   *
+   * @param request Requisição HTTP com filtros opcionais (nome, order).
+   * @param _next Próximo middleware da cadeia.
+   * @returns Resposta HTTP 200 com lista de relevos, 400 se order inválido ou 500.
+   */
   async handle(request: HttpRequest, _next: NextHandler): Promise<HttpResponse | HttpError> {
     const { nome, order } = request.params as {
       nome?: string
@@ -42,6 +52,12 @@ export class ListaRelevosController implements RequestHandler {
   }
 }
 
+/**
+ * Faz o parsing da string de ordenação recebida no formato coluna:direcao.
+ *
+ * @param order String no formato "coluna:direcao" (ex: "nome:asc").
+ * @returns Objeto com coluna e direção, undefined se omitido, ou Error se inválido.
+ */
 function parseOrder(order?: string): { column: 'id' | 'nome'; direction: 'asc' | 'desc' } | Error | undefined {
   if (!order) return undefined
 
